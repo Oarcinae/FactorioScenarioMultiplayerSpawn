@@ -10,3 +10,8 @@ It should look something like this (for my windows steam install location):
 
 C:\Users\user\AppData\Roaming\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\control.lua
 
+## TODO
+
+I need to update this with more details about the implementation and explain some of the configuration options.
+
+For now, just take a look at the source and it should be mostly easy to understand I hope.
