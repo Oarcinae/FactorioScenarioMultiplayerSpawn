@@ -12,6 +12,12 @@
 -- When someone dies, they are given the option to join the default team
 -- if they were not already.
 
+
+-- TODO
+-- Anti griefer? Drop all items on leaving?
+-- Better long term goal like frontier
+-- Better interaction with other forces?
+
 -- config options
 
 -- Near spawn option is on the edge of generated chunks
@@ -48,6 +54,7 @@ local ENFORCE_LAND_AREA_TILE_DIST_SQUARED = ENFORCE_LAND_AREA_TILE_DIST^2
 
 -- Main force is what default players join
 local MAIN_FORCE = "main_force"
+local ENABLE_OTHER_TEAMS = false
 
 -- Disable enemy expansion
 local ENEMY_EXPANSION = false
@@ -251,24 +258,28 @@ function DisplaySpawnOptions(player)
     ApplyStyle(spawnGui.isolated_spawn_lbl2, my_label_style)
     ApplyStyle(spawnGui.isolated_spawn_spacer, my_label_style)
 
-    spawnGui.add{name = "new_force",
-                    type = "button",
-                    caption="Separate Team"}
-    spawnGui.add{name = "new_force_far",
-                    type = "button",
-                    caption="Separate Team (Far Away)"}
-    spawnGui.add{name = "new_force_lbl1", type = "label",
-                    caption="You are spawned in a new area, with starting resources."}
-    spawnGui.add{name = "new_force_lbl2", type = "label",
-                    caption="You will be on your own team. (No shared vision or research with others.)"}
-    spawnGui.add{name = "new_force_lbl3", type = "label",
-                    caption="Do not choose this option if you are new to the game!"}
-    spawnGui.add{name = "new_force_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(spawnGui.new_force_lbl1, my_label_style)
-    ApplyStyle(spawnGui.new_force_lbl2, my_warning_style)
-    ApplyStyle(spawnGui.new_force_lbl3, my_warning_style)
-    ApplyStyle(spawnGui.new_force_spacer, my_label_style)
+
+    if (ENABLE_OTHER_TEAMS) then
+        spawnGui.add{name = "new_force",
+                        type = "button",
+                        caption="Separate Team"}
+        spawnGui.add{name = "new_force_far",
+                        type = "button",
+                        caption="Separate Team (Far Away)"}
+        spawnGui.add{name = "new_force_lbl1", type = "label",
+                        caption="You are spawned in a new area, with starting resources."}
+        spawnGui.add{name = "new_force_lbl2", type = "label",
+                        caption="You will be on your own team. (No shared vision or research with others.)"}
+        spawnGui.add{name = "new_force_lbl3", type = "label",
+                        caption="Do not choose this option if you are new to the game!"}
+        spawnGui.add{name = "new_force_spacer", type = "label",
+                        caption=" "}
+        ApplyStyle(spawnGui.new_force_lbl1, my_label_style)
+        ApplyStyle(spawnGui.new_force_lbl2, my_warning_style)
+        ApplyStyle(spawnGui.new_force_lbl3, my_warning_style)
+        ApplyStyle(spawnGui.new_force_spacer, my_label_style)
+    
+
 
     spawnGui.add{name = "note_lbl1", type = "label",
                     caption="All members of a team share map vision and research."}                            
@@ -276,15 +287,17 @@ function DisplaySpawnOptions(player)
                     caption="To talk to someone on a different team, you need to use /s to shout."}
     spawnGui.add{name = "note_lbl3", type = "label",
                     caption="All teams are neutral. This is still a cooperative PvE game... NOT PVP!"}
+    ApplyStyle(spawnGui.note_lbl1, my_note_style)
+    ApplyStyle(spawnGui.note_lbl2, my_note_style)
+    ApplyStyle(spawnGui.note_lbl3, my_note_style)
+    end
     spawnGui.add{name = "note_lbl4", type = "label",
                     caption="Far away spawn is between 1000-6000 distance units away from the center of the map."}
     spawnGui.add{name = "note_lbl5", type = "label",
                     caption="Isolated spawns are dangerous! You will have to fight to reach other players."}
     spawnGui.add{name = "note_lbl6", type = "label",
-                    caption="You can change your team and spawn point when you die"}
-    ApplyStyle(spawnGui.note_lbl1, my_note_style)
-    ApplyStyle(spawnGui.note_lbl2, my_note_style)
-    ApplyStyle(spawnGui.note_lbl3, my_note_style)
+                    caption="You can change your spawn options when you die."}
+
     ApplyStyle(spawnGui.note_lbl4, my_note_style)
     ApplyStyle(spawnGui.note_lbl5, my_note_style)
 end
@@ -377,22 +390,23 @@ function DisplayRespawnOptions(player)
     ApplyStyle(respawnGui.respawn_custom_lbl3, my_label_style)
     ApplyStyle(respawnGui.respawn_custom_spacer, my_label_style)
 
-
-    respawnGui.add{name = "respawn_custom_team",
-                    type = "button",
-                    caption="Custom Team Spawn"}
-    respawnGui.add{name = "respawn_custom_team_lbl1", type = "label",
-                    caption="This will join your own custom team."}
-    respawnGui.add{name = "respawn_custom_team_lbl2", type = "label",
-                    caption="You will have your own map vision and research tree. Use /s to talk to others."}
-    respawnGui.add{name = "respawn_custom_team_lbl3", type = "label",
-                    caption="You will spawn at your previous custom spawn point."}
-    respawnGui.add{name = "respawn_custom_team_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(respawnGui.respawn_custom_team_lbl1, my_label_style)
-    ApplyStyle(respawnGui.respawn_custom_team_lbl2, my_warning_style)
-    ApplyStyle(respawnGui.respawn_custom_team_lbl3, my_label_style)
-    ApplyStyle(respawnGui.respawn_custom_team_spacer, my_label_style)
+    if (ENABLE_OTHER_TEAMS) then
+        respawnGui.add{name = "respawn_custom_team",
+                        type = "button",
+                        caption="Custom Team Spawn"}
+        respawnGui.add{name = "respawn_custom_team_lbl1", type = "label",
+                        caption="This will join your own custom team."}
+        respawnGui.add{name = "respawn_custom_team_lbl2", type = "label",
+                        caption="You will have your own map vision and research tree. Use /s to talk to others."}
+        respawnGui.add{name = "respawn_custom_team_lbl3", type = "label",
+                        caption="You will spawn at your previous custom spawn point."}
+        respawnGui.add{name = "respawn_custom_team_spacer", type = "label",
+                        caption=" "}
+        ApplyStyle(respawnGui.respawn_custom_team_lbl1, my_label_style)
+        ApplyStyle(respawnGui.respawn_custom_team_lbl2, my_warning_style)
+        ApplyStyle(respawnGui.respawn_custom_team_lbl3, my_label_style)
+        ApplyStyle(respawnGui.respawn_custom_team_spacer, my_label_style)
+    end
 
     if (global.enableRespawnSurprise == true) then
         respawnGui.add{name = "respawn_surpise",
@@ -861,7 +875,10 @@ script.on_event(defines.events.on_chunk_generated, function(event)
                                 {name = "water", position ={spawnPos.x+2,spawnPos.y-30}},
                                 {name = "water", position ={spawnPos.x+3,spawnPos.y-30}},
                                 {name = "water", position ={spawnPos.x+4,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+5,spawnPos.y-30}}}
+                                {name = "water", position ={spawnPos.x+5,spawnPos.y-30}},
+                                {name = "water", position ={spawnPos.x+6,spawnPos.y-30}},
+                                {name = "water", position ={spawnPos.x+7,spawnPos.y-30}},
+                                {name = "water", position ={spawnPos.x+8,spawnPos.y-30}}}
             -- DebugPrint("Setting water tiles in this chunk! " .. chunkArea.left_top.x .. "," .. chunkArea.left_top.y)
             surface.set_tiles(waterTiles)
         end
@@ -888,6 +905,7 @@ script.on_init(function(event)
 
     game.create_force(MAIN_FORCE)
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position("nauvis"), "nauvis")
+    SetCeaseFireBetweenAllForces()
 end)
 
 
@@ -923,40 +941,65 @@ script.on_event(defines.events.on_rocket_launched, function(event)
     end
 end)
 
---Gravestone Scripts
----- THIS IS NOT MY CODE ---- I DO NOT KNOW WHO TO CREDIT THIS TO
---I got it from "Gravestone and announcements" scenario that I joined.
-script.on_event(defines.events.on_entity_died, function(event)
-    local entity = event.entity
-    if entity.type == "player" then
-        local pos = entity.surface.find_non_colliding_position("steel-chest", entity.position, 8, 1)
-        if not pos then return end
-    
-        local grave = entity.surface.create_entity{name="steel-chest", position=pos, force="neutral"}
-        if protective_mode then
-            grave.destructible = false
-        end
-        local grave_inv = grave.get_inventory(defines.inventory.chest)
-        local count = 0
-        for i, id in ipairs{
-        defines.inventory.player_guns,
-        defines.inventory.player_tools,
-        defines.inventory.player_ammo,
-        defines.inventory.player_quickbar,
-        defines.inventory.player_main,
-        defines.inventory.player_armor,
-        defines.inventory.player_trash} do
-            local inv = entity.get_inventory(id)
-            for j = 1, #inv do
-                if inv[j].valid_for_read then
-                    count = count + 1
-                    if count > #grave_inv then
-                        print("Not enough room in chest. You've lost some stuff...")
-                        return 
+-- Return steel chest entity (or nil)
+local function DropEmptySteelChest(player)
+    local pos = player.surface.find_non_colliding_position("steel-chest", player.position, 15, 1)
+    if not pos then
+        return nil
+    end
+    local grave = player.surface.create_entity{name="steel-chest", position=pos, force="neutral"}
+    return grave
+end
+
+-- My modified version of gravestone. Makes sure you get all items even if
+-- it requires multiple steel chests.
+script.on_event(defines.events.on_player_died, function(event)
+        
+    local player = game.players[event.player_index]
+
+    -- Create the 1st chest to fill
+    local grave = DropEmptySteelChest(player)
+    if (grave == nil) then
+        player.print("Not able to place a chest nearby! All items lost!")
+        return
+    end
+
+    -- Init the inventroy space counter
+    local grave_inv = grave.get_inventory(defines.inventory.chest)
+    local count = 0
+
+    -- Loop through a players different inventories
+    -- Put it all into the chest
+    -- If the chest is full, create a new chest.
+    for i, id in ipairs{
+    defines.inventory.player_armor,
+    defines.inventory.player_main,
+    defines.inventory.player_quickbar,
+    defines.inventory.player_guns,
+    defines.inventory.player_ammo,
+    defines.inventory.player_tools,
+    defines.inventory.player_trash} do
+        local inv = player.get_inventory(id)
+        for j = 1, #inv do
+            if inv[j].valid_for_read then
+                count = count + 1
+
+                grave_inv[count].set_stack(inv[j])
+
+                if (count == #grave_inv) then
+                    count = 0
+                    grave = DropEmptySteelChest(player)
+                    if (grave == nil) then
+                        player.print("Not able to place a chest nearby! Some items lost!")
+                        return
                     end
-                    grave_inv[count].set_stack(inv[j])
+                    grave_inv = grave.get_inventory(defines.inventory.chest)
+                    
                 end
             end
         end
     end
+
+    player.print("Successfully dropped your items into a chest! Go get them quick!")
+
 end)
