@@ -1,53 +1,48 @@
+-- control.lua
+-- Nov 2016
+
 -- Oarc's Separated Spawn Scenario
+-- 
 -- I wanted to create a scenario that allows you to spawn in separate locations
--- Additionally, it allows you to either join the main force or go it alone.
--- All teams(forces) are always neutral to each other (ceasefire mode).
+-- From there, I ended up adding a bunch of other minor/major features
 -- 
--- Each spawn location has some basic starter resources enforced, except for
--- the main default 0,0 starting location
+-- Credit:
+--  RSO mod to RSO author - Orzelek - I contacted him via the forum
+--  Tags - Taken from WOGs scenario
+--  Event - Taken from WOGs scenario (looks like original source was 3Ra)
+--  Rocket Silo - Taken from Frontier as an idea
+--
+-- Feel free to re-use anything you want. It would be nice to give me credit
+-- if you can.
 -- 
--- Around each spawn area, a safe area is created and then a reduced alien areaas
--- as well. See config options for settings
--- 
--- When someone dies, they are given the option to join the default team
--- if they were not already.
+-- Follow server info on @_Oarc_
 
 
--- To do:
--- Clean up text around spawn choices.
--- Make rocket silo more obvious, try to spawn a train station
--- Add longreach
+-- To keep the scenario more manageable I have done the following:
+--      1. Keep all event calls in control.lua (here)
+--      2. Put all config options in config.lua
+--      3. Put mods into their own files where possible (RSO has multiple)
 
 
-require("event")
-require("config")
-require("rso_control") -- MUST LOAD THIS before other modifications to chunk generation
+-- My Scenario Includes
 require("oarc_utils")
+require("config")
+
+-- Include Mods
 require("separate_spawns")
+require("separate_spawns_guis")
+require("rso_control")
+require("frontier_silo")
 require("tag")
 
--- On init stuff
-script.on_init(function(event)
-    if ENABLE_SEPARATE_SPAWNS then
-        -- For separate spawns stuff required on init
-        InitSpawnGlobalsAndForces()
 
-        -- Adjust alien params
-        game.map_settings.enemy_evolution.time_factor=0
-        game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
-        game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
-        game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
-    end
-
-    if FRONTIER_ROCKET_SILO_MODE then
-        game.forces[MAIN_FORCE].chart(game.surfaces["nauvis"], {{SILO_POSITION.x-CHUNK_SIZE, SILO_POSITION.y-CHUNK_SIZE}, {SILO_POSITION.x+CHUNK_SIZE, SILO_POSITION.y+CHUNK_SIZE}})
-    end
-end)
-
--- Freeplay rocket launch info
--- Slightly modified for my purposes
-script.on_event(defines.events.on_rocket_launched, function(event)
+--------------------------------------------------------------------------------
+-- Rocket Launch Event Code
+-- Controls the "win condition"
+--------------------------------------------------------------------------------
+function RocketLaunchEvent(event)
     local force = event.rocket.force
+    
     if event.rocket.get_item_count("satellite") == 0 then
         for index, player in pairs(force.players) do
             player.print("You launched the rocket, but you didn't put a satellite inside.")
@@ -74,5 +69,122 @@ script.on_event(defines.events.on_rocket_launched, function(event)
             frame.add{name="rocket_count_label", type = "label", caption={"", "Satellites launched", ":"}}
             frame.add{name="rocket_count", type = "label", caption=tostring(global.satellite_sent[force.name])}
         end
+    end
+end
+
+
+--------------------------------------------------------------------------------
+-- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
+--------------------------------------------------------------------------------
+
+
+----------------------------------------
+-- On Init - only runs once the first 
+--   time the game starts
+----------------------------------------
+script.on_init(function(event)
+    if ENABLE_SEPARATE_SPAWNS then
+        InitSpawnGlobalsAndForces()
+    end
+
+    if FRONTIER_ROCKET_SILO_MODE then
+        ChartRocketSiloArea(game.forces[MAIN_FORCE])
+    end
+end)
+
+
+----------------------------------------
+-- Freeplay rocket launch info
+-- Slightly modified for my purposes
+----------------------------------------
+script.on_event(defines.events.on_rocket_launched, function(event)
+    if FRONTIER_ROCKET_SILO_MODE then
+        RocketLaunchEvent(event)
+    end
+end)
+
+
+----------------------------------------
+-- Chunk Generation
+----------------------------------------
+script.on_event(defines.events.on_chunk_generated, function(event)
+    if ENABLE_UNDECORATOR then
+        UndecorateOnChunkGenerate(event)
+    end
+
+    if ENABLE_RSO then
+        RSO_ChunkGenerated(event)
+    end
+
+    if FRONTIER_ROCKET_SILO_MODE then
+        GenerateRocketSiloChunk(event)
+    end
+
+    -- This MUST come after RSO generation!
+    if ENABLE_SEPARATE_SPAWNS then
+        SeparateSpawnsGenerateChunk(event)
+    end
+end)
+
+
+----------------------------------------
+-- Gui Click
+----------------------------------------
+script.on_event(defines.events.on_gui_click, function(event)
+    if ENABLE_TAGS then
+        TagGuiClick(event)
+    end
+
+    if ENABLE_SEPARATE_SPAWNS then
+        WelcomeTextGuiClick(event)
+        SpawnOptsGuiClick(event)
+    end
+end)
+
+
+----------------------------------------
+-- Player Events
+----------------------------------------
+script.on_event(defines.events.on_player_joined_game, function(event)
+    
+    PlayerJoinedMessages(event)
+
+    if ENABLE_TAGS then
+        CreateTagGui(event)
+    end
+end)
+
+script.on_event(defines.events.on_player_created, function(event)
+    if ENABLE_RSO then
+        RSO_PlayerCreated(event)
+    end
+
+    if not ENABLE_SEPARATE_SPAWNS then
+        PlayerSpawnItems(event)
+    else
+        SeparateSpawnsPlayerCreated(event)
+    end
+end)
+
+script.on_event(defines.events.on_player_died, function(event)
+    if ENABLE_GRAVESTONE_CHESTS then
+        CreateGravestoneChestsOnDeath(event)
+    end
+end)
+
+script.on_event(defines.events.on_player_respawned, function(event)
+    if not ENABLE_SEPARATE_SPAWNS then
+        PlayerRespawnItems(event)
+    else 
+        SeparateSpawnsPlayerRespawned(event)
+    end
+end)
+
+----------------------------------------
+-- On Research Finished
+----------------------------------------
+script.on_event(defines.events.on_research_finished, function(event)
+    if FRONTIER_ROCKET_SILO_MODE then
+        RemoveRocketSiloRecipe(event)
     end
 end)

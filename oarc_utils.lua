@@ -1,4 +1,5 @@
 -- oarc_utils.lua
+-- Nov 2016
 -- 
 -- My general purpose utility functions for factorio
 -- Also contains some constants and gui styles
@@ -9,11 +10,17 @@
 --------------------------------------------------------------------------------
 CHUNK_SIZE = 32
 MAX_FORCES = 64
+TICKS_PER_SECOND = 60
 --------------------------------------------------------------------------------
+
 
 --------------------------------------------------------------------------------
 -- GUI Label Styles
 --------------------------------------------------------------------------------
+my_fixed_width_style = {
+    minimal_width = 450,
+    maximal_width = 450
+}
 my_label_style = {
     minimal_width = 450,
     maximal_width = 450,
@@ -31,8 +38,9 @@ my_warning_style = {
     font_color = {r=1,g=0.1,b=0.1}
 }
 
+
 --------------------------------------------------------------------------------
---
+-- General Helper Functions
 --------------------------------------------------------------------------------
 
 -- Print debug only to me while testing.
@@ -57,10 +65,19 @@ function TableLength(T)
   return count
 end
 
+-- Chart area for a force
+function ChartArea(force, position, chunkDist)
+    force.chart(game.surfaces["nauvis"],
+        {{position.x-(CHUNK_SIZE*chunkDist),
+        position.y-(CHUNK_SIZE*chunkDist)},
+        {position.x+(CHUNK_SIZE*chunkDist),
+        position.y+(CHUNK_SIZE*chunkDist)}})
+end
+
 -- Give player these default items.
 function GivePlayerItems(player)
     player.insert{name="pistol", count=1}
-    player.insert{name="firearm-magazine", count=10}
+    player.insert{name="firearm-magazine", count=100}
 end
 
 -- Additional starter only items
@@ -96,8 +113,15 @@ function SetCeaseFireBetweenAllForces()
 end
 
 -- Undecorator
-function RemoveDecorationsArea(surface, area )
+function RemoveDecorationsArea(surface, area)
     for _, entity in pairs(surface.find_entities_filtered{area = area, type="decorative"}) do
+        entity.destroy()
+    end
+end
+
+-- Remove fish
+function RemoveFish(surface, area)
+    for _, entity in pairs(surface.find_entities_filtered{area = area, type="fish"}) do
         entity.destroy()
     end
 end
@@ -328,91 +352,19 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius)
     surface.set_tiles(dirtTiles)
 end
 
--- THIS DOES NOT WORK IN SCENARIOS!
--- function DisableVanillaResouresAndEnemies()
-
---     local map_gen_ctrls = game.surfaces["nauvis"].map_gen_settings.autoplace_controls
-
---     map_gen_ctrls["coal"].size = "none"
---     map_gen_ctrls["stone"].size = "none"
---     map_gen_ctrls["iron-ore"].size = "none"
---     map_gen_ctrls["copper-ore"].size = "none"
---     map_gen_ctrls["crude-oil"].size = "none"
---     map_gen_ctrls["enemy-base"].size = "none"
--- end
-
--- Create a rocket silo
-function CreateRocketSilo(surface, chunkArea)
-    if CheckIfInArea(SILO_POSITION, chunkArea) then
-
-        -- Delete any entities beneat the silo?
-        for _, entity in pairs(surface.find_entities_filtered{area = {{SILO_POSITION.x-5, SILO_POSITION.y-6},{SILO_POSITION.x+6, SILO_POSITION.y+6}}}) do
-            entity.destroy()
-        end
-
-        -- Set tiles below the silo
-        local tiles = {}
-        local i = 1
-        for dx = -6,6 do
-            for dy = -7,6 do
-                tiles[i] = {name = "grass", position = {SILO_POSITION.x+dx, SILO_POSITION.y+dy}}
-                i=i+1
-            end
-        end
-        surface.set_tiles(tiles, false)
-        tiles = {}
-        i = 1
-        for dx = -5,5 do
-            for dy = -6,5 do
-                tiles[i] = {name = "concrete", position = {SILO_POSITION.x+dx, SILO_POSITION.y+dy}}
-                i=i+1
-            end
-        end
-        surface.set_tiles(tiles, true)
-
-        -- Create silo and assign to main force
-        local silo = surface.create_entity{name = "rocket-silo", position = {SILO_POSITION.x+0.5, SILO_POSITION.y}, force = MAIN_FORCE}
-        silo.destructible = false
-        silo.minable = false
-    end
+-- Adjust alien params
+function ConfigureAlienStartingParams()
+    game.map_settings.enemy_evolution.time_factor=0
+    game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
+    game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
+    game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
 end
 
--- Remove rocket silo from recipes
-function RemoveRocketSiloRecipe(event)
-    local recipes = event.research.force.recipes
-    if recipes["rocket-silo"] then
-        recipes["rocket-silo"].enabled = false
-    end
-end
 
--- Generates the rocket silo during chunk generation event
--- Includes a crop circle
-function GenerateRocketSiloChunk(event)
-    local surface = event.surface
-    if surface.name ~= "nauvis" then return end
-    local chunkArea = event.area
 
-    local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                             y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-    local safeArea = {left_top=
-                        {x=SILO_POSITION.x-150,
-                         y=SILO_POSITION.y-150},
-                      right_bottom=
-                        {x=SILO_POSITION.x+150,
-                         y=SILO_POSITION.y+150}}
-                             
-
-    -- Clear enemies directly next to the rocket
-    if CheckIfInArea(chunkAreaCenter,safeArea) then
-        for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, force = "enemy"}) do
-            entity.destroy()
-        end
-    end
-
-    -- Create rocket silo
-    CreateRocketSilo(surface, chunkArea)
-    CreateCropCircle(surface, SILO_POSITION, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-end
+--------------------------------------------------------------------------------
+-- EVENT SPECIFIC FUNCTIONS
+--------------------------------------------------------------------------------
 
 -- Display messages to a user everytime they join
 function PlayerJoinedMessages(event)
@@ -432,6 +384,7 @@ function UndecorateOnChunkGenerate(event)
     local surface = event.surface
     local chunkArea = event.area
     RemoveDecorationsArea(surface, chunkArea)
+    RemoveFish(surface, chunkArea)
 end
 
 -- Give player items on respawn
@@ -444,29 +397,41 @@ function PlayerSpawnItems(event)
     GivePlayerStarterItems(game.players[event.player_index])
 end
 
+
 --------------------------------------------------------------------------------
--- Register events
--- These must be placed after the functions that are referenced!
+-- UNUSED CODE
+-- Either didn't work, or not used or not tested....
 --------------------------------------------------------------------------------
 
-Event.register(defines.events.on_player_joined_game, PlayerJoinedMessages)
 
--- Rocket SIlo "frontier" mode
-if FRONTIER_ROCKET_SILO_MODE then
-    Event.register(defines.events.on_chunk_generated, GenerateRocketSiloChunk)
-    Event.register(defines.events.on_research_finished, RemoveRocketSiloRecipe)
-end
+-- THIS DOES NOT WORK IN SCENARIOS!
+-- function DisableVanillaResouresAndEnemies()
 
-if ENABLE_GRAVESTONE_CHESTS then
-    Event.register(defines.events.on_player_died, CreateGravestoneChestsOnDeath)
-end
+--     local map_gen_ctrls = game.surfaces["nauvis"].map_gen_settings.autoplace_controls
 
-if ENABLE_UNDECORATOR then
-    Event.register(defines.events.on_chunk_generated, UndecorateOnChunkGenerate)
-end
+--     map_gen_ctrls["coal"].size = "none"
+--     map_gen_ctrls["stone"].size = "none"
+--     map_gen_ctrls["iron-ore"].size = "none"
+--     map_gen_ctrls["copper-ore"].size = "none"
+--     map_gen_ctrls["crude-oil"].size = "none"
+--     map_gen_ctrls["enemy-base"].size = "none"
+-- end
 
--- Separate teams mod does the starting items itself
-if not ENABLE_SEPARATE_SPAWNS then
-    Event.register(defines.events.on_player_created, PlayerSpawnItems)
-    Event.register(defines.events.on_player_respawned, PlayerRespawnItems)
-end
+
+
+-- Shared vision for other forces? UNTESTED
+-- function ShareVisionForAllForces()
+--     for _,f in pairs(game.forces) do
+--         for _,p in pairs(game.connected_players) do
+--             if (f.name ~= p.force.name) then
+--                 local visionArea = {left_top=
+--                             {x=p.x-(CHUNK_SIZE*3),
+--                              y=p.y-(CHUNK_SIZE*3)},
+--                           right_bottom=
+--                             {x=p.x+(CHUNK_SIZE*3),
+--                              y=p.y+(CHUNK_SIZE*3)}}
+--                 f.chart(game.surfaces["nauvis"], visionArea)
+--             end
+--         end
+--     end
+-- end

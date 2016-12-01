@@ -1,4 +1,4 @@
-function create_tag_gui(event)
+function CreateTagGui(event)
   local player = game.players[event.player_index]
   if player.gui.top.tag == nil then
   	  player.gui.top.add{name="tag", type="button", caption="Tag"}
@@ -23,7 +23,7 @@ local roles = {
   {display_name = "[AFK]"},
   {display_name = "Clear"}}
 
-function expand_tag_gui(player)
+local function ExpangTagGui(player)
     local frame = player.gui.left["tag-panel"]
     if (frame) then
         frame.destroy()
@@ -35,25 +35,22 @@ function expand_tag_gui(player)
     end
 end
 
-local function on_gui_click(event) 
+function TagGuiClick(event) 
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.element.player_index]
     local name = event.element.name
 
 		if (name == "tag") then
-			expand_tag_gui(player)		
+			ExpangTagGui(player)		
 		end
 		
 		if (name == "Clear") then 
 			player.tag = ""
 			return
 		end
+    
 		for _, role in pairs(roles) do
 			if (name == role.display_name) then
 				player.tag = role.display_name			end
 		end
 end
-
-
-Event.register(defines.events.on_gui_click, on_gui_click)
-Event.register(defines.events.on_player_joined_game, create_tag_gui)

@@ -1,7 +1,6 @@
-require "event"
-require "rso_config"
-require "util"
-require "rso_resource_config"
+require("rso_config")
+require("util")
+require("rso_resource_config")
 
 local MB=require "metaball"
 local drand = require 'drand'
@@ -1255,7 +1254,6 @@ local function roll_chunk(surface, c_x, c_y)
 	end
 end
 
-
 local function printResourceProbability(player)
 	-- prints the probability of each resource - how likely it is to be spawned in percent
 	-- this ignores the multi resource chance
@@ -1280,7 +1278,7 @@ local function printResourceProbability(player)
 	debug("SanityCheck Allotment: "..string.format("%.1f", sanityCheckAllotment))
 end
 
-local function init()
+function RSO_init()
 	if not initDone then
 		
 		local surface = game.surfaces['nauvis']
@@ -1334,22 +1332,24 @@ local function init()
 	script.on_event(defines.events.on_tick, nil)
 end
 
-local function delayedInit()
-	script.on_event(defines.events.on_tick, init)
-end
+-- Oarc removed this. No idea if this will break save game loads.
+-- Tested it once and it seemed to work?
+-- function RSO_delayedInit()
+-- 	script.on_event(defines.events.on_tick, RSO_init)
+-- end
 
 function RSO_ChunkGenerated(event)
 	local c_x = event.area.left_top.x
 	local c_y = event.area.left_top.y
 
-	init()
+	RSO_init()
 	
 	roll_region(c_x, c_y)
 	roll_chunk(event.surface, c_x, c_y)
 end
 
 function RSO_PlayerCreated(event)
-	init()
+	RSO_init()
 	local player = game.players[event.player_index]
 	
 	if debug_enabled then	
@@ -1357,8 +1357,3 @@ function RSO_PlayerCreated(event)
 	end
 end
 
-if ENABLE_RSO then
-	script.on_load(delayedInit)
-	Event.register(defines.events.on_chunk_generated, RSO_ChunkGenerated)
-	Event.register(defines.events.on_player_created, RSO_PlayerCreated)
-end
