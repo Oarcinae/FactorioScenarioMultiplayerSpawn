@@ -24,6 +24,7 @@ my_fixed_width_style = {
 my_label_style = {
     minimal_width = 450,
     maximal_width = 450,
+    maximal_height = 10,
     font_color = {r=1,g=1,b=1}
 }
 my_note_style = {
@@ -35,8 +36,17 @@ my_note_style = {
 my_warning_style = {
     minimal_width = 450,
     maximal_width = 450,
+    maximal_height = 10,
     font_color = {r=1,g=0.1,b=0.1}
 }
+my_spacer_style = {
+    minimal_width = 450,
+    maximal_width = 450,
+    minimal_height = 20,
+    maximal_height = 20,
+    font_color = {r=0,g=0,b=0}
+}
+
 
 
 --------------------------------------------------------------------------------
@@ -56,6 +66,13 @@ function SendBroadcastMsg(msg)
     for name,player in pairs(game.connected_players) do
         player.print(msg)
     end
+end
+
+function formattime(ticks)
+  local seconds = ticks / 60
+  local minutes = math.floor((seconds)/60)
+  local seconds = math.floor(seconds - 60*minutes)
+  return string.format("%dm:%02ds", minutes, seconds)
 end
 
 -- Simple function to get total number of items in table
@@ -240,6 +257,7 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks)
         -- Enforce a max number of tries
         tryCounter = tryCounter + 1
         if (tryCounter > maxTries) then
+            DebugPrint("FindUngeneratedCoordinates - Max Tries Hit!")
             break
  
         -- Check that the distance is within the min,max specified

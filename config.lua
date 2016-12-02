@@ -17,11 +17,12 @@ WELCOME_MSG2 = "This server is running a custom scenario that changes spawn loca
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
 WELCOME_MSG4 = "around your new spawn area to generate..."
 WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
+WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
 
 
 SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
-SPAWN_MSG3 = "RSO mode means resources are spread out far apart but are quite rich."
+SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 --------------------------------------------------------------------------------
 -- Module Enables
@@ -105,8 +106,17 @@ ENFORCE_LAND_AREA_TILE_DIST = 40
 MAIN_FORCE = "main_force"
 
 -- Enable if people can spawn at the main base
-ENABLE_DEFAULT_SPAWN = false
+ENABLE_DEFAULT_SPAWN = true
 
+
+---------------------------------------
+-- Special Action Cooldowns
+---------------------------------------
+RESPAWN_COOLDOWN_TICKS = TICKS_PER_SECOND * 60 * 60
+
+-- Require playes to be online for at least 5 minutes
+-- Else their character is removed and their spawn point is freed up for use
+MIN_ONLINE_TIME = TICKS_PER_SECOND * 60 * 5
 
 
 --------------------------------------------------------------------------------

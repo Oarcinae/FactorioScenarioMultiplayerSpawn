@@ -9,7 +9,7 @@ use_donut_shapes = false		-- setting this to false will remove donuts from possi
 starting_area_size = 0.8         	-- starting area in regions, safe from random nonsense
 
 absolute_resource_chance = 0.50 -- chance to spawn an resource in a region
-starting_richness_mult = 0		-- multiply starting area richness for resources
+starting_richness_mult = 1		-- multiply starting area richness for resources
 global_richness_mult = 1		-- multiply richness for all resources except starting area
 global_size_mult = 1			-- multiply size for all ores, doesn't affect starting area
 

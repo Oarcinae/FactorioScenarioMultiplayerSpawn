@@ -138,6 +138,8 @@ script.on_event(defines.events.on_gui_click, function(event)
     if ENABLE_SEPARATE_SPAWNS then
         WelcomeTextGuiClick(event)
         SpawnOptsGuiClick(event)
+        SpawnCtrlGuiClick(event)
+        SharedSpwnOptsGuiClick(event)
     end
 end)
 
@@ -179,6 +181,13 @@ script.on_event(defines.events.on_player_respawned, function(event)
         SeparateSpawnsPlayerRespawned(event)
     end
 end)
+
+script.on_event(defines.events.on_player_left_game, function(event)
+    if ENABLE_SEPARATE_SPAWNS then
+        FindUnusedSpawns(event)
+    end
+end)
+
 
 ----------------------------------------
 -- On Research Finished

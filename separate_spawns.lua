@@ -16,6 +16,7 @@ function SeparateSpawnsPlayerCreated(event)
     local player = game.players[event.player_index]
     player.force = MAIN_FORCE
     DisplayWelcomeTextGui(player)
+    global.playerCooldowns[player.name] = {setRespawn=event.tick}
 end
 
 
@@ -23,11 +24,7 @@ end
 -- Make sure to give the default starting items
 function SeparateSpawnsPlayerRespawned(event)
     local player = game.players[event.player_index]
-
-    -- If a player has an active spawn, use it.
-    if (DoesPlayerHaveActiveCustomSpawn(player)) then
-        player.teleport(global.playerSpawns[player.name])
-    end
+    SendPlayerToSpawn(player)
 end
 
 
@@ -130,7 +127,35 @@ function SeparateSpawnsGenerateChunk(event)
 end
 
 
+-- Call this if a player leaves the game
+-- Seems to be susceptiable to causing desyncs...
+function FindUnusedSpawns(event)
+    local player = game.players[event.player_index]
+    if (player.online_time < MIN_ONLINE_TIME) then
 
+        -- Clear out global variables for that player???
+        if (global.playerSpawns[player.name] ~= nil) then
+            global.playerSpawns[player.name] = nil
+        end
+
+        -- If a uniqueSpawn was created for the player, mark it as unused.
+        if (global.uniqueSpawns[player.name] ~= nil) then
+            table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
+            global.uniqueSpawns[player.name] = nil
+            SendBroadcastMsg(player.name .. " base was freed up because they left within 5 minutes of joining.")
+        end
+        
+        if (global.sharedSpawns[player.name] ~= nil) then
+            global.sharedSpawns[player.name] = nil
+        end
+
+        if (global.playerCooldowns[player.name] ~= nil) then
+            global.playerCooldowns[player.name] = nil
+        end
+
+        game.remove_offline_players({player})
+    end
+end
 
 
 
@@ -144,7 +169,18 @@ function InitSpawnGlobalsAndForces()
     -- A secondary array tracks whether the character will respawn there.
     if (global.playerSpawns == nil) then
         global.playerSpawns = {}
-        global.activePlayerSpawns = {}
+    end
+    if (global.uniqueSpawns == nil) then
+        global.uniqueSpawns = {}
+    end
+    if (global.sharedSpawns == nil) then
+        global.sharedSpawns = {}
+    end
+    if (global.unusedSpawns == nil) then
+        global.unusedSpawns = {}
+    end
+    if (global.playerCooldowns == nil) then
+        global.playerCooldowns = {}
     end
 
     game.create_force(MAIN_FORCE)
@@ -204,21 +240,8 @@ function DoesPlayerHaveCustomSpawn(player)
     return false
 end
 
-function DoesPlayerHaveActiveCustomSpawn(player)
-    if (DoesPlayerHaveCustomSpawn(player)) then
-        return global.activePlayerSpawns[player.name]
-    else
-        return false
-    end
-end
-
-function ActivatePlayerCustomSpawn(player, value)
-    for name,_ in pairs(global.playerSpawns) do
-        if (player.name == name) then
-            global.activePlayerSpawns[player.name] = value
-            break
-        end
-    end
+function ChangePlayerSpawn(player, pos)
+    global.playerSpawns[player.name] = pos
 end
 
 function SendPlayerToNewSpawnAndCreateIt(player, spawn)
@@ -228,14 +251,18 @@ function SendPlayerToNewSpawnAndCreateIt(player, spawn)
     ChartArea(player.force, player.position, 4)
 
     -- If we get a valid spawn point, setup the area
-    if (spawn ~= {x=0,y=0}) then
+    if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
+        global.uniqueSpawns[player.name] = spawn
         GenerateStartingResources(player)
         ClearNearbyEnemies(player, SAFE_AREA_TILE_DIST)
+    else      
+        DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
+        SendBroadcastMsg("Failed to create spawn point for: " .. player.name)
     end
 end
 
-function SendPlayerToActiveSpawn(player)
-    if (DoesPlayerHaveActiveCustomSpawn(player)) then
+function SendPlayerToSpawn(player)
+    if (DoesPlayerHaveCustomSpawn(player)) then
         player.teleport(global.playerSpawns[player.name])
     else
         player.teleport(game.forces[MAIN_FORCE].get_spawn_position("nauvis"))
@@ -243,7 +270,7 @@ function SendPlayerToActiveSpawn(player)
 end
 
 function SendPlayerToRandomSpawn(player)
-    local numSpawns = TableLength(global.playerSpawns)
+    local numSpawns = TableLength(global.uniqueSpawns)
     local rndSpawn = math.random(0,numSpawns)
     local counter = 0
 
@@ -251,7 +278,7 @@ function SendPlayerToRandomSpawn(player)
         player.teleport(game.forces[MAIN_FORCE].get_spawn_position("nauvis"))
     else
         counter = counter + 1
-        for name,spawnPos in pairs(global.playerSpawns) do
+        for name,spawnPos in pairs(global.uniqueSpawns) do
             if (counter == rndSpawn) then
                 player.teleport(spawnPos)
                 break
