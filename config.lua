@@ -20,7 +20,7 @@ WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
 WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
 
 
-SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS"
+SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (Still in BETA)"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
 SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
@@ -106,7 +106,7 @@ ENFORCE_LAND_AREA_TILE_DIST = 40
 MAIN_FORCE = "main_force"
 
 -- Enable if people can spawn at the main base
-ENABLE_DEFAULT_SPAWN = true
+ENABLE_DEFAULT_SPAWN = false
 
 
 ---------------------------------------
@@ -127,7 +127,7 @@ MIN_ONLINE_TIME = TICKS_PER_SECOND * 60 * 5
 ENEMY_EXPANSION = false
 
 -- Divide the alien factors by this number to reduce it (or multiply if < 1)
-ENEMY_POLLUTION_FACTOR_DIVISOR = 5
+ENEMY_POLLUTION_FACTOR_DIVISOR = 15
 ENEMY_DESTROY_FACTOR_DIVISOR = 5
 
 

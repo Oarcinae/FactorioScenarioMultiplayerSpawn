@@ -23,7 +23,7 @@ multi_resource_chance_diminish = 0.6	-- diminishing effect factor on multi_resou
 
 min_amount=250 					-- default value for minimum amount of resource in single pile
 
-richness_distance_factor=0.6 	-- exponent for richness distance factor calculation
+richness_distance_factor=0.9 	-- exponent for richness distance factor calculation
 size_distance_factor=0.15	   	-- exponent for size distance factor calculation
 
 deterministic = true           	-- set to false to use system for all decisions  math.random
