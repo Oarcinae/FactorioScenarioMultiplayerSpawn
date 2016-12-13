@@ -87,6 +87,10 @@ script.on_init(function(event)
         InitSpawnGlobalsAndForces()
     end
 
+    if ENABLE_RANDOM_SILO_POSITION then
+        SetRandomSiloPosition()
+    end
+
     if FRONTIER_ROCKET_SILO_MODE then
         ChartRocketSiloArea(game.forces[MAIN_FORCE])
     end
@@ -159,6 +163,10 @@ end)
 script.on_event(defines.events.on_player_created, function(event)
     if ENABLE_RSO then
         RSO_PlayerCreated(event)
+    end
+
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
     end
 
     if not ENABLE_SEPARATE_SPAWNS then

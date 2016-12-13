@@ -32,3 +32,5 @@ RSO is not my own creation. It was done by Orzelek. I requested permission to in
 https://mods.factorio.com/mods/orzelek/rso-mod
 
 Several other portions of the code (tags, frontier style rocket silo) have also been adapted from other scenario code.
+
+Credit to 3Ra as well: https://github.com/3RaGaming/3Ra-Enhanced-Vanilla

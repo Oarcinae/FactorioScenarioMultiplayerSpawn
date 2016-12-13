@@ -11,6 +11,7 @@
 CHUNK_SIZE = 32
 MAX_FORCES = 64
 TICKS_PER_SECOND = 60
+TICKS_PER_MINUTE = TICKS_PER_SECOND * 60
 --------------------------------------------------------------------------------
 
 
@@ -46,7 +47,9 @@ my_spacer_style = {
     maximal_height = 20,
     font_color = {r=0,g=0,b=0}
 }
-
+my_small_button_style = {
+    font = "default-small-semibold"
+}
 
 
 --------------------------------------------------------------------------------
@@ -376,6 +379,27 @@ function ConfigureAlienStartingParams()
     game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
     game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
+end
+
+-- Add Long Reach to Character
+function GivePlayerLongReach(player)
+    player.character.character_build_distance_bonus = BUILD_DIST_BONUS
+    player.character.character_reach_distance_bonus = REACH_DIST_BONUS
+    -- player.character.character_resource_reach_distance_bonus  = RESOURCE_DIST_BONUS
+end
+
+-- This technically creates a position in a diamon shape I think?
+function SetRandomSiloPosition()
+
+    -- Get an X,Y on a circle far away.
+    distX = math.random(0,SILO_CHUNK_DISTANCE_X)
+    distY = math.floor(math.sqrt(distX^2 + SILO_CHUNK_DISTANCE_X^2))
+
+    -- Set those values.
+    SILO_DISTANCE_X = distX*CHUNK_SIZE + CHUNK_SIZE/2
+    SILO_DISTANCE_Y = distY*CHUNK_SIZE + CHUNK_SIZE/2
+    SILO_POSITION = {x = SILO_DISTANCE_X, y = SILO_DISTANCE_Y}
+
 end
 
 
