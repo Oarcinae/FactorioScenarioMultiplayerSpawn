@@ -89,6 +89,8 @@ script.on_init(function(event)
 
     if ENABLE_RANDOM_SILO_POSITION then
         SetRandomSiloPosition()
+    else
+        SetFixedSiloPosition()
     end
 
     if FRONTIER_ROCKET_SILO_MODE then

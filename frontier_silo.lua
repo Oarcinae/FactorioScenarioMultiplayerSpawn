@@ -6,10 +6,10 @@ require("oarc_utils")
 
 -- Create a rocket silo
 local function CreateRocketSilo(surface, chunkArea)
-    if CheckIfInArea(SILO_POSITION, chunkArea) then
+    if CheckIfInArea(global.siloPosition, chunkArea) then
 
         -- Delete any entities beneat the silo?
-        for _, entity in pairs(surface.find_entities_filtered{area = {{SILO_POSITION.x-5, SILO_POSITION.y-6},{SILO_POSITION.x+6, SILO_POSITION.y+6}}}) do
+        for _, entity in pairs(surface.find_entities_filtered{area = {{global.siloPosition.x-5, global.siloPosition.y-6},{global.siloPosition.x+6, global.siloPosition.y+6}}}) do
             entity.destroy()
         end
 
@@ -18,7 +18,7 @@ local function CreateRocketSilo(surface, chunkArea)
         local i = 1
         for dx = -6,6 do
             for dy = -7,6 do
-                tiles[i] = {name = "grass", position = {SILO_POSITION.x+dx, SILO_POSITION.y+dy}}
+                tiles[i] = {name = "grass", position = {global.siloPosition.x+dx, global.siloPosition.y+dy}}
                 i=i+1
             end
         end
@@ -27,14 +27,14 @@ local function CreateRocketSilo(surface, chunkArea)
         i = 1
         for dx = -5,5 do
             for dy = -6,5 do
-                tiles[i] = {name = "concrete", position = {SILO_POSITION.x+dx, SILO_POSITION.y+dy}}
+                tiles[i] = {name = "concrete", position = {global.siloPosition.x+dx, global.siloPosition.y+dy}}
                 i=i+1
             end
         end
         surface.set_tiles(tiles, true)
 
         -- Create silo and assign to main force
-        local silo = surface.create_entity{name = "rocket-silo", position = {SILO_POSITION.x+0.5, SILO_POSITION.y}, force = MAIN_FORCE}
+        local silo = surface.create_entity{name = "rocket-silo", position = {global.siloPosition.x+0.5, global.siloPosition.y}, force = MAIN_FORCE}
         silo.destructible = false
         silo.minable = false
     end
@@ -58,11 +58,11 @@ function GenerateRocketSiloChunk(event)
     local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
                              y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
     local safeArea = {left_top=
-                        {x=SILO_POSITION.x-150,
-                         y=SILO_POSITION.y-150},
+                        {x=global.siloPosition.x-150,
+                         y=global.siloPosition.y-150},
                       right_bottom=
-                        {x=SILO_POSITION.x+150,
-                         y=SILO_POSITION.y+150}}
+                        {x=global.siloPosition.x+150,
+                         y=global.siloPosition.y+150}}
                              
 
     -- Clear enemies directly next to the rocket
@@ -74,9 +74,9 @@ function GenerateRocketSiloChunk(event)
 
     -- Create rocket silo
     CreateRocketSilo(surface, chunkArea)
-    CreateCropCircle(surface, SILO_POSITION, chunkArea, 40)
+    CreateCropCircle(surface, global.siloPosition, chunkArea, 40)
 end
 
 function ChartRocketSiloArea(force)
-    force.chart(game.surfaces["nauvis"], {{SILO_POSITION.x-(CHUNK_SIZE*2), SILO_POSITION.y-(CHUNK_SIZE*2)}, {SILO_POSITION.x+(CHUNK_SIZE*2), SILO_POSITION.y+(CHUNK_SIZE*2)}})
+    force.chart(game.surfaces["nauvis"], {{global.siloPosition.x-(CHUNK_SIZE*2), global.siloPosition.y-(CHUNK_SIZE*2)}, {global.siloPosition.x+(CHUNK_SIZE*2), global.siloPosition.y+(CHUNK_SIZE*2)}})
 end

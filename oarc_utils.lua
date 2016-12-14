@@ -388,19 +388,29 @@ function GivePlayerLongReach(player)
     -- player.character.character_resource_reach_distance_bonus  = RESOURCE_DIST_BONUS
 end
 
--- This technically creates a position in a diamon shape I think?
+
 function SetRandomSiloPosition()
+    if (global.siloPosition == nil) then
+        -- Get an X,Y on a circle far away.
+        distX = math.random(0,SILO_CHUNK_DISTANCE_X)
+        distY = RandomNegPos() * math.floor(math.sqrt(SILO_CHUNK_DISTANCE_X^2 - distX^2))
+        distX = RandomNegPos() * distX
 
-    -- Get an X,Y on a circle far away.
-    distX = math.random(0,SILO_CHUNK_DISTANCE_X)
-    distY = math.floor(math.sqrt(distX^2 + SILO_CHUNK_DISTANCE_X^2))
-
-    -- Set those values.
-    SILO_DISTANCE_X = distX*CHUNK_SIZE + CHUNK_SIZE/2
-    SILO_DISTANCE_Y = distY*CHUNK_SIZE + CHUNK_SIZE/2
-    SILO_POSITION = {x = SILO_DISTANCE_X, y = SILO_DISTANCE_Y}
-
+        -- Set those values.
+        local siloX = distX*CHUNK_SIZE + CHUNK_SIZE/2
+        local siloY = distY*CHUNK_SIZE + CHUNK_SIZE/2
+        global.siloPosition = {x = siloX, y = siloY}
+    end
 end
+
+-- Use preset value
+function SetFixedSiloPosition()
+    if (global.siloPosition == nil) then
+        global.siloPosition = SILO_POSITION
+    end
+end
+
+
 
 
 --------------------------------------------------------------------------------
