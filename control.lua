@@ -190,6 +190,10 @@ script.on_event(defines.events.on_player_respawned, function(event)
     else 
         SeparateSpawnsPlayerRespawned(event)
     end
+
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
