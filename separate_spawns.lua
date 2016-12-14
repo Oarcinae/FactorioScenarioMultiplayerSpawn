@@ -133,6 +133,8 @@ function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
     if (player.online_time < MIN_ONLINE_TIME) then
 
+        -- TODO dump items into a chest.
+
         -- Clear out global variables for that player???
         if (global.playerSpawns[player.name] ~= nil) then
             global.playerSpawns[player.name] = nil
@@ -154,6 +156,16 @@ function FindUnusedSpawns(event)
         if (global.playerCooldowns[player.name] ~= nil) then
             global.playerCooldowns[player.name] = nil
         end
+
+        -- Remove from shared spawn player slots (need to search all)
+        for _,sharedSpawn in pairs(global.sharedSpawns) do
+            for key,playerName in pairs(sharedSpawn.players) do
+                if (player.name == playerName) then
+                    sharedSpawn.players[key] = nil;
+                end
+            end
+        end
+
 
         -- Remove the character completely
         game.remove_offline_players({player})

@@ -5,7 +5,8 @@
 -- Messages
 --------------------------------------------------------------------------------
 
-WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
+WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
+-- WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach"
@@ -25,7 +26,7 @@ WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
 WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
 
 
-SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (Still in BETA)"
+SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (Always in BETA)"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
 SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
