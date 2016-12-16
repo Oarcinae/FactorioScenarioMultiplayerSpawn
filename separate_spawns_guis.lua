@@ -29,7 +29,7 @@ function DisplayWelcomeTextGui(player)
     player.gui.center.add{name = "welcome_msg",
                             type = "frame",
                             direction = "vertical",
-                            caption="Welcome to Oarc's Server"}
+                            caption=WELCOME_MSG_TITLE}
     local wGui = player.gui.center.welcome_msg
 
     wGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
