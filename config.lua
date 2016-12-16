@@ -88,6 +88,9 @@ START_COAL_AMOUNT = 1500
 START_OIL_AMOUNT = 30000
 
 
+-- Start resource position and size
+MAX_START_RESOURCE_PATCH_SIZE = 15
+
 ---------------------------------------
 -- Safe Spawn Area Options
 ---------------------------------------
@@ -177,6 +180,11 @@ BUILD_DIST_BONUS = 15
 REACH_DIST_BONUS = BUILD_DIST_BONUS
 RESOURCE_DIST_BONUS = 2
 
+--------------------------------------------------------------------------------
+-- Autofill Options
+--------------------------------------------------------------------------------
+
+AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 --------------------------------------------------------------------------------
 -- Use rso_config and rso_resourece_config for RSO config settings

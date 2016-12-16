@@ -461,7 +461,7 @@ function AutofillTurret(player, turret)
     local mainInv = player.get_inventory(defines.inventory.player_main)
 
     -- Attempt to transfer some ammo
-    local ret = TransferItemMultipleTypes(mainInv, turret, {"piercing-rounds-magazine","firearm-magazine"}, 25)
+    local ret = TransferItemMultipleTypes(mainInv, turret, {"piercing-rounds-magazine","firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
 
     -- Check the result and print the right text to inform the user what happened.
     if (ret > 0) then

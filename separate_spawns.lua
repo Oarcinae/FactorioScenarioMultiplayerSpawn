@@ -280,9 +280,11 @@ function GenerateStartingResources(player)
     surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
                     position={player.position.x-30, player.position.y+2}})
 
-    for y=0, 15 do
-        for x=0, 15 do
-            if ((x-7)^2 + (y - 7)^2 < 7^2) then
+
+    local midPoint = math.floor(MAX_START_RESOURCE_PATCH_SIZE/2)
+    for y=0, MAX_START_RESOURCE_PATCH_SIZE do
+        for x=0, MAX_START_RESOURCE_PATCH_SIZE do
+            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
                 surface.create_entity({name="iron-ore", amount=START_IRON_AMOUNT,
                     position={ironOrePos.x+x, ironOrePos.y+y}})
                 surface.create_entity({name="copper-ore", amount=START_COPPER_AMOUNT,
