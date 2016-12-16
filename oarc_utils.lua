@@ -466,7 +466,7 @@ function AutofillTurret(player, turret)
     -- Check the result and print the right text to inform the user what happened.
     if (ret > 0) then
         -- Inserted ammo successfully
-        FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red) 
+        -- FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red)
     elseif (ret == -1) then
         FlyingText("Out of ammo!", turret.position, my_color_red) 
     elseif (ret == -2) then

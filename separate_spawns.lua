@@ -257,45 +257,73 @@ function GenerateStartingResources(player)
     local surface = player.surface
 
     -- Generate stone
-    local stonePos = {x=player.position.x-25,
-                  y=player.position.y-31}
+    local stonePos = {x=player.position.x+START_RESOURCE_STONE_POS_X,
+                  y=player.position.y+START_RESOURCE_STONE_POS_Y}
 
     -- Generate coal
-    local coalPos = {x=player.position.x-25,
-                  y=player.position.y-16}
+    local coalPos = {x=player.position.x+START_RESOURCE_COAL_POS_X,
+                  y=player.position.y+START_RESOURCE_COAL_POS_Y}
 
     -- Generate copper ore
-    local copperOrePos = {x=player.position.x-25,
-                  y=player.position.y+0}
+    local copperOrePos = {x=player.position.x+START_RESOURCE_COPPER_POS_X,
+                  y=player.position.y+START_RESOURCE_COPPER_POS_Y}
                   
     -- Generate iron ore
-    local ironOrePos = {x=player.position.x-25,
-                  y=player.position.y+15}
+    local ironOrePos = {x=player.position.x+START_RESOURCE_IRON_POS_X,
+                  y=player.position.y+START_RESOURCE_IRON_POS_Y}
 
     -- Tree generation is taken care of in chunk generation
 
     -- Generate oil patches
     surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={player.position.x-30, player.position.y-2}})
+                    position={player.position.x+START_RESOURCE_OIL_POS_X, player.position.y+START_RESOURCE_OIL_POS_Y-2}})
     surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={player.position.x-30, player.position.y+2}})
+                    position={player.position.x+START_RESOURCE_OIL_POS_X, player.position.y+START_RESOURCE_OIL_POS_Y+2}})
 
 
-    local midPoint = math.floor(MAX_START_RESOURCE_PATCH_SIZE/2)
-    for y=0, MAX_START_RESOURCE_PATCH_SIZE do
-        for x=0, MAX_START_RESOURCE_PATCH_SIZE do
+    local midPoint = math.floor(START_RESOURCE_STONE_SIZE/2)
+    for y=0, START_RESOURCE_STONE_SIZE do
+        for x=0, START_RESOURCE_STONE_SIZE do
             if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
-                surface.create_entity({name="iron-ore", amount=START_IRON_AMOUNT,
-                    position={ironOrePos.x+x, ironOrePos.y+y}})
-                surface.create_entity({name="copper-ore", amount=START_COPPER_AMOUNT,
-                    position={copperOrePos.x+x, copperOrePos.y+y}})
                 surface.create_entity({name="stone", amount=START_STONE_AMOUNT,
                     position={stonePos.x+x, stonePos.y+y}})
+            end
+        end
+    end
+
+    local midPoint = math.floor(START_RESOURCE_COAL_SIZE/2)
+    for y=0, START_RESOURCE_COAL_SIZE do
+        for x=0, START_RESOURCE_COAL_SIZE do
+            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
                 surface.create_entity({name="coal", amount=START_COAL_AMOUNT,
                     position={coalPos.x+x, coalPos.y+y}})
             end
         end
     end
+
+    local midPoint = math.floor(START_RESOURCE_COPPER_SIZE/2)
+    for y=0, START_RESOURCE_COPPER_SIZE do
+        for x=0, START_RESOURCE_COPPER_SIZE do
+            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
+                surface.create_entity({name="copper-ore", amount=START_COPPER_AMOUNT,
+                    position={copperOrePos.x+x, copperOrePos.y+y}})
+            end
+        end
+    end
+
+    local midPoint = math.floor(START_RESOURCE_IRON_SIZE/2)
+    for y=0, START_RESOURCE_IRON_SIZE do
+        for x=0, START_RESOURCE_IRON_SIZE do
+            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
+                surface.create_entity({name="iron-ore", amount=START_IRON_AMOUNT,
+                    position={ironOrePos.x+x, ironOrePos.y+y}})
+            end
+        end
+    end
+
+
+
+
 end
 
 function DoesPlayerHaveCustomSpawn(player)

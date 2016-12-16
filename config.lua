@@ -5,15 +5,15 @@
 -- Messages
 --------------------------------------------------------------------------------
 
-WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
+-- WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
+WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach"
 -- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
-WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
+-- WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
+WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
@@ -81,7 +81,7 @@ FAR_MAX_DIST = 200 --125
 ---------------------------------------
 
 -- Start resource amounts
-START_IRON_AMOUNT = 1500
+START_IRON_AMOUNT = 1800
 START_COPPER_AMOUNT = 1500
 START_STONE_AMOUNT = 1500
 START_COAL_AMOUNT = 1500
@@ -89,7 +89,25 @@ START_OIL_AMOUNT = 30000
 
 
 -- Start resource position and size
-MAX_START_RESOURCE_PATCH_SIZE = 15
+-- Position is relative to player starting location
+START_RESOURCE_STONE_POS_X = -25
+START_RESOURCE_STONE_POS_Y = -31
+START_RESOURCE_STONE_SIZE = 15
+
+START_RESOURCE_COAL_POS_X = -25
+START_RESOURCE_COAL_POS_Y = -16
+START_RESOURCE_COAL_SIZE = 15
+
+START_RESOURCE_COPPER_POS_X = -25
+START_RESOURCE_COPPER_POS_Y = 0
+START_RESOURCE_COPPER_SIZE = 15
+
+START_RESOURCE_IRON_POS_X = -25
+START_RESOURCE_IRON_POS_Y = 15
+START_RESOURCE_IRON_SIZE = 15
+
+START_RESOURCE_OIL_POS_X = -30
+START_RESOURCE_OIL_POS_Y = 0
 
 ---------------------------------------
 -- Safe Spawn Area Options
