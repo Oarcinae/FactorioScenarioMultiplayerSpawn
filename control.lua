@@ -96,6 +96,12 @@ script.on_init(function(event)
     if FRONTIER_ROCKET_SILO_MODE then
         ChartRocketSiloArea(game.forces[MAIN_FORCE])
     end
+
+    -- local entityTest = game.surfaces["nauvis"].create_entity({name = "big-ship-wreck-1", position = {0, 0}, force = "neutral", direction = 0})
+    -- game.surfaces["nauvis"].create_entity({name="flying-text", position={0,0}, text="Hello world", color={r=0.5,g=1,b=1}})
+    -- local entityEnvTest = entityTest.get_inventory(defines.inventory.chest)
+    -- entityEnvTest.insert{name="iron-plate", count=3}
+
 end)
 
 
@@ -201,6 +207,13 @@ script.on_event(defines.events.on_player_left_game, function(event)
         FindUnusedSpawns(event)
     end
 end)
+
+script.on_event(defines.events.on_built_entity, function(event)
+    if ENABLE_AUTOFILL then
+        Autofill(event)
+    end
+end)
+
 
 
 ----------------------------------------

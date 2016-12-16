@@ -12,12 +12,13 @@ GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an 
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach"
 -- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
-
+WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
+-- WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.2.2):"
-OTHER_MSG2 = "Long-reach soft mod, random silo position, limited # players joining a spawn."
+OTHER_MSG1 = "Latest updates in this scenario version (0.2.4):"
+OTHER_MSG2 = "Autofill (turrets + vehicles)."
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -36,10 +37,10 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 -- will probably break the frontier rocket silo mode
 --------------------------------------------------------------------------------
 
--- Separate spawns
+-- Frontier style rocket silo mode
 FRONTIER_ROCKET_SILO_MODE = true
 
--- Frontier style rocket silo mode
+-- Separate spawns
 ENABLE_SEPARATE_SPAWNS = true
 
 -- Enable Scenario version of RSO
@@ -56,6 +57,9 @@ ENABLE_TAGS = true
 
 -- Enable Long Reach
 ENABLE_LONGREACH = true
+
+-- Enable Autofill
+ENABLE_AUTOFILL = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options

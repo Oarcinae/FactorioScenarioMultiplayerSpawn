@@ -50,6 +50,7 @@ my_spacer_style = {
 my_small_button_style = {
     font = "default-small-semibold"
 }
+my_color_red = {r=1,g=0.1,b=0.1}
 
 
 --------------------------------------------------------------------------------
@@ -61,6 +62,17 @@ my_small_button_style = {
 function DebugPrint(msg)
     if ((game.players["Oarc"] ~= nil) and (global.oarcDebugEnabled)) then
         game.players["Oarc"].print("DEBUG: " .. msg)
+    end
+end
+
+-- Prints flying text.
+-- Color is optional
+function FlyingText(msg, pos, color) 
+    local surface = game.surfaces["nauvis"]
+    if color == nil then
+        surface.create_entity({ name = "flying-text", position = pos, text = msg })
+    else
+        surface.create_entity({ name = "flying-text", position = pos, text = msg, color = color })
     end
 end
 
@@ -410,7 +422,76 @@ function SetFixedSiloPosition()
     end
 end
 
+-- Transfer Items Between Inventory
+-- Returns the number of items that were successfully transferred.
+-- Returns -1 if item not available.
+-- Returns -2 if can't place item into destInv (ERROR)
+function TransferItems(srcInv, destEntity, itemStack)
+    -- Check if item is in srcInv
+    if (srcInv.get_item_count(itemStack.name) == 0) then
+        return -1
+    end
 
+    -- Check if can insert into destInv
+    if (not destEntity.can_insert(itemStack)) then
+        return -2
+    end
+    
+    -- Insert items
+    local itemsRemoved = srcInv.remove(itemStack)
+    itemStack.count = itemsRemoved
+    return destEntity.insert(itemStack)
+end
+
+-- Attempts to transfer at least some of one type of item from an array of items.
+-- Use this to try transferring several items in order
+-- It returns once it successfully inserts at least some of one type.
+function TransferItemMultipleTypes(srcInv, destEntity, itemNameArray, itemCount)
+    local ret = 0
+    for _,itemName in pairs(itemNameArray) do
+        ret = TransferItems(srcInv, destEntity, {name=itemName, count=itemCount})
+        if (ret > 0) then
+            return ret -- Return the value succesfully transferred
+        end
+    end
+    return ret -- Return the last error code
+end
+
+function AutofillTurret(player, turret)
+    local mainInv = player.get_inventory(defines.inventory.player_main)
+
+    -- Attempt to transfer some ammo
+    local ret = TransferItemMultipleTypes(mainInv, turret, {"piercing-rounds-magazine","firearm-magazine"}, 25)
+
+    -- Check the result and print the right text to inform the user what happened.
+    if (ret > 0) then
+        -- Inserted ammo successfully
+        FlyingText("Inserted ammo x" .. ret, turret.position, my_color_red) 
+    elseif (ret == -1) then
+        FlyingText("Out of ammo!", turret.position, my_color_red) 
+    elseif (ret == -2) then
+        FlyingText("Autofill ERROR! - Report this bug!", turret.position, my_color_red)
+    end
+end
+
+function AutoFillVehicle(player, vehicle)
+    local mainInv = player.get_inventory(defines.inventory.player_main)
+
+    -- Attempt to transfer some fuel
+    if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "diesel-locomotive")) then
+        TransferItemMultipleTypes(mainInv, vehicle, {"raw-wood", "coal", "solid-fuel"}, 50)
+    end
+
+    -- Attempt to transfer some ammo
+    if ((vehicle.name == "car") or (vehicle.name == "tank")) then
+        TransferItemMultipleTypes(mainInv, vehicle, {"piercing-rounds-magazine","firearm-magazine"}, 100)
+    end
+
+    -- Attempt to transfer some tank shells
+    if (vehicle.name == "tank") then
+        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-cannon-shell", "cannon-shell"}, 100)
+    end
+end
 
 
 --------------------------------------------------------------------------------
@@ -448,6 +529,19 @@ function PlayerSpawnItems(event)
     GivePlayerStarterItems(game.players[event.player_index])
 end
 
+-- Autofill softmod
+function Autofill(event)
+    local player = game.players[event.player_index]
+    local eventEntity = event.created_entity
+
+    if (eventEntity.name == "gun-turret") then
+        AutofillTurret(player, eventEntity)
+    end
+
+    if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "diesel-locomotive")) then
+        AutoFillVehicle(player, eventEntity)
+    end
+end
 
 --------------------------------------------------------------------------------
 -- UNUSED CODE
