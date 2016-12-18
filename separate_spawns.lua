@@ -284,7 +284,7 @@ function GenerateStartingResources(player)
     local midPoint = math.floor(START_RESOURCE_STONE_SIZE/2)
     for y=0, START_RESOURCE_STONE_SIZE do
         for x=0, START_RESOURCE_STONE_SIZE do
-            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
+            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
                 surface.create_entity({name="stone", amount=START_STONE_AMOUNT,
                     position={stonePos.x+x, stonePos.y+y}})
             end
@@ -294,7 +294,7 @@ function GenerateStartingResources(player)
     local midPoint = math.floor(START_RESOURCE_COAL_SIZE/2)
     for y=0, START_RESOURCE_COAL_SIZE do
         for x=0, START_RESOURCE_COAL_SIZE do
-            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
+            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
                 surface.create_entity({name="coal", amount=START_COAL_AMOUNT,
                     position={coalPos.x+x, coalPos.y+y}})
             end
@@ -304,7 +304,7 @@ function GenerateStartingResources(player)
     local midPoint = math.floor(START_RESOURCE_COPPER_SIZE/2)
     for y=0, START_RESOURCE_COPPER_SIZE do
         for x=0, START_RESOURCE_COPPER_SIZE do
-            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
+            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
                 surface.create_entity({name="copper-ore", amount=START_COPPER_AMOUNT,
                     position={copperOrePos.x+x, copperOrePos.y+y}})
             end
@@ -314,7 +314,7 @@ function GenerateStartingResources(player)
     local midPoint = math.floor(START_RESOURCE_IRON_SIZE/2)
     for y=0, START_RESOURCE_IRON_SIZE do
         for x=0, START_RESOURCE_IRON_SIZE do
-            if ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) then
+            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
                 surface.create_entity({name="iron-ore", amount=START_IRON_AMOUNT,
                     position={ironOrePos.x+x, ironOrePos.y+y}})
             end

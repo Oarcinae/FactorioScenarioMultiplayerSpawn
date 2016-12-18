@@ -5,15 +5,15 @@
 -- Messages
 --------------------------------------------------------------------------------
 
--- WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
-WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
+WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
+-- WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach"
 -- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
--- WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
-WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
+WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
+-- WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
@@ -87,6 +87,10 @@ START_STONE_AMOUNT = 1500
 START_COAL_AMOUNT = 1500
 START_OIL_AMOUNT = 30000
 
+-- Stat resource shape
+-- If this is true, it will be a circle
+-- If false, it will be a square
+ENABLE_RESOURCE_SHAPE_CIRCLE = true
 
 -- Start resource position and size
 -- Position is relative to player starting location
