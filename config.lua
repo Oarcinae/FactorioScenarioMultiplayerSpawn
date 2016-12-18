@@ -9,7 +9,7 @@ WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 -- WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach"
+MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill"
 -- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
@@ -17,7 +17,7 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.2.4):"
+OTHER_MSG1 = "Latest updates in this scenario version (0.2.5):"
 OTHER_MSG2 = "Autofill (turrets + vehicles)."
 
 
@@ -112,6 +112,9 @@ START_RESOURCE_IRON_SIZE = 15
 
 START_RESOURCE_OIL_POS_X = -30
 START_RESOURCE_OIL_POS_Y = 0
+
+-- Force the land area circle at the spawn to be fully grass
+ENABLE_SPAWN_FORCE_GRASS = true
 
 ---------------------------------------
 -- Safe Spawn Area Options
