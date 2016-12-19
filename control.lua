@@ -34,6 +34,7 @@ require("separate_spawns_guis")
 require("rso_control")
 require("frontier_silo")
 require("tag")
+require("bps")
 
 
 --------------------------------------------------------------------------------
@@ -97,11 +98,9 @@ script.on_init(function(event)
         ChartRocketSiloArea(game.forces[MAIN_FORCE])
     end
 
-    -- local entityTest = game.surfaces["nauvis"].create_entity({name = "big-ship-wreck-1", position = {0, 0}, force = "neutral", direction = 0})
-    -- game.surfaces["nauvis"].create_entity({name="flying-text", position={0,0}, text="Hello world", color={r=0.5,g=1,b=1}})
-    -- local entityEnvTest = entityTest.get_inventory(defines.inventory.chest)
-    -- entityEnvTest.insert{name="iron-plate", count=3}
-
+    if ENABLE_BLUEPRINT_STRING then
+        bps_init()
+    end
 end)
 
 
@@ -153,6 +152,10 @@ script.on_event(defines.events.on_gui_click, function(event)
         SpawnCtrlGuiClick(event)
         SharedSpwnOptsGuiClick(event)
     end
+
+    if ENABLE_BLUEPRINT_STRING then
+        bps_on_gui_click(event)
+    end
 end)
 
 
@@ -181,6 +184,11 @@ script.on_event(defines.events.on_player_created, function(event)
         PlayerSpawnItems(event)
     else
         SeparateSpawnsPlayerCreated(event)
+    end
+
+    -- Not sure if this should be here or in player joined....
+    if ENABLE_BLUEPRINT_STRING then
+        bps_player_joined(event)
     end
 end)
 
@@ -222,5 +230,19 @@ end)
 script.on_event(defines.events.on_research_finished, function(event)
     if FRONTIER_ROCKET_SILO_MODE then
         RemoveRocketSiloRecipe(event)
+    end
+
+    if ENABLE_BLUEPRINT_STRING then
+        bps_on_research_finished(event)
+    end
+end)
+
+
+----------------------------------------
+-- BPS Specific Event
+----------------------------------------
+script.on_event(defines.events.on_robot_built_entity, function(event)
+    if ENABLE_BLUEPRINT_STRING then
+        bps_on_robot_built_entity(event)
     end
 end)

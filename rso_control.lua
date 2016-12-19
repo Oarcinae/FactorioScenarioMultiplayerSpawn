@@ -2,8 +2,8 @@ require("rso_config")
 require("util")
 require("rso_resource_config")
 
-local MB=require "metaball"
-local drand = require 'drand'
+local MB=require "locale/rso/metaball"
+local drand = require 'locale/rso/drand'
 local rng = drand.mwvc
 if not deterministic then rng = drand.sys_rand end
 

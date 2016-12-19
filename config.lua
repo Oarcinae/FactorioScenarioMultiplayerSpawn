@@ -5,20 +5,20 @@
 -- Messages
 --------------------------------------------------------------------------------
 
-WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
+-- WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
+WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill"
 -- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
-WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
+-- WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
+WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
 OTHER_MSG1 = "Latest updates in this scenario version (0.2.5):"
-OTHER_MSG2 = "Autofill (turrets + vehicles)."
+OTHER_MSG2 = "Autofill (turrets/vehicles)"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -60,6 +60,9 @@ ENABLE_LONGREACH = true
 
 -- Enable Autofill
 ENABLE_AUTOFILL = true
+
+-- Enable BPS
+ENABLE_BLUEPRINT_STRING = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options

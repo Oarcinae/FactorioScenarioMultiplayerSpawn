@@ -32,7 +32,7 @@ deterministic = true           	-- set to false to use system for all decisions 
 -- endless_resource_mode = false   -- if true, the size of each resource is modified by the following modifier. Use with the endless resources mod.
 endless_resource_mode_sizeModifier = 0.80
 
-disableEnemyExpansion = false		-- allows for disabling of in-game biter base building
+disableEnemyExpansion = true		-- allows for disabling of in-game biter base building
 use_RSO_biter_spawning = true    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
 use_vanilla_biter_spawning = false	-- enables using of vanilla spawning 
 
