@@ -16,7 +16,7 @@ global_size_mult = 1			-- multiply size for all ores, doesn't affect starting ar
 absolute_enemy_chance = 3	      -- chance to spawn enemies per sector (can be more then one base if spawned)
 enemy_base_size_multiplier = 1  -- all base sizes will be multiplied by this - larger number means bigger bases
 
-multi_resource_active = true			-- global switch for multi resource chances
+multi_resource_active = false			-- global switch for multi resource chances
 multi_resource_richness_factor = 0.60 	-- any additional resource is multiplied by this value times resources-1
 multi_resource_size_factor = 0.90
 multi_resource_chance_diminish = 0.6	-- diminishing effect factor on multi_resource_chance
@@ -32,7 +32,10 @@ deterministic = true           	-- set to false to use system for all decisions 
 -- endless_resource_mode = false   -- if true, the size of each resource is modified by the following modifier. Use with the endless resources mod.
 endless_resource_mode_sizeModifier = 0.80
 
-disableEnemyExpansion = true		-- allows for disabling of in-game biter base building
+-- This setting isn't used anywhere in the soft mod version of RSO
+-- Just set it from Oarc's config.lua
+-- disableEnemyExpansion = not ENEMY_EXPANSION		-- allows for disabling of in-game biter base building
+
 use_RSO_biter_spawning = true    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
 use_vanilla_biter_spawning = false	-- enables using of vanilla spawning 
 

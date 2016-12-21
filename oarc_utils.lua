@@ -543,6 +543,14 @@ function Autofill(event)
     end
 end
 
+-- General purpose event function for removing a particular recipe
+function RemoveRecipe(event, recipeName)
+    local recipes = event.research.force.recipes
+    if recipes[recipeName] then
+        recipes[recipeName].enabled = false
+    end
+end
+
 --------------------------------------------------------------------------------
 -- UNUSED CODE
 -- Either didn't work, or not used or not tested....

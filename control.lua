@@ -8,7 +8,7 @@
 -- 
 -- Credit:
 --  RSO mod to RSO author - Orzelek - I contacted him via the forum
---  Tags - Taken from WOGs scenario
+--  Tags - Taken from WOGs scenario 
 --  Event - Taken from WOGs scenario (looks like original source was 3Ra)
 --  Rocket Silo - Taken from Frontier as an idea
 --
@@ -84,6 +84,11 @@ end
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
+
+    -- Configures the map settings for enemies
+    -- This controls evolution growth factors and enemy expansion settings.
+    ConfigureAlienStartingParams()
+
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
     end
@@ -235,6 +240,9 @@ script.on_event(defines.events.on_research_finished, function(event)
     if ENABLE_BLUEPRINT_STRING then
         bps_on_research_finished(event)
     end
+
+    -- Example of how to remove a particular recipe:
+    -- RemoveRecipe(event, "beacon")
 end)
 
 

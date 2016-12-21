@@ -42,10 +42,7 @@ end
 
 -- Remove rocket silo from recipes
 function RemoveRocketSiloRecipe(event)
-    local recipes = event.research.force.recipes
-    if recipes["rocket-silo"] then
-        recipes["rocket-silo"].enabled = false
-    end
+    RemoveRecipe(event, "rocket-silo")
 end
 
 -- Generates the rocket silo during chunk generation event
