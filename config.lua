@@ -7,7 +7,7 @@
 --------------------------------------------------------------------------------
 
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG = "Welcome to Oarc's official server! Follow @_Oarc_ for server updates."
+-- WELCOME_MSG = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill, Blueprint Strings"
@@ -18,8 +18,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.2.6):"
-OTHER_MSG2 = "Blueprint String Softmod"
+OTHER_MSG1 = "Latest updates in this scenario version (0.2.7):"
+OTHER_MSG2 = "Blueprint String Softmod, Bug fix for alien settings"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -84,6 +84,7 @@ FAR_MAX_DIST = 200 --125
 -- Resource Options
 ---------------------------------------
 -- This is an example of how I set my resources in the game.
+
     -- Start resource amounts
     START_IRON_AMOUNT = 1500
     START_COPPER_AMOUNT = 1500
@@ -91,7 +92,7 @@ FAR_MAX_DIST = 200 --125
     START_COAL_AMOUNT = 1500
     START_OIL_AMOUNT = 30000
 
-    -- Stat resource shape
+    -- Start resource shape
     -- If this is true, it will be a circle
     -- If false, it will be a square
     ENABLE_RESOURCE_SHAPE_CIRCLE = true
@@ -118,8 +119,6 @@ FAR_MAX_DIST = 200 --125
     START_RESOURCE_OIL_POS_Y = 0
 
 -- This is Philip017's default settings as another example.
--- You can modify your own custom settings here and set 
--- "ENABLE_OARC_DEFAULT_RESOURCE_SETTINGS = false" to use them.
 
     -- -- Start resource amounts
     -- START_IRON_AMOUNT = 1200

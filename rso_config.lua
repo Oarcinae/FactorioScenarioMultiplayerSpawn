@@ -32,9 +32,9 @@ deterministic = true           	-- set to false to use system for all decisions 
 -- endless_resource_mode = false   -- if true, the size of each resource is modified by the following modifier. Use with the endless resources mod.
 endless_resource_mode_sizeModifier = 0.80
 
--- This setting isn't used anywhere in the soft mod version of RSO
--- Just set it from Oarc's config.lua
--- disableEnemyExpansion = not ENEMY_EXPANSION		-- allows for disabling of in-game biter base building
+-- This setting isn't used anywhere in the soft mod version of RSO -- OARC
+-- Just set it from Oarc's config.lua (look for ENEMY_EXPANSION)
+-- disableEnemyExpansion = false		-- allows for disabling of in-game biter base building
 
 use_RSO_biter_spawning = true    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
 use_vanilla_biter_spawning = false	-- enables using of vanilla spawning 
@@ -44,6 +44,7 @@ spitter_ratio_segment=1    --eg. 1 and 1 -> equal number of biters and spitters,
 
 useEnemiesInPeaceMod = false -- additional override for peace mod detection - when set to true it will spawn enemies normally, needs to have enemies enabled in peace mod
 
+-- Always leave this setting to true in this soft mod scenario version! -- OARC
 ignoreMapGenSettings = true -- stops the default behaviour of reading map gen settings
 
 useResourceCollisionDetection = true	-- enables avoidace calculations to reduce ores overlaping of each other
