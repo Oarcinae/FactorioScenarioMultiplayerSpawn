@@ -29,7 +29,7 @@ local function fillVanillaConfig()
     config["copper-ore"] = {
         type="resource-ore",
         
-        allotment=80,
+        allotment=90,
         spawns_per_region={min=1, max=1},
         richness=10000,
         size={min=20, max=30},

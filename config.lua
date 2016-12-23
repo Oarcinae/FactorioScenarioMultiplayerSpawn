@@ -6,20 +6,20 @@
 -- Messages
 --------------------------------------------------------------------------------
 
-WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
+-- WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
+WELCOME_MSG = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 -- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill, Blueprint Strings"
 -- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
-WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
--- WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
+-- WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
+WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.2.7):"
-OTHER_MSG2 = "Blueprint String Softmod, Bug fix for alien settings"
+OTHER_MSG1 = "Latest updates in this scenario version (0.2.8):"
+OTHER_MSG2 = "New spawn layout. RSO resource richness reduced"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -83,77 +83,42 @@ FAR_MAX_DIST = 200 --125
 ---------------------------------------
 -- Resource Options
 ---------------------------------------
--- This is an example of how I set my resources in the game.
+WATER_SPAWN_OFFSET_X = -4
+WATER_SPAWN_OFFSET_Y = -38
+WATER_SPAWN_LENGTH = 8
 
-    -- Start resource amounts
-    START_IRON_AMOUNT = 1500
-    START_COPPER_AMOUNT = 1500
-    START_STONE_AMOUNT = 1500
-    START_COAL_AMOUNT = 1500
-    START_OIL_AMOUNT = 30000
+-- Start resource amounts
+START_IRON_AMOUNT = 1500
+START_COPPER_AMOUNT = 1500
+START_STONE_AMOUNT = 1500
+START_COAL_AMOUNT = 1500
+START_OIL_AMOUNT = 30000
 
-    -- Start resource shape
-    -- If this is true, it will be a circle
-    -- If false, it will be a square
-    ENABLE_RESOURCE_SHAPE_CIRCLE = true
+-- Start resource shape
+-- If this is true, it will be a circle
+-- If false, it will be a square
+ENABLE_RESOURCE_SHAPE_CIRCLE = true
 
-    -- Start resource position and size
-    -- Position is relative to player starting location
-    START_RESOURCE_STONE_POS_X = -25
-    START_RESOURCE_STONE_POS_Y = -31
-    START_RESOURCE_STONE_SIZE = 15
+-- Start resource position and size
+-- Position is relative to player starting location
+START_RESOURCE_STONE_POS_X = -27
+START_RESOURCE_STONE_POS_Y = -34
+START_RESOURCE_STONE_SIZE = 12
 
-    START_RESOURCE_COAL_POS_X = -25
-    START_RESOURCE_COAL_POS_Y = -16
-    START_RESOURCE_COAL_SIZE = 15
+START_RESOURCE_COAL_POS_X = -27
+START_RESOURCE_COAL_POS_Y = -20
+START_RESOURCE_COAL_SIZE = 12
 
-    START_RESOURCE_COPPER_POS_X = -25
-    START_RESOURCE_COPPER_POS_Y = 0
-    START_RESOURCE_COPPER_SIZE = 15
+START_RESOURCE_COPPER_POS_X = -28
+START_RESOURCE_COPPER_POS_Y = -3
+START_RESOURCE_COPPER_SIZE = 14
 
-    START_RESOURCE_IRON_POS_X = -25
-    START_RESOURCE_IRON_POS_Y = 15
-    START_RESOURCE_IRON_SIZE = 15
+START_RESOURCE_IRON_POS_X = -29
+START_RESOURCE_IRON_POS_Y = 16
+START_RESOURCE_IRON_SIZE = 16
 
-    START_RESOURCE_OIL_POS_X = -30
-    START_RESOURCE_OIL_POS_Y = 0
-
--- This is Philip017's default settings as another example.
-
-    -- -- Start resource amounts
-    -- START_IRON_AMOUNT = 1200
-    -- START_COPPER_AMOUNT = 1200
-    -- START_STONE_AMOUNT = 1500
-    -- START_COAL_AMOUNT = 1500
-    -- START_OIL_AMOUNT = 30000
-
-    -- -- Stat resource shape
-    -- -- If this is true, it will be a circle
-    -- -- If false, it will be a square
-    -- ENABLE_RESOURCE_SHAPE_CIRCLE = true
-
-    -- -- Start resource position and size
-    -- -- Position is relative to player starting location
-    -- START_RESOURCE_STONE_POS_X = -22
-    -- START_RESOURCE_STONE_POS_Y = -30
-    -- START_RESOURCE_STONE_SIZE = 12
-
-    -- START_RESOURCE_COAL_POS_X = -22
-    -- START_RESOURCE_COAL_POS_Y = -17
-    -- START_RESOURCE_COAL_SIZE = 12
-
-    -- START_RESOURCE_COPPER_POS_X = -23
-    -- START_RESOURCE_COPPER_POS_Y = -4
-    -- START_RESOURCE_COPPER_SIZE = 14
-
-    -- START_RESOURCE_IRON_POS_X = -24
-    -- START_RESOURCE_IRON_POS_Y = 11
-    -- START_RESOURCE_IRON_SIZE = 16
-
-    -- START_RESOURCE_OIL_POS_X = -30
-    -- START_RESOURCE_OIL_POS_Y = 0
-
-
+START_RESOURCE_OIL_POS_X = -39
+START_RESOURCE_OIL_POS_Y = 0
 
 -- Force the land area circle at the spawn to be fully grass
 ENABLE_SPAWN_FORCE_GRASS = true
@@ -174,7 +139,7 @@ WARNING_AREA_TILE_DIST = CHUNK_SIZE*20
 WARN_AREA_REDUCTION_RATIO = 15
 
 -- Create a circle of land area for the spawn
-ENFORCE_LAND_AREA_TILE_DIST = 40
+ENFORCE_LAND_AREA_TILE_DIST = 48
 
 
 ---------------------------------------

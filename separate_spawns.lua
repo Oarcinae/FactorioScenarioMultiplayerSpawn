@@ -28,9 +28,6 @@ function SeparateSpawnsPlayerRespawned(event)
 end
 
 
-
-
-
 -- This is the main function that creates the spawn area
 -- Provides resources, land and a safe zone
 function SeparateSpawnsGenerateChunk(event)
@@ -106,22 +103,15 @@ function SeparateSpawnsGenerateChunk(event)
             end
 
             CreateCropCircle(surface, spawnPos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+            CreateCropOctagon(surface, spawnPos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
         end
 
         -- Provide a guaranteed spot of water to use for power generation
         -- A desert biome will shrink the water area!!
         if CheckIfInArea(spawnPos,chunkArea) then
-            local waterTiles = {{name = "water", position ={spawnPos.x+0,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+1,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+2,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+3,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+4,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+5,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+6,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+7,spawnPos.y-30}},
-                                {name = "water", position ={spawnPos.x+8,spawnPos.y-30}}}
-            -- DebugPrint("Setting water tiles in this chunk! " .. chunkArea.left_top.x .. "," .. chunkArea.left_top.y)
-            surface.set_tiles(waterTiles)
+            CreateWaterStrip(surface,
+                            {x=spawnPos.x+WATER_SPAWN_OFFSET_X, y=spawnPos.y+WATER_SPAWN_OFFSET_Y},
+                            WATER_SPAWN_LENGTH)
         end
     end
 end
