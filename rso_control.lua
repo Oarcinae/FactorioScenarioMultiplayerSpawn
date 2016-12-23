@@ -1,6 +1,8 @@
 require("rso_config")
 require("util")
 require("rso_resource_config")
+require("oarc_utils")
+require("config")
 
 local MB=require "locale/rso/metaball"
 local drand = require 'locale/rso/drand'
@@ -1243,7 +1245,24 @@ local function roll_chunk(surface, c_x, c_y)
 					c_center_x, c_center_y, restriction = find_intersection(surface, c_center_x, c_center_y)
 					spawn_resource_liquid(surface, resource, {x=c_center_x,y=c_center_y}, size, richness, false, restriction)
 				elseif r_config.type=="entity" then
-					spawn_entity(surface, resource, r_config, c_center_x, c_center_y)
+
+					-- OARC EDIT -- Remove spawns in any safe area!
+					local isNearSpawn = false
+					for name,spawnPos in pairs(global.uniqueSpawns) do
+				        local safeArea = {left_top=
+				                            {x=spawnPos.x-SAFE_AREA_TILE_DIST,
+				                             y=spawnPos.y-SAFE_AREA_TILE_DIST},
+				                          right_bottom=
+				                            {x=spawnPos.x+SAFE_AREA_TILE_DIST,
+				                             y=spawnPos.y+SAFE_AREA_TILE_DIST}}
+
+				        if (CheckIfInArea({x=c_center_x, y=c_center_y},safeArea)) then
+				        	isNearSpawn = true
+				        end
+                 	end
+                 	if (not isNearSpawn) then
+						spawn_entity(surface, resource, r_config, c_center_x, c_center_y)
+					end
 				end
 			else
 				debug("Resource access failed for " .. resource)
