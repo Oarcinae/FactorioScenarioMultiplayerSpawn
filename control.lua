@@ -29,7 +29,7 @@ require("locale/oarc_utils")
 require("locale/rso/rso_control")
 require("locale/frontier_silo")
 require("locale/tag")
-require("locale/bps")
+require("locale/blueprintstring/bps")
 
 -- Main Configuration File
 require("config")
