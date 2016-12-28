@@ -1,0 +1,3 @@
+[submodule "oarc_utils"]
+	path = locale
+	url = https://github.com/Oarcinae/FactorioUtils

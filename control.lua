@@ -24,17 +24,19 @@
 --      3. Put mods into their own files where possible (RSO has multiple)
 
 
--- My Scenario Includes
-require("oarc_utils")
+-- Generic Utility Includes
+require("locale/oarc_utils")
+require("locale/rso/rso_control")
+require("locale/frontier_silo")
+require("locale/tag")
+require("locale/bps")
+
+-- Main Configuration File
 require("config")
 
--- Include Mods
+-- Scenario Specific Includes
 require("separate_spawns")
 require("separate_spawns_guis")
-require("rso_control")
-require("frontier_silo")
-require("tag")
-require("bps")
 
 
 --------------------------------------------------------------------------------
@@ -177,10 +179,6 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
-    if ENABLE_RSO then
-        RSO_PlayerCreated(event)
-    end
-
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])
     end
