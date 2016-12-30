@@ -179,6 +179,8 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
+    SetOarcServerMessages(event)
+
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])
     end

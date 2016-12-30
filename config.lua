@@ -6,15 +6,11 @@
 -- Messages
 --------------------------------------------------------------------------------
 
--- WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
-WELCOME_MSG = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
+WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
--- GAME_MODE_MSG = "The current game mode is just basic vanilla!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill, Blueprint Strings"
--- MODULES_ENABLED = "Mods Enabled: Gravestone-Chests"
 
--- WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
-WELCOME_MSG_TITLE = "Welcome to Oarc's Server"
+WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
@@ -31,6 +27,12 @@ WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
 SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (Always in BETA)"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
 SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
+
+-- These are my specific welcome messages that get used only if I am the user
+-- that creates the game.
+WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server"
+
 
 --------------------------------------------------------------------------------
 -- Module Enables
