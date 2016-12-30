@@ -32,88 +32,12 @@ end
 -- Provides resources, land and a safe zone
 function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
-    if surface.name ~= "nauvis" then return end
     local chunkArea = event.area
     
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it does a few things like make the area
     -- safe and provide a guaranteed area of land and water tiles.
-    for name,spawnPos in pairs(global.playerSpawns) do
-
-        local landArea = {left_top=
-                            {x=spawnPos.x-ENFORCE_LAND_AREA_TILE_DIST,
-                             y=spawnPos.y-ENFORCE_LAND_AREA_TILE_DIST},
-                          right_bottom=
-                            {x=spawnPos.x+ENFORCE_LAND_AREA_TILE_DIST,
-                             y=spawnPos.y+ENFORCE_LAND_AREA_TILE_DIST}}
-
-        local safeArea = {left_top=
-                            {x=spawnPos.x-SAFE_AREA_TILE_DIST,
-                             y=spawnPos.y-SAFE_AREA_TILE_DIST},
-                          right_bottom=
-                            {x=spawnPos.x+SAFE_AREA_TILE_DIST,
-                             y=spawnPos.y+SAFE_AREA_TILE_DIST}}
-
-        local warningArea = {left_top=
-                                {x=spawnPos.x-WARNING_AREA_TILE_DIST,
-                                 y=spawnPos.y-WARNING_AREA_TILE_DIST},
-                            right_bottom=
-                                {x=spawnPos.x+WARNING_AREA_TILE_DIST,
-                                 y=spawnPos.y+WARNING_AREA_TILE_DIST}}
-
-        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                                 y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-
-                                 
-
-        -- Make chunks near a spawn safe by removing enemies
-        if CheckIfInArea(chunkAreaCenter,safeArea) then
-            for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, force = "enemy"}) do
-                entity.destroy()
-            end
-        
-        -- Create a warning area with reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,warningArea) then
-            local counter = 0
-            for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, force = "enemy"}) do
-                if ((counter % WARN_AREA_REDUCTION_RATIO) ~= 0) then
-                    entity.destroy()
-                end
-                counter = counter + 1
-            end
-
-            -- Remove all big and huge worms
-            for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, name = "medium-worm-turret"}) do
-                    entity.destroy()
-            end
-            for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, name = "big-worm-turret"}) do
-                    entity.destroy()
-            end
-
-        end
-
-        -- Fill in any water to make sure we have guaranteed land mass at the spawn point.
-        if CheckIfInArea(chunkAreaCenter,landArea) then
-
-            -- remove trees in the immediate areas?
-            for key, entity in pairs(surface.find_entities_filtered({area=chunkArea, type= "tree"})) do
-                if ((spawnPos.x - entity.position.x)^2 + (spawnPos.y - entity.position.y)^2 < ENFORCE_LAND_AREA_TILE_DIST^2) then
-                    entity.destroy()
-                end
-            end
-
-            CreateCropCircle(surface, spawnPos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-            CreateCropOctagon(surface, spawnPos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-        end
-
-        -- Provide a guaranteed spot of water to use for power generation
-        -- A desert biome will shrink the water area!!
-        if CheckIfInArea(spawnPos,chunkArea) then
-            CreateWaterStrip(surface,
-                            {x=spawnPos.x+WATER_SPAWN_OFFSET_X, y=spawnPos.y+WATER_SPAWN_OFFSET_Y},
-                            WATER_SPAWN_LENGTH)
-        end
-    end
+    CreateSpawnAreas(surface, chunkArea, global.uniqueSpawns)
 end
 
 
@@ -156,19 +80,27 @@ function FindUnusedSpawns(event)
             end
         end
 
-
         -- Remove the character completely
         game.remove_offline_players({player})
     end
 end
 
 
+--------------------------------------------------------------------------------
+-- NON-EVENT RELATED FUNCTIONS
+-- These should be local functions where possible!
+--------------------------------------------------------------------------------
+
+-- Add a spawn to the shared spawn global
+-- Used for tracking which players are assigned to it, where it is and if
+-- it is open for new players to join
 function CreateNewSharedSpawn(player)
     global.sharedSpawns[player.name] = {openAccess=true,
                                     position=global.playerSpawns[player.name],
                                     players={}}
 end
 
+-- Returns the number of players currently online at the shared spawn
 function GetOnlinePlayersAtSharedSpawn(ownerName)
     if (global.sharedSpawns[ownerName] ~= nil) then
 
@@ -195,7 +127,6 @@ function GetOnlinePlayersAtSharedSpawn(ownerName)
     end
 end
 
-
 -- Get the number of currently available shared spawns
 -- This means the base owner has enabled access AND the number of online players
 -- is below the threshold.
@@ -214,11 +145,8 @@ function GetNumberOfAvailableSharedSpawns()
 end
 
 
---------------------------------------------------------------------------------
--- NON-EVENT RELATED FUNCTIONS
--- These should be local functions where possible!
---------------------------------------------------------------------------------
-
+-- Initializes the globals used to track the special spawn and player
+-- status information
 function InitSpawnGlobalsAndForces()
     -- Containes an array of all player spawns
     -- A secondary array tracks whether the character will respawn there.
@@ -243,78 +171,6 @@ function InitSpawnGlobalsAndForces()
     SetCeaseFireBetweenAllForces()
 end
 
-function GenerateStartingResources(player)
-    local surface = player.surface
-
-    -- Generate stone
-    local stonePos = {x=player.position.x+START_RESOURCE_STONE_POS_X,
-                  y=player.position.y+START_RESOURCE_STONE_POS_Y}
-
-    -- Generate coal
-    local coalPos = {x=player.position.x+START_RESOURCE_COAL_POS_X,
-                  y=player.position.y+START_RESOURCE_COAL_POS_Y}
-
-    -- Generate copper ore
-    local copperOrePos = {x=player.position.x+START_RESOURCE_COPPER_POS_X,
-                  y=player.position.y+START_RESOURCE_COPPER_POS_Y}
-                  
-    -- Generate iron ore
-    local ironOrePos = {x=player.position.x+START_RESOURCE_IRON_POS_X,
-                  y=player.position.y+START_RESOURCE_IRON_POS_Y}
-
-    -- Tree generation is taken care of in chunk generation
-
-    -- Generate oil patches
-    surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={player.position.x+START_RESOURCE_OIL_POS_X, player.position.y+START_RESOURCE_OIL_POS_Y-2}})
-    surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={player.position.x+START_RESOURCE_OIL_POS_X, player.position.y+START_RESOURCE_OIL_POS_Y+2}})
-
-
-    local midPoint = math.floor(START_RESOURCE_STONE_SIZE/2)
-    for y=0, START_RESOURCE_STONE_SIZE do
-        for x=0, START_RESOURCE_STONE_SIZE do
-            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
-                surface.create_entity({name="stone", amount=START_STONE_AMOUNT,
-                    position={stonePos.x+x, stonePos.y+y}})
-            end
-        end
-    end
-
-    local midPoint = math.floor(START_RESOURCE_COAL_SIZE/2)
-    for y=0, START_RESOURCE_COAL_SIZE do
-        for x=0, START_RESOURCE_COAL_SIZE do
-            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
-                surface.create_entity({name="coal", amount=START_COAL_AMOUNT,
-                    position={coalPos.x+x, coalPos.y+y}})
-            end
-        end
-    end
-
-    local midPoint = math.floor(START_RESOURCE_COPPER_SIZE/2)
-    for y=0, START_RESOURCE_COPPER_SIZE do
-        for x=0, START_RESOURCE_COPPER_SIZE do
-            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
-                surface.create_entity({name="copper-ore", amount=START_COPPER_AMOUNT,
-                    position={copperOrePos.x+x, copperOrePos.y+y}})
-            end
-        end
-    end
-
-    local midPoint = math.floor(START_RESOURCE_IRON_SIZE/2)
-    for y=0, START_RESOURCE_IRON_SIZE do
-        for x=0, START_RESOURCE_IRON_SIZE do
-            if (((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2) or not ENABLE_RESOURCE_SHAPE_CIRCLE) then
-                surface.create_entity({name="iron-ore", amount=START_IRON_AMOUNT,
-                    position={ironOrePos.x+x, ironOrePos.y+y}})
-            end
-        end
-    end
-
-
-
-
-end
 
 function DoesPlayerHaveCustomSpawn(player)
     for name,spawnPos in pairs(global.playerSpawns) do
@@ -338,7 +194,6 @@ function SendPlayerToNewSpawnAndCreateIt(player, spawn)
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
         global.uniqueSpawns[player.name] = spawn
-        GenerateStartingResources(player)
         ClearNearbyEnemies(player, SAFE_AREA_TILE_DIST)
     else      
         DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
