@@ -44,8 +44,12 @@ end
 -- Call this if a player leaves the game
 -- Seems to be susceptiable to causing desyncs...
 function FindUnusedSpawns(event)
-    local player = game.players[event.player_index]
-    if (player.online_time < MIN_ONLINE_TIME) then
+  local player = game.players[event.player_index]
+  local chunkX = math.floor(global.playerSpawns[player.name].x/32)
+  local chunkY = math.floor(global.playerSpawns[player.name].y/32)
+
+
+  if (player.online_time < MIN_ONLINE_TIME and player.surface.is_chunk_generated({chunkX, chunkY})) then
 
         -- TODO dump items into a chest.
 
@@ -72,6 +76,7 @@ function FindUnusedSpawns(event)
         end
 
         -- Remove from shared spawn player slots (need to search all)
+        
         for _,sharedSpawn in pairs(global.sharedSpawns) do
             for key,playerName in pairs(sharedSpawn.players) do
                 if (player.name == playerName) then
