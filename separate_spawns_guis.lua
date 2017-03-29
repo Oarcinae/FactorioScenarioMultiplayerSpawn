@@ -5,8 +5,8 @@
 
 require("separate_spawns")
 
-local SPAWN_GUI_MAX_WIDTH = 960
-local SPAWN_GUI_MAX_HEIGHT = 1280
+local SPAWN_GUI_MAX_WIDTH = 450
+local SPAWN_GUI_MAX_HEIGHT = 650
 
 -- Use this for testing shared spawns...
 -- local sharedSpawnExample1 = {openAccess=true,
@@ -80,7 +80,7 @@ function DisplayWelcomeTextGui(player)
 
     wGui.add{name = "welcome_okay_btn",
                     type = "button",
-                    caption={"understand"}}
+                    caption="I Understand"}
 end
 
 
@@ -104,7 +104,7 @@ function DisplaySpawnOptions(player)
     player.gui.center.add{name = "spawn_opts",
                             type = "frame",
                             direction = "vertical",
-                            caption={"spawnopt"}}
+                            caption="Spawn Options"}
     local sGui = player.gui.center.spawn_opts
     sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
@@ -112,7 +112,7 @@ function DisplaySpawnOptions(player)
 
     -- Warnings and explanations...
     sGui.add{name = "warning_lbl1", type = "label",
-                    caption={"warning1"}}
+                    caption="This is your ONLY chance to choose a spawn option. Choose carefully..."}
     sGui.add{name = "warning_spacer", type = "label",
                     caption=" "}
     ApplyStyle(sGui.warning_lbl1, my_warning_style)
@@ -147,7 +147,7 @@ function DisplaySpawnOptions(player)
         ApplyStyle(sGui.normal_spawn_lbl3, my_label_style)
     else
         sGui.add{name = "normal_spawn_lbl1", type = "label",
-                        caption={"nodefspawn"}}
+                        caption="Default spawn is disabled in this mode."}
         ApplyStyle(sGui.normal_spawn_lbl1, my_warning_style)
     end
     sGui.add{name = "normal_spawn_spacer", type = "label",
@@ -158,14 +158,14 @@ function DisplaySpawnOptions(player)
     -- The main spawning options. Solo near and solo far.
     sGui.add{name = "isolated_spawn_near",
                     type = "button",
-                    caption={"nearspawn"}}
+                    caption="Solo Spawn (Near)"}
     sGui.add{name = "isolated_spawn_far",
                     type = "button",
-                    caption={"farspawn"}}
+                    caption="Solo Spawn (Far)"}
     sGui.add{name = "isolated_spawn_lbl1", type = "label",
-                    caption={"isolated_spawn_lbl1"}}
+                    caption="You are spawned in a new area, with some starting resources."}
     sGui.add{name = "isolated_spawn_lbl2", type = "label",
-                    caption={"isolated_spawn_lbl2"}}
+                    caption="You will still be part of the default team."}
     sGui.add{name = "isolated_spawn_spacer", type = "label",
                     caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
     ApplyStyle(sGui.isolated_spawn_lbl1, my_label_style)
@@ -179,13 +179,13 @@ function DisplaySpawnOptions(player)
         if (numAvailSpawns > 0) then
             sGui.add{name = "join_other_spawn",
                             type = "button",
-                            caption={"joinother1", numAvailSpawns}}
+                            caption="Join Someone (" .. numAvailSpawns .. " available)"}
             sGui.add{name = "join_other_spawn_lbl1", type = "label",
-                            caption={"joinother3"}}
+                            caption="You are spawned in someone else's base."}
             sGui.add{name = "join_other_spawn_lbl2", type = "label",
-                            caption={"joinother4"}}
+                            caption="This requires at least 1 person to have allowed access to their base."}
             sGui.add{name = "join_other_spawn_lbl3", type = "label",
-                            caption={"joinother5"}}
+                            caption="This choice is final and you will not be able to create your own spawn later."}
             sGui.add{name = "join_other_spawn_spacer", type = "label",
                             caption=" "}
             ApplyStyle(sGui.join_other_spawn_lbl1, my_label_style)
@@ -194,18 +194,18 @@ function DisplaySpawnOptions(player)
             ApplyStyle(sGui.join_other_spawn_spacer, my_spacer_style)
         else
             sGui.add{name = "join_other_spawn_lbl1", type = "label",
-                            caption={"noother"}}
+                            caption="There are currently no shared bases availble to spawn at."}
             sGui.add{name = "join_other_spawn_spacer", type = "label",
                             caption=" "}
             ApplyStyle(sGui.join_other_spawn_lbl1, my_warning_style)
             ApplyStyle(sGui.join_other_spawn_spacer, my_spacer_style)
             sGui.add{name = "join_other_spawn_check",
                             type = "button",
-                            caption={"check_again"}}
+                            caption="Check Again"}
         end
     else
         sGui.add{name = "join_other_spawn_lbl1", type = "label",
-                        caption={"noshared"}}
+                        caption="Shared spawns are disabled in this mode."}
         ApplyStyle(sGui.join_other_spawn_lbl1, my_warning_style)
     end
 
@@ -217,7 +217,7 @@ function DisplaySpawnOptions(player)
 
     if MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN then
         sGui.add{name = "shared_spawn_note1", type = "label",
-                    caption = {"shared1", MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1} }
+                    caption="If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join." }
         ApplyStyle(sGui.shared_spawn_note1, my_note_style)
     end
     sGui.add{name = "note_lbl1", type = "label",
@@ -275,11 +275,11 @@ function SpawnOptsGuiClick(event)
         if (#global.unusedSpawns >= 1) then
             newSpawn = table.remove(global.unusedSpawns)
             global.uniqueSpawns[player.name] = newSpawn
-            player.print({"ab_base_join"})
+            player.print("Sorry! You have been assigned to an abandoned base! This is done to keep map size small.")
             ChangePlayerSpawn(player, newSpawn)
             SendPlayerToSpawn(player)
             GivePlayerStarterItems(player)
-            SendBroadcastMsg({"ab_base_joined", player.name})
+            SendBroadcastMsg(player.name .. " joined an abandoned base!")
         else
 
             -- Find coordinates of a good place to spawn
@@ -301,14 +301,14 @@ function SpawnOptsGuiClick(event)
             -- Send the player there
             SendPlayerToNewSpawnAndCreateIt(player, newSpawn)
             if (buttonClicked == "isolated_spawn_near") then
-                SendBroadcastMsg({"spawned_near",player.name})
+                SendBroadcastMsg(player.name .. " joined the main force from a distance!")
             elseif (buttonClicked == "isolated_spawn_far") then
-                SendBroadcastMsg({"spawned_far",player.name})
+                SendBroadcastMsg(player.name .. " joined the main force from a great distance!")
             end
 
-            player.print({"wait_gen1"})
-            player.print({"wait_gen2"})
-            player.print({"wait_gen3"})
+            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
+            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
+            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
         end
 
     elseif (buttonClicked == "join_other_spawn") then
@@ -327,7 +327,7 @@ function DisplaySharedSpawnOptions(player)
     player.gui.center.add{name = "shared_spawn_opts",
                             type = "frame",
                             direction = "vertical",
-                            caption={"bases_aval"}}
+                            caption="Available Bases to Join:"}
 
     local shGuiFrame = player.gui.center.shared_spawn_opts
     local shGui = shGuiFrame.add{type="scroll-pane", name="spawns_scroll_pane", caption=""}
@@ -431,7 +431,7 @@ function ExpandSpawnCtrlGui(player, tick)
         spwnCtrlPanel.destroy()
     else
         local spwnCtrlPanel = player.gui.left.add{type="frame",
-                            name="spwn_ctrl_panel", caption={"spawn_controls"}}
+                            name="spwn_ctrl_panel", caption="Spawn Controls:"}
         local spwnCtrls = spwnCtrlPanel.add{type="scroll-pane",
                             name="spwn_ctrl_panel", caption=""}
         ApplyStyle(spwnCtrls, my_fixed_width_style)
@@ -443,7 +443,7 @@ function ExpandSpawnCtrlGui(player, tick)
                 -- This checkbox allows people to join your base when they first
                 -- start the game.
                 spwnCtrls.add{type="checkbox", name="accessToggle",
-                                caption={"allow_others"},
+                                caption="Allow others to join your base.",
                                 state=IsSharedSpawnActive(player)}
                 spwnCtrls["accessToggle"].style.top_padding = 10
                 spwnCtrls["accessToggle"].style.bottom_padding = 10
@@ -454,19 +454,19 @@ function ExpandSpawnCtrlGui(player, tick)
 
         -- Sets the player's custom spawn point to their current location
         if ((tick - global.playerCooldowns[player.name].setRespawn) > RESPAWN_COOLDOWN_TICKS) then
-            spwnCtrls.add{type="button", name="setRespawnLocation", caption={"set_new_resp"}}
+            spwnCtrls.add{type="button", name="setRespawnLocation", caption="Set New Respawn Location (1 hour cooldown)"}
             spwnCtrls["setRespawnLocation"].style.font = "default-small-semibold"
             spwnCtrls.add{name = "respawn_cooldown_note2", type = "label",
-                    caption={"set_new_resp2"}}
+                    caption="This will set your respawn point to your current location."}
             spwnCtrls.add{name = "respawn_cooldown_spacer1", type = "label",
                 caption=" "}
             ApplyStyle(spwnCtrls.respawn_cooldown_note2, my_note_style)
             ApplyStyle(spwnCtrls.respawn_cooldown_spacer1, my_spacer_style)   
         else
             spwnCtrls.add{name = "respawn_cooldown_note1", type = "label",
-                    caption={"set_new_resp_remain", formattime(RESPAWN_COOLDOWN_TICKS-(tick - global.playerCooldowns[player.name].setRespawn))}}
+                    caption="Set Respawn Cooldown Remaining: " .. formattime(RESPAWN_COOLDOWN_TICKS-(tick - global.playerCooldowns[player.name].setRespawn))}
             spwnCtrls.add{name = "respawn_cooldown_note2", type = "label",
-                    caption={"set_new_resp2"}}
+                    caption="This will set your respawn point to your current location."}
             spwnCtrls.add{name = "respawn_cooldown_spacer1", type = "label",
                 caption=" "}
             ApplyStyle(spwnCtrls.respawn_cooldown_note1, my_note_style)
