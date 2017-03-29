@@ -6,27 +6,27 @@
 -- Messages
 --------------------------------------------------------------------------------
 
-WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
-GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill, Blueprint Strings"
+WELCOME_MSG = { "welсome" }
+GAME_MODE_MSG = { "game_msg" }
+MODULES_ENABLED = { "mods" }
 
-WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
-WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
-WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
+WELCOME_MSG_TITLE = { "welсome_title" }
+WELCOME_MSG1 = { "welсome1" }
+WELCOME_MSG2 = { "welсome2" }
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.2.8):"
-OTHER_MSG2 = "New spawn layout. RSO resource richness reduced"
-
-
-WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
-WELCOME_MSG4 = "around your new spawn area to generate..."
-WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
-WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
+OTHER_MSG1 = { "other1" }
+OTHER_MSG2 = { "other2" }
 
 
-SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (Always in BETA)"
-SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
-SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
+WELCOME_MSG3 = { "welсome3" }
+WELCOME_MSG4 = { "welсome4" }
+WELCOME_MSG5 = { "welсome5" }
+WELCOME_MSG6 = { "welсome6" }
+
+
+SPAWN_MSG1 = { "spawn1" }
+SPAWN_MSG2 = { "spawn2" }
+SPAWN_MSG3 = { "spawn3" }
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
@@ -90,11 +90,11 @@ WATER_SPAWN_OFFSET_Y = -38
 WATER_SPAWN_LENGTH = 8
 
 -- Start resource amounts
-START_IRON_AMOUNT = 1500
+START_IRON_AMOUNT = 2500
 START_COPPER_AMOUNT = 1500
 START_STONE_AMOUNT = 1500
 START_COAL_AMOUNT = 1500
-START_OIL_AMOUNT = 30000
+START_OIL_AMOUNT = 300000
 
 -- Start resource shape
 -- If this is true, it will be a circle
@@ -105,7 +105,7 @@ ENABLE_RESOURCE_SHAPE_CIRCLE = true
 -- Position is relative to player starting location
 START_RESOURCE_STONE_POS_X = -27
 START_RESOURCE_STONE_POS_Y = -34
-START_RESOURCE_STONE_SIZE = 12
+START_RESOURCE_STONE_SIZE = 10
 
 START_RESOURCE_COAL_POS_X = -27
 START_RESOURCE_COAL_POS_Y = -20
@@ -117,7 +117,7 @@ START_RESOURCE_COPPER_SIZE = 14
 
 START_RESOURCE_IRON_POS_X = -29
 START_RESOURCE_IRON_POS_Y = 16
-START_RESOURCE_IRON_SIZE = 16
+START_RESOURCE_IRON_SIZE = 18
 
 START_RESOURCE_OIL_POS_X = -39
 START_RESOURCE_OIL_POS_Y = 0
@@ -196,7 +196,7 @@ ENEMY_DESTROY_FACTOR_DIVISOR = 5
 -- Frontier Rocket Silo Options
 --------------------------------------------------------------------------------
 
-SILO_CHUNK_DISTANCE_X = 250
+SILO_CHUNK_DISTANCE_X = 400
 SILO_DISTANCE_X = SILO_CHUNK_DISTANCE_X*CHUNK_SIZE + CHUNK_SIZE/2
 SILO_DISTANCE_Y = 16
 
