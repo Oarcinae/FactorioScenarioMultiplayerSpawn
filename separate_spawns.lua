@@ -57,7 +57,10 @@ function FindUnusedSpawns(event)
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
             table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
-            global.uniqueSpawns[player.name] = nil
+            
+            -- TODO: Test player joining and leaving quickly to ensure
+            -- spawn points are not messed up...
+            -- global.uniqueSpawns[player.name] = nil
             SendBroadcastMsg(player.name .. " base was freed up because they left within 5 minutes of joining.")
         end
         

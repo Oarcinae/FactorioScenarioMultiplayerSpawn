@@ -1,5 +1,5 @@
 -- config.lua
--- Dec 2016
+-- Apr 2017
 -- Configuration Options
 
 --------------------------------------------------------------------------------
@@ -8,14 +8,14 @@
 
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Gravestone Chests, Long-Reach, Autofill, Blueprint Strings"
+MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill"
 
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.2.8):"
-OTHER_MSG2 = "New spawn layout. RSO resource richness reduced"
+OTHER_MSG1 = "Latest updates in this scenario version (0.3.0):"
+OTHER_MSG2 = "0.15 Compatibility Update - Still in Beta!?!"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -24,14 +24,14 @@ WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
 WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
 
 
-SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (Always in BETA)"
+SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (BETA)"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
 SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15 Release!"
 
 
 --------------------------------------------------------------------------------
@@ -49,9 +49,6 @@ ENABLE_SEPARATE_SPAWNS = true
 -- Enable Scenario version of RSO
 ENABLE_RSO = true
 
--- Enable Gravestone Chests
-ENABLE_GRAVESTONE_CHESTS = true
-
 -- Enable Undecorator
 ENABLE_UNDECORATOR = true
 
@@ -63,9 +60,6 @@ ENABLE_LONGREACH = true
 
 -- Enable Autofill
 ENABLE_AUTOFILL = true
-
--- Enable BPS
-ENABLE_BLUEPRINT_STRING = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options
@@ -184,13 +178,7 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLIME_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 -- Alien Options
 --------------------------------------------------------------------------------
-
--- Enable/Disable enemy expansion (Applies to RSO as well!)
-ENEMY_EXPANSION = false
-
--- Divide the alien factors by this number to reduce it (or multiply if < 1)
-ENEMY_POLLUTION_FACTOR_DIVISOR = 10
-ENEMY_DESTROY_FACTOR_DIVISOR = 5
+-- This should now be configured in the starting map generation as of 0.15
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
@@ -229,4 +217,4 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = false
+-- global.oarcDebugEnabled = true
