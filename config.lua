@@ -8,14 +8,14 @@
 
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill"
+MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator"
 
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
 OTHER_MSG1 = "Latest updates in this scenario version (0.3.0):"
-OTHER_MSG2 = "0.15 Compatibility Update - Still in Beta!?!"
+OTHER_MSG2 = "0.15.X Compatibility Update - Still in Beta!?!"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -31,7 +31,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15 Release!"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X Bug Fest!"
 
 
 --------------------------------------------------------------------------------
@@ -68,6 +68,13 @@ ENABLE_AUTOFILL = true
 ---------------------------------------
 -- Distance Options
 ---------------------------------------
+
+-- This is the radius, in chunks, that a spawn area is from any other generated
+-- chunks. It ensures the spawn area isn't too near generated/explored/existing
+-- area. The larger you make this, the further away players will spawn from 
+-- generated map area (even if it is not visible on the map!).
+CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 5
+
 -- Near Distance in chunks
 NEAR_MIN_DIST = 25 --50
 NEAR_MAX_DIST = 100 --125
@@ -86,9 +93,10 @@ WATER_SPAWN_LENGTH = 8
 -- Start resource amounts
 START_IRON_AMOUNT = 1500
 START_COPPER_AMOUNT = 1500
-START_STONE_AMOUNT = 1500
+START_STONE_AMOUNT = 1000
 START_COAL_AMOUNT = 1500
-START_OIL_AMOUNT = 30000
+START_URANIUM_AMOUNT = 1000
+START_OIL_AMOUNT = 300000
 
 -- Start resource shape
 -- If this is true, it will be a circle
@@ -113,8 +121,21 @@ START_RESOURCE_IRON_POS_X = -29
 START_RESOURCE_IRON_POS_Y = 16
 START_RESOURCE_IRON_SIZE = 16
 
+START_RESOURCE_URANIUM_POS_X = 17
+START_RESOURCE_URANIUM_POS_Y = -34
+START_RESOURCE_URANIUM_SIZE = 10
+
+-- There are 2 oil spots generated.
 START_RESOURCE_OIL_POS_X = -39
 START_RESOURCE_OIL_POS_Y = 0
+
+-- Specify 2 oil spot locations
+START_RESOURCE_OIL_A_POS_X = -39
+START_RESOURCE_OIL_A_POS_Y = -2
+START_RESOURCE_OIL_B_POS_X = -39
+START_RESOURCE_OIL_B_POS_Y = 2
+
+
 
 -- Force the land area circle at the spawn to be fully grass
 ENABLE_SPAWN_FORCE_GRASS = true
@@ -198,7 +219,7 @@ ENABLE_RANDOM_SILO_POSITION = true
 -- Long Reach Options
 --------------------------------------------------------------------------------
 
-BUILD_DIST_BONUS = 15
+BUILD_DIST_BONUS = 20
 REACH_DIST_BONUS = BUILD_DIST_BONUS
 RESOURCE_DIST_BONUS = 2
 
@@ -211,10 +232,60 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 -- Use rso_config and rso_resourece_config for RSO config settings
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Surface generation stuff, don't touch unless you know what you're doing...
+--------------------------------------------------------------------------------
+--
+-- Default map settings for disabling all vanilla resources!
+MAP_SETTINGS_NO_RESOURCES={
+    terrain_segmentation="very-low",
+    water="high",
+    starting_area="very-low",
+    peaceful_mode=false,
+    seed=math.random(999999999),
+    autoplace_controls = {
+        ["coal"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        },
+        ["copper-ore"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        },
+        ["iron-ore"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        },
+        ["stone"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        },
+        ["uranium-ore"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        },
+        ["crude-oil"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        },
+        ["enemy-base"]={
+            frequency="normal",
+            richness="normal",
+            size="none"
+        }
+    }
+}
+
 
 -------------------------------------------------------------------------------
 -- DEBUG
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
--- global.oarcDebugEnabled = true
+global.oarcDebugEnabled = true

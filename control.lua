@@ -85,6 +85,9 @@ end
 ----------------------------------------
 script.on_init(function(event)
 
+    CreateLobbySurface()
+    CreateGameSurface(MAP_SETTINGS_NO_RESOURCES)
+
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
     end
@@ -96,7 +99,7 @@ script.on_init(function(event)
     end
 
     if FRONTIER_ROCKET_SILO_MODE then
-        ChartRocketSiloArea(game.forces[MAIN_FORCE])
+        ChartRocketSiloArea(game.forces[MAIN_FORCE], game.surfaces[GAME_SURFACE_NAME])
     end
 
     global.welcome_msg = WELCOME_MSG
@@ -160,7 +163,7 @@ end)
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-    
+    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     PlayerJoinedMessages(event)
 
     if ENABLE_TAGS then
@@ -169,6 +172,8 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
+    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+
     SetOarcServerMessages(event)
 
     if ENABLE_LONGREACH then
@@ -227,14 +232,14 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
     if FRONTIER_ROCKET_SILO_MODE then
-        RemoveRocketSiloRecipe(event)
+        RemoveRecipe(event.research.force, "rocket-silo")
     end
 
     -- Example of how to remove a particular recipe:
     -- RemoveRecipe(event, "beacon")
 
     if (global.oarcDebugEnabled) then
-        AddRecipe(event, "resource-monitoring");
+        AddRecipe(event.research.force, "rocket-silo");
     end
 end)
 
