@@ -1,5 +1,5 @@
 -- control.lua
--- Nov 2016
+-- Apr 2017
 
 -- Oarc's Separated Spawn Scenario
 -- 
@@ -9,7 +9,6 @@
 -- Credit:
 --  RSO mod to RSO author - Orzelek - I contacted him via the forum
 --  Tags - Taken from WOGs scenario 
---  Event - Taken from WOGs scenario (looks like original source was 3Ra)
 --  Rocket Silo - Taken from Frontier as an idea
 --
 -- Feel free to re-use anything you want. It would be nice to give me credit
@@ -29,7 +28,6 @@ require("locale/oarc_utils")
 require("locale/rso/rso_control")
 require("locale/frontier_silo")
 require("locale/tag")
-require("locale/blueprintstring/bps")
 
 -- Main Configuration File
 require("config")
@@ -87,9 +85,8 @@ end
 ----------------------------------------
 script.on_init(function(event)
 
-    -- Configures the map settings for enemies
-    -- This controls evolution growth factors and enemy expansion settings.
-    ConfigureAlienStartingParams()
+    CreateLobbySurface()
+    CreateGameSurface(MAP_SETTINGS_NO_RESOURCES)
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
@@ -102,11 +99,7 @@ script.on_init(function(event)
     end
 
     if FRONTIER_ROCKET_SILO_MODE then
-        ChartRocketSiloArea(game.forces[MAIN_FORCE])
-    end
-
-    if ENABLE_BLUEPRINT_STRING then
-        bps_init()
+        ChartRocketSiloArea(game.forces[MAIN_FORCE], game.surfaces[GAME_SURFACE_NAME])
     end
 
     global.welcome_msg = WELCOME_MSG
@@ -163,9 +156,6 @@ script.on_event(defines.events.on_gui_click, function(event)
         SharedSpwnOptsGuiClick(event)
     end
 
-    if ENABLE_BLUEPRINT_STRING then
-        bps_on_gui_click(event)
-    end
 end)
 
 
@@ -173,7 +163,7 @@ end)
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-    
+    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     PlayerJoinedMessages(event)
 
     if ENABLE_TAGS then
@@ -182,6 +172,8 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
+    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+
     SetOarcServerMessages(event)
 
     if ENABLE_LONGREACH then
@@ -200,11 +192,13 @@ script.on_event(defines.events.on_player_created, function(event)
     end
 end)
 
-script.on_event(defines.events.on_player_died, function(event)
-    if ENABLE_GRAVESTONE_CHESTS then
-        CreateGravestoneChestsOnDeath(event)
-    end
-end)
+-- Disabled as of 0.15.x
+-- Gravestone is now part of vanilla game! WOO!
+-- script.on_event(defines.events.on_player_died, function(event)
+--     if ENABLE_GRAVESTONE_CHESTS then
+--         CreateGravestoneChestsOnDeath(event)
+--     end
+-- end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
     if not ENABLE_SEPARATE_SPAWNS then
@@ -234,26 +228,25 @@ end)
 
 ----------------------------------------
 -- On Research Finished
+-- This is where you can permanently add/remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
     if FRONTIER_ROCKET_SILO_MODE then
-        RemoveRocketSiloRecipe(event)
-    end
-
-    if ENABLE_BLUEPRINT_STRING then
-        bps_on_research_finished(event)
+        RemoveRecipe(event.research.force, "rocket-silo")
     end
 
     -- Example of how to remove a particular recipe:
     -- RemoveRecipe(event, "beacon")
-end)
 
-
-----------------------------------------
--- BPS Specific Event
-----------------------------------------
-script.on_event(defines.events.on_robot_built_entity, function(event)
-    if ENABLE_BLUEPRINT_STRING then
-        bps_on_robot_built_entity(event)
+    if (global.oarcDebugEnabled) then
+        AddRecipe(event.research.force, "rocket-silo");
     end
 end)
+
+
+----------------------------------------
+-- Other?
+----------------------------------------
+-- script.on_event(defines.events.on_robot_built_entity, function(event)
+
+-- end)

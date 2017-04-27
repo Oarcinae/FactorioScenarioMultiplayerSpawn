@@ -57,7 +57,10 @@ function FindUnusedSpawns(event)
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
             table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
-            global.uniqueSpawns[player.name] = nil
+            
+            -- TODO: Test player joining and leaving quickly to ensure
+            -- spawn points are not messed up...
+            -- global.uniqueSpawns[player.name] = nil
             SendBroadcastMsg(player.name .. " base was freed up because they left within 5 minutes of joining.")
         end
         
@@ -167,8 +170,10 @@ function InitSpawnGlobalsAndForces()
     end
 
     game.create_force(MAIN_FORCE)
-    game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position("nauvis"), "nauvis")
+    game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     SetCeaseFireBetweenAllForces()
+    SetFriendlyBetweenAllForces()
+    AntiGriefing(game.forces[MAIN_FORCE])
 end
 
 
@@ -187,9 +192,9 @@ end
 
 function SendPlayerToNewSpawnAndCreateIt(player, spawn)
     -- Send the player to that position
-    player.teleport(spawn)
+    player.teleport(spawn, GAME_SURFACE_NAME)
     GivePlayerStarterItems(player)
-    ChartArea(player.force, player.position, 4)
+    ChartArea(player.force, player.position, 4, player.surface)
 
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
@@ -203,9 +208,9 @@ end
 
 function SendPlayerToSpawn(player)
     if (DoesPlayerHaveCustomSpawn(player)) then
-        player.teleport(global.playerSpawns[player.name])
+        player.teleport(global.playerSpawns[player.name], GAME_SURFACE_NAME)
     else
-        player.teleport(game.forces[MAIN_FORCE].get_spawn_position("nauvis"))
+        player.teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     end
 end
 
@@ -215,7 +220,7 @@ function SendPlayerToRandomSpawn(player)
     local counter = 0
 
     if (rndSpawn == 0) then
-        player.teleport(game.forces[MAIN_FORCE].get_spawn_position("nauvis"))
+        player.teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     else
         counter = counter + 1
         for name,spawnPos in pairs(global.uniqueSpawns) do

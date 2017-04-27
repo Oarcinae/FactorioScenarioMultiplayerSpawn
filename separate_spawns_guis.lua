@@ -261,9 +261,9 @@ function SpawnOptsGuiClick(event)
     if (buttonClicked == "default_spawn_btn") then
         CreateSpawnCtrlGui(player)
         GivePlayerStarterItems(player)
-        ChangePlayerSpawn(player, player.force.get_spawn_position("nauvis"))
+        ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg(player.name .. " joined the main force!")
-        ChartArea(player.force, player.position, 4)
+        ChartArea(player.force, player.position, 4, player.surface)
 
     elseif ((buttonClicked == "isolated_spawn_near") or (buttonClicked == "isolated_spawn_far")) then
         CreateSpawnCtrlGui(player)
@@ -284,14 +284,14 @@ function SpawnOptsGuiClick(event)
 
             -- Find coordinates of a good place to spawn
             if (buttonClicked == "isolated_spawn_far") then
-                newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST)
+                newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
             elseif (buttonClicked == "isolated_spawn_near") then
-                newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST)
+                newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
             end
 
             -- If that fails, find a random map edge in a rand direction.
             if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
-                newSpawn = FindMapEdge(GetRandomVector())
+                newSpawn = FindMapEdge(GetRandomVector(), player.surface)
                 DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
             end
 
