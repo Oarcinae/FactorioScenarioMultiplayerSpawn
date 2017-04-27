@@ -47,7 +47,8 @@ function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
     if (player.online_time < MIN_ONLINE_TIME) then
 
-        -- TODO dump items into a chest.
+        dumpItemsIntoChest(player)
+        -- TODO: Error checking if player doesn't exist.
 
         -- Clear out global variables for that player???
         if (global.playerSpawns[player.name] ~= nil) then
@@ -233,6 +234,62 @@ function SendPlayerToRandomSpawn(player)
     end
 end
 
+-- Code credit for dumpItemsIntoChest:
+-- Zinal of https://mods.factorio.com/mods/Zinal/DeathChest, with modifications by @lumodon
+function dumpItemsIntoChest(player)
+    if player == nil then
+        return nil
+    local position = game.surfaces[player.surface.name].find_non_colliding_position(chestType, player.position, 100, 1)
+
+    local chest = game.surfaces[player.surface.name].create_entity({
+        name = 'steel-chest', -- TODO: Is this game item name, or custom name?
+        position = position,
+        force = game.forces.neutral -- TODO: Should we place this on player's force, or let anyone raid it?
+    })
+
+    chest.destructible = false
+
+    local inserted = 0
+    local chestIndex = 1
+
+    if chest ~= nil then
+        for i = 1, 6 do
+            local inv = player.get_inventory(i)
+
+            if inv ~= nil then
+                local chestInv = chest.get_inventory(1)
+                for I = 1, #inv, 1 do
+
+                    if inserted > 98 or chestIndex > 98 then
+                        break
+                    end
+
+                    if inv[I].valid and inv[I].valid_for_read then
+                        local item = inv[I]
+                        if i == 3 and item.name == "pistol" then
+                            -- Do nothing
+                        else
+                            if i == 4 and item.name == "firearm-magazine" then
+                                if item.count > 10 then
+                                    item.count = item.count - 10
+                                end
+                            end
+
+                            if chestInv[chestIndex].set_stack(item) then
+                                chestIndex = chestIndex + 1
+                                inserted = inserted + 1
+                            else
+                                if chestInv.can_insert(item) then
+                                    chestInv.insert(item)
+                                    inserted = inserted + 1
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
 
 
