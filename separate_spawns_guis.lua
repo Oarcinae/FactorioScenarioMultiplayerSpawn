@@ -361,7 +361,7 @@ function SharedSpwnOptsGuiClick(event)
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name  
 
-    if (event.element.parent.name ~= "shared_spawn_opts") then
+    if (event.element.parent.name ~= "spawns_scroll_pane") then
         return
     end
 
