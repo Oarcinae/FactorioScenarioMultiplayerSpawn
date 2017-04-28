@@ -1,6 +1,9 @@
 -- config.lua
 -- Apr 2017
 -- Configuration Options
+-- 
+-- You should be able to leave most of the settings here as defaults.
+-- The only thing you definitely want to change are the welcome messages.
 
 --------------------------------------------------------------------------------
 -- Messages
@@ -139,9 +142,14 @@ START_RESOURCE_OIL_B_POS_X = -39
 START_RESOURCE_OIL_B_POS_Y = 2
 
 
-
 -- Force the land area circle at the spawn to be fully grass
 ENABLE_SPAWN_FORCE_GRASS = true
+
+-- Set this to true for the spawn area to be surrounded by a circle of trees
+SPAWN_TREE_CIRCLE_ENABLED = true
+
+-- Set this to true for the spawn area to be surrounded by an octagon of trees
+SPAWN_TREE_OCTAGON_ENABLED = true
 
 ---------------------------------------
 -- Safe Spawn Area Options
@@ -238,37 +246,11 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 -- Don't touch unless you know what you're doing...
 -- When using RSO, all resources MUST BE SET TO SIZE=NONE!
 --------------------------------------------------------------------------------
-MAP_SETTINGS_RSO={
-    terrain_segmentation="very-low",
-    water="high",
-    starting_area="very-low",
-    peaceful_mode=false,
-    seed=math.random(999999999),
-    autoplace_controls = {
-        ["coal"]={
-            size="none"
-        },
-        ["copper-ore"]={
-            size="none"
-        },
-        ["iron-ore"]={
-            size="none"
-        },
-        ["stone"]={
-            size="none"
-        },
-        ["uranium-ore"]={
-            size="none"
-        },
-        ["crude-oil"]={
-            size="none"
-        },
-        ["enemy-base"]={
-            size="none"
-        }
-    }
-}
-
+MAP_SETTINGS_RSO_TERRAIN_SEGMENTATION = "very-low" -- Frequency of water
+MAP_SETTINGS_RSO_WATER = "high" -- Size of water patches
+MAP_SETTINGS_RSO_PEACEFUL = false -- Peaceful mode for biters/aliens
+MAP_SETTINGS_RSO_SEED = math.random(999999999) -- Default is randomized map
+MAP_SETTINGS_RSO_STARTING_AREA = "very-low" -- Does not affect Oarc spawn sizes.
 
 -------------------------------------------------------------------------------
 -- DEBUG

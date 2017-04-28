@@ -97,9 +97,9 @@ script.on_init(function(event)
     -- If you disable RSO, the map settings will be set from the ones that you
     -- choose from the game GUI when you start a new scenario.
     if ENABLE_RSO then
-        CreateGameSurface(MAP_SETTINGS_RSO)
+        CreateGameSurface(RSO_MODE)
     else
-        CreateGameSurface(game.surfaces["nauvis"].map_gen_settings)
+        CreateGameSurface(VANILLA_MODE)
     end
 
     if ENABLE_SEPARATE_SPAWNS then
@@ -166,7 +166,7 @@ script.on_event(defines.events.on_gui_click, function(event)
     if ENABLE_PLAYER_LIST then
         PlayerListGuiClick(event)
     end
-    
+
     if ENABLE_SEPARATE_SPAWNS then
         WelcomeTextGuiClick(event)
         SpawnOptsGuiClick(event)
