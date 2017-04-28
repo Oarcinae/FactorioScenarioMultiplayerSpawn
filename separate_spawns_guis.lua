@@ -125,7 +125,7 @@ function DisplaySpawnOptions(player)
     sGui.add{name = "spawn_msg_lbl3", type = "label",
                     caption=SPAWN_MSG3}
     sGui.add{name = "spawn_msg_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
     ApplyStyle(sGui.spawn_msg_lbl1, my_label_style)
     ApplyStyle(sGui.spawn_msg_lbl2, my_label_style)
     ApplyStyle(sGui.spawn_msg_lbl3, my_label_style)
@@ -151,7 +151,7 @@ function DisplaySpawnOptions(player)
         ApplyStyle(sGui.normal_spawn_lbl1, my_warning_style)
     end
     sGui.add{name = "normal_spawn_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
     ApplyStyle(sGui.normal_spawn_spacer, my_spacer_style)
 
 
@@ -167,7 +167,7 @@ function DisplaySpawnOptions(player)
     sGui.add{name = "isolated_spawn_lbl2", type = "label",
                     caption="You will still be part of the default team."}
     sGui.add{name = "isolated_spawn_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
     ApplyStyle(sGui.isolated_spawn_lbl1, my_label_style)
     ApplyStyle(sGui.isolated_spawn_lbl2, my_label_style)
     ApplyStyle(sGui.isolated_spawn_spacer, my_spacer_style)
@@ -211,7 +211,7 @@ function DisplaySpawnOptions(player)
 
     -- Some final notes
     sGui.add{name = "note_spacer1", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
     sGui.add{name = "note_spacer2", type = "label",
                     caption=" "}
 
@@ -361,6 +361,10 @@ function SharedSpwnOptsGuiClick(event)
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name  
 
+    if (event.element.parent.name ~= "shared_spawn_opts") then
+        return
+    end
+
     -- Check for cancel button, return to spawn options
     if (buttonClicked == "shared_spawn_cancel") then
         DisplaySpawnOptions(player)
@@ -487,6 +491,10 @@ function SpawnCtrlGuiClick(event)
         ExpandSpawnCtrlGui(player, event.tick)       
     end
 
+    if ((event.element.parent) and (event.element.parent.name ~= "spwn_ctrl_panel")) then
+        return
+    end
+
     if (name == "accessToggle") then
         if event.element.state then
             if DoesPlayerHaveCustomSpawn(player) then
@@ -510,7 +518,6 @@ function SpawnCtrlGuiClick(event)
     if (name == "setRespawnLocation") then
         if DoesPlayerHaveCustomSpawn(player) then
             ChangePlayerSpawn(player, player.position)
-            global.playerCooldowns[player.name].setRespawn = event.tick
             ExpandSpawnCtrlGui(player, event.tick) 
             player.print("Re-spawn point updated!")
         end

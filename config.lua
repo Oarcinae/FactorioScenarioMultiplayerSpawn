@@ -14,8 +14,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.3.0):"
-OTHER_MSG2 = "0.15.X Compatibility Update - Still in Beta!?!"
+OTHER_MSG1 = "Latest updates in this scenario version (0.3.1):"
+OTHER_MSG2 = "0.15.X Updates. Code cleanup behind the scenes"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -60,6 +60,9 @@ ENABLE_LONGREACH = true
 
 -- Enable Autofill
 ENABLE_AUTOFILL = true
+
+-- Enable Playerlist
+ENABLE_PLAYER_LIST = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options
@@ -123,7 +126,7 @@ START_RESOURCE_IRON_SIZE = 16
 
 START_RESOURCE_URANIUM_POS_X = 17
 START_RESOURCE_URANIUM_POS_Y = -34
-START_RESOURCE_URANIUM_SIZE = 10
+START_RESOURCE_URANIUM_SIZE = 0 -- Disabled by default.
 
 -- There are 2 oil spots generated.
 START_RESOURCE_OIL_POS_X = -39
@@ -230,14 +233,12 @@ RESOURCE_DIST_BONUS = 2
 AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 --------------------------------------------------------------------------------
--- Use rso_config and rso_resourece_config for RSO config settings
+-- Use rso_config and rso_resource_config for RSO config settings
 --------------------------------------------------------------------------------
+-- Don't touch unless you know what you're doing...
+-- When using RSO, all resources MUST BE SET TO SIZE=NONE!
 --------------------------------------------------------------------------------
--- Surface generation stuff, don't touch unless you know what you're doing...
---------------------------------------------------------------------------------
---
--- Default map settings for disabling all vanilla resources!
-MAP_SETTINGS_NO_RESOURCES={
+MAP_SETTINGS_RSO={
     terrain_segmentation="very-low",
     water="high",
     starting_area="very-low",
@@ -245,38 +246,24 @@ MAP_SETTINGS_NO_RESOURCES={
     seed=math.random(999999999),
     autoplace_controls = {
         ["coal"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         },
         ["copper-ore"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         },
         ["iron-ore"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         },
         ["stone"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         },
         ["uranium-ore"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         },
         ["crude-oil"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         },
         ["enemy-base"]={
-            frequency="normal",
-            richness="normal",
             size="none"
         }
     }
@@ -288,4 +275,4 @@ MAP_SETTINGS_NO_RESOURCES={
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = true
+global.oarcDebugEnabled = false

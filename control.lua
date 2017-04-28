@@ -85,8 +85,22 @@ end
 ----------------------------------------
 script.on_init(function(event)
 
-    CreateLobbySurface()
-    CreateGameSurface(MAP_SETTINGS_NO_RESOURCES)
+    -- CreateLobbySurface() -- Currently unused, but have plans for future.
+    
+    -- Here I create the game surface. I do this so that I don't have to worry
+    -- about the game menu settings and I can now generate a map from the command
+    -- line more easily!
+    -- 
+    -- If you are using RSO, map settings are ignored and you MUST configure
+    -- the relevant map settings in config.lua
+    -- 
+    -- If you disable RSO, the map settings will be set from the ones that you
+    -- choose from the game GUI when you start a new scenario.
+    if ENABLE_RSO then
+        CreateGameSurface(MAP_SETTINGS_RSO)
+    else
+        CreateGameSurface(game.surfaces["nauvis"].map_gen_settings)
+    end
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
@@ -149,6 +163,10 @@ script.on_event(defines.events.on_gui_click, function(event)
         TagGuiClick(event)
     end
 
+    if ENABLE_PLAYER_LIST then
+        PlayerListGuiClick(event)
+    end
+    
     if ENABLE_SEPARATE_SPAWNS then
         WelcomeTextGuiClick(event)
         SpawnOptsGuiClick(event)
@@ -169,9 +187,16 @@ script.on_event(defines.events.on_player_joined_game, function(event)
     if ENABLE_TAGS then
         CreateTagGui(event)
     end
+
+    if ENABLE_PLAYER_LIST then
+        CreatePlayerListGui(event)
+    end
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
+    
+    -- Move the player to the game surface immediately.
+    -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
     SetOarcServerMessages(event)
@@ -186,10 +211,6 @@ script.on_event(defines.events.on_player_created, function(event)
         SeparateSpawnsPlayerCreated(event)
     end
 
-    -- Not sure if this should be here or in player joined....
-    if ENABLE_BLUEPRINT_STRING then
-        bps_player_joined(event)
-    end
 end)
 
 -- Disabled as of 0.15.x
@@ -228,18 +249,11 @@ end)
 
 ----------------------------------------
 -- On Research Finished
--- This is where you can permanently add/remove researched techs
+-- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
     if FRONTIER_ROCKET_SILO_MODE then
         RemoveRecipe(event.research.force, "rocket-silo")
-    end
-
-    -- Example of how to remove a particular recipe:
-    -- RemoveRecipe(event, "beacon")
-
-    if (global.oarcDebugEnabled) then
-        AddRecipe(event.research.force, "rocket-silo");
     end
 end)
 

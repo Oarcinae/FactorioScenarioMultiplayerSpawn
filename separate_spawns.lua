@@ -16,7 +16,6 @@ function SeparateSpawnsPlayerCreated(event)
     local player = game.players[event.player_index]
     player.force = MAIN_FORCE
     DisplayWelcomeTextGui(player)
-    global.playerCooldowns[player.name] = {setRespawn=event.tick}
 end
 
 
@@ -47,7 +46,7 @@ function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
     if (player.online_time < MIN_ONLINE_TIME) then
 
-        -- TODO dump items into a chest.
+        DropGravestoneChests(player)
 
         -- Clear out global variables for that player???
         if (global.playerSpawns[player.name] ~= nil) then
@@ -188,6 +187,7 @@ end
 
 function ChangePlayerSpawn(player, pos)
     global.playerSpawns[player.name] = pos
+    global.playerCooldowns[player.name] = {setRespawn=game.tick}
 end
 
 function SendPlayerToNewSpawnAndCreateIt(player, spawn)
