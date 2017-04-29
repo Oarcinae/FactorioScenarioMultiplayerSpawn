@@ -361,8 +361,10 @@ function SharedSpwnOptsGuiClick(event)
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name  
 
-    if (event.element.parent.name ~= "spawns_scroll_pane") then
-        return
+    if (event.element.parent) then
+        if (event.element.parent.name ~= "spawns_scroll_pane") then
+            return
+        end
     end
 
     -- Check for cancel button, return to spawn options
@@ -491,8 +493,10 @@ function SpawnCtrlGuiClick(event)
         ExpandSpawnCtrlGui(player, event.tick)       
     end
 
-    if ((event.element.parent) and (event.element.parent.name ~= "spwn_ctrl_panel")) then
-        return
+    if (event.element.parent) then
+        if (event.element.parent.name ~= "spwn_ctrl_panel") then
+            return
+        end
     end
 
     if (name == "accessToggle") then
