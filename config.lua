@@ -11,7 +11,7 @@
 
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator"
+MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
 
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
@@ -24,7 +24,7 @@ OTHER_MSG2 = "0.15.X Updates. Code cleanup behind the scenes"
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
 WELCOME_MSG4 = "around your new spawn area to generate..."
 WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
-WELCOME_MSG6 = "Contact: SteamID:Oarc | Twitter:@_Oarc_ | oarcinae@gmail.com"
+WELCOME_MSG6 = "Contact: SteamID:Oarc | oarcinae@gmail.com"
 
 
 SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (BETA)"
@@ -33,7 +33,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
-WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/Wj56gkU"
+WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
 WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X Bug Fest!"
 
 
@@ -47,12 +47,20 @@ WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X Bug Fest!"
 FRONTIER_ROCKET_SILO_MODE = true
 
 -- Separate spawns
+-- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
+-- Separate teams
+-- This allows you to join your own force/team. Everyone is still COOP/PvE, all
+-- teams are friendly and cease-fire.
+ENABLE_SEPARATE_TEAMS = true
+
 -- Enable Scenario version of RSO
+-- You can reconfigure the RSO resource settings in the RSO files if you want to
 ENABLE_RSO = true
 
 -- Enable Undecorator
+-- Removes decorative items to reduce save file size.
 ENABLE_UNDECORATOR = true
 
 -- Enable Tags
@@ -210,7 +218,14 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLIME_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 -- Alien Options
 --------------------------------------------------------------------------------
--- This should now be configured in the starting map generation as of 0.15
+
+-- Enable/Disable enemy expansion (Applies to RSO as well!)
+ENEMY_EXPANSION = false
+
+-- Divide the alien factors by this number to reduce it (or multiply if < 1)
+ENEMY_POLLUTION_FACTOR_DIVISOR = 10
+ENEMY_DESTROY_FACTOR_DIVISOR = 5
+
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options

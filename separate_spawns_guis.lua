@@ -6,7 +6,7 @@
 require("separate_spawns")
 
 local SPAWN_GUI_MAX_WIDTH = 450
-local SPAWN_GUI_MAX_HEIGHT = 650
+local SPAWN_GUI_MAX_HEIGHT = 750
 
 -- Use this for testing shared spawns...
 -- local sharedSpawnExample1 = {openAccess=true,
@@ -156,20 +156,41 @@ function DisplaySpawnOptions(player)
 
 
     -- The main spawning options. Solo near and solo far.
-    sGui.add{name = "isolated_spawn_near",
+    -- If enable, you can also choose to be on your own team.
+    local soloSpawnFlow = sGui.add{name = "spawn_solo_flow",
+                                    type = "flow",
+                                    direction="vertical"}
+    
+    if (ENABLE_SEPARATE_TEAMS) then
+        soloSpawnFlow.add{name = "isolated_spawn_main_team_radio",
+                        type = "radiobutton",
+                        caption="Join Main Team (shared research)",
+                        state=true}
+        soloSpawnFlow.add{name = "isolated_spawn_new_team_radio",
+                        type = "radiobutton",
+                        caption="Create Your Own Team (own research tree)",
+                        state=false}
+        soloSpawnFlow.add{name = "team_chat_warning_lbl1", type = "label",
+                        caption="You must type '/s' before your msg to chat with other teams!!!"}
+        ApplyStyle(soloSpawnFlow.team_chat_warning_lbl1, my_warning_style)
+        soloSpawnFlow.add{name = "team_chat_warning_spacer", type = "label",
+                    caption=" "}
+        ApplyStyle(soloSpawnFlow.team_chat_warning_spacer, my_spacer_style)
+    end
+
+    soloSpawnFlow.add{name = "isolated_spawn_near",
                     type = "button",
                     caption="Solo Spawn (Near)"}
-    sGui.add{name = "isolated_spawn_far",
+    soloSpawnFlow.add{name = "isolated_spawn_far",
                     type = "button",
                     caption="Solo Spawn (Far)"}
-    sGui.add{name = "isolated_spawn_lbl1", type = "label",
-                    caption="You are spawned in a new area, with some starting resources."}
-    sGui.add{name = "isolated_spawn_lbl2", type = "label",
-                    caption="You will still be part of the default team."}
+    
+    soloSpawnFlow.add{name = "isolated_spawn_lbl1", type = "label",
+                    caption="You are spawned in a new area, with some starting resources."}    
+    ApplyStyle(soloSpawnFlow.isolated_spawn_lbl1, my_label_style)
+
     sGui.add{name = "isolated_spawn_spacer", type = "label",
                     caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(sGui.isolated_spawn_lbl1, my_label_style)
-    ApplyStyle(sGui.isolated_spawn_lbl2, my_label_style)
     ApplyStyle(sGui.isolated_spawn_spacer, my_spacer_style)
 
 
@@ -241,35 +262,66 @@ end
 function SpawnOptsGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
-    local buttonClicked = event.element.name
+    local elemName = event.element.name
 
+    if (player.gui.center.spawn_opts == nil) then
+        return -- Gui event unrelated to this gui.
+    end
+
+    local joinMainTeamRadio, joinOwnTeamRadio = false
 
     -- Check if a valid button on the gui was pressed
     -- and delete the GUI
-    if ((buttonClicked == "default_spawn_btn") or
-        (buttonClicked == "isolated_spawn_near") or
-        (buttonClicked == "isolated_spawn_far") or
-        (buttonClicked == "join_other_spawn") or
-        (buttonClicked == "join_other_spawn_check")) then
+    if ((elemName == "default_spawn_btn") or
+        (elemName == "isolated_spawn_near") or
+        (elemName == "isolated_spawn_far") or
+        (elemName == "join_other_spawn") or
+        (elemName == "join_other_spawn_check")) then
 
-        if (player.gui.center.spawn_opts ~= nil) then
-            player.gui.center.spawn_opts.destroy()
+        if (ENABLE_SEPARATE_TEAMS) then
+            joinMainTeamRadio =
+                player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_main_team_radio.state
+            joinOwnTeamRadio =
+                player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_new_team_radio.state
         end
+        player.gui.center.spawn_opts.destroy()
 
+    -- This just updates the radio buttons.
+    elseif ((elemName == "isolated_spawn_main_team_radio") or
+        (elemName == "isolated_spawn_new_team_radio")) then
+        if (elemName == "isolated_spawn_main_team_radio") then
+            event.element.parent.isolated_spawn_new_team_radio.state=false
+        elseif (elemName == "isolated_spawn_new_team_radio") then
+            event.element.parent.isolated_spawn_main_team_radio.state=false
+        end
+    
+    else
+        return -- Do nothing, no valid element item was clicked.
     end
 
-    if (buttonClicked == "default_spawn_btn") then
+    if (elemName == "default_spawn_btn") then
         CreateSpawnCtrlGui(player)
         GivePlayerStarterItems(player)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg(player.name .. " joined the main force!")
         ChartArea(player.force, player.position, 4, player.surface)
 
-    elseif ((buttonClicked == "isolated_spawn_near") or (buttonClicked == "isolated_spawn_far")) then
+   
+
+    elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
         CreateSpawnCtrlGui(player)
 
         -- Create a new spawn point
         local newSpawn = {x=0,y=0}
+
+        -- Create a new force for player if they choose that radio button
+        if ENABLE_SEPARATE_TEAMS and joinOwnTeamRadio then
+            local newForce = CreatePlayerCustomForce(player)
+
+            if (FRONTIER_ROCKET_SILO_MODE and (newForce ~= nil)) then
+                ChartRocketSiloArea(newForce, game.surfaces[GAME_SURFACE_NAME])
+            end
+        end
 
         -- Re-used abandoned spawns...
         if (#global.unusedSpawns >= 1) then
@@ -283,9 +335,9 @@ function SpawnOptsGuiClick(event)
         else
 
             -- Find coordinates of a good place to spawn
-            if (buttonClicked == "isolated_spawn_far") then
+            if (elemName == "isolated_spawn_far") then
                 newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
-            elseif (buttonClicked == "isolated_spawn_near") then
+            elseif (elemName == "isolated_spawn_near") then
                 newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
             end
 
@@ -300,10 +352,10 @@ function SpawnOptsGuiClick(event)
             
             -- Send the player there
             SendPlayerToNewSpawnAndCreateIt(player, newSpawn)
-            if (buttonClicked == "isolated_spawn_near") then
-                SendBroadcastMsg(player.name .. " joined the main force from a distance!")
-            elseif (buttonClicked == "isolated_spawn_far") then
-                SendBroadcastMsg(player.name .. " joined the main force from a great distance!")
+            if (elemName == "isolated_spawn_near") then
+                SendBroadcastMsg(player.name .. " joined the game from a distance!")
+            elseif (elemName == "isolated_spawn_far") then
+                SendBroadcastMsg(player.name .. " joined the game from a great distance!")
             end
 
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
@@ -311,12 +363,12 @@ function SpawnOptsGuiClick(event)
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
         end
 
-    elseif (buttonClicked == "join_other_spawn") then
+    elseif (elemName == "join_other_spawn") then
         DisplaySharedSpawnOptions(player)
     
     -- Provide a way to refresh the gui to check if people have shared their
     -- bases.
-    elseif (buttonClicked == "join_other_spawn_check") then
+    elseif (elemName == "join_other_spawn_check") then
         DisplaySpawnOptions(player)
     end
 end
@@ -385,6 +437,7 @@ function SharedSpwnOptsGuiClick(event)
                 GivePlayerStarterItems(player)
                 table.insert(sharedSpawn.players, player.name)
                 SendBroadcastMsg(player.name .. " joined " .. spawnName .. "'s base!")
+                player.force = game.players[spawnName].force
                 if (player.gui.center.shared_spawn_opts ~= nil) then
                     player.gui.center.shared_spawn_opts.destroy()
                 end

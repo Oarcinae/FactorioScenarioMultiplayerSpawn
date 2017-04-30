@@ -82,6 +82,11 @@ function FindUnusedSpawns(event)
             end
         end
 
+        -- Remove a force if this player created it and they are the only one on it
+        if (#player.force.players <= 1) then
+            game.merge_forces(player.force, MAIN_FORCE)
+        end
+
         -- Remove the character completely
         game.remove_offline_players({player})
     end
@@ -233,41 +238,50 @@ function SendPlayerToRandomSpawn(player)
     end
 end
 
-
-
-
---------------------------------------------------------------------------------
--- UNUSED CODE
--- Either didn't work, or not used or not tested....
---------------------------------------------------------------------------------
-
-
-
--- local tick_counter = 0
--- function ShareVision(event)
---     if (tick_counter > (TICKS_PER_SECOND*30)) then
---         ShareVisionForAllForces()
---         tick_counter = 0
---     end
---     tick_counter = tick_counter + 1
--- end
-
--- function CreatePlayerCustomForce(player)
---     local newForce = nil
+function CreatePlayerCustomForce(player)
+    local newForce = nil
     
---     -- Check if force already exists
---     if (game.forces[player.name] ~= nil) then
---         return game.forces[player.name]
+    -- Check if force already exists
+    if (game.forces[player.name] ~= nil) then
+        DebugPrint("Force already exists!")
+        player.force = game.forces[player.name]
+        return game.forces[player.name]
 
---     -- Create a new force using the player's name
---     elseif (TableLength(game.forces) < MAX_FORCES) then
---         newForce = game.create_force(player.name)
---         player.force = newForce
---         SetCeaseFireBetweenAllForces()        
---     else
---         player.force = MAIN_FORCE
---         player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
---     end
+    -- Create a new force using the player's name
+    elseif (TableLength(game.forces) < MAX_FORCES) then
+        newForce = game.create_force(player.name)
+        player.force = newForce
+        SetCeaseFireBetweenAllForces()
+        SetFriendlyBetweenAllForces() 
+        SendBroadcastMsg(player.name.." has started their own team!")     
+    else
+        player.force = MAIN_FORCE
+        player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
+    end
 
---     return newForce
--- end
+    return newForce
+end
+
+-- For each force, if it's a valid force, chart the chunk that all active players
+-- are in.
+-- I have no idea how compute intensive this function is. If it starts to lag the game
+-- we'll have to figure out how to change it.
+function ShareVisionBetweenPlayers()
+    for _,force in pairs(game.forces) do
+        if (force~=nil) then
+            if ((force.name~=enemy) and
+                (force.name ~=neutral) and
+                (force.name ~=player)) then
+
+                for _,player in pairs(game.connected_players) do
+                    force.chart(GAME_SURFACE_NAME,
+                                {{player.position.x-CHUNK_SIZE,
+                                 player.position.y-CHUNK_SIZE},
+                                 {player.position.x+CHUNK_SIZE,
+                                 player.position.y+CHUNK_SIZE}})
+                end
+
+            end
+        end
+    end
+end

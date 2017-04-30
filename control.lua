@@ -36,6 +36,25 @@ require("config")
 require("separate_spawns")
 require("separate_spawns_guis")
 
+global.testPlayers = {
+    {name="testPlayer1", admin=false},
+    {name="testPlayer2222222222222222222222222abcdbacdabcd", admin=true},
+    {name="test3", admin=false},
+    {name="test4", admin=true},
+    {name="test5", admin=true},
+    {name="test6", admin=true},
+    {name="test7", admin=true},
+    {name="test8", admin=true},
+    {name="test9", admin=true},
+    {name="test41", admin=true},
+    {name="test42", admin=true},
+    {name="test43", admin=true},
+    {name="test44", admin=true},
+    {name="test45", admin=true},
+    {name="test46", admin=true},
+    {name="test47", admin=true},
+    {name="a", admin=false}
+}
 
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
@@ -115,6 +134,10 @@ script.on_init(function(event)
     if FRONTIER_ROCKET_SILO_MODE then
         ChartRocketSiloArea(game.forces[MAIN_FORCE], game.surfaces[GAME_SURFACE_NAME])
     end
+
+    -- Configures the map settings for enemies
+    -- This controls evolution growth factors and enemy expansion settings.
+    ConfigureAlienStartingParams()
 
     global.welcome_msg = WELCOME_MSG
     global.welcome_msg_title = WELCOME_MSG_TITLE
@@ -245,6 +268,18 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 end)
 
+
+local tick_counter = 0
+script.on_event(defines.events.on_tick, function(event)
+
+    -- Every few seconds, chart all players to "share vision"
+    if (tick_counter >= (TICKS_PER_SECOND*5)) then
+        ShareVisionBetweenPlayers()
+        tick_counter = 0
+    else
+        tick_counter = tick_counter + 1
+    end
+end)
 
 
 ----------------------------------------
