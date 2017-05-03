@@ -96,15 +96,21 @@ NEAR_MAX_DIST = 100 --125
 -- Far Distance in chunks
 FAR_MIN_DIST = 100 --50
 FAR_MAX_DIST = 200 --125
-                   --
+          
 ---------------------------------------
--- Resource Options
+-- Resource & Spawn Circle Options
 ---------------------------------------
+
+-- Create a circle of land area for the spawn
+-- This is the radius (I think?) in TILES.
+ENFORCE_LAND_AREA_TILE_DIST = 48
+
+-- Location of water strip (horizontal)
 WATER_SPAWN_OFFSET_X = -4
 WATER_SPAWN_OFFSET_Y = -38
 WATER_SPAWN_LENGTH = 8
 
--- Start resource amounts
+-- Start resource amounts (per tile/oil spot)
 START_IRON_AMOUNT = 1500
 START_COPPER_AMOUNT = 1500
 START_STONE_AMOUNT = 1000
@@ -139,11 +145,7 @@ START_RESOURCE_URANIUM_POS_X = 17
 START_RESOURCE_URANIUM_POS_Y = -34
 START_RESOURCE_URANIUM_SIZE = 0 -- Disabled by default.
 
--- There are 2 oil spots generated.
-START_RESOURCE_OIL_POS_X = -39
-START_RESOURCE_OIL_POS_Y = 0
-
--- Specify 2 oil spot locations
+-- Specify 2 oil spot locations for starting oil.
 START_RESOURCE_OIL_A_POS_X = -39
 START_RESOURCE_OIL_A_POS_Y = -2
 START_RESOURCE_OIL_B_POS_X = -39
@@ -173,9 +175,6 @@ WARNING_AREA_TILE_DIST = CHUNK_SIZE*20
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
 WARN_AREA_REDUCTION_RATIO = 15
-
--- Create a circle of land area for the spawn
-ENFORCE_LAND_AREA_TILE_DIST = 48
 
 
 ---------------------------------------
