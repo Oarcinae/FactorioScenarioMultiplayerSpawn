@@ -36,25 +36,6 @@ require("config")
 require("separate_spawns")
 require("separate_spawns_guis")
 
-global.testPlayers = {
-    {name="testPlayer1", admin=false},
-    {name="testPlayer2222222222222222222222222abcdbacdabcd", admin=true},
-    {name="test3", admin=false},
-    {name="test4", admin=true},
-    {name="test5", admin=true},
-    {name="test6", admin=true},
-    {name="test7", admin=true},
-    {name="test8", admin=true},
-    {name="test9", admin=true},
-    {name="test41", admin=true},
-    {name="test42", admin=true},
-    {name="test43", admin=true},
-    {name="test44", admin=true},
-    {name="test45", admin=true},
-    {name="test46", admin=true},
-    {name="test47", admin=true},
-    {name="a", admin=false}
-}
 
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
@@ -222,7 +203,9 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
-    SetOarcServerMessages(event)
+    if (SERVER_OWNER_IS_OARC) then
+        SetOarcServerMessages()
+    end
 
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])
@@ -235,14 +218,6 @@ script.on_event(defines.events.on_player_created, function(event)
     end
 
 end)
-
--- Disabled as of 0.15.x
--- Gravestone is now part of vanilla game! WOO!
--- script.on_event(defines.events.on_player_died, function(event)
---     if ENABLE_GRAVESTONE_CHESTS then
---         CreateGravestoneChestsOnDeath(event)
---     end
--- end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
     if not ENABLE_SEPARATE_SPAWNS then

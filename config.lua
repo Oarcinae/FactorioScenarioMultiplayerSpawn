@@ -17,15 +17,13 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.3.1):"
-OTHER_MSG2 = "0.15.X Updates. Code cleanup behind the scenes"
-
+OTHER_MSG1 = "Latest updates in this scenario version (0.4.0):"
+OTHER_MSG2 = "Separate teams are enabled."
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
 WELCOME_MSG4 = "around your new spawn area to generate..."
 WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
 WELCOME_MSG6 = "Contact: SteamID:Oarc | oarcinae@gmail.com"
-
 
 SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (BETA)"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
@@ -33,6 +31,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
+SERVER_OWNER_IS_OARC = false -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
 WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X Bug Fest!"
 
@@ -49,11 +48,6 @@ FRONTIER_ROCKET_SILO_MODE = true
 -- Separate spawns
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
-
--- Separate teams
--- This allows you to join your own force/team. Everyone is still COOP/PvE, all
--- teams are friendly and cease-fire.
-ENABLE_SEPARATE_TEAMS = true
 
 -- Enable Scenario version of RSO
 -- You can reconfigure the RSO resource settings in the RSO files if you want to
@@ -181,9 +175,10 @@ WARN_AREA_REDUCTION_RATIO = 15
 -- Other Forces/Teams Options
 ---------------------------------------
 
--- I am not currently implementing other teams. It gets too complicated.
--- Enable if people can join their own teams
--- ENABLE_OTHER_TEAMS = false
+-- Separate teams
+-- This allows you to join your own force/team. Everyone is still COOP/PvE, all
+-- teams are friendly and cease-fire.
+ENABLE_SEPARATE_TEAMS = true
 
 -- Main force is what default players join
 MAIN_FORCE = "main_force"
@@ -206,12 +201,6 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 -- Else their character is removed and their spawn point is freed up for use
 MIN_ONLIME_TIME_IN_MINUTES = 5
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLIME_TIME_IN_MINUTES
-
-
--- Allow players to choose another spawn in the first 10 minutes
--- This does not allow creating a new spawn point. Only joining other players.
--- SPAWN_CHANGE_GRACE_PERIOD_IN_MINUTES = 10
--- SPAWN_GRACE_TIME = TICKS_PER_MINUTE * SPAWN_CHANGE_GRACE_PERIOD_IN_MINUTES
 
 
 --------------------------------------------------------------------------------
