@@ -120,8 +120,7 @@ script.on_init(function(event)
     -- This controls evolution growth factors and enemy expansion settings.
     ConfigureAlienStartingParams()
 
-    global.welcome_msg = WELCOME_MSG
-    global.welcome_msg_title = WELCOME_MSG_TITLE
+    SetServerWelcomeMessages()
 end)
 
 
@@ -203,10 +202,6 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
-    if (SERVER_OWNER_IS_OARC) then
-        SetOarcServerMessages()
-    end
-
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])
     end
@@ -216,22 +211,31 @@ script.on_event(defines.events.on_player_created, function(event)
     else
         SeparateSpawnsPlayerCreated(event)
     end
-
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
-    if not ENABLE_SEPARATE_SPAWNS then
-        PlayerRespawnItems(event)
-    else 
-        SeparateSpawnsPlayerRespawned(event)
+    if ENABLE_SEPARATE_SPAWNS then
+        SeparateSpawnsPlayerRespawned(event)        
     end
+   
+    PlayerRespawnItems(event)
 
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])
     end
 end)
 
+script.on_event(defines.events.on_pre_player_died, function(event)
+    if ENABLE_GRAVESTONE_ON_DEATH then
+        DropGravestoneChests(game.players[event.player_index])
+    end
+end)
+
 script.on_event(defines.events.on_player_left_game, function(event)
+    if ENABLE_GRAVESTONE_ON_LEAVING then
+        DropGravestoneChests(game.players[event.player_index])
+    end 
+
     if ENABLE_SEPARATE_SPAWNS then
         FindUnusedSpawns(event)
     end
@@ -248,11 +252,13 @@ local tick_counter = 0
 script.on_event(defines.events.on_tick, function(event)
 
     -- Every few seconds, chart all players to "share vision"
-    if (tick_counter >= (TICKS_PER_SECOND*5)) then
-        ShareVisionBetweenPlayers()
-        tick_counter = 0
-    else
-        tick_counter = tick_counter + 1
+    if ENABLE_SHARED_TEAM_VISION then
+        if (tick_counter >= (TICKS_PER_SECOND*5)) then
+            ShareVisionBetweenPlayers()
+            tick_counter = 0
+        else
+            tick_counter = tick_counter + 1
+        end
     end
 end)
 

@@ -17,8 +17,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.4.0):"
-OTHER_MSG2 = "Separate teams are enabled."
+OTHER_MSG1 = "Latest updates in this scenario version (0.4.1):"
+OTHER_MSG2 = "Gravestones are back in."
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
 WELCOME_MSG4 = "around your new spawn area to generate..."
@@ -31,9 +31,9 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
-SERVER_OWNER_IS_OARC = false -- This should be false for you, it's just a convenience for me.
+SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X Bug Fest!"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X!"
 
 
 --------------------------------------------------------------------------------
@@ -69,9 +69,49 @@ ENABLE_AUTOFILL = true
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
 
+-- Enable Gravestone Chests
+ENABLE_GRAVESTONE_ON_DEATH = true
+ENABLE_GRAVESTONE_ON_LEAVING = false -- (Items dumped into chest when you leave.)
+
+-- Enable quick start items
+ENABLE_POWER_ARMOR_QUICK_START = false
+
+-- Enable shared vision between teams (all teams are still COOP)
+ENABLE_SHARED_TEAM_VISION = true
+
 --------------------------------------------------------------------------------
 -- Spawn Options
 --------------------------------------------------------------------------------
+
+---------------------------------------
+-- Starting Items
+---------------------------------------
+-- Items provided to the player the first time they join ("quick start" commented out)
+PLAYER_SPAWN_START_ITEMS = {
+    {name="pistol", count=1},
+    {name="firearm-magazine", count=100},
+    {name="iron-plate", count=8},
+    {name="burner-mining-drill", count = 1},
+    {name="stone-furnace", count = 1},
+    -- {name="iron-plate", count=20},
+    -- {name="burner-mining-drill", count = 1},
+    -- {name="stone-furnace", count = 1},
+    -- {name="power-armor", count=1},
+    -- {name="fusion-reactor-equipment", count=1},
+    -- {name="battery-mk2-equipment", count=3},
+    -- {name="exoskeleton-equipment", count=1},
+    -- {name="personal-roboport-mk2-equipment", count=3},
+    -- {name="solar-panel-equipment", count=7},
+    -- {name="construction-robot", count=100},
+    -- {name="repair-pack", count=100},
+    -- {name="steel-axe", count=3},
+}
+
+-- Items provided after EVERY respawn (disabled by default)
+PLAYER_RESPAWN_START_ITEMS = {
+    -- {name="pistol", count=1},
+    -- {name="firearm-magazine", count=100}
+}
 
 ---------------------------------------
 -- Distance Options

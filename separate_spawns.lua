@@ -52,20 +52,25 @@ function FindUnusedSpawns(event)
         if (global.playerSpawns[player.name] ~= nil) then
             global.playerSpawns[player.name] = nil
         end
+      
+        -- Remove from shared spawns, transfer ownership if other players are on their team
+        if (global.sharedSpawns[player.name] ~= nil) then
+            -- if (#global.sharedSpawns[player.name].players > 1) then
+            --     for _,teamMateName in pairs(global.sharedSpawns[player.name].players) do
+            --         if (teamMateName ~= player.name) then
+            --             TransferOwnershipOfSharedSpawn(player, game.players[teamMateName])
+            --             break
+            --         end
+            --     end
+            -- else
+                global.sharedSpawns[player.name] = nil
+            -- end
+        end
 
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
             table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
-            
-            -- TODO: Test player joining and leaving quickly to ensure
-            -- spawn points are not messed up...
-            -- global.uniqueSpawns[player.name] = nil
             SendBroadcastMsg(player.name .. " base was freed up because they left within 5 minutes of joining.")
-        end
-        
-        -- Remove from shared spawns
-        if (global.sharedSpawns[player.name] ~= nil) then
-            global.sharedSpawns[player.name] = nil
         end
 
         -- remove that player's cooldown setting
@@ -105,6 +110,17 @@ function CreateNewSharedSpawn(player)
     global.sharedSpawns[player.name] = {openAccess=true,
                                     position=global.playerSpawns[player.name],
                                     players={}}
+end
+
+function TransferOwnershipOfSharedSpawn(prevOwner, newOwner)
+    -- Transfer the shared spawn global
+    global.sharedSpawns[newOwner.name] = global.sharedSpawns[prevOwner.name]
+    global.sharedSpawns[newOwner.name].openAccess = false
+    global.sharedSpawns[prevOwner.name] = nil
+
+    -- Transfer the unique spawn global
+    global.uniqueSpawns[newOwner.name] = global.uniqueSpawns[prevOwner.name]
+    global.uniqueSpawns[prevOwner.name] = nil
 end
 
 -- Returns the number of players currently online at the shared spawn
@@ -177,7 +193,7 @@ function InitSpawnGlobalsAndForces()
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     SetCeaseFireBetweenAllForces()
     SetFriendlyBetweenAllForces()
-    AntiGriefing(game.forces[MAIN_FORCE])
+    -- AntiGriefing(game.forces[MAIN_FORCE])
 end
 
 
