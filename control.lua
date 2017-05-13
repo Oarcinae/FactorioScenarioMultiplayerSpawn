@@ -155,6 +155,8 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     if ENABLE_SEPARATE_SPAWNS then
         SeparateSpawnsGenerateChunk(event)
     end
+
+    CreateHoldingPenGenerateChunk(event);
 end)
 
 
@@ -233,7 +235,10 @@ end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
     if ENABLE_GRAVESTONE_ON_LEAVING then
-        DropGravestoneChests(game.players[event.player_index])
+        if (game.players[event.player_index].online_time <
+            ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS) then
+            DropGravestoneChests(game.players[event.player_index])
+        end
     end 
 
     if ENABLE_SEPARATE_SPAWNS then

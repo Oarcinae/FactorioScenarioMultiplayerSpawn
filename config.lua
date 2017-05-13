@@ -71,7 +71,10 @@ ENABLE_PLAYER_LIST = true
 
 -- Enable Gravestone Chests
 ENABLE_GRAVESTONE_ON_DEATH = true
-ENABLE_GRAVESTONE_ON_LEAVING = false -- (Items dumped into chest when you leave.)
+ -- Items dumped into chest when you leave.
+ENABLE_GRAVESTONE_ON_LEAVING = false
+ -- If anyone leaves within first X minutes, items get dumped into chest.
+ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 30
 
 -- Enable quick start items
 ENABLE_POWER_ARMOR_QUICK_START = false

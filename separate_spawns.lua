@@ -48,23 +48,22 @@ function FindUnusedSpawns(event)
 
         DropGravestoneChests(player)
 
-        -- Clear out global variables for that player???
+        -- Clear out global variables for that player
         if (global.playerSpawns[player.name] ~= nil) then
             global.playerSpawns[player.name] = nil
         end
       
-        -- Remove from shared spawns, transfer ownership if other players are on their team
+        -- Transfer or remove a shared spawn if player is owner
         if (global.sharedSpawns[player.name] ~= nil) then
-            -- if (#global.sharedSpawns[player.name].players > 1) then
-            --     for _,teamMateName in pairs(global.sharedSpawns[player.name].players) do
-            --         if (teamMateName ~= player.name) then
-            --             TransferOwnershipOfSharedSpawn(player, game.players[teamMateName])
-            --             break
-            --         end
-            --     end
-            -- else
+            
+            local teamMates = global.sharedSpawns[player.name].players
+
+            if (#teamMates >= 1) then
+                local newOwnerName = table.remove(teamMates)
+                TransferOwnershipOfSharedSpawn(player.name, newOwnerName)
+            else
                 global.sharedSpawns[player.name] = nil
-            -- end
+            end
         end
 
         -- If a uniqueSpawn was created for the player, mark it as unused.
@@ -100,7 +99,6 @@ end
 
 --------------------------------------------------------------------------------
 -- NON-EVENT RELATED FUNCTIONS
--- These should be local functions where possible!
 --------------------------------------------------------------------------------
 
 -- Add a spawn to the shared spawn global
@@ -112,15 +110,17 @@ function CreateNewSharedSpawn(player)
                                     players={}}
 end
 
-function TransferOwnershipOfSharedSpawn(prevOwner, newOwner)
+function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
     -- Transfer the shared spawn global
-    global.sharedSpawns[newOwner.name] = global.sharedSpawns[prevOwner.name]
-    global.sharedSpawns[newOwner.name].openAccess = false
-    global.sharedSpawns[prevOwner.name] = nil
+    global.sharedSpawns[newOwnerName] = global.sharedSpawns[prevOwnerName]
+    global.sharedSpawns[newOwnerName].openAccess = false
+    global.sharedSpawns[prevOwnerName] = nil
 
     -- Transfer the unique spawn global
-    global.uniqueSpawns[newOwner.name] = global.uniqueSpawns[prevOwner.name]
-    global.uniqueSpawns[prevOwner.name] = nil
+    global.uniqueSpawns[newOwnerName] = global.uniqueSpawns[prevOwnerName]
+    global.uniqueSpawns[prevOwnerName] = nil
+
+    game.players[newOwnerName].print("You have been given ownership of this base!")
 end
 
 -- Returns the number of players currently online at the shared spawn
