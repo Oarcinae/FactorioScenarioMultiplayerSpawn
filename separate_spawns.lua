@@ -188,6 +188,9 @@ function InitSpawnGlobalsAndForces()
     if (global.playerCooldowns == nil) then
         global.playerCooldowns = {}
     end
+    if (global.tick_counter == nil) then
+        global.tick_counter = 0
+    end
 
     game.create_force(MAIN_FORCE)
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
@@ -283,21 +286,28 @@ end
 -- I have no idea how compute intensive this function is. If it starts to lag the game
 -- we'll have to figure out how to change it.
 function ShareVisionBetweenPlayers()
-    for _,force in pairs(game.forces) do
-        if (force~=nil) then
-            if ((force.name~=enemy) and
-                (force.name ~=neutral) and
-                (force.name ~=player)) then
 
-                for _,player in pairs(game.connected_players) do
-                    force.chart(GAME_SURFACE_NAME,
-                                {{player.position.x-CHUNK_SIZE,
-                                 player.position.y-CHUNK_SIZE},
-                                 {player.position.x+CHUNK_SIZE,
-                                 player.position.y+CHUNK_SIZE}})
+    if (global.tick_counter >= (TICKS_PER_SECOND*5)) then
+        
+        for _,force in pairs(game.forces) do
+            if (force ~= nil) then
+                if ((force.name ~= enemy) and
+                    (force.name ~= neutral) and
+                    (force.name ~= player)) then
+
+                    for _,player in pairs(game.connected_players) do
+                        force.chart(GAME_SURFACE_NAME,
+                                    {{player.position.x-CHUNK_SIZE,
+                                     player.position.y-CHUNK_SIZE},
+                                     {player.position.x+CHUNK_SIZE,
+                                     player.position.y+CHUNK_SIZE}})
+                    end
                 end
-
             end
         end
+
+        global.tick_counter = 0
+    else
+        global.tick_counter = global.tick_counter + 1
     end
 end

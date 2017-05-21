@@ -253,17 +253,10 @@ script.on_event(defines.events.on_built_entity, function(event)
 end)
 
 
-local tick_counter = 0
 script.on_event(defines.events.on_tick, function(event)
-
     -- Every few seconds, chart all players to "share vision"
     if ENABLE_SHARED_TEAM_VISION then
-        if (tick_counter >= (TICKS_PER_SECOND*5)) then
-            ShareVisionBetweenPlayers()
-            tick_counter = 0
-        else
-            tick_counter = tick_counter + 1
-        end
+        ShareVisionBetweenPlayers()
     end
 end)
 
