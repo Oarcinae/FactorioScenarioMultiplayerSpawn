@@ -295,7 +295,6 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 MAP_SETTINGS_RSO_TERRAIN_SEGMENTATION = "very-low" -- Frequency of water
 MAP_SETTINGS_RSO_WATER = "high" -- Size of water patches
 MAP_SETTINGS_RSO_PEACEFUL = false -- Peaceful mode for biters/aliens
-MAP_SETTINGS_RSO_SEED = math.random(999999999) -- Default is randomized map
 MAP_SETTINGS_RSO_STARTING_AREA = "very-low" -- Does not affect Oarc spawn sizes.
 
 -------------------------------------------------------------------------------
