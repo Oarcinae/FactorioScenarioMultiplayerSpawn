@@ -13,8 +13,7 @@
 --
 -- Feel free to re-use anything you want. It would be nice to give me credit
 -- if you can.
--- 
--- Follow server info on @_Oarc_
+
 
 
 -- To keep the scenario more manageable I have done the following:
@@ -121,6 +120,16 @@ script.on_init(function(event)
     ConfigureAlienStartingParams()
 
     SetServerWelcomeMessages()
+
+    --If any (not global.) globals are written to at this point, an error will be thrown.
+    --eg, x = 2 will throw an error because it's not global.x
+    setmetatable(_G, {
+        __newindex = function(_, n)
+            log("Attempt to write to undeclared var " .. n)
+            game.print("Attempt to write to undeclared var " .. n)
+        end
+    })
+
 end)
 
 
@@ -134,6 +143,12 @@ script.on_event(defines.events.on_rocket_launched, function(event)
     end
 end)
 
+
+script.on_event(defines.events.on_console_chat, function(event)
+
+    DebugPrint(event.message)
+
+end)
 
 ----------------------------------------
 -- Chunk Generation

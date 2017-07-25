@@ -131,8 +131,8 @@ NEAR_MIN_DIST = 25 --50
 NEAR_MAX_DIST = 100 --125
                    --
 -- Far Distance in chunks
-FAR_MIN_DIST = 100 --50
-FAR_MAX_DIST = 200 --125
+FAR_MIN_DIST = 200 --50
+FAR_MAX_DIST = 300 --125
           
 ---------------------------------------
 -- Resource & Spawn Circle Options
