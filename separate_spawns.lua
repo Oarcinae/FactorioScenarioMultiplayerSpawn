@@ -41,7 +41,7 @@ end
 
 
 -- Call this if a player leaves the game
--- Seems to be susceptiable to causing desyncs...
+-- Still seems to have a bug.
 function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
     if (player.online_time < MIN_ONLINE_TIME) then
@@ -214,7 +214,7 @@ function ChangePlayerSpawn(player, pos)
     global.playerCooldowns[player.name] = {setRespawn=game.tick}
 end
 
-function SendPlayerToNewSpawnAndCreateIt(player, spawn)
+function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
     -- Send the player to that position
     player.teleport(spawn, GAME_SURFACE_NAME)
     GivePlayerStarterItems(player)
@@ -222,7 +222,7 @@ function SendPlayerToNewSpawnAndCreateIt(player, spawn)
 
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
-        global.uniqueSpawns[player.name] = spawn
+        global.uniqueSpawns[player.name] = {pos=spawn,moat=moatEnabled}
         ClearNearbyEnemies(player, SAFE_AREA_TILE_DIST)
     else      
         DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
@@ -247,9 +247,9 @@ function SendPlayerToRandomSpawn(player)
         player.teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     else
         counter = counter + 1
-        for name,spawnPos in pairs(global.uniqueSpawns) do
+        for name,spawn in pairs(global.uniqueSpawns) do
             if (counter == rndSpawn) then
-                player.teleport(spawnPos)
+                player.teleport(spawn.pos)
                 break
             end
             counter = counter + 1

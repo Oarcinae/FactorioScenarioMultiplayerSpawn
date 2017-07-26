@@ -17,8 +17,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.4.1):"
-OTHER_MSG2 = "Gravestones are back in."
+OTHER_MSG1 = "Latest updates in this scenario version (0.4.2):"
+OTHER_MSG2 = "Far spawn is further now."
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
 WELCOME_MSG4 = "around your new spawn area to generate..."
@@ -70,7 +70,8 @@ ENABLE_AUTOFILL = true
 ENABLE_PLAYER_LIST = true
 
 -- Enable Gravestone Chests
-ENABLE_GRAVESTONE_ON_DEATH = true
+ENABLE_GRAVESTONE_ON_DEATH = false
+
  -- Items dumped into chest when you leave.
 ENABLE_GRAVESTONE_ON_LEAVING = false
  -- If anyone leaves within first X minutes, items get dumped into chest.
@@ -137,6 +138,9 @@ FAR_MAX_DIST = 300 --125
 ---------------------------------------
 -- Resource & Spawn Circle Options
 ---------------------------------------
+
+-- Allow players to choose to spawn with a moat
+SPAWN_MOAT_CHOICE_ENABLED = true
 
 -- Create a circle of land area for the spawn
 -- This is the radius (I think?) in TILES.
@@ -233,6 +237,10 @@ ENABLE_DEFAULT_SPAWN = false
 ENABLE_SHARED_SPAWNS = true
 MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 3
 
+-- Share local team chat with all teams
+-- This makes it so you don't have to use /s
+-- but it means you can't talk privately with your own team.
+ENABLE_SHARED_TEAM_CHAT = true
 
 ---------------------------------------
 -- Special Action Cooldowns
@@ -302,4 +310,4 @@ MAP_SETTINGS_RSO_STARTING_AREA = "very-low" -- Does not affect Oarc spawn sizes.
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = false
+global.oarcDebugEnabled = true

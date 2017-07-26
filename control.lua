@@ -144,12 +144,6 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 end)
 
 
-script.on_event(defines.events.on_console_chat, function(event)
-
-    DebugPrint(event.message)
-
-end)
-
 ----------------------------------------
 -- Chunk Generation
 ----------------------------------------
@@ -268,6 +262,9 @@ script.on_event(defines.events.on_built_entity, function(event)
 end)
 
 
+----------------------------------------
+-- Shared vision, charts a small area around other players
+----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
     -- Every few seconds, chart all players to "share vision"
     if ENABLE_SHARED_TEAM_VISION then
@@ -275,6 +272,14 @@ script.on_event(defines.events.on_tick, function(event)
     end
 end)
 
+----------------------------------------
+-- Shared chat, so you don't have to type /s
+----------------------------------------
+script.on_event(defines.events.on_console_chat, function(event)
+    if (ENABLE_SHARED_TEAM_CHAT) then
+        ShareChatBetweenForces(game.players[event.player_index], event.message)
+    end
+end)
 
 ----------------------------------------
 -- On Research Finished

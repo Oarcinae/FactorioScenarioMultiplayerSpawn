@@ -170,6 +170,12 @@ function DisplaySpawnOptions(player)
                         type = "radiobutton",
                         caption="Create Your Own Team (own research tree)",
                         state=false}
+        if (SPAWN_MOAT_CHOICE_ENABLED) then
+            soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
+                            type = "checkbox",
+                            caption="Surround your spawn with a moat",
+                            state=false}
+        end
         soloSpawnFlow.add{name = "team_chat_warning_lbl1", type = "label",
                         caption="You must type '/s' before your msg to chat with other teams!!!"}
         ApplyStyle(soloSpawnFlow.team_chat_warning_lbl1, my_warning_style)
@@ -268,7 +274,7 @@ function SpawnOptsGuiClick(event)
         return -- Gui event unrelated to this gui.
     end
 
-    local joinMainTeamRadio, joinOwnTeamRadio = false
+    local joinMainTeamRadio, joinOwnTeamRadio, moatChoice = false
 
     -- Check if a valid button on the gui was pressed
     -- and delete the GUI
@@ -283,6 +289,10 @@ function SpawnOptsGuiClick(event)
                 player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_main_team_radio.state
             joinOwnTeamRadio =
                 player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_new_team_radio.state
+            if (SPAWN_MOAT_CHOICE_ENABLED) then
+                moatChoice = 
+                    player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
+            end
         end
         player.gui.center.spawn_opts.destroy()
 
@@ -325,10 +335,10 @@ function SpawnOptsGuiClick(event)
 
         -- Re-used abandoned spawns...
         if (#global.unusedSpawns >= 1) then
-            newSpawn = table.remove(global.unusedSpawns)
-            global.uniqueSpawns[player.name] = newSpawn
+            oldSpawn = table.remove(global.unusedSpawns)
+            global.uniqueSpawns[player.name] = oldSpawn
             player.print("Sorry! You have been assigned to an abandoned base! This is done to keep map size small.")
-            ChangePlayerSpawn(player, newSpawn)
+            ChangePlayerSpawn(player, oldSpawn.pos)
             SendPlayerToSpawn(player)
             GivePlayerStarterItems(player)
             SendBroadcastMsg(player.name .. " joined an abandoned base!")
@@ -351,7 +361,7 @@ function SpawnOptsGuiClick(event)
             ChangePlayerSpawn(player, newSpawn)
             
             -- Send the player there
-            SendPlayerToNewSpawnAndCreateIt(player, newSpawn)
+            SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
             if (elemName == "isolated_spawn_near") then
                 SendBroadcastMsg(player.name .. " joined the game from a distance!")
             elseif (elemName == "isolated_spawn_far") then
