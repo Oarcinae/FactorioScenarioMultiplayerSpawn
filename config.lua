@@ -22,6 +22,7 @@ OTHER_MSG2 = "Far spawn is further now. Added regrowth mode."
 -- Optional other messages below:
 OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
 OTHER_MSG4 = "If your base loses power, don't expect it to last more than an hour."
+OTHER_MSG5 = "This is a beta, expect bugs, let me know when you find one."
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -29,7 +30,7 @@ WELCOME_MSG4 = "around your new spawn area to generate..."
 WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
 WELCOME_MSG6 = "Contact: SteamID:Oarc | oarcinae@gmail.com"
 
-SPAWN_MSG1 = "Current Spawn Mode: HARDCORE WILDERNESS (BETA)"
+SPAWN_MSG1 = "Current Spawn Mode: REGROWTH WILDERNESS (BETA)"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
 SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
@@ -37,7 +38,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 -- that creates the game.
 SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Happy 0.15.X!"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Regrowth BETA!"
 
 
 --------------------------------------------------------------------------------

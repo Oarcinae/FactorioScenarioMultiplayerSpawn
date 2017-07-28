@@ -17,7 +17,7 @@
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
 
-REGROWTH_TIMEOUT_TICKS = 60*10 -- 1 hour
+REGROWTH_TIMEOUT_TICKS = 60*60*60 -- 1 hour
 
 -- Init globals and set player join area to be off limits.
 function OarcRegrowthInit()
