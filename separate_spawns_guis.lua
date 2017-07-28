@@ -52,6 +52,21 @@ function DisplayWelcomeTextGui(player)
                     caption=OTHER_MSG1}
     wGui.add{name = "other_msg_lbl2", type = "label",
                     caption=OTHER_MSG2}
+    if (OTHER_MSG3 ~= nil) then
+        wGui.add{name = "other_msg_lbl3", type = "label",
+                    caption=OTHER_MSG3}
+        ApplyStyle(wGui.other_msg_lbl3, my_label_style)
+    end
+    if (OTHER_MSG4 ~= nil) then
+        wGui.add{name = "other_msg_lbl4", type = "label",
+                    caption=OTHER_MSG4}
+        ApplyStyle(wGui.other_msg_lbl4, my_label_style)
+    end
+    if (OTHER_MSG5 ~= nil) then
+        wGui.add{name = "other_msg_lbl5", type = "label",
+                    caption=OTHER_MSG5}
+        ApplyStyle(wGui.other_msg_lbl5, my_label_style)
+    end
     wGui.add{name = "other_msg_spacer1", type = "label",
                     caption=" "}
 

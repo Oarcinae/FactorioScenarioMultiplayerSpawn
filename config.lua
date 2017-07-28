@@ -17,8 +17,12 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.4.2):"
-OTHER_MSG2 = "Far spawn is further now."
+OTHER_MSG1 = "Latest updates in this scenario version (0.5.0):"
+OTHER_MSG2 = "Far spawn is further now. Added regrowth mode."
+-- Optional other messages below:
+OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
+OTHER_MSG4 = "If your base loses power, don't expect it to last more than an hour."
+
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
 WELCOME_MSG4 = "around your new spawn area to generate..."
@@ -82,6 +86,9 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 
 -- Enable shared vision between teams (all teams are still COOP)
 ENABLE_SHARED_TEAM_VISION = true
+
+-- Enable map regrowth, see regrowth_map.lua for more info.
+ENABLE_REGROWTH = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options

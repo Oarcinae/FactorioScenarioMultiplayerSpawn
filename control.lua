@@ -34,7 +34,7 @@ require("config")
 -- Scenario Specific Includes
 require("separate_spawns")
 require("separate_spawns_guis")
-
+require("regrowth_map")
 
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
@@ -121,6 +121,10 @@ script.on_init(function(event)
 
     SetServerWelcomeMessages()
 
+    if ENABLE_REGROWTH then
+        OarcRegrowthInit()
+    end
+
     --If any (not global.) globals are written to at this point, an error will be thrown.
     --eg, x = 2 will throw an error because it's not global.x
     setmetatable(_G, {
@@ -148,6 +152,10 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
+    if ENABLE_REGROWTH then
+        OarcRegrowthChunkGenerate(event)
+    end
+
     if ENABLE_UNDECORATOR then
         UndecorateOnChunkGenerate(event)
     end
@@ -165,7 +173,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
         SeparateSpawnsGenerateChunk(event)
     end
 
-    CreateHoldingPenGenerateChunk(event);
+    CreateHoldingPenGenerateChunk(event)
 end)
 
 
@@ -262,6 +270,7 @@ script.on_event(defines.events.on_built_entity, function(event)
 end)
 
 
+
 ----------------------------------------
 -- Shared vision, charts a small area around other players
 ----------------------------------------
@@ -270,7 +279,21 @@ script.on_event(defines.events.on_tick, function(event)
     if ENABLE_SHARED_TEAM_VISION then
         ShareVisionBetweenPlayers()
     end
+
+    if ENABLE_REGROWTH then
+        OarcRegrowthOnTick(event)
+    end
+
 end)
+
+----------------------------------------
+-- Refreshes regrowth timers around an active timer
+----------------------------------------
+if ENABLE_REGROWTH then
+    script.on_event(defines.events.on_sector_scanned, function (event)
+        OarcRegrowthSectorScan(event)
+    end)
+end
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
@@ -290,6 +313,7 @@ script.on_event(defines.events.on_research_finished, function(event)
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 end)
+
 
 
 ----------------------------------------

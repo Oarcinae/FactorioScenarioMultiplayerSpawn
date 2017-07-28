@@ -222,6 +222,9 @@ function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
 
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
+        if ENABLE_REGROWTH then
+            OarcRegrowthOffLimits(spawn, 5)
+        end
         global.uniqueSpawns[player.name] = {pos=spawn,moat=moatEnabled}
         ClearNearbyEnemies(player, SAFE_AREA_TILE_DIST)
     else      
