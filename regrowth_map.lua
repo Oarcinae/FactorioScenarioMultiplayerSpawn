@@ -17,7 +17,7 @@
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
 
-REGROWTH_TIMEOUT_TICKS = 60*60*60 -- 1 hour
+REGROWTH_TIMEOUT_TICKS = 60*10 -- 1 hour
 
 -- Init globals and set player join area to be off limits.
 function OarcRegrowthInit()
@@ -55,6 +55,24 @@ function OarcRegrowthChunkGenerate(event)
     global.chunk_regrow.num_chunks = global.chunk_regrow.num_chunks + 1
 end
 
+-- Mark an area for removal
+-- Intended to be used for cleaning abandoned spawns
+function OarcRegrowthMarkForRemoval(pos, chunk_radius)
+    local c_pos = {x=pos.x-(pos.x % 32),
+                    y=pos.y-(pos.y % 32)}
+    for i=-chunk_radius,chunk_radius do
+        for k=-chunk_radius,chunk_radius do
+            local x = c_pos.x+(i*32)
+            local y = c_pos.y+(k*32)
+
+            if (global.chunk_regrow.map[x] == nil) then
+                global.chunk_regrow.map[x] = {}
+            end
+            global.chunk_regrow.map[x][y] = 1
+            table.insert(global.chunk_regrow.list, c_pos)
+        end
+    end
+end
 
 -- Marks a safe area around around a position that won't ever be deleted.
 function OarcRegrowthOffLimits(pos, chunk_radius)

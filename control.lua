@@ -127,12 +127,13 @@ script.on_init(function(event)
 
     --If any (not global.) globals are written to at this point, an error will be thrown.
     --eg, x = 2 will throw an error because it's not global.x
-    setmetatable(_G, {
-        __newindex = function(_, n)
-            log("Attempt to write to undeclared var " .. n)
-            game.print("Attempt to write to undeclared var " .. n)
-        end
-    })
+    -- setmetatable(_G, {
+    --     __newindex = function(_, n)
+    --         log("Attempt to write to undeclared var " .. n)
+    --         game.print("Attempt to write to undeclared var " .. n)
+    --     end
+    -- })
+    -- -- THIS REQUIRES A LOT OF CHANGES TO RSO SOFT MOD...
 
 end)
 
