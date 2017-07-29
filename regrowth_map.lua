@@ -17,7 +17,7 @@
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
 
-REGROWTH_TIMEOUT_TICKS = 60*10 -- 1 hour
+REGROWTH_TIMEOUT_TICKS = 60*60 -- 1 hour
 
 -- Init globals and set player join area to be off limits.
 function OarcRegrowthInit()
@@ -154,9 +154,9 @@ function OarcRegrowthOnTick(event)
 
             -- Check for players nearby, don't delete anything near players.
             -- And refresh the area around them if they happen to be near.
-            local players_found = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area = {{x-(32*2), y-(32*2)}, {x+(32*2), y+(32*2)}}, type= "player"}
+            local players_found = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area = {{x-(32*5), y-(32*5)}, {x+(32*5), y+(32*5)}}, type= "player"}
             if (next(players_found) ~= nil) then
-                OarcRegrowthRefreshArea(pos, 2)
+                OarcRegrowthRefreshArea(pos, 5)
                 goto GO_NEXT_CHUNK
             end
 

@@ -69,9 +69,10 @@ function FindUnusedSpawns(event)
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
             -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
-            OarcRegrowthMarkForRemoval(global.uniqueSpawns[player.name].pos, 5)
-
-            SendBroadcastMsg(player.name .. " base was marked for clean up because they left within 5 minutes of joining.")
+            local spawnPos = global.uniqueSpawns[player.name].pos
+            global.uniqueSpawns[player.name] = nil
+            SendBroadcastMsg(player.name .. "'s base was marked for clean up because they left within 5 minutes of joining.")
+            OarcRegrowthMarkForRemoval(spawnPos, 5)
         end
 
         -- remove that player's cooldown setting

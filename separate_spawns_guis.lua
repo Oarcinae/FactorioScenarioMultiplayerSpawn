@@ -191,9 +191,9 @@ function DisplaySpawnOptions(player)
                             caption="Surround your spawn with a moat",
                             state=false}
         end
-        soloSpawnFlow.add{name = "team_chat_warning_lbl1", type = "label",
-                        caption="You must type '/s' before your msg to chat with other teams!!!"}
-        ApplyStyle(soloSpawnFlow.team_chat_warning_lbl1, my_warning_style)
+        -- soloSpawnFlow.add{name = "team_chat_warning_lbl1", type = "label",
+        --                 caption="You must type '/s' before your msg to chat with other teams!!!"}
+        -- ApplyStyle(soloSpawnFlow.team_chat_warning_lbl1, my_warning_style)
         soloSpawnFlow.add{name = "team_chat_warning_spacer", type = "label",
                     caption=" "}
         ApplyStyle(soloSpawnFlow.team_chat_warning_spacer, my_spacer_style)
