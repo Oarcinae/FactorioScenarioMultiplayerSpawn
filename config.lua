@@ -11,7 +11,7 @@
 
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
+MODULES_ENABLED = "Mods Enabled: Separate Spawns, Regrowth, RSO, Long-Reach, Autofill, Undecorator, Player List"
 
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"

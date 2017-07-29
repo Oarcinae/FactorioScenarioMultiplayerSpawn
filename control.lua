@@ -289,12 +289,36 @@ end)
 
 ----------------------------------------
 -- Refreshes regrowth timers around an active timer
+-- Refresh areas where stuff is built, and mark any chunks with
+-- railways as off limits.
 ----------------------------------------
 if ENABLE_REGROWTH then
     script.on_event(defines.events.on_sector_scanned, function (event)
         OarcRegrowthSectorScan(event)
     end)
+
+    script.on_event(defines.events.on_built_entity, function (event)
+        if (event.created_entity.name == "straight-rail") then
+            OarcRegrowthOffLimits(event.created_entity.position, 1)
+        elseif (event.created_entity.name == "curved-rail") then
+            OarcRegrowthOffLimits(event.created_entity.position, 1)
+        else
+            OarcRegrowthRefreshArea(event.created_entity.position, 1)
+        end
+    end)
+
+    script.on_event(defines.events.on_robot_built_entity, function (event)
+        if (event.created_entity.name == "straight-rail") then
+            OarcRegrowthOffLimits(event.created_entity.position, 1)
+        elseif (event.created_entity.name == "curved-rail") then
+            OarcRegrowthOffLimits(event.created_entity.position, 1)
+        else
+            OarcRegrowthRefreshArea(event.created_entity.position, 1)
+        end
+    end)
 end
+
+
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s

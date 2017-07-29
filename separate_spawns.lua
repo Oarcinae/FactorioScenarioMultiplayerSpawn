@@ -191,9 +191,6 @@ function InitSpawnGlobalsAndForces()
     if (global.playerCooldowns == nil) then
         global.playerCooldowns = {}
     end
-    if (global.tick_counter == nil) then
-        global.tick_counter = 0
-    end
 
     game.create_force(MAIN_FORCE)
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
@@ -225,9 +222,9 @@ function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
 
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
-        if ENABLE_REGROWTH then
-            OarcRegrowthOffLimits(spawn, 5)
-        end
+        -- if ENABLE_REGROWTH then
+        --     OarcRegrowthOffLimits(spawn, 5)
+        -- end
         global.uniqueSpawns[player.name] = {pos=spawn,moat=moatEnabled}
         ClearNearbyEnemies(player, SAFE_AREA_TILE_DIST)
     else      
@@ -293,7 +290,7 @@ end
 -- we'll have to figure out how to change it.
 function ShareVisionBetweenPlayers()
 
-    if (global.tick_counter >= (TICKS_PER_SECOND*5)) then
+    if ((game.tick % (TICKS_PER_SECOND*5)) == 0) then
         
         for _,force in pairs(game.forces) do
             if (force ~= nil) then
