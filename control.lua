@@ -154,7 +154,7 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
     if ENABLE_REGROWTH then
-        OarcRegrowthChunkGenerate(event)
+        OarcRegrowthChunkGenerate(event.area.left_top)
     end
 
     if ENABLE_UNDECORATOR then
@@ -303,7 +303,7 @@ if ENABLE_REGROWTH then
         elseif (event.created_entity.name == "curved-rail") then
             OarcRegrowthOffLimits(event.created_entity.position, 1)
         else
-            OarcRegrowthRefreshArea(event.created_entity.position, 1)
+            OarcRegrowthRefreshArea(event.created_entity.position, 1, 0)
         end
     end)
 
@@ -313,7 +313,7 @@ if ENABLE_REGROWTH then
         elseif (event.created_entity.name == "curved-rail") then
             OarcRegrowthOffLimits(event.created_entity.position, 1)
         else
-            OarcRegrowthRefreshArea(event.created_entity.position, 1)
+            OarcRegrowthRefreshArea(event.created_entity.position, 1, 0)
         end
     end)
 end
