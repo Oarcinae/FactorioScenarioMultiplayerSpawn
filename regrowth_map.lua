@@ -222,12 +222,12 @@ function OarcRegrowthRemoveAllChunks()
         if (c_timer == nil) then
 
             -- Check for pollution
-            if (game.surfaces[GAME_SURFACE_NAME].get_pollution(c_pos) > 0) then
+            if (game.surfaces[GAME_SURFACE_NAME].get_pollution({c_pos.x*32,c_pos.y*32}) > 0) then
                 global.chunk_regrow.map[c_pos.x][c_pos.y] = game.tick
 
             -- Else delete the chunk
             else
-                game.surfaces[GAME_SURFACE_NAME].delete_chunk({c_pos.x,c_pos.y})
+                game.surfaces[GAME_SURFACE_NAME].delete_chunk(c_pos)
                 global.chunk_regrow.map[c_pos.x][c_pos.y] = nil
             end
         else
