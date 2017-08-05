@@ -298,23 +298,11 @@ if ENABLE_REGROWTH then
     end)
 
     script.on_event(defines.events.on_built_entity, function (event)
-        if (event.created_entity.name == "straight-rail") then
-            OarcRegrowthOffLimits(event.created_entity.position, 1)
-        elseif (event.created_entity.name == "curved-rail") then
-            OarcRegrowthOffLimits(event.created_entity.position, 1)
-        else
-            OarcRegrowthOffLimits(event.created_entity.position, 1)
-        end
+        OarcRegrowthOffLimits(event.created_entity.position, 1)
     end)
 
     script.on_event(defines.events.on_robot_built_entity, function (event)
-        if (event.created_entity.name == "straight-rail") then
-            OarcRegrowthOffLimits(event.created_entity.position, 1)
-        elseif (event.created_entity.name == "curved-rail") then
-            OarcRegrowthOffLimits(event.created_entity.position, 1)
-        else
-            OarcRegrowthOffLimits(event.created_entity.position, 1)
-        end
+        OarcRegrowthOffLimits(event.created_entity.position, 1)
     end)
 end
 
