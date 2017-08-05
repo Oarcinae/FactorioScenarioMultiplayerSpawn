@@ -71,8 +71,9 @@ function FindUnusedSpawns(event)
             -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
             local spawnPos = global.uniqueSpawns[player.name].pos
             global.uniqueSpawns[player.name] = nil
-            SendBroadcastMsg(player.name .. "'s base was marked for clean up because they left within 5 minutes of joining.")
-            OarcRegrowthMarkForRemoval(spawnPos, 5)
+            SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within 15 minutes of joining.")
+            OarcRegrowthMarkForRemoval(spawnPos, 10)
+            global.chunk_regrow.force_removal_flag = game.tick
         end
 
         -- remove that player's cooldown setting

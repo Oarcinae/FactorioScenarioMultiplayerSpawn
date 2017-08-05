@@ -17,8 +17,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.5.1):"
-OTHER_MSG2 = "Far spawn is further now. Tweaking regrowth mode."
+OTHER_MSG1 = "Latest updates in this scenario version (0.5.2):"
+OTHER_MSG2 = "Far spawn is further now. Regrowth cleanup every 1hr now."
 -- Optional other messages below:
 OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
 OTHER_MSG4 = "If you leave in the first 15 minutes, your base will be deleted!"
@@ -236,7 +236,7 @@ WARN_AREA_REDUCTION_RATIO = 15
 ENABLE_SEPARATE_TEAMS = true
 
 -- Main force is what default players join
-MAIN_FORCE = "main_force"
+MAIN_FORCE = "Main Force"
 
 -- Enable if people can spawn at the main base
 ENABLE_DEFAULT_SPAWN = false
@@ -318,4 +318,4 @@ MAP_SETTINGS_RSO_STARTING_AREA = "very-low" -- Does not affect Oarc spawn sizes.
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = false
+global.oarcDebugEnabled = true

@@ -61,7 +61,7 @@ my_small_button_style = {
 }
 my_player_list_fixed_width_style = {
     minimal_width = 200,
-    maximal_width = 200,
+    maximal_width = 400,
     maximal_height = 200
 }
 my_player_list_admin_style = {
@@ -131,6 +131,15 @@ function formattime(ticks)
   local minutes = math.floor((seconds)/60)
   local seconds = math.floor(seconds - 60*minutes)
   return string.format("%dm:%02ds", minutes, seconds)
+end
+
+-- Useful for displaying game time in mins:secs format
+function formattime_hours_mins(ticks)
+  local seconds = ticks / 60
+  local minutes = math.floor((seconds)/60)
+  local hours   = math.floor((minutes)/60)
+  local minutes = math.floor(minutes - 60*hours)
+  return string.format("%dh:%02dm", hours, minutes)
 end
 
 -- Simple function to get total number of items in table
@@ -511,7 +520,8 @@ local function ExpandPlayerListGui(player)
         ApplyStyle(scrollFrame, my_player_list_fixed_width_style)
         scrollFrame.horizontal_scroll_policy = "never"
         for _,player in pairs(game.connected_players) do
-            local text = scrollFrame.add{type="label", caption="("..formattime(player.online_time)..") "..player.name, name=player.name.."_plist"}
+            local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
+            local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
             if (player.admin) then
                 ApplyStyle(text, my_player_list_admin_style)
             else

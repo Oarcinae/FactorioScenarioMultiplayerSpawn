@@ -17,7 +17,14 @@
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
 
+-- Time after which chunks should be cleared.
 REGROWTH_TIMEOUT_TICKS = 60*60*60 -- 1 hour
+
+-- We can't delete chunks regularly without causing lag.
+-- So we should save them up to delete them.
+REGROWTH_CLEANING_INTERVAL_TICKS = REGROWTH_TIMEOUT_TICKS
+
+
 
 -- Init globals and set player join area to be off limits.
 function OarcRegrowthInit()
@@ -32,16 +39,17 @@ function OarcRegrowthInit()
     global.chunk_regrow.min_y = 0
     global.chunk_regrow.max_y = 0
     global.chunk_regrow.y_index = 0
+    global.chunk_regrow.force_removal_flag = 0
 
-    OarcRegrowthOffLimits({x=0,y=0}, 15)
+    OarcRegrowthOffLimits({x=0,y=0}, 10)
 end
 
 function GetChunkTopLeft(pos)
     return {x=pos.x-(pos.x % 32), y=pos.y-(pos.y % 32)}
 end
 
-function GetChunkFromPos(pos)
-    return {x=pos.x-(pos.x % 32), y=pos.y-(pos.y % 32)}
+function GetChunkCoordsFromPos(pos)
+    return {x=math.floor(pos.x/32), y=math.floor(pos.y/32)}
 end
 
 
@@ -50,38 +58,40 @@ end
 -- (Compared to other RSO & Oarc related functions...)
 function OarcRegrowthChunkGenerate(pos)
 
+    c_pos = GetChunkCoordsFromPos(pos)
+
     -- If this is the first chunk in that row:
-    if (global.chunk_regrow.map[pos.x] == nil) then
-        global.chunk_regrow.map[pos.x] = {}
+    if (global.chunk_regrow.map[c_pos.x] == nil) then
+        global.chunk_regrow.map[c_pos.x] = {}
     end
 
     -- Confirm the chunk doesn't already have a value set:
-    if (global.chunk_regrow.map[pos.x][pos.y] == nil) then
-        global.chunk_regrow.map[pos.x][pos.y] = game.tick
+    if (global.chunk_regrow.map[c_pos.x][c_pos.y] == nil) then
+        global.chunk_regrow.map[c_pos.x][c_pos.y] = game.tick
     end
 
     -- Store min/max values for x/y dimensions:
-    if (pos.x < global.chunk_regrow.min_x) then
-        global.chunk_regrow.min_x = pos.x
+    if (c_pos.x < global.chunk_regrow.min_x) then
+        global.chunk_regrow.min_x = c_pos.x
     end
-    if (pos.x > global.chunk_regrow.max_x) then
-        global.chunk_regrow.max_x = pos.x
+    if (c_pos.x > global.chunk_regrow.max_x) then
+        global.chunk_regrow.max_x = c_pos.x
     end
-    if (pos.y < global.chunk_regrow.min_y) then
-        global.chunk_regrow.min_y = pos.y
+    if (c_pos.y < global.chunk_regrow.min_y) then
+        global.chunk_regrow.min_y = c_pos.y
     end
-    if (pos.y > global.chunk_regrow.max_y) then
-        global.chunk_regrow.max_y = pos.y
+    if (c_pos.y > global.chunk_regrow.max_y) then
+        global.chunk_regrow.max_y = c_pos.y
     end
 end
 
 -- Mark an area for immediate forced removal
 function OarcRegrowthMarkForRemoval(pos, chunk_radius)
-    local c_pos = GetChunkTopLeft(pos)
+    local c_pos = GetChunkCoordsFromPos(pos)
     for i=-chunk_radius,chunk_radius do
         for k=-chunk_radius,chunk_radius do
-            local x = c_pos.x+(i*32)
-            local y = c_pos.y+(k*32)
+            local x = c_pos.x+i
+            local y = c_pos.y+k
 
             if (global.chunk_regrow.map[x] == nil) then
                 global.chunk_regrow.map[x] = {}
@@ -94,7 +104,7 @@ end
 
 -- Marks a chunk a position that won't ever be deleted.
 function OarcRegrowthOffLimitsChunk(pos)
-    local c_pos = GetChunkTopLeft(pos)
+    local c_pos = GetChunkCoordsFromPos(pos)
 
     if (global.chunk_regrow.map[c_pos.x] == nil) then
         global.chunk_regrow.map[c_pos.y] = {}
@@ -105,11 +115,11 @@ end
 
 -- Marks a safe area around a position that won't ever be deleted.
 function OarcRegrowthOffLimits(pos, chunk_radius)
-    local c_pos = GetChunkTopLeft(pos)
+    local c_pos = GetChunkCoordsFromPos(pos)
     for i=-chunk_radius,chunk_radius do
         for k=-chunk_radius,chunk_radius do
-            local x = c_pos.x+(i*32)
-            local y = c_pos.y+(k*32)
+            local x = c_pos.x+i
+            local y = c_pos.y+k
 
             if (global.chunk_regrow.map[x] == nil) then
                 global.chunk_regrow.map[x] = {}
@@ -121,7 +131,7 @@ end
 
 -- Refreshes timers on a chunk containing position
 function OarcRegrowthRefreshChunk(pos, bonus_time)
-    local c_pos = GetChunkTopLeft(pos)
+    local c_pos = GetChunkCoordsFromPos(pos)
 
     if (global.chunk_regrow.map[c_pos.x] == nil) then
         global.chunk_regrow.map[c_pos.y] = {}
@@ -133,12 +143,12 @@ end
 
 -- Refreshes timers on all chunks around a certain area
 function OarcRegrowthRefreshArea(pos, chunk_radius, bonus_time)
-    local c_pos = {x=pos.x-(pos.x % 32),
-                    y=pos.y-(pos.y % 32)}
+    local c_pos = GetChunkCoordsFromPos(pos)
+
     for i=-chunk_radius,chunk_radius do
         for k=-chunk_radius,chunk_radius do
-            local x = c_pos.x+(i*32)
-            local y = c_pos.y+(k*32)
+            local x = c_pos.x+i
+            local y = c_pos.y+k
 
             if (global.chunk_regrow.map[x] == nil) then
                 global.chunk_regrow.map[x] = {}
@@ -177,10 +187,10 @@ function OarcRegrowthCheckArray()
         if (global.chunk_regrow.y_index > global.chunk_regrow.max_y) then
             global.chunk_regrow.y_index = global.chunk_regrow.min_y
         else
-            global.chunk_regrow.y_index = global.chunk_regrow.y_index + 32
+            global.chunk_regrow.y_index = global.chunk_regrow.y_index + 1
         end
     else
-        global.chunk_regrow.x_index = global.chunk_regrow.x_index + 32
+        global.chunk_regrow.x_index = global.chunk_regrow.x_index + 1
     end
 
     -- Check row exists, otherwise make one.
@@ -191,10 +201,10 @@ function OarcRegrowthCheckArray()
     -- If the chunk has timed out, add it to the removal list
     local c_timer = global.chunk_regrow.map[global.chunk_regrow.x_index][global.chunk_regrow.y_index]
     if ((c_timer ~= nil) and (c_timer ~= -1) and ((c_timer+REGROWTH_TIMEOUT_TICKS) < game.tick)) then
-       
+        
         -- Check chunk actually exists
-        if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=(global.chunk_regrow.x_index/32),
-                                                                y=(global.chunk_regrow.y_index/32)})) then
+        if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=(global.chunk_regrow.x_index),
+                                                                y=(global.chunk_regrow.y_index)})) then
             table.insert(global.chunk_regrow.removal_list, {x=global.chunk_regrow.x_index,
                                                             y=global.chunk_regrow.y_index})
             global.chunk_regrow.map[global.chunk_regrow.x_index][global.chunk_regrow.y_index] = nil
@@ -202,11 +212,9 @@ function OarcRegrowthCheckArray()
     end
 end
 
--- Remove entries from the removal list
-function OarcRegrowthRemoveChunk()
-
-    -- Next chunk to remove
-    if (#global.chunk_regrow.removal_list > 0) then
+-- Remove all chunks at same time to reduce impact to FPS/UPS
+function OarcRegrowthRemoveAllChunks()
+    while (#global.chunk_regrow.removal_list > 0) do
         local c_pos = table.remove(global.chunk_regrow.removal_list)
         local c_timer = global.chunk_regrow.map[c_pos.x][c_pos.y]
 
@@ -219,13 +227,12 @@ function OarcRegrowthRemoveChunk()
 
             -- Else delete the chunk
             else
-                game.surfaces[GAME_SURFACE_NAME].delete_chunk({c_pos.x/32,c_pos.y/32})
+                game.surfaces[GAME_SURFACE_NAME].delete_chunk({c_pos.x,c_pos.y})
                 global.chunk_regrow.map[c_pos.x][c_pos.y] = nil
-                -- DebugPrint("Deleting Chunk: X="..c_pos.x..",Y="..c_pos.y)
             end
-
         else
-            -- DebugPrint("Chunk no longer expired: X="..c_pos.x..",Y="..c_pos.y)
+
+            -- DebugPrint("Chunk no longer expired?")
         end
     end
 end
@@ -242,12 +249,30 @@ function OarcRegrowthOnTick(event)
     end
 
     -- Every tick, check a few points in the 2d array
-    for i=1,3 do
+    -- According to /measured-command this shouldn't take more
+    -- than 0.1ms on average
+    for i=1,20 do
         OarcRegrowthCheckArray()
     end
 
-    -- Every 30 ticks, remove a chunk from the removal list.
-    if ((game.tick % 30) == 15) then
-        OarcRegrowthRemoveChunk()
+    -- Send a broadcast warning before it happens.
+    if ((game.tick % REGROWTH_TIMEOUT_TICKS) == REGROWTH_TIMEOUT_TICKS-601) then
+        if (#global.chunk_regrow.removal_list > 100) then
+            SendBroadcastMsg("Map cleanup in 10 seconds...")
+        end
+    end
+
+    -- Delete all listed chunks
+    if ((game.tick % REGROWTH_TIMEOUT_TICKS) == REGROWTH_TIMEOUT_TICKS-1) then
+        if (#global.chunk_regrow.removal_list > 100) then
+            OarcRegrowthRemoveAllChunks()
+            SendBroadcastMsg("Map cleanup done...")
+        end
+    end
+
+    -- Catch force remove flag
+    if (game.tick == global.chunk_regrow.force_removal_flag+60) then
+        OarcRegrowthRemoveAllChunks()
+        -- SendBroadcastMsg("Immediate map cleanup done...")
     end
 end
