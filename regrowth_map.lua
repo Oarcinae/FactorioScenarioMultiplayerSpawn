@@ -17,15 +17,13 @@
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
 
-REGROWTH_TIMEOUT_TICKS = 60*30 -- 1 hour
+REGROWTH_TIMEOUT_TICKS = 60*20 -- 1 hour
 
 -- Init globals and set player join area to be off limits.
 function OarcRegrowthInit()
     global.chunk_regrow = {}
     global.chunk_regrow.map = {}
     global.chunk_regrow.removal_list = {}
-    global.chunk_regrow.num_chunks = 0
-    global.chunk_regrow.chunk_index = 1
     global.chunk_regrow.rso_region_roll_counter = 0
     global.chunk_regrow.player_refresh_index = 1
     global.chunk_regrow.min_x = 0
@@ -39,6 +37,10 @@ function OarcRegrowthInit()
 end
 
 function GetChunkTopLeft(pos)
+    return {x=pos.x-(pos.x % 32), y=pos.y-(pos.y % 32)}
+end
+
+function GetChunkFromPos(pos)
     return {x=pos.x-(pos.x % 32), y=pos.y-(pos.y % 32)}
 end
 
@@ -150,7 +152,8 @@ end
 
 -- Refreshes timers on all chunks near an ACTIVE radar
 function OarcRegrowthSectorScan(event)
-    OarcRegrowthRefreshArea(event.radar.position, 16, 0)
+    OarcRegrowthRefreshArea(event.radar.position, 4, 0)
+    OarcRegrowthRefreshChunk(chunk_position)
 end
 
 -- Refresh all chunks near a single player. Cyles through all connected players.
@@ -159,17 +162,8 @@ function OarcRegrowthRefreshPlayerArea()
     if (global.chunk_regrow.player_refresh_index > #game.connected_players) then
         global.chunk_regrow.player_refresh_index = 1
     end
-    for _,force in pairs(game.forces) do
-        if (force ~= nil) then
-            if ((force.name ~= enemy) and
-                (force.name ~= neutral) and
-                (force.name ~= player)) then
-
-                if (game.connected_players[global.chunk_regrow.player_refresh_index]) then
-                    OarcRegrowthRefreshArea(game.connected_players[global.chunk_regrow.player_refresh_index].position, 20, 0)
-                end
-            end
-        end
+    if (game.connected_players[global.chunk_regrow.player_refresh_index]) then
+        OarcRegrowthRefreshArea(game.connected_players[global.chunk_regrow.player_refresh_index].position, 4, 0)
     end
 end
 
@@ -197,26 +191,7 @@ function OarcRegrowthCheckArray()
     -- If the chunk has timed out, add it to the removal list
     local c_timer = global.chunk_regrow.map[global.chunk_regrow.x_index][global.chunk_regrow.y_index]
     if ((c_timer ~= nil) and (c_timer ~= -1) and ((c_timer+REGROWTH_TIMEOUT_TICKS) < game.tick)) then
-
-        -- Only delete chunks near map edges.
-        -- local chunk_x = c_pos.x/32
-        -- local chunk_y = c_pos.y/32
-        -- local ungenerate_chunk_count = 0
-        -- for i=-1,1 do
-        --     for k=-1,1 do
-        --         if (not game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({chunk_x+i,chunk_y+k})) then
-        --             ungenerate_chunk_count = ungenerate_chunk_count +1
-        --         end
-        --     end
-        -- end
-
-        -- Delete the chunk and remove it from the list.              
-        -- if (ungenerate_chunk_count >= 3) then
-        --     game.surfaces[GAME_SURFACE_NAME].delete_chunk({chunk_x,chunk_y})
-        --     global.chunk_regrow.map[c_pos.x][c_pos.y] = nil
-        --     DebugPrint("Deleting Chunk: X="..c_pos.x..",Y="..c_pos.y)
-        -- end
-        
+       
         -- Check chunk actually exists
         if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=(global.chunk_regrow.x_index/32),
                                                                 y=(global.chunk_regrow.y_index/32)})) then
@@ -246,11 +221,11 @@ function OarcRegrowthRemoveChunk()
             else
                 game.surfaces[GAME_SURFACE_NAME].delete_chunk({c_pos.x/32,c_pos.y/32})
                 global.chunk_regrow.map[c_pos.x][c_pos.y] = nil
-                DebugPrint("Deleting Chunk: X="..c_pos.x..",Y="..c_pos.y)
+                -- DebugPrint("Deleting Chunk: X="..c_pos.x..",Y="..c_pos.y)
             end
 
         else
-            DebugPrint("Chunk no longer expired: X="..c_pos.x..",Y="..c_pos.y)
+            -- DebugPrint("Chunk no longer expired: X="..c_pos.x..",Y="..c_pos.y)
         end
     end
 end

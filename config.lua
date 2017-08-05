@@ -21,8 +21,8 @@ OTHER_MSG1 = "Latest updates in this scenario version (0.5.0):"
 OTHER_MSG2 = "Far spawn is further now. Added regrowth mode."
 -- Optional other messages below:
 OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
-OTHER_MSG4 = "If your base loses power, don't expect it to last more than an hour."
-OTHER_MSG5 = "This is a beta, expect bugs, let me know when you find one."
+OTHER_MSG4 = "This is a beta, expect bugs, let me know when you find one."
+OTHER_MSG5 = "If you leave in the first 15 minutes, your base will be deleted!"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -258,7 +258,7 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least 5 minutes
 -- Else their character is removed and their spawn point is freed up for use
-MIN_ONLIME_TIME_IN_MINUTES = 5
+MIN_ONLIME_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLIME_TIME_IN_MINUTES
 
 

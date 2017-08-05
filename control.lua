@@ -289,8 +289,8 @@ end)
 
 ----------------------------------------
 -- Refreshes regrowth timers around an active timer
--- Refresh areas where stuff is built, and mark any chunks with
--- railways as off limits.
+-- Refresh areas where stuff is built, and mark any chunks with player
+-- built stuff as permanent.
 ----------------------------------------
 if ENABLE_REGROWTH then
     script.on_event(defines.events.on_sector_scanned, function (event)
@@ -303,7 +303,7 @@ if ENABLE_REGROWTH then
         elseif (event.created_entity.name == "curved-rail") then
             OarcRegrowthOffLimits(event.created_entity.position, 1)
         else
-            OarcRegrowthRefreshArea(event.created_entity.position, 1, 0)
+            OarcRegrowthOffLimits(event.created_entity.position, 1)
         end
     end)
 
@@ -313,7 +313,7 @@ if ENABLE_REGROWTH then
         elseif (event.created_entity.name == "curved-rail") then
             OarcRegrowthOffLimits(event.created_entity.position, 1)
         else
-            OarcRegrowthRefreshArea(event.created_entity.position, 1, 0)
+            OarcRegrowthOffLimits(event.created_entity.position, 1)
         end
     end)
 end
