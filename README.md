@@ -15,22 +15,15 @@ It should look something like this (for my windows steam install location):
 
 C:\Users\user\AppData\Roaming\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\control.lua
 
+
 ### STEP 2
-
-ALSO download the zip for "locale" from https://github.com/Oarcinae/FactorioUtils
-
-Place this inside the locale folder. It should look like this:
-
-C:\Users\user\AppData\Roaming\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\locale\oarc_utils.lua
-
-### STEP 3
 
 Go into config.lua and edit the strings to add your own server messages.
 
 Rename the "FactorioScenarioMultiplayerSpawn" folder to something shorter and more convenient (optional).
 
 
-### STEP 4
+### STEP 3
 
 Generate a new map, use that save file to host if you want to.
 
@@ -60,6 +53,8 @@ https://mods.factorio.com/mods/orzelek/rso-mod
 Several other portions of the code (tags, frontier style rocket silo) have also been adapted from other scenario code.
 
 Credit to 3Ra for help as well: https://github.com/3RaGaming
+
+Praise be to Mylon
 
 
 ## Random Notes
