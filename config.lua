@@ -17,12 +17,12 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.5.0):"
-OTHER_MSG2 = "Far spawn is further now. Added regrowth mode."
+OTHER_MSG1 = "Latest updates in this scenario version (0.5.1):"
+OTHER_MSG2 = "Far spawn is further now. Tweaking regrowth mode."
 -- Optional other messages below:
 OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
-OTHER_MSG4 = "This is a beta, expect bugs, let me know when you find one."
-OTHER_MSG5 = "If you leave in the first 15 minutes, your base will be deleted!"
+OTHER_MSG4 = "If you leave in the first 15 minutes, your base will be deleted!"
+-- OTHER_MSG5 = 
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -30,7 +30,7 @@ WELCOME_MSG4 = "around your new spawn area to generate..."
 WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
 WELCOME_MSG6 = "Contact: SteamID:Oarc | oarcinae@gmail.com"
 
-SPAWN_MSG1 = "Current Spawn Mode: REGROWTH WILDERNESS (BETA)"
+SPAWN_MSG1 = "Current Spawn Mode: WILDERNESS"
 SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
 SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
