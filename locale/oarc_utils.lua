@@ -12,6 +12,7 @@ CHUNK_SIZE = 32
 MAX_FORCES = 64
 TICKS_PER_SECOND = 60
 TICKS_PER_MINUTE = TICKS_PER_SECOND * 60
+TICKS_PER_HOUR = TICKS_PER_MINUTE * 60
 --------------------------------------------------------------------------------
 
 GAME_SURFACE_NAME="Game"
@@ -712,7 +713,7 @@ function AutoFillVehicle(player, vehicle)
 
     -- Attempt to transfer some fuel
     if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
-        TransferItemMultipleTypes(mainInv, vehicle, {"raw-wood", "coal", "solid-fuel", "rocket-fuel"}, 50)
+        TransferItemMultipleTypes(mainInv, vehicle, {"rocket-fuel", "solid-fuel", "coal", "raw-wood"}, 50)
     end
 
     -- Attempt to transfer some ammo
@@ -722,7 +723,7 @@ function AutoFillVehicle(player, vehicle)
 
     -- Attempt to transfer some tank shells
     if (vehicle.name == "tank") then
-        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-cannon-shell", "cannon-shell"}, 100)
+        TransferItemMultipleTypes(mainInv, vehicle, {"explosive-uranium-cannon-shell", "uranium-cannon-shell", "explosive-cannon-shell", "cannon-shell"}, 100)
     end
 end
 

@@ -16,14 +16,23 @@
 -- 6. Chunks timeout after 1 hour-ish, configurable
 -- 7. For now, oarc spawns are deletion safe as well, but only immediate area.
 
+-- Generic Utility Includes
+require("locale/oarc_utils")
 
--- Time after which chunks should be cleared.
-REGROWTH_TIMEOUT_TICKS = 60*60*60 -- 1 hour
+
+-- Default timeout of generated chunks
+REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR
 
 -- We can't delete chunks regularly without causing lag.
 -- So we should save them up to delete them.
 REGROWTH_CLEANING_INTERVAL_TICKS = REGROWTH_TIMEOUT_TICKS
 
+-- Not used right now.
+-- It takes a radar 7 hours and 20 minutes to scan it's whole area completely
+-- So I will bump the refresh time of blocks up by 8 hours
+-- RADAR_COMPLETE_SCAN_TICKS = TICKS_PER_HOUR*8
+-- Additional bonus time for certain things:
+-- REFRESH_BONUS_RADAR = RADAR_COMPLETE_SCAN_TICKS
 
 
 -- Init globals and set player join area to be off limits.
@@ -52,6 +61,46 @@ function GetChunkCoordsFromPos(pos)
     return {x=math.floor(pos.x/32), y=math.floor(pos.y/32)}
 end
 
+-- This complicated function checks that if a chunk
+function CheckChunkEmpty(pos)
+    chunkPos = GetChunkCoordsFromPos(pos)
+    search_top_left = {x=chunkPos.x*32, y=chunkPos.y*32}
+    search_area = {search_top_left, {x=search_top_left.x+32,y=search_top_left.y+32}}
+    total = 0
+    for f,_ in pairs(game.forces) do
+        if f ~= "neutral" and f ~= "enemy" then
+            entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area = search_area, force=f}
+            total = total + #entities
+            if (#entities > 0) then
+                
+                for _,e in pairs(entities) do
+                    if ((e.type == "player") or
+                         (e.type == "car") or
+                         (e.type == "logistic-robot") or
+                         (e.type == "construction-robot")) then
+                        total = total - 1
+                    end
+                end
+            end
+        end
+    end
+
+    -- A destroyed entity is still found during the event check.
+    return (total == 1)
+end
+
+-- game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area = {game.player.position, {game.player.position.x+32, game.player.position-`32}}, type= "resource"}
+
+-- If an entity is mined or destroyed, then check if the chunk
+-- is empty. If it's empty, reset the refresh timer.
+function OarcRegrowthCheckChunkEmpty(event)
+    if ((event.entity.force ~= nil) and (event.entity.force ~= "neutral") and (event.entity.force ~= "enemy")) then
+        if CheckChunkEmpty(event.entity.position) then
+            DebugPrint("Resetting chunk timer."..event.entity.position.x.." "..event.entity.position.y)
+            OarcRegrowthForceRefreshChunk(event.entity.position, 0)
+        end
+    end
+end
 
 -- Adds new chunks to the global table to track them.
 -- This should always be called first in the chunk generate sequence
@@ -141,7 +190,18 @@ function OarcRegrowthRefreshChunk(pos, bonus_time)
     end
 end
 
--- Refreshes timers on all chunks around a certain area
+-- Forcefully refreshes timers on a chunk containing position
+-- Will overwrite -1 flag.
+function OarcRegrowthForceRefreshChunk(pos, bonus_time)
+    local c_pos = GetChunkCoordsFromPos(pos)
+
+    if (global.chunk_regrow.map[c_pos.x] == nil) then
+        global.chunk_regrow.map[c_pos.y] = {}
+    end
+    global.chunk_regrow.map[c_pos.x][c_pos.y] = game.tick + bonus_time
+end
+
+ -- Refreshes timers on all chunks around a certain area
 function OarcRegrowthRefreshArea(pos, chunk_radius, bonus_time)
     local c_pos = GetChunkCoordsFromPos(pos)
 
@@ -162,7 +222,7 @@ end
 
 -- Refreshes timers on all chunks near an ACTIVE radar
 function OarcRegrowthSectorScan(event)
-    OarcRegrowthRefreshArea(event.radar.position, 4, 0)
+    OarcRegrowthRefreshArea(event.radar.position, 14, 0)
     OarcRegrowthRefreshChunk(event.chunk_position)
 end
 
@@ -183,9 +243,11 @@ function OarcRegrowthCheckArray()
     -- Increment X
     if (global.chunk_regrow.x_index > global.chunk_regrow.max_x) then
         global.chunk_regrow.x_index = global.chunk_regrow.min_x
+
         -- Increment Y
         if (global.chunk_regrow.y_index > global.chunk_regrow.max_y) then
             global.chunk_regrow.y_index = global.chunk_regrow.min_y
+            DebugPrint("Finished checking regrowth array."..global.chunk_regrow.min_x.." "..global.chunk_regrow.max_x.." "..global.chunk_regrow.min_y.." "..global.chunk_regrow.max_y)
         else
             global.chunk_regrow.y_index = global.chunk_regrow.y_index + 1
         end
@@ -256,14 +318,14 @@ function OarcRegrowthOnTick(event)
     end
 
     -- Send a broadcast warning before it happens.
-    if ((game.tick % REGROWTH_TIMEOUT_TICKS) == REGROWTH_TIMEOUT_TICKS-601) then
+    if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-601) then
         if (#global.chunk_regrow.removal_list > 100) then
             SendBroadcastMsg("Map cleanup in 10 seconds...")
         end
     end
 
     -- Delete all listed chunks
-    if ((game.tick % REGROWTH_TIMEOUT_TICKS) == REGROWTH_TIMEOUT_TICKS-1) then
+    if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-1) then
         if (#global.chunk_regrow.removal_list > 100) then
             OarcRegrowthRemoveAllChunks()
             SendBroadcastMsg("Map cleanup done...")
@@ -272,7 +334,10 @@ function OarcRegrowthOnTick(event)
 
     -- Catch force remove flag
     if (game.tick == global.chunk_regrow.force_removal_flag+60) then
+        SendBroadcastMsg("Map cleanup in 10 seconds...")
+    end
+    if (game.tick == global.chunk_regrow.force_removal_flag+660) then
         OarcRegrowthRemoveAllChunks()
-        -- SendBroadcastMsg("Immediate map cleanup done...")
+        SendBroadcastMsg("Map cleanup done...")
     end
 end

@@ -1109,6 +1109,7 @@ local function roll_region(c_x, c_y)
 		return false
 	end
 
+	-- Reroll regions every region_size^2 chunk generation calls.
 	local regrow_rso = false
 	if (ENABLE_REGROWTH) then
 		if (global.chunk_regrow.rso_region_roll_counter > (region_size*region_size/2)) then

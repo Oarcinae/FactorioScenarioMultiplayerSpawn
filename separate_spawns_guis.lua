@@ -349,15 +349,15 @@ function SpawnOptsGuiClick(event)
         end
 
         -- Re-used abandoned spawns...
-        if (#global.unusedSpawns >= 1) then
-            oldSpawn = table.remove(global.unusedSpawns)
-            global.uniqueSpawns[player.name] = oldSpawn
-            player.print("Sorry! You have been assigned to an abandoned base! This is done to keep map size small.")
-            ChangePlayerSpawn(player, oldSpawn.pos)
-            SendPlayerToSpawn(player)
-            GivePlayerStarterItems(player)
-            SendBroadcastMsg(player.name .. " joined an abandoned base!")
-        else
+        -- if (#global.unusedSpawns >= 1) then
+        --     oldSpawn = table.remove(global.unusedSpawns)
+        --     global.uniqueSpawns[player.name] = oldSpawn
+        --     player.print("Sorry! You have been assigned to an abandoned base! This is done to keep map size small.")
+        --     ChangePlayerSpawn(player, oldSpawn.pos)
+        --     SendPlayerToSpawn(player)
+        --     GivePlayerStarterItems(player)
+        --     SendBroadcastMsg(player.name .. " joined an abandoned base!")
+        -- else
 
             -- Find coordinates of a good place to spawn
             if (elemName == "isolated_spawn_far") then
@@ -386,7 +386,7 @@ function SpawnOptsGuiClick(event)
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
-        end
+        -- end
 
     elseif (elemName == "join_other_spawn") then
         DisplaySharedSpawnOptions(player)
@@ -455,7 +455,7 @@ function SharedSpwnOptsGuiClick(event)
     -- If a spawn is removed during this time, the button will not do anything
     else
         for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
-            if (buttonClicked == spawnName) then
+            if ((buttonClicked == spawnName) and (game.players[spawnName] ~= nil)) then
                 CreateSpawnCtrlGui(player)
                 ChangePlayerSpawn(player,sharedSpawn.position)
                 SendPlayerToSpawn(player)

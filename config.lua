@@ -83,7 +83,7 @@ ENABLE_GRAVESTONE_ON_LEAVING = false
 ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 30
 
 -- Enable quick start items
-ENABLE_POWER_ARMOR_QUICK_START = false
+ENABLE_POWER_ARMOR_QUICK_START = true
 
 -- Enable shared vision between teams (all teams are still COOP)
 ENABLE_SHARED_TEAM_VISION = true

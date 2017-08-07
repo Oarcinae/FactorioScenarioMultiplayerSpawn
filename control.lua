@@ -268,8 +268,11 @@ script.on_event(defines.events.on_built_entity, function(event)
     if ENABLE_AUTOFILL then
         Autofill(event)
     end
-end)
 
+    if ENABLE_REGROWTH then
+        OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    end
+end)
 
 
 ----------------------------------------
@@ -297,13 +300,18 @@ if ENABLE_REGROWTH then
         OarcRegrowthSectorScan(event)
     end)
 
-    script.on_event(defines.events.on_built_entity, function (event)
-        OarcRegrowthOffLimits(event.created_entity.position, 1)
+    script.on_event(defines.events.on_robot_built_entity, function (event)
+        OarcRegrowthOffLimitsChunk(event.created_entity.position)
     end)
 
-    script.on_event(defines.events.on_robot_built_entity, function (event)
-        OarcRegrowthOffLimits(event.created_entity.position, 1)
+    script.on_event(defines.events.on_player_mined_entity, function(event)
+        OarcRegrowthCheckChunkEmpty(event)
     end)
+    
+    script.on_event(defines.events.on_robot_mined_entity, function(event)
+        OarcRegrowthCheckChunkEmpty(event)
+    end)
+
 end
 
 
@@ -313,7 +321,9 @@ end
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
     if (ENABLE_SHARED_TEAM_CHAT) then
-        ShareChatBetweenForces(game.players[event.player_index], event.message)
+        if (game.players[event.player_index] ~= nil) then
+            ShareChatBetweenForces(game.players[event.player_index], event.message)
+        end
     end
 end)
 
@@ -327,11 +337,3 @@ script.on_event(defines.events.on_research_finished, function(event)
     end
 end)
 
-
-
-----------------------------------------
--- Other?
-----------------------------------------
--- script.on_event(defines.events.on_robot_built_entity, function(event)
-
--- end)
