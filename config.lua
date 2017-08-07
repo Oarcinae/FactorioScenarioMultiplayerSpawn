@@ -278,7 +278,7 @@ ENEMY_DESTROY_FACTOR_DIVISOR = 5
 -- Frontier Rocket Silo Options
 --------------------------------------------------------------------------------
 
-SILO_CHUNK_DISTANCE_X = 250
+SILO_CHUNK_DISTANCE_X = 15
 SILO_DISTANCE_X = SILO_CHUNK_DISTANCE_X*CHUNK_SIZE + CHUNK_SIZE/2
 SILO_DISTANCE_Y = 16
 

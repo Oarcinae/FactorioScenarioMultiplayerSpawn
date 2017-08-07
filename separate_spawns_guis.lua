@@ -5,7 +5,7 @@
 
 require("separate_spawns")
 
-local SPAWN_GUI_MAX_WIDTH = 450
+local SPAWN_GUI_MAX_WIDTH = 550
 local SPAWN_GUI_MAX_HEIGHT = 750
 
 -- Use this for testing shared spawns...
