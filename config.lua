@@ -17,12 +17,12 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.5.2):"
-OTHER_MSG2 = "Far spawn is further now. Regrowth cleanup every 1hr now."
+OTHER_MSG1 = "Latest updates in this scenario version (0.5.3):"
+OTHER_MSG2 = "Regrowth: Radar protected range increased. Fixed pollution check. Fixed autofill."
 -- Optional other messages below:
 OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
-OTHER_MSG4 = "If you leave in the first 15 minutes, your base will be deleted!"
--- OTHER_MSG5 = 
+OTHER_MSG4 = "If you re-explore deleted parts of the map, resources will be in new locations."
+OTHER_MSG5 = "If you leave in the first 15 minutes, your base will be deleted!"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -318,4 +318,4 @@ MAP_SETTINGS_RSO_STARTING_AREA = "very-low" -- Does not affect Oarc spawn sizes.
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = true
+global.oarcDebugEnabled = false
