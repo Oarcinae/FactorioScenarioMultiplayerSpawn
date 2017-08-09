@@ -321,7 +321,7 @@ end
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
     if (ENABLE_SHARED_TEAM_CHAT) then
-        if (game.players[event.player_index] ~= nil) then
+        if (event.player_index ~= nil) then
             ShareChatBetweenForces(game.players[event.player_index], event.message)
         end
     end
