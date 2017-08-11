@@ -223,7 +223,7 @@ end
 -- Refreshes timers on all chunks near an ACTIVE radar
 function OarcRegrowthSectorScan(event)
     OarcRegrowthRefreshArea(event.radar.position, 14, 0)
-    OarcRegrowthRefreshChunk(event.chunk_position)
+    OarcRegrowthRefreshChunk(event.chunk_position, 0)
 end
 
 -- Refresh all chunks near a single player. Cyles through all connected players.
