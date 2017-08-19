@@ -17,8 +17,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.5.3):"
-OTHER_MSG2 = "Regrowth: Radar protected range increased. Fixed pollution check. Fixed autofill."
+OTHER_MSG1 = "Latest updates in this scenario version (0.5.5):"
+OTHER_MSG2 = "Regrowth release, done with beta testing."
 -- Optional other messages below:
 OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
 OTHER_MSG4 = "If you re-explore deleted parts of the map, resources will be in new locations."
@@ -38,7 +38,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 -- that creates the game.
 SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Regrowth BETA!"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Regrowth!"
 
 
 --------------------------------------------------------------------------------
@@ -80,10 +80,10 @@ ENABLE_GRAVESTONE_ON_DEATH = false
  -- Items dumped into chest when you leave.
 ENABLE_GRAVESTONE_ON_LEAVING = false
  -- If anyone leaves within first X minutes, items get dumped into chest.
-ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 30
+ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 15
 
 -- Enable quick start items
-ENABLE_POWER_ARMOR_QUICK_START = true
+ENABLE_POWER_ARMOR_QUICK_START = false
 
 -- Enable shared vision between teams (all teams are still COOP)
 ENABLE_SHARED_TEAM_VISION = true
