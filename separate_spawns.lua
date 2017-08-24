@@ -68,12 +68,16 @@ function FindUnusedSpawns(event)
 
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
-            -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
-            local spawnPos = global.uniqueSpawns[player.name].pos
-            global.uniqueSpawns[player.name] = nil
-            SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within 15 minutes of joining.")
-            OarcRegrowthMarkForRemoval(spawnPos, 10)
-            global.chunk_regrow.force_removal_flag = game.tick
+            if ENABLE_REGROWTH then
+				local spawnPos = global.uniqueSpawns[player.name].pos
+				global.uniqueSpawns[player.name] = nil
+				SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within 15 minutes of joining.")
+				OarcRegrowthMarkForRemoval(spawnPos, 10)
+				global.chunk_regrow.force_removal_flag = game.tick
+			else
+				table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
+	            SendBroadcastMsg(player.name .. " base was freed up because they left within 5 minutes of joining.")
+			end
         end
 
         -- remove that player's cooldown setting
