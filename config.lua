@@ -258,8 +258,8 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least 5 minutes
 -- Else their character is removed and their spawn point is freed up for use
-MIN_ONLIME_TIME_IN_MINUTES = 15
-MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLIME_TIME_IN_MINUTES
+MIN_ONLINE_TIME_IN_MINUTES = 15
+MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 
 --------------------------------------------------------------------------------
