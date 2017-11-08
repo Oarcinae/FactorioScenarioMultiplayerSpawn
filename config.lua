@@ -11,18 +11,18 @@
 
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, Regrowth, RSO, Long-Reach, Autofill, Undecorator, Player List"
+MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
 
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
 OTHER_MSG1 = "Latest updates in this scenario version (0.5.5):"
-OTHER_MSG2 = "Regrowth release, done with beta testing."
+OTHER_MSG2 = "Regrowth fixes (disabled). Abandoned base removal."
 -- Optional other messages below:
-OTHER_MSG3 = "Regrowth mode will slowly delete unused portions of the map."
-OTHER_MSG4 = "If you re-explore deleted parts of the map, resources will be in new locations."
-OTHER_MSG5 = "If you leave in the first 15 minutes, your base will be deleted!"
+OTHER_MSG3 = "Standard multiplayer spawn allows spawning in far locations."
+OTHER_MSG4 = "You can be on the main team or your own."
+OTHER_MSG5 = "If you leave in the first 15 minutes, your base and character will be deleted!"
 
 
 WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
@@ -38,7 +38,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 -- that creates the game.
 SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server - Regrowth!"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 
 
 --------------------------------------------------------------------------------
@@ -66,10 +66,10 @@ ENABLE_UNDECORATOR = true
 ENABLE_TAGS = true
 
 -- Enable Long Reach
-ENABLE_LONGREACH = true
+ENABLE_LONGREACH = false
 
 -- Enable Autofill
-ENABLE_AUTOFILL = true
+ENABLE_AUTOFILL = false
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -89,7 +89,11 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 ENABLE_SHARED_TEAM_VISION = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
-ENABLE_REGROWTH = true
+ENABLE_REGROWTH = false
+-- If you have regrowth enabled, this should also be enabled.
+-- It removes bases for players that join and leave the game quickly.
+-- This can also be used without enabling regrowth.
+ENABLE_ABANDONED_BASE_REMOVAL = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options
@@ -271,7 +275,7 @@ ENEMY_EXPANSION = false
 
 -- Divide the alien factors by this number to reduce it (or multiply if < 1)
 ENEMY_POLLUTION_FACTOR_DIVISOR = 10
-ENEMY_DESTROY_FACTOR_DIVISOR = 5
+ENEMY_DESTROY_FACTOR_DIVISOR = 10
 
 
 --------------------------------------------------------------------------------

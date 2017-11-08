@@ -121,7 +121,7 @@ script.on_init(function(event)
 
     SetServerWelcomeMessages()
 
-    if ENABLE_REGROWTH then
+    if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
         OarcRegrowthInit()
     end
 
@@ -285,7 +285,11 @@ script.on_event(defines.events.on_tick, function(event)
     end
 
     if ENABLE_REGROWTH then
-        OarcRegrowthOnTick(event)
+        OarcRegrowthOnTick()
+    end
+
+    if ENABLE_ABANDONED_BASE_REMOVAL then
+        OarcRegrowthForceRemovalOnTick()
     end
 
 end)

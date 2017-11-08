@@ -302,7 +302,7 @@ end
 -- This is the main work function, it checks a single chunk in the list
 -- per tick. It works according to the rules listed in the header of this
 -- file.
-function OarcRegrowthOnTick(event)
+function OarcRegrowthOnTick()
 
     -- Every half a second, refresh all chunks near a single player
     -- Cyles through all players. Tick is offset by 2
@@ -331,7 +331,12 @@ function OarcRegrowthOnTick(event)
             SendBroadcastMsg("Map cleanup done...")
         end
     end
+end
 
+-- This function removes any chunks flagged but on demand.
+-- Controlled by the global.chunk_regrow.force_removal_flag
+-- This function may be used outside of the normal regrowth modse.
+function OarcRegrowthForceRemovalOnTick()
     -- Catch force remove flag
     if (game.tick == global.chunk_regrow.force_removal_flag+60) then
         SendBroadcastMsg("Map cleanup in 10 seconds...")
