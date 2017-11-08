@@ -66,10 +66,10 @@ ENABLE_UNDECORATOR = true
 ENABLE_TAGS = true
 
 -- Enable Long Reach
-ENABLE_LONGREACH = false
+ENABLE_LONGREACH = true
 
 -- Enable Autofill
-ENABLE_AUTOFILL = false
+ENABLE_AUTOFILL = true
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
