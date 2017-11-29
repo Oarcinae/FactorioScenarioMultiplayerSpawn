@@ -329,10 +329,11 @@ function ShareRadarBetweenForces(event)
 
                 for _,player in pairs(game.connected_players) do
                     force.chart(GAME_SURFACE_NAME,
-                                {{event.position.x,
-                                 event.position.y},
-                                 {event.position.x,
-                                 event.position.y}})
+                                {{event.chunk_position.x,
+                                 event.chunk_position.y},
+                                 {event.chunk_position.x,
+                                 event.chunk_position.y}})
+                    DebugPrint("X="..event.chunk_position.x..",Y="..event.chunk_position.y)
                 end
             end
         end
