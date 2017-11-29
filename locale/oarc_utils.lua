@@ -1029,11 +1029,11 @@ function CreateGameSurface(mode)
         mapSettings.autoplace_controls = {
             ["coal"]={frequency="very-low", size= "normal", richness= "very-high"},
             ["copper-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
-            ["crude-oil"]={frequency= "very-low", size= "normal", richness= "very-high"},
+            ["crude-oil"]={frequency= "low", size= "normal", richness= "very-high"},
             ["enemy-base"]={frequency= "very-low", size= "very-low", richness= "very-low"},
             ["iron-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
             ["stone"]={frequency= "very-low", size= "normal", richness= "very-high"},
-            ["uranium-ore"]={frequency= "very-low", size= "normal", richness= "very-high"}
+            ["uranium-ore"]={frequency= "low", size= "normal", richness= "very-high"}
         }
     end
 
