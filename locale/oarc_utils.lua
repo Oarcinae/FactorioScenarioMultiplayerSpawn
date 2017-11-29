@@ -487,7 +487,20 @@ function ConfigureAlienStartingParams()
     game.map_settings.enemy_evolution.time_factor=0
     game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
     game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
+    
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
+
+    game.map_settings.enemy_expansion.min_base_spacing = 10
+    game.map_settings.enemy_expansion.max_expansion_distance = 10
+
+    game.map_settings.enemy_expansion.settler_group_min_size = 5
+    game.map_settings.enemy_expansion.settler_group_max_size = 20
+
+    -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 4
+    -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 4
+
+    game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*30
+    game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*120
 end
 
 -- Add Long Reach to Character
@@ -1006,6 +1019,21 @@ function CreateGameSurface(mode)
             ["uranium-ore"]={ size="none" },
             ["crude-oil"]={ size="none" },
             ["enemy-base"]={ size="none" }
+        }
+    else
+        mapSettings.terrain_segmentation="normal"
+        mapSettings.water="normal"
+        mapSettings.starting_area="normal"
+        mapSettings.peaceful_mode=false
+        mapSettings.seed=math.random(999999999);
+        mapSettings.autoplace_controls = {
+            ["coal"]={frequency="very-low", size= "normal", richness= "very-high"},
+            ["copper-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
+            ["crude-oil"]={frequency= "very-low", size= "normal", richness= "very-high"},
+            ["enemy-base"]={frequency= "very-low", size= "very-low", richness= "very-low"},
+            ["iron-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
+            ["stone"]={frequency= "very-low", size= "normal", richness= "very-high"},
+            ["uranium-ore"]={frequency= "very-low", size= "normal", richness= "very-high"}
         }
     end
 

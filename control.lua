@@ -86,6 +86,10 @@ script.on_init(function(event)
 
     -- CreateLobbySurface() -- Currently unused, but have plans for future.
     
+    -- Configures the map settings for enemies
+    -- This controls evolution growth factors and enemy expansion settings.
+    ConfigureAlienStartingParams()
+
     -- Here I create the game surface. I do this so that I don't have to worry
     -- about the game menu settings and I can now generate a map from the command
     -- line more easily!
@@ -114,10 +118,6 @@ script.on_init(function(event)
     if FRONTIER_ROCKET_SILO_MODE then
         ChartRocketSiloArea(game.forces[MAIN_FORCE], game.surfaces[GAME_SURFACE_NAME])
     end
-
-    -- Configures the map settings for enemies
-    -- This controls evolution growth factors and enemy expansion settings.
-    ConfigureAlienStartingParams()
 
     SetServerWelcomeMessages()
 
@@ -294,15 +294,23 @@ script.on_event(defines.events.on_tick, function(event)
 
 end)
 
+
+script.on_event(defines.events.on_sector_scanned, function (event)
+    if ENABLE_REGROWTH then
+        OarcRegrowthSectorScan(event)
+    end
+
+    if ENABLE_SHARED_TEAM_RADAR then
+        ShareRadarBetweenForces(event)
+    end
+end)
+
 ----------------------------------------
 -- Refreshes regrowth timers around an active timer
 -- Refresh areas where stuff is built, and mark any chunks with player
 -- built stuff as permanent.
 ----------------------------------------
 if ENABLE_REGROWTH then
-    script.on_event(defines.events.on_sector_scanned, function (event)
-        OarcRegrowthSectorScan(event)
-    end)
 
     script.on_event(defines.events.on_robot_built_entity, function (event)
         OarcRegrowthOffLimitsChunk(event.created_entity.position)

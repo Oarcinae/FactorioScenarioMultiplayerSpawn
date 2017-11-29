@@ -48,7 +48,7 @@ WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 --------------------------------------------------------------------------------
 
 -- Frontier style rocket silo mode
-FRONTIER_ROCKET_SILO_MODE = true
+FRONTIER_ROCKET_SILO_MODE = false
 
 -- Separate spawns
 -- This is the core of the mod. Probably not a good idea to disable it.
@@ -56,20 +56,20 @@ ENABLE_SEPARATE_SPAWNS = true
 
 -- Enable Scenario version of RSO
 -- You can reconfigure the RSO resource settings in the RSO files if you want to
-ENABLE_RSO = true
+ENABLE_RSO = false
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
 ENABLE_UNDECORATOR = true
 
 -- Enable Tags
-ENABLE_TAGS = true
+ENABLE_TAGS = false
 
 -- Enable Long Reach
-ENABLE_LONGREACH = true
+ENABLE_LONGREACH = false
 
 -- Enable Autofill
-ENABLE_AUTOFILL = true
+ENABLE_AUTOFILL = false
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -87,6 +87,7 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 
 -- Enable shared vision between teams (all teams are still COOP)
 ENABLE_SHARED_TEAM_VISION = true
+ENABLE_SHARED_TEAM_RADAR = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
 ENABLE_REGROWTH = false
@@ -224,7 +225,7 @@ SAFE_AREA_TILE_DIST = CHUNK_SIZE*12
 
 -- Warning area has reduced aliens
 -- +/- this in x and y direction
-WARNING_AREA_TILE_DIST = CHUNK_SIZE*20
+WARNING_AREA_TILE_DIST = CHUNK_SIZE*25
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
 WARN_AREA_REDUCTION_RATIO = 15
@@ -271,11 +272,12 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 
 -- Enable/Disable enemy expansion (Applies to RSO as well!)
-ENEMY_EXPANSION = false
+ENEMY_EXPANSION = true
 
 -- Divide the alien factors by this number to reduce it (or multiply if < 1)
 ENEMY_POLLUTION_FACTOR_DIVISOR = 10
 ENEMY_DESTROY_FACTOR_DIVISOR = 10
+
 
 
 --------------------------------------------------------------------------------

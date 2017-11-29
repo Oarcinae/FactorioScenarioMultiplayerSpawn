@@ -293,7 +293,7 @@ end
 -- we'll have to figure out how to change it.
 function ShareVisionBetweenPlayers()
 
-    if ((game.tick % (TICKS_PER_SECOND*5)) == 0) then
+    if ((game.tick % 10) == 0) then
         
         for _,force in pairs(game.forces) do
             if (force ~= nil) then
@@ -303,17 +303,38 @@ function ShareVisionBetweenPlayers()
 
                     for _,player in pairs(game.connected_players) do
                         force.chart(GAME_SURFACE_NAME,
-                                    {{player.position.x-CHUNK_SIZE,
-                                     player.position.y-CHUNK_SIZE},
-                                     {player.position.x+CHUNK_SIZE,
-                                     player.position.y+CHUNK_SIZE}})
+                                    {{player.position.x-(2*CHUNK_SIZE),
+                                     player.position.y-(2*CHUNK_SIZE)},
+                                     {player.position.x+(2*CHUNK_SIZE),
+                                     player.position.y+(2*CHUNK_SIZE)}})
                     end
                 end
             end
         end
+    end
+end
 
-        global.tick_counter = 0
-    else
-        global.tick_counter = global.tick_counter + 1
+
+-- For each force, if it's a valid force, chart the chunk that was just scanned
+-- for all forces.
+-- I have no idea how compute intensive this function is. If it starts to lag the game
+-- we'll have to figure out how to change it.
+function ShareRadarBetweenForces(event)
+
+    for _,force in pairs(game.forces) do
+        if (force ~= nil) then
+            if ((force.name ~= enemy) and
+                (force.name ~= neutral) and
+                (force.name ~= player)) then
+
+                for _,player in pairs(game.connected_players) do
+                    force.chart(GAME_SURFACE_NAME,
+                                {{event.position.x,
+                                 event.position.y},
+                                 {event.position.x,
+                                 event.position.y}})
+                end
+            end
+        end
     end
 end
