@@ -66,7 +66,7 @@ ENABLE_UNDECORATOR = true
 ENABLE_TAGS = false
 
 -- Enable Long Reach
-ENABLE_LONGREACH = false
+ENABLE_LONGREACH = true
 
 -- Enable Autofill
 ENABLE_AUTOFILL = false
@@ -263,7 +263,7 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least 5 minutes
 -- Else their character is removed and their spawn point is freed up for use
-MIN_ONLINE_TIME_IN_MINUTES = 15
+MIN_ONLINE_TIME_IN_MINUTES = 10
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 
@@ -298,7 +298,7 @@ ENABLE_RANDOM_SILO_POSITION = true
 -- Long Reach Options
 --------------------------------------------------------------------------------
 
-BUILD_DIST_BONUS = 20
+BUILD_DIST_BONUS = 100
 REACH_DIST_BONUS = BUILD_DIST_BONUS
 RESOURCE_DIST_BONUS = 2
 
