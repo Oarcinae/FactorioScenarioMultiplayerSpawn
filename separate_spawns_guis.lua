@@ -407,7 +407,7 @@ function SpawnOptsGuiClick(event)
             CreateSpawnCtrlGui(game.players[buddy_name])
 
             -- Create a new spawn point
-            local newSpawn = {x=0,y=0}
+            local newSpawn = {x=-(CHUNK_SIZE*2),y=0}
 
             -- Create a new force for player if they choose that radio button
             if ENABLE_SEPARATE_TEAMS and joinOwnTeamRadio then
@@ -430,7 +430,7 @@ function SpawnOptsGuiClick(event)
             end
 
             -- Create that spawn in the global vars
-            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*5), y=newSpawn.y}
+            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*3), y=newSpawn.y}
             ChangePlayerSpawn(player, newSpawn)
             ChangePlayerSpawn(game.players[buddy_name], buddySpawn)
             

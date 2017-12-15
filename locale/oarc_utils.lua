@@ -977,6 +977,9 @@ function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
             CreateWaterStrip(surface,
                             {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
                             WATER_SPAWN_LENGTH)
+            CreateWaterStrip(surface,
+                            {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y+1},
+                            WATER_SPAWN_LENGTH)
             GenerateStartingResources(surface, spawn.pos)
         end
     end

@@ -139,8 +139,8 @@ PLAYER_RESPAWN_START_ITEMS = {
 CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 5
 
 -- Near Distance in chunks
-NEAR_MIN_DIST = 25 --50
-NEAR_MAX_DIST = 100 --125
+NEAR_MIN_DIST = 0 --50
+NEAR_MAX_DIST = 50 --125
                    --
 -- Far Distance in chunks
 FAR_MIN_DIST = 200 --50
@@ -224,14 +224,14 @@ SPAWN_TREE_OCTAGON_ENABLED = true
 
 -- Safe area has no aliens
 -- +/- this in x and y direction
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*10
+SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
 
 -- Warning area has reduced aliens
 -- +/- this in x and y direction
-WARNING_AREA_TILE_DIST = CHUNK_SIZE*25
+WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 15
+WARN_AREA_REDUCTION_RATIO = 5`y
 
 
 ---------------------------------------
@@ -325,18 +325,18 @@ CMD_LINE_MAP_GEN = true
 global.clMapGen = {}
 global.clMapGen.terrain_segmentation="normal"
 global.clMapGen.water="normal"
-global.clMapGen.starting_area="normal"
+global.clMapGen.starting_area="low"
 global.clMapGen.peaceful_mode=false
 global.clMapGen.seed=nil;
 -- These are my go to default vanilla settings, it's not RSO, but it's okay.
 global.clMapGen.autoplace_controls = {
-    ["coal"]={frequency="very-low", size= "normal", richness= "very-high"},
-    ["copper-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
-    ["crude-oil"]={frequency= "low", size= "normal", richness= "very-high"},
+    ["coal"]={frequency="very-low", size= "low", richness= "high"},
+    ["copper-ore"]={frequency= "very-low", size= "low", richness= "high"},
+    ["crude-oil"]={frequency= "low", size= "low", richness= "high"},
     ["enemy-base"]={frequency= "low", size= "normal", richness= "normal"},
-    ["iron-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
-    ["stone"]={frequency= "very-low", size= "normal", richness= "very-high"},
-    ["uranium-ore"]={frequency= "low", size= "normal", richness= "very-high"},
+    ["iron-ore"]={frequency= "very-low", size= "low", richness= "high"},
+    ["stone"]={frequency= "very-low", size= "low", richness= "high"},
+    ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
     ["desert"]={frequency= "normal", size= "normal", richness= "normal"},
     ["dirt"]={frequency= "normal", size= "normal", richness= "normal"},
     ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
@@ -344,7 +344,7 @@ global.clMapGen.autoplace_controls = {
     ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
 }
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
-global.clMapGen.cliff_settings={cliff_elevation_0=100, cliff_elevation_interval=100, name="cliff"}
+global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=10, name="cliff"}
 
 -------------------------------------------------------------------------------
 -- DEBUG
@@ -352,4 +352,4 @@ global.clMapGen.cliff_settings={cliff_elevation_0=100, cliff_elevation_interval=
 
 -- DEBUG prints for me
 global.oarcDebugEnabled = true
-BUDDY_SPAWN = false
+BUDDY_SPAWN = true
