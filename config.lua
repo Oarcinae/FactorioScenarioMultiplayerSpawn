@@ -231,7 +231,7 @@ SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
 WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 5`y
+WARN_AREA_REDUCTION_RATIO = 5
 
 
 ---------------------------------------
