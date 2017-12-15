@@ -248,6 +248,15 @@ function DisplaySpawnOptions(player)
         ApplyStyle(sGui.join_other_spawn_lbl1, my_warning_style)
     end
 
+    -- Hack for a 2 player twin spawn.
+    if BUDDY_SPAWN then
+        sGui.add{name = "buddy_spawn",
+                        type = "button",
+                        caption="Buddy Spawn"}
+        sGui.add{name = "buddy_spawn_lbl1", type = "label",
+                        caption="You spawn with a buddy. You must both click this together."}
+    end
+
     -- Some final notes
     sGui.add{name = "note_spacer1", type = "label",
                     caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
@@ -308,6 +317,7 @@ function SpawnOptsGuiClick(event)
         (elemName == "isolated_spawn_near") or
         (elemName == "isolated_spawn_far") or
         (elemName == "join_other_spawn") or
+        (elemName == "buddy_spawn") or
         (elemName == "join_other_spawn_check")) then
 
         if (ENABLE_SEPARATE_TEAMS) then
@@ -320,10 +330,8 @@ function SpawnOptsGuiClick(event)
                     player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
             end
         end
-        player.gui.center.spawn_opts.destroy()
-
-    
-    else
+        player.gui.center.spawn_opts.destroy()   
+    else       
         return -- Do nothing, no valid element item was clicked.
     end
 
@@ -379,11 +387,65 @@ function SpawnOptsGuiClick(event)
 
     elseif (elemName == "join_other_spawn") then
         DisplaySharedSpawnOptions(player)
-    
+
     -- Provide a way to refresh the gui to check if people have shared their
     -- bases.
     elseif (elemName == "join_other_spawn_check") then
         DisplaySpawnOptions(player)
+
+    -- Hacky buddy spawn system
+    elseif (elemName == "buddy_spawn") then
+
+        if (TableLength(global.waitingBuddies) == 0) then
+            table.insert(global.waitingBuddies, player.name)
+            SendBroadcastMsg(player.name .. " is waiting for a buddy.")
+
+        else
+            buddy_name = table.remove(global.waitingBuddies)
+            
+            CreateSpawnCtrlGui(player)
+            CreateSpawnCtrlGui(game.players[buddy_name])
+
+            -- Create a new spawn point
+            local newSpawn = {x=0,y=0}
+
+            -- Create a new force for player if they choose that radio button
+            if ENABLE_SEPARATE_TEAMS and joinOwnTeamRadio then
+                local newForce = CreatePlayerCustomForce(player)
+                local buddyForce = CreatePlayerCustomForce(game.players[buddy_name])
+
+                if (FRONTIER_ROCKET_SILO_MODE and newForce and buddyForce) then
+                    ChartRocketSiloArea(newForce, game.surfaces[GAME_SURFACE_NAME])
+                    ChartRocketSiloArea(buddyForce, game.surfaces[GAME_SURFACE_NAME])
+                end
+            end
+
+            -- Find coordinates of a good place to spawn
+            newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
+
+            -- If that fails, find a random map edge in a rand direction.
+            if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
+                newSpawn = FindMapEdge(GetRandomVector(), player.surface)
+                DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+            end
+
+            -- Create that spawn in the global vars
+            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*5), y=newSpawn.y}
+            ChangePlayerSpawn(player, newSpawn)
+            ChangePlayerSpawn(game.players[buddy_name], buddySpawn)
+            
+            -- Send the player there
+            SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
+            SendPlayerToNewSpawnAndCreateIt(game.players[buddy_name], buddySpawn, moatChoice)
+            SendBroadcastMsg(player.name .. " and " .. buddy_name .. " joined the game from a distance!")
+
+            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
+            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
+            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
+            game.players[buddy_name].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
+            game.players[buddy_name].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
+            game.players[buddy_name].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
+        end
     end
 end
 

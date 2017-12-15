@@ -197,6 +197,9 @@ function InitSpawnGlobalsAndForces()
     if (global.playerCooldowns == nil) then
         global.playerCooldowns = {}
     end
+    if (global.waitingBuddies == nil) then
+        global.waitingBuddies = {}
+    end
 
     game.create_force(MAIN_FORCE)
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)

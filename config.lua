@@ -352,3 +352,4 @@ global.clMapGen.cliff_settings={cliff_elevation_0=100, cliff_elevation_interval=
 
 -- DEBUG prints for me
 global.oarcDebugEnabled = true
+BUDDY_SPAWN = false
