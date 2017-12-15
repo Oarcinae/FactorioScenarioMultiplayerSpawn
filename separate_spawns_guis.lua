@@ -155,11 +155,8 @@ function DisplaySpawnOptions(player)
                         caption="This is the default spawn behavior of a vanilla game."}
         sGui.add{name = "normal_spawn_lbl2", type = "label",
                         caption="You join the default team in the center of the map."}
-        sGui.add{name = "normal_spawn_lbl3", type = "label",
-                        caption="(Back by popular request...)"}
         ApplyStyle(sGui.normal_spawn_lbl1, my_label_style)
         ApplyStyle(sGui.normal_spawn_lbl2, my_label_style)
-        ApplyStyle(sGui.normal_spawn_lbl3, my_label_style)
     else
         sGui.add{name = "normal_spawn_lbl1", type = "label",
                         caption="Default spawn is disabled in this mode."}
@@ -279,11 +276,25 @@ function DisplaySpawnOptions(player)
 end
 
 
+function SpawnOptsGuiOptionsSelect(event)
+    if not (event and event.element and event.element.valid) then return end
+    local elemName = event.element.name
+
+    -- This just updates the radio buttons.
+    if (elemName == "isolated_spawn_main_team_radio") then
+        event.element.parent.isolated_spawn_new_team_radio.state=false
+    elseif (elemName == "isolated_spawn_new_team_radio") then
+        event.element.parent.isolated_spawn_main_team_radio.state=false
+    end
+end
+
+
 -- Handle the gui click of the spawn options
 function SpawnOptsGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
+
 
     if (player.gui.center.spawn_opts == nil) then
         return -- Gui event unrelated to this gui.
@@ -311,14 +322,6 @@ function SpawnOptsGuiClick(event)
         end
         player.gui.center.spawn_opts.destroy()
 
-    -- This just updates the radio buttons.
-    elseif ((elemName == "isolated_spawn_main_team_radio") or
-        (elemName == "isolated_spawn_new_team_radio")) then
-        if (elemName == "isolated_spawn_main_team_radio") then
-            event.element.parent.isolated_spawn_new_team_radio.state=false
-        elseif (elemName == "isolated_spawn_new_team_radio") then
-            event.element.parent.isolated_spawn_main_team_radio.state=false
-        end
     
     else
         return -- Do nothing, no valid element item was clicked.
@@ -329,9 +332,7 @@ function SpawnOptsGuiClick(event)
         GivePlayerStarterItems(player)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg(player.name .. " joined the main force!")
-        ChartArea(player.force, player.position, 4, player.surface)
-
-   
+        ChartArea(player.force, player.position, 4, player.surface) 
 
     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
         CreateSpawnCtrlGui(player)
@@ -348,45 +349,33 @@ function SpawnOptsGuiClick(event)
             end
         end
 
-        -- Re-used abandoned spawns...
-        -- if (#global.unusedSpawns >= 1) then
-        --     oldSpawn = table.remove(global.unusedSpawns)
-        --     global.uniqueSpawns[player.name] = oldSpawn
-        --     player.print("Sorry! You have been assigned to an abandoned base! This is done to keep map size small.")
-        --     ChangePlayerSpawn(player, oldSpawn.pos)
-        --     SendPlayerToSpawn(player)
-        --     GivePlayerStarterItems(player)
-        --     SendBroadcastMsg(player.name .. " joined an abandoned base!")
-        -- else
+        -- Find coordinates of a good place to spawn
+        if (elemName == "isolated_spawn_far") then
+            newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
+        elseif (elemName == "isolated_spawn_near") then
+            newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
+        end
 
-            -- Find coordinates of a good place to spawn
-            if (elemName == "isolated_spawn_far") then
-                newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
-            elseif (elemName == "isolated_spawn_near") then
-                newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
-            end
+        -- If that fails, find a random map edge in a rand direction.
+        if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
+            newSpawn = FindMapEdge(GetRandomVector(), player.surface)
+            DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+        end
 
-            -- If that fails, find a random map edge in a rand direction.
-            if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
-                newSpawn = FindMapEdge(GetRandomVector(), player.surface)
-                DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
-            end
+        -- Create that spawn in the global vars
+        ChangePlayerSpawn(player, newSpawn)
+        
+        -- Send the player there
+        SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
+        if (elemName == "isolated_spawn_near") then
+            SendBroadcastMsg(player.name .. " joined the game from a distance!")
+        elseif (elemName == "isolated_spawn_far") then
+            SendBroadcastMsg(player.name .. " joined the game from a great distance!")
+        end
 
-            -- Create that spawn in the global vars
-            ChangePlayerSpawn(player, newSpawn)
-            
-            -- Send the player there
-            SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
-            if (elemName == "isolated_spawn_near") then
-                SendBroadcastMsg(player.name .. " joined the game from a distance!")
-            elseif (elemName == "isolated_spawn_far") then
-                SendBroadcastMsg(player.name .. " joined the game from a great distance!")
-            end
-
-            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
-            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
-            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
-        -- end
+        player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
+        player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
+        player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
 
     elseif (elemName == "join_other_spawn") then
         DisplaySharedSpawnOptions(player)
@@ -411,7 +400,7 @@ function DisplaySharedSpawnOptions(player)
     ApplyStyle(shGui, my_fixed_width_style)
     shGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     shGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
-    shGui.horizontal_scroll_policy = "never"
+    shGui.can_scroll_horizontally = false
 
 
     for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
@@ -520,7 +509,7 @@ function ExpandSpawnCtrlGui(player, tick)
                             name="spwn_ctrl_panel", caption=""}
         ApplyStyle(spwnCtrls, my_fixed_width_style)
         spwnCtrls.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
-        spwnCtrls.horizontal_scroll_policy = "never"
+        spwnCtrls.can_scroll_horizontally = false
 
         if ENABLE_SHARED_SPAWNS then
             if (global.uniqueSpawns[player.name] ~= nil) then
@@ -561,21 +550,11 @@ function ExpandSpawnCtrlGui(player, tick)
 end
 
 
-function SpawnCtrlGuiClick(event) 
+function SpawnCtrlGuiOptionsSelect(event)
     if not (event and event.element and event.element.valid) then return end
         
     local player = game.players[event.element.player_index]
     local name = event.element.name
-
-    if (name == "spwn_ctrls") then
-        ExpandSpawnCtrlGui(player, event.tick)       
-    end
-
-    if (event.element.parent) then
-        if (event.element.parent.name ~= "spwn_ctrl_panel") then
-            return
-        end
-    end
 
     if (name == "accessToggle") then
         if event.element.state then
@@ -593,6 +572,23 @@ function SpawnCtrlGuiClick(event)
                 global.sharedSpawns[player.name].openAccess = false
                 SendBroadcastMsg("New players can no longer join " .. player.name ..  "'s base!")
             end
+        end
+    end
+end
+
+function SpawnCtrlGuiClick(event) 
+    if not (event and event.element and event.element.valid) then return end
+        
+    local player = game.players[event.element.player_index]
+    local name = event.element.name
+
+    if (name == "spwn_ctrls") then
+        ExpandSpawnCtrlGui(player, event.tick)       
+    end
+
+    if (event.element.parent) then
+        if (event.element.parent.name ~= "spwn_ctrl_panel") then
+            return
         end
     end
 

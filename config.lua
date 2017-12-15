@@ -17,8 +17,8 @@ WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
 WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version (0.5.5):"
-OTHER_MSG2 = "Regrowth fixes (disabled). Abandoned base removal."
+OTHER_MSG1 = "Latest updates in this scenario version:"
+OTHER_MSG2 = "0.16 experimental release."
 -- Optional other messages below:
 OTHER_MSG3 = "Standard multiplayer spawn allows spawning in far locations."
 OTHER_MSG4 = "You can be on the main team or your own."
@@ -36,40 +36,38 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
-SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
+SERVER_OWNER_IS_OARC = false -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
 WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 
 
 --------------------------------------------------------------------------------
 -- Module Enables
--- These enables are not fully tested! For example, disable separate spawns
+-- These enables are not fully tested! For example, disabling separate spawns
 -- will probably break the frontier rocket silo mode
 --------------------------------------------------------------------------------
-
--- Frontier style rocket silo mode
-FRONTIER_ROCKET_SILO_MODE = false
 
 -- Separate spawns
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
--- Enable Scenario version of RSO
--- You can reconfigure the RSO resource settings in the RSO files if you want to
-ENABLE_RSO = false
+-- RSO OPTION HAS BEEN REMOVED FOR NOW. USE THE 0.16 MOD.
+
+-- Frontier style rocket silo mode
+FRONTIER_ROCKET_SILO_MODE = false
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
-ENABLE_UNDECORATOR = true
+ENABLE_UNDECORATOR = false
 
 -- Enable Tags
-ENABLE_TAGS = false
+ENABLE_TAGS = true
 
 -- Enable Long Reach
 ENABLE_LONGREACH = true
 
 -- Enable Autofill
-ENABLE_AUTOFILL = false
+ENABLE_AUTOFILL = true
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -87,7 +85,7 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 
 -- Enable shared vision between teams (all teams are still COOP)
 ENABLE_SHARED_TEAM_VISION = true
-ENABLE_SHARED_TEAM_RADAR = true
+ENABLE_SHARED_TEAM_RADAR = true -- This shares charted chunks. Not active vision.
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
 ENABLE_REGROWTH = false
@@ -151,6 +149,11 @@ FAR_MAX_DIST = 300 --125
 ---------------------------------------
 -- Resource & Spawn Circle Options
 ---------------------------------------
+
+-- Enable this to have a vanilla style starting spawn for all new spawns.
+-- This scenario normally gives you a fixed circle with resources.
+-- USE_VANILLA_STARTING_SPAWN = true
+-- TODO - Requires pre-allocating spawns...
 
 -- Allow players to choose to spawn with a moat
 SPAWN_MOAT_CHOICE_ENABLED = true
@@ -221,7 +224,7 @@ SPAWN_TREE_OCTAGON_ENABLED = true
 
 -- Safe area has no aliens
 -- +/- this in x and y direction
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*12
+SAFE_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- Warning area has reduced aliens
 -- +/- this in x and y direction
@@ -271,14 +274,14 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 -- Alien Options
 --------------------------------------------------------------------------------
 
--- Enable/Disable enemy expansion (Applies to RSO as well!)
+-- Enable/Disable enemy expansion
 ENEMY_EXPANSION = true
 
--- Divide the alien factors by this number to reduce it (or multiply if < 1)
-ENEMY_POLLUTION_FACTOR_DIVISOR = 10
-ENEMY_DESTROY_FACTOR_DIVISOR = 10
-
-
+-- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
+ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DIVISOR = 1
+ENEMY_POLLUTION_FACTOR_DIVISOR = 1
+ENEMY_DESTROY_FACTOR_DIVISOR = 1
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
@@ -309,19 +312,43 @@ RESOURCE_DIST_BONUS = 2
 AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 --------------------------------------------------------------------------------
--- Use rso_config and rso_resource_config for RSO config settings
+-- MAP CONFIGURATION OPTIONS
+-- Configure these if you are running headless since there is no way to set
+-- resources otherwise.
 --------------------------------------------------------------------------------
--- Don't touch unless you know what you're doing...
--- When using RSO, all resources MUST BE SET TO SIZE=NONE!
---------------------------------------------------------------------------------
-MAP_SETTINGS_RSO_TERRAIN_SEGMENTATION = "very-low" -- Frequency of water
-MAP_SETTINGS_RSO_WATER = "high" -- Size of water patches
-MAP_SETTINGS_RSO_PEACEFUL = false -- Peaceful mode for biters/aliens
-MAP_SETTINGS_RSO_STARTING_AREA = "very-low" -- Does not affect Oarc spawn sizes.
+
+-- Set this to true if you are creating the scenario at the cmd line.
+CMD_LINE_MAP_GEN = true
+
+-- Adjust settings here to set your map stuff.
+-- "Sizes can be specified as none, very-low, low, normal, high, very-high"
+global.clMapGen = {}
+global.clMapGen.terrain_segmentation="normal"
+global.clMapGen.water="normal"
+global.clMapGen.starting_area="normal"
+global.clMapGen.peaceful_mode=false
+global.clMapGen.seed=nil;
+-- These are my go to default vanilla settings, it's not RSO, but it's okay.
+global.clMapGen.autoplace_controls = {
+    ["coal"]={frequency="very-low", size= "normal", richness= "very-high"},
+    ["copper-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
+    ["crude-oil"]={frequency= "low", size= "normal", richness= "very-high"},
+    ["enemy-base"]={frequency= "low", size= "normal", richness= "normal"},
+    ["iron-ore"]={frequency= "very-low", size= "normal", richness= "very-high"},
+    ["stone"]={frequency= "very-low", size= "normal", richness= "very-high"},
+    ["uranium-ore"]={frequency= "low", size= "normal", richness= "very-high"},
+    ["desert"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["dirt"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["sand"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
+}
+-- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
+global.clMapGen.cliff_settings={cliff_elevation_0=100, cliff_elevation_interval=100, name="cliff"}
 
 -------------------------------------------------------------------------------
 -- DEBUG
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = false
+global.oarcDebugEnabled = true

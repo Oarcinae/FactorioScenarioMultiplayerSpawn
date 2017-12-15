@@ -24,7 +24,6 @@
 
 -- Generic Utility Includes
 require("locale/oarc_utils")
-require("locale/rso/rso_control")
 require("locale/frontier_silo")
 require("locale/tag")
 
@@ -93,17 +92,7 @@ script.on_init(function(event)
     -- Here I create the game surface. I do this so that I don't have to worry
     -- about the game menu settings and I can now generate a map from the command
     -- line more easily!
-    -- 
-    -- If you are using RSO, map settings are ignored and you MUST configure
-    -- the relevant map settings in config.lua
-    -- 
-    -- If you disable RSO, the map settings will be set from the ones that you
-    -- choose from the game GUI when you start a new scenario.
-    if ENABLE_RSO then
-        CreateGameSurface(RSO_MODE)
-    else
-        CreateGameSurface(VANILLA_MODE)
-    end
+    CreateGameSurface()
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
@@ -124,16 +113,6 @@ script.on_init(function(event)
     if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
         OarcRegrowthInit()
     end
-
-    --If any (not global.) globals are written to at this point, an error will be thrown.
-    --eg, x = 2 will throw an error because it's not global.x
-    -- setmetatable(_G, {
-    --     __newindex = function(_, n)
-    --         log("Attempt to write to undeclared var " .. n)
-    --         game.print("Attempt to write to undeclared var " .. n)
-    --     end
-    -- })
-    -- -- THIS REQUIRES A LOT OF CHANGES TO RSO SOFT MOD...
 
 end)
 
@@ -161,20 +140,17 @@ script.on_event(defines.events.on_chunk_generated, function(event)
         UndecorateOnChunkGenerate(event)
     end
 
-    if ENABLE_RSO then
-        RSO_ChunkGenerated(event)
-    end
-
     if FRONTIER_ROCKET_SILO_MODE then
         GenerateRocketSiloChunk(event)
     end
 
-    -- This MUST come after RSO generation!
-    if ENABLE_SEPARATE_SPAWNS then
+    if ENABLE_SEPARATE_SPAWNS and not USE_VANILLA_STARTING_SPAWN then
         SeparateSpawnsGenerateChunk(event)
     end
 
-    CreateHoldingPenGenerateChunk(event)
+    if not ENABLE_DEFAULT_SPAWN then
+        CreateHoldingPen(event.surface, event.area, 16, false)
+    end
 end)
 
 
@@ -199,6 +175,13 @@ script.on_event(defines.events.on_gui_click, function(event)
 
 end)
 
+script.on_event(defines.events.on_gui_checked_state_changed, function (event)
+    if ENABLE_SEPARATE_SPAWNS then
+        SpawnOptsGuiOptionsSelect(event)
+        SpawnCtrlGuiOptionsSelect(event)
+    end
+end)
+
 
 ----------------------------------------
 -- Player Events
@@ -207,12 +190,12 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 
     PlayerJoinedMessages(event)
 
-    if ENABLE_TAGS then
-        CreateTagGui(event)
-    end
-
     if ENABLE_PLAYER_LIST then
         CreatePlayerListGui(event)
+    end
+
+    if ENABLE_TAGS then
+        CreateTagGui(event)
     end
 end)
 

@@ -18,7 +18,7 @@ local function CreateRocketSilo(surface, chunkArea, force)
         local i = 1
         for dx = -6,6 do
             for dy = -7,6 do
-                tiles[i] = {name = "grass", position = {global.siloPosition.x+dx, global.siloPosition.y+dy}}
+                tiles[i] = {name = "grass-1", position = {global.siloPosition.x+dx, global.siloPosition.y+dy}}
                 i=i+1
             end
         end
@@ -68,9 +68,15 @@ function GenerateRocketSiloChunk(event)
         end
     end
 
+    -- Remove trees/resources inside the spawn area
+    RemoveInCircle(surface, chunkArea, "tree", global.siloPosition, ENFORCE_LAND_AREA_TILE_DIST+5)
+    RemoveInCircle(surface, chunkArea, "resource", global.siloPosition, ENFORCE_LAND_AREA_TILE_DIST+5)
+    RemoveInCircle(surface, chunkArea, "cliff", global.siloPosition, ENFORCE_LAND_AREA_TILE_DIST+5)
+    RemoveDecorationsArea(surface, chunkArea)
+
     -- Create rocket silo
     CreateRocketSilo(surface, chunkArea, MAIN_FORCE)
-    CreateCropCircle(surface, global.siloPosition, chunkArea, 40)
+    CreateCropOctagon(surface, global.siloPosition, chunkArea, 40)
 
 end
 

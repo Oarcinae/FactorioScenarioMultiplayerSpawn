@@ -221,6 +221,7 @@ function ChangePlayerSpawn(player, pos)
 end
 
 function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
+
     -- Send the player to that position
     player.teleport(spawn, GAME_SURFACE_NAME)
     GivePlayerStarterItems(player)
