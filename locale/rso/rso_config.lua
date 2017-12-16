@@ -1,6 +1,6 @@
-debug_enabled = false
+debug_enabled = true
 
-region_size = 10    -- alternative mean to control how further away resources would be, default - 256 tiles or 8 chunks
+region_size = 8    -- alternative mean to control how further away resources would be, default - 256 tiles or 8 chunks
 				    -- each region is region_size*region_size chunks
 				    -- each chunk is 32*32 tiles
 
@@ -37,7 +37,7 @@ endless_resource_mode_sizeModifier = 0.80
 -- Just set it from Oarc's config.lua (look for ENEMY_EXPANSION)
 -- disableEnemyExpansion = false		-- allows for disabling of in-game biter base building
 
-use_RSO_biter_spawning = true    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
+use_RSO_biter_spawning = false    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
 use_vanilla_biter_spawning = false	-- enables using of vanilla spawning 
 
 biter_ratio_segment=3      --the ratio components determining how many biters to spitters will be spawned
@@ -51,5 +51,9 @@ ignoreMapGenSettings = true -- stops the default behaviour of reading map gen se
 fluidResourcesFactor = 20 -- temporary factor for calculation of resource %-ages for fluids
                           -- 
 useResourceCollisionDetection = true	-- enables avoidace calculations to reduce ores overlaping of each other
-resourceCollisionDetectionRatio = 0.8	-- at least this much of ore field needs to be placable to spawn it
+resourceCollisionDetectionRatio = 0.999 -- threshold to exit placement early
+resourceCollisionDetectionRatioFallback = 0.75 	-- at least this much of ore field needs to be placable to spawn it
 resourceCollisionFieldSkip = true		-- determines if ore field should be skipped completely if placement based on ratio failed
+
+remove_trees = false
+reveal_spawn_resources = false

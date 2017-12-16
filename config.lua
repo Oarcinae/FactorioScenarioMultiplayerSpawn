@@ -325,7 +325,7 @@ CMD_LINE_MAP_GEN = true
 -- "Sizes can be specified as none, very-low, low, normal, high, very-high"
 global.clMapGen = {}
 global.clMapGen.terrain_segmentation="normal"
-global.clMapGen.water="normal"
+global.clMapGen.water="none"
 global.clMapGen.starting_area="low"
 global.clMapGen.peaceful_mode=false
 global.clMapGen.seed=nil;
@@ -338,11 +338,11 @@ global.clMapGen.autoplace_controls = {
     ["iron-ore"]={frequency= "very-low", size= "low", richness= "high"},
     ["stone"]={frequency= "very-low", size= "low", richness= "high"},
     ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
-    ["desert"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["dirt"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["desert"]={frequency= "normal", size= "none", richness= "normal"},
+    ["dirt"]={frequency= "normal", size= "none", richness= "normal"},
     ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["sand"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
+    ["sand"]={frequency= "normal", size= "none", richness= "normal"},
+    ["trees"]={frequency= "normal", size= "none", richness= "normal"}
 }
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
 global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=10, name="cliff"}
