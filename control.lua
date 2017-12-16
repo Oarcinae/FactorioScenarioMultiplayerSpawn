@@ -24,6 +24,7 @@
 
 -- Generic Utility Includes
 require("locale/oarc_utils")
+require("locale/rso/rso_control")
 require("locale/frontier_silo")
 require("locale/tag")
 
@@ -92,7 +93,11 @@ script.on_init(function(event)
     -- Here I create the game surface. I do this so that I don't have to worry
     -- about the game menu settings and I can now generate a map from the command
     -- line more easily!
-    CreateGameSurface()
+    if ENABLE_RSO then
+        CreateGameSurface(RSO_MODE)
+    else
+        CreateGameSurface(VANILLA_MODE)
+    end
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
@@ -138,6 +143,10 @@ script.on_event(defines.events.on_chunk_generated, function(event)
 
     if ENABLE_UNDECORATOR then
         UndecorateOnChunkGenerate(event)
+    end
+
+    if ENABLE_RSO then
+        RSO_ChunkGenerated(event)
     end
 
     if FRONTIER_ROCKET_SILO_MODE then

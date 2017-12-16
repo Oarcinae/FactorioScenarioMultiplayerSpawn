@@ -51,7 +51,8 @@ WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
--- RSO OPTION HAS BEEN REMOVED FOR NOW. USE THE 0.16 MOD.
+-- RSO soft-mod (included in the scenario)
+ENABLE_RSO = true
 
 -- Frontier style rocket silo mode
 FRONTIER_ROCKET_SILO_MODE = false
@@ -312,6 +313,15 @@ RESOURCE_DIST_BONUS = 2
 AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 --------------------------------------------------------------------------------
+-- RSO Soft-Mod Configurations
+-- Configure these to tweak the RSO values.
+--------------------------------------------------------------------------------
+-- CONFIGURE STUFF INSIDE rso_config.lua
+-- RSO resources can be very lucky/unlucky...
+-- don't complain if you can't find a resource.
+
+
+--------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
 -- Configure these if you are running headless since there is no way to set
 -- resources otherwise.
@@ -324,7 +334,7 @@ CMD_LINE_MAP_GEN = true
 -- "Sizes can be specified as none, very-low, low, normal, high, very-high"
 global.clMapGen = {}
 global.clMapGen.terrain_segmentation="normal"
-global.clMapGen.water="normal"
+global.clMapGen.water="none"
 global.clMapGen.starting_area="low"
 global.clMapGen.peaceful_mode=false
 global.clMapGen.seed=nil;
@@ -337,11 +347,11 @@ global.clMapGen.autoplace_controls = {
     ["iron-ore"]={frequency= "very-low", size= "low", richness= "high"},
     ["stone"]={frequency= "very-low", size= "low", richness= "high"},
     ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
-    ["desert"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["dirt"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["desert"]={frequency= "normal", size= "none", richness= "normal"},
+    ["dirt"]={frequency= "normal", size= "none", richness= "normal"},
     ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["sand"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
+    ["sand"]={frequency= "normal", size= "none", richness= "normal"},
+    ["trees"]={frequency= "normal", size= "none", richness= "normal"}
 }
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
 global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=10, name="cliff"}

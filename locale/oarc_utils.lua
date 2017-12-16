@@ -988,7 +988,11 @@ end
 --------------------------------------------------------------------------------
 -- Surface Generation Functions
 --------------------------------------------------------------------------------
-function CreateGameSurface()
+
+RSO_MODE = 1
+VANILLA_MODE = 2
+
+function CreateGameSurface(mode)
     local mapSettings =  game.surfaces["nauvis"].map_gen_settings
 
     if CMD_LINE_MAP_GEN then
@@ -1001,6 +1005,16 @@ function CreateGameSurface()
         mapSettings.cliff_settings = global.clMapGen.cliff_settings
     end
 
+    -- To use RSO resources, we have to disable vanilla ore generation
+    if (mode == RSO_MODE) then
+        mapSettings.autoplace_controls["coal"].size="none"
+        mapSettings.autoplace_controls["copper-ore"].size="none"
+        mapSettings.autoplace_controls["iron-ore"].size="none"
+        mapSettings.autoplace_controls["stone"].size="none"
+        mapSettings.autoplace_controls["uranium-ore"].size="none"
+        mapSettings.autoplace_controls["crude-oil"].size="none"
+        mapSettings.autoplace_controls["enemy-base"].size="none"
+    end
 
     local surface = game.create_surface(GAME_SURFACE_NAME,mapSettings)
     surface.set_tiles({{name = "out-of-map",position = {1,1}}})
