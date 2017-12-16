@@ -99,10 +99,10 @@ local function fillVanillaConfig()
 
     config["crude-oil"] = {
         type="resource-liquid",
-        minimum_amount=20000,
+        minimum_amount=10000,
         allotment=70,
-        spawns_per_region={min=1, max=2},
-        richness={min=400000, max=700000}, -- richness per resource spawn
+        spawns_per_region={min=1, max=1},
+        richness={min=400000, max=1000000}, -- richness per resource spawn
         size={min=3, max=7},
         
         starting={richness=400000, size=2, probability=1},

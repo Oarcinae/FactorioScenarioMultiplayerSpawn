@@ -1,4 +1,4 @@
-debug_enabled = true
+debug_enabled = false
 
 region_size = 8    -- alternative mean to control how further away resources would be, default - 256 tiles or 8 chunks
 				    -- each region is region_size*region_size chunks
@@ -23,7 +23,7 @@ multi_resource_chance_diminish = 0.6	-- diminishing effect factor on multi_resou
 
 min_amount=250 					-- default value for minimum amount of resource in single pile
 
-richness_distance_factor= 1 	-- exponent for richness distance factor calculation
+richness_distance_factor= 0.5 	-- exponent for richness distance factor calculation
 fluid_richness_distance_factor = 0.8 -- exponent for richness distance factor calculation for fluids
 size_distance_factor=0.15	   	-- exponent for size distance factor calculation
 
@@ -37,7 +37,7 @@ endless_resource_mode_sizeModifier = 0.80
 -- Just set it from Oarc's config.lua (look for ENEMY_EXPANSION)
 -- disableEnemyExpansion = false		-- allows for disabling of in-game biter base building
 
-use_RSO_biter_spawning = false    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
+use_RSO_biter_spawning = true    	-- enables spawning of biters controlled by RSO mod - less enemies around with more space between bases
 use_vanilla_biter_spawning = false	-- enables using of vanilla spawning 
 
 biter_ratio_segment=3      --the ratio components determining how many biters to spitters will be spawned
@@ -47,8 +47,6 @@ useEnemiesInPeaceMod = false -- additional override for peace mod detection - wh
 
 -- Always leave this setting to true in this soft mod scenario version! -- OARC
 ignoreMapGenSettings = true -- stops the default behaviour of reading map gen settings
-
-fluidResourcesFactor = 20 -- temporary factor for calculation of resource %-ages for fluids
                           -- 
 useResourceCollisionDetection = true	-- enables avoidace calculations to reduce ores overlaping of each other
 resourceCollisionDetectionRatio = 0.999 -- threshold to exit placement early

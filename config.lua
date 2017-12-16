@@ -51,7 +51,7 @@ WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
--- RSO OPTION HAS BEEN REMOVED FOR NOW. USE THE 0.16 MOD.
+-- RSO soft-mod (included in the scenario)
 ENABLE_RSO = true
 
 -- Frontier style rocket silo mode
@@ -311,6 +311,15 @@ RESOURCE_DIST_BONUS = 2
 --------------------------------------------------------------------------------
 
 AUTOFILL_TURRET_AMMO_QUANTITY = 10
+
+--------------------------------------------------------------------------------
+-- RSO Soft-Mod Configurations
+-- Configure these to tweak the RSO values.
+--------------------------------------------------------------------------------
+-- CONFIGURE STUFF INSIDE rso_config.lua
+-- RSO resources can be very lucky/unlucky...
+-- don't complain if you can't find a resource.
+
 
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS

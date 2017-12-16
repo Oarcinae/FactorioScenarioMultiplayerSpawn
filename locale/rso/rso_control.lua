@@ -1237,13 +1237,15 @@ local function roll_region(c_x, c_y)
 
 	--if this chunk is the first in its region to be generated
 	-- or we're hitting a lucky regrowth reroll...
+	-- if global.regions[r_x] and global.regions[r_x][r_y] then
+	-- 	r_data = global.regions[r_x][r_y]
+	-- end
+
+	-- if (not (global.regions[r_x] and global.regions[r_x][r_y]) or regrow_rso) then
+
 	if global.regions[r_x] and global.regions[r_x][r_y] then
 		r_data = global.regions[r_x][r_y]
-	end
-
-	if (not (global.regions[r_x] and global.regions[r_x][r_y]) or regrow_rso) then
-
-
+	else
 		--if this chunk is the first in its region to be generated
 		if not global.regions[r_x] then global.regions[r_x] = {} end
 		global.regions[r_x][r_y]={}
