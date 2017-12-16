@@ -2,6 +2,7 @@
 A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
 Only supports 0.15.x at this time!
+Go to the dev branch for a mostly working 0.16 version: https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn/tree/dev_0.16
 
 ## Instructions
 
