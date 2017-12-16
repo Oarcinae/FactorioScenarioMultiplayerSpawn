@@ -52,6 +52,7 @@ WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 ENABLE_SEPARATE_SPAWNS = true
 
 -- RSO OPTION HAS BEEN REMOVED FOR NOW. USE THE 0.16 MOD.
+ENABLE_RSO = true
 
 -- Frontier style rocket silo mode
 FRONTIER_ROCKET_SILO_MODE = false
