@@ -1,7 +1,7 @@
 # FactorioScenarioMultiplayerSpawn
 A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
-0.16 is EXPERIMENTAL RIGHT NOW. It likely has bugs and it does NOT include RSO at this time.
+0.16 is EXPERIMENTAL RIGHT NOW... Both the game and the scenario.
 
 # NOTE
 It appears as though the method of saving a zip file on one computer and then using that to host on another headless server may causes crashes / GUI issues. Please try launching the game from the command line instead. See STEP 3 - Option 3.

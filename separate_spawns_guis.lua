@@ -398,7 +398,7 @@ function SpawnOptsGuiClick(event)
 
         if (TableLength(global.waitingBuddies) == 0) then
             table.insert(global.waitingBuddies, player.name)
-            SendBroadcastMsg(player.name .. " is waiting for a fuddy.")
+            SendBroadcastMsg(player.name .. " is waiting for a buddy.")
 
         else
             buddy_name = table.remove(global.waitingBuddies)
