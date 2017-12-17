@@ -48,7 +48,7 @@ function OarcRegrowthInit()
     global.chunk_regrow.min_y = 0
     global.chunk_regrow.max_y = 0
     global.chunk_regrow.y_index = 0
-    global.chunk_regrow.force_removal_flag = 0
+    global.chunk_regrow.force_removal_flag = -1000
 
     OarcRegrowthOffLimits({x=0,y=0}, 10)
 end

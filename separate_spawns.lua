@@ -203,6 +203,11 @@ function InitSpawnGlobalsAndForces()
 
     game.create_force(MAIN_FORCE)
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    
+    if ENABLE_SHARED_TEAM_VISION then
+        game.forces[MAIN_FORCE].share_chart = true
+    end
+
     SetCeaseFireBetweenAllForces()
     SetFriendlyBetweenAllForces()
     -- AntiGriefing(game.forces[MAIN_FORCE])
@@ -279,6 +284,9 @@ function CreatePlayerCustomForce(player)
     -- Create a new force using the player's name
     elseif (TableLength(game.forces) < MAX_FORCES) then
         newForce = game.create_force(player.name)
+        if ENABLE_SHARED_TEAM_VISION then
+            newForce.share_chart = true
+        end
         player.force = newForce
         SetCeaseFireBetweenAllForces()
         SetFriendlyBetweenAllForces() 
@@ -295,50 +303,50 @@ end
 -- are in.
 -- I have no idea how compute intensive this function is. If it starts to lag the game
 -- we'll have to figure out how to change it.
-function ShareVisionBetweenPlayers()
+-- function ShareVisionBetweenPlayers()
 
-    if ((game.tick % 10) == 0) then
+--     if ((game.tick % 10) == 0) then
         
-        for _,force in pairs(game.forces) do
-            if (force ~= nil) then
-                if ((force.name ~= enemy) and
-                    (force.name ~= neutral) and
-                    (force.name ~= player)) then
+--         for _,force in pairs(game.forces) do
+--             if (force ~= nil) then
+--                 if ((force.name ~= enemy) and
+--                     (force.name ~= neutral) and
+--                     (force.name ~= player)) then
 
-                    for _,player in pairs(game.connected_players) do
-                        force.chart(GAME_SURFACE_NAME,
-                                    {{player.position.x-(2*CHUNK_SIZE),
-                                     player.position.y-(2*CHUNK_SIZE)},
-                                     {player.position.x+(2*CHUNK_SIZE),
-                                     player.position.y+(2*CHUNK_SIZE)}})
-                    end
-                end
-            end
-        end
-    end
-end
+--                     for _,player in pairs(game.connected_players) do
+--                         force.chart(GAME_SURFACE_NAME,
+--                                     {{player.position.x-(2*CHUNK_SIZE),
+--                                      player.position.y-(2*CHUNK_SIZE)},
+--                                      {player.position.x+(2*CHUNK_SIZE),
+--                                      player.position.y+(2*CHUNK_SIZE)}})
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
 
 
 -- For each force, if it's a valid force, chart the chunk that was just scanned
 -- for all forces.
 -- I have no idea how compute intensive this function is. If it starts to lag the game
 -- we'll have to figure out how to change it.
-function ShareRadarBetweenForces(event)
+-- function ShareRadarBetweenForces(event)
 
-    for _,force in pairs(game.forces) do
-        if (force ~= nil) then
-            if ((force.name ~= enemy) and
-                (force.name ~= neutral) and
-                (force.name ~= player)) then
+--     for _,force in pairs(game.forces) do
+--         if (force ~= nil) then
+--             if ((force.name ~= enemy) and
+--                 (force.name ~= neutral) and
+--                 (force.name ~= player)) then
 
-                for _,player in pairs(game.connected_players) do
-                    force.chart(GAME_SURFACE_NAME,
-                                {{event.chunk_position.x*CHUNK_SIZE,
-                                 event.chunk_position.y*CHUNK_SIZE},
-                                 {event.chunk_position.x*CHUNK_SIZE,
-                                 event.chunk_position.y*CHUNK_SIZE}})
-                end
-            end
-        end
-    end
-end
+--                 for _,player in pairs(game.connected_players) do
+--                     force.chart(GAME_SURFACE_NAME,
+--                                 {{event.chunk_position.x*CHUNK_SIZE,
+--                                  event.chunk_position.y*CHUNK_SIZE},
+--                                  {event.chunk_position.x*CHUNK_SIZE,
+--                                  event.chunk_position.y*CHUNK_SIZE}})
+--                 end
+--             end
+--         end
+--     end
+-- end

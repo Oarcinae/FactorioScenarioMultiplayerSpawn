@@ -271,11 +271,6 @@ end)
 -- Shared vision, charts a small area around other players
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    -- Every few seconds, chart all players to "share vision"
-    if ENABLE_SHARED_TEAM_VISION then
-        ShareVisionBetweenPlayers()
-    end
-
     if ENABLE_REGROWTH then
         OarcRegrowthOnTick()
     end
@@ -290,10 +285,6 @@ end)
 script.on_event(defines.events.on_sector_scanned, function (event)
     if ENABLE_REGROWTH then
         OarcRegrowthSectorScan(event)
-    end
-
-    if ENABLE_SHARED_TEAM_RADAR then
-        ShareRadarBetweenForces(event)
     end
 end)
 

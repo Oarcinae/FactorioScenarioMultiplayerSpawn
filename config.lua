@@ -84,9 +84,8 @@ ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 15
 -- Enable quick start items
 ENABLE_POWER_ARMOR_QUICK_START = false
 
--- Enable shared vision between teams (all teams are still COOP)
+-- Enable shared vision between teams (all teams are COOP regardless)
 ENABLE_SHARED_TEAM_VISION = true
-ENABLE_SHARED_TEAM_RADAR = true -- This shares charted chunks. Not active vision.
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
 ENABLE_REGROWTH = false
@@ -334,12 +333,14 @@ CMD_LINE_MAP_GEN = true
 -- "Sizes can be specified as none, very-low, low, normal, high, very-high"
 global.clMapGen = {}
 global.clMapGen.terrain_segmentation="normal"
-global.clMapGen.water="none"
+global.clMapGen.water="normal"
 global.clMapGen.starting_area="low"
 global.clMapGen.peaceful_mode=false
 global.clMapGen.seed=nil;
 -- These are my go to default vanilla settings, it's not RSO, but it's okay.
 global.clMapGen.autoplace_controls = {
+    
+    -- Resources and enemies only matter if you are NOT using RSO.
     ["coal"]={frequency="very-low", size= "low", richness= "high"},
     ["copper-ore"]={frequency= "very-low", size= "low", richness= "high"},
     ["crude-oil"]={frequency= "low", size= "low", richness= "high"},
@@ -347,11 +348,12 @@ global.clMapGen.autoplace_controls = {
     ["iron-ore"]={frequency= "very-low", size= "low", richness= "high"},
     ["stone"]={frequency= "very-low", size= "low", richness= "high"},
     ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
-    ["desert"]={frequency= "normal", size= "none", richness= "normal"},
-    ["dirt"]={frequency= "normal", size= "none", richness= "normal"},
+
+    ["desert"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["dirt"]={frequency= "normal", size= "normal", richness= "normal"},
     ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["sand"]={frequency= "normal", size= "none", richness= "normal"},
-    ["trees"]={frequency= "normal", size= "none", richness= "normal"}
+    ["sand"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
 }
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
 global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=10, name="cliff"}
