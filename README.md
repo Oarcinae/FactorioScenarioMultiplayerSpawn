@@ -3,6 +3,9 @@ A custom scenario for allowing separate spawn locations in multiplayer. Designed
 
 0.16 is EXPERIMENTAL RIGHT NOW. It likely has bugs and it does NOT include RSO at this time.
 
+# NOTE
+It appears as though the method of saving a zip file on one computer and then using that to host on another headless server may causes crashes / GUI issues. Please try launching the game from the command line instead. See STEP 3 - Option 3.
+
 ## Instructions
 
 ### STEP 1
@@ -25,7 +28,20 @@ Rename the "FactorioScenarioMultiplayerSpawn" folder to something shorter and mo
 
 ### STEP 3
 
-Generate a new map, use that save file to host if you want to.
+#### OPTION 1 (Client Hosted)
+Start a multiplayer game on your client like normal.
+
+#### OPTION 2 (Headless)
+(Bugged in 0.16) Generate a new map, use that save file to host if you want to.
+
+#### OPTION 3 (Headless)
+Place the scenario code in the game's scenario folder, typically something like "..\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\\.."
+
+Start a new game (generates a random map based on the config in config.lua) from the command line:
+./factorio --start-server-load-scenario FactorioScenarioMultiplayerSpawn --server-settings my-server-settings.json
+
+If you want to RESUME from this method, use something like this:
+./factorio --start-server-load-latest --server-settings my-server-settings.json
 
 
 ## Configuration
