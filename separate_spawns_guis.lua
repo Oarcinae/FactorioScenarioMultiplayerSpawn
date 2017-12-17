@@ -336,14 +336,14 @@ function SpawnOptsGuiClick(event)
     end
 
     if (elemName == "default_spawn_btn") then
-        CreateSpawnCtrlGui(player)
         GivePlayerStarterItems(player)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg(player.name .. " joined the main force!")
-        ChartArea(player.force, player.position, 4, player.surface) 
+        ChartArea(player.force, player.position, 4, player.surface)
+        -- Create the button at the top left for setting respawn point and sharing base.
+        CreateSpawnCtrlGui(player)
 
     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
-        CreateSpawnCtrlGui(player)
 
         -- Create a new spawn point
         local newSpawn = {x=0,y=0}
@@ -381,6 +381,9 @@ function SpawnOptsGuiClick(event)
             SendBroadcastMsg(player.name .. " joined the game from a great distance!")
         end
 
+        -- Create the button at the top left for setting respawn point and sharing base.
+        CreateSpawnCtrlGui(player)
+
         player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
         player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
         player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
@@ -402,9 +405,6 @@ function SpawnOptsGuiClick(event)
 
         else
             buddy_name = table.remove(global.waitingBuddies)
-            
-            CreateSpawnCtrlGui(player)
-            CreateSpawnCtrlGui(game.players[buddy_name])
 
             -- Create a new spawn point
             local newSpawn = {x=0,y=0}
@@ -438,6 +438,10 @@ function SpawnOptsGuiClick(event)
             SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
             SendPlayerToNewSpawnAndCreateIt(game.players[buddy_name], buddySpawn, moatChoice)
             SendBroadcastMsg(player.name .. " and " .. buddy_name .. " joined the game from a distance!")
+           
+            -- Create the button at the top left for setting respawn point and sharing base.
+            CreateSpawnCtrlGui(player)
+            CreateSpawnCtrlGui(game.players[buddy_name])
 
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
             player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
@@ -507,7 +511,6 @@ function SharedSpwnOptsGuiClick(event)
     else
         for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
             if ((buttonClicked == spawnName) and (game.players[spawnName] ~= nil)) then
-                CreateSpawnCtrlGui(player)
                 ChangePlayerSpawn(player,sharedSpawn.position)
                 SendPlayerToSpawn(player)
                 GivePlayerStarterItems(player)
@@ -517,6 +520,8 @@ function SharedSpwnOptsGuiClick(event)
                 if (player.gui.center.shared_spawn_opts ~= nil) then
                     player.gui.center.shared_spawn_opts.destroy()
                 end
+                -- Create the button at the top left for setting respawn point and sharing base.
+                CreateSpawnCtrlGui(player)
                 break
             end
         end
