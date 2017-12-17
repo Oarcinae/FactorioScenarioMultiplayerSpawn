@@ -525,7 +525,7 @@ end
 
 
 function CreateSpawnCtrlGui(player)
-  if player.gui.top.spwn_ctrls == nil then
+  if player and (player.gui.top.spwn_ctrls == nil) then
       player.gui.top.add{name="spwn_ctrls", type="button", caption="Spawn Ctrl"}
   end   
 end
