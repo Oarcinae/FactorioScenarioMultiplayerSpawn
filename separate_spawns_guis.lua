@@ -105,6 +105,11 @@ function WelcomeTextGuiClick(event)
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name
 
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
     if (buttonClicked == "welcome_okay_btn") then
         if (player.gui.center.welcome_msg ~= nil) then
             player.gui.center.welcome_msg.destroy()
@@ -304,6 +309,10 @@ function SpawnOptsGuiClick(event)
     local player = game.players[event.player_index]
     local elemName = event.element.name
 
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
 
     if (player.gui.center.spawn_opts == nil) then
         return -- Gui event unrelated to this gui.
@@ -493,6 +502,11 @@ function SharedSpwnOptsGuiClick(event)
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name  
 
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
     if (event.element.parent) then
         if (event.element.parent.name ~= "spawns_scroll_pane") then
             return
@@ -623,6 +637,11 @@ function SpawnCtrlGuiOptionsSelect(event)
     local player = game.players[event.element.player_index]
     local name = event.element.name
 
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
     if (name == "accessToggle") then
         if event.element.state then
             if DoesPlayerHaveCustomSpawn(player) then
@@ -648,6 +667,11 @@ function SpawnCtrlGuiClick(event)
         
     local player = game.players[event.element.player_index]
     local name = event.element.name
+
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
 
     if (name == "spwn_ctrls") then
         ExpandSpawnCtrlGui(player, event.tick)       
