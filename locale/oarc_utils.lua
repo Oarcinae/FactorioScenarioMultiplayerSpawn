@@ -545,7 +545,7 @@ local function ExpandPlayerListGui(player)
                                         name="playerList-panel",
                                         direction = "vertical"}
         ApplyStyle(scrollFrame, my_player_list_fixed_width_style)
-        scrollFrame.can_scroll_horizontally = false
+        scrollFrame.horizontal_scroll_policy = "never"
         for _,player in pairs(game.connected_players) do
             local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
             local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
