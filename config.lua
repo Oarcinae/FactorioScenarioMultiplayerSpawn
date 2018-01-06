@@ -278,8 +278,9 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 ENEMY_EXPANSION = true
 
 -- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DISABLE = true -- Set this to true to disable time based evolution completely.
 ENEMY_TIME_FACTOR_DIVISOR = 1
+ENEMY_POLLUTION_FACTOR_DISABLE = true -- Set this to true to disable pollution based evolution completely.
 ENEMY_POLLUTION_FACTOR_DIVISOR = 1
 ENEMY_DESTROY_FACTOR_DIVISOR = 1
 
@@ -301,7 +302,7 @@ ENABLE_RANDOM_SILO_POSITION = true
 -- Long Reach Options
 --------------------------------------------------------------------------------
 
-BUILD_DIST_BONUS = 100
+BUILD_DIST_BONUS = 125
 REACH_DIST_BONUS = BUILD_DIST_BONUS
 RESOURCE_DIST_BONUS = 2
 

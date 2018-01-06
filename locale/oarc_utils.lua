@@ -494,13 +494,18 @@ function ConfigureAlienStartingParams()
     -- "destroy_factor": 0.002,
     -- "pollution_factor": 0.000015
     if ENEMY_TIME_FACTOR_DISABLE then
-        game.map_settings.enemy_evolution.time_factor=0
+        game.map_settings.enemy_evolution.time_factor = 0
     else
         game.map_settings.enemy_evolution.time_factor=game.map_settings.enemy_evolution.time_factor / ENEMY_TIME_FACTOR_DIVISOR
     end
+
+    if ENEMY_POLLUTION_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.pollution_factor = 0
+    else
+        game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
+    end
+
     game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
-    game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
-    
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
 
     -- game.map_settings.enemy_expansion.min_base_spacing = 10
