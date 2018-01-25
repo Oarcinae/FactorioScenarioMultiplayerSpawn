@@ -183,6 +183,7 @@ script.on_event(defines.events.on_gui_click, function(event)
         BuddySpawnOptsGuiClick(event)
         BuddySpawnWaitMenuClick(event)
         BuddySpawnRequestMenuClick(event)
+        SharedSpawnJoinWaitMenuClick(event)
     end
 
 end)

@@ -6,7 +6,7 @@
 require("separate_spawns")
 
 local SPAWN_GUI_MAX_WIDTH = 550
-local SPAWN_GUI_MAX_HEIGHT = 750
+local SPAWN_GUI_MAX_HEIGHT = 800
 
 -- Use this for testing shared spawns...
 -- local sharedSpawnExample1 = {openAccess=true,
@@ -16,11 +16,11 @@ local SPAWN_GUI_MAX_HEIGHT = 750
 --                             position={x=200,y=200},
 --                             players={"ABC", "DEF"}}
 -- local sharedSpawnExample3 = {openAccess=true,
---                             owner="testName1",
+--                             position={x=400,y=400},
 --                             players={"A", "B", "C", "D"}}
 -- global.sharedSpawns = {testName1=sharedSpawnExample1,
 --                        testName2=sharedSpawnExample2,
---                        testName3=sharedSpawnExample3}
+--                        Oarc=sharedSpawnExample3}
 
 
 -- A display gui message
@@ -447,7 +447,9 @@ function DisplaySharedSpawnOptions(player)
 
 
     for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
-        if sharedSpawn.openAccess then
+        if (sharedSpawn.openAccess and
+            (game.players[spawnName] ~= nil) and
+            game.players[spawnName].connected) then
             local spotsRemaining = MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN - GetOnlinePlayersAtSharedSpawn(spawnName)
             if (spotsRemaining > 0) then
                 shGui.add{type="button", caption=spawnName .. " (" .. spotsRemaining .. " spots remaining)", name=spawnName}
@@ -492,21 +494,91 @@ function SharedSpwnOptsGuiClick(event)
     -- If a spawn is removed during this time, the button will not do anything
     else
         for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
-            if ((buttonClicked == spawnName) and (game.players[spawnName] ~= nil)) then
-                ChangePlayerSpawn(player,sharedSpawn.position)
-                SendPlayerToSpawn(player)
-                GivePlayerStarterItems(player)
-                table.insert(sharedSpawn.players, player.name)
-                SendBroadcastMsg(player.name .. " is joining " .. spawnName .. "'s base!")
-                player.force = game.players[spawnName].force
+            if ((buttonClicked == spawnName) and
+                (game.players[spawnName] ~= nil) and
+                (game.players[spawnName].connected)) then
+                
+                -- Add the player to that shared spawns join queue.
+                if (global.sharedSpawns[spawnName].joinQueue == nil) then
+                    global.sharedSpawns[spawnName].joinQueue = {}
+                end
+                table.insert(global.sharedSpawns[spawnName].joinQueue, player.name)
+
+                -- Clear the shared spawn options gui.
                 if (player.gui.center.shared_spawn_opts ~= nil) then
                     player.gui.center.shared_spawn_opts.destroy()
                 end
-                -- Create the button at the top left for setting respawn point and sharing base.
-                CreateSpawnCtrlGui(player)
+
+                -- Display wait menu with cancel button.
+                DisplaySharedSpawnJoinWaitMenu(player)
+
+                -- Tell other player they are requesting a response.
+                game.players[spawnName].print(player.name .. " is requesting to join your base!")
                 break
             end
         end
+    end
+end
+
+function DisplaySharedSpawnJoinWaitMenu(player)
+
+    player.gui.center.add{name = "join_shared_spawn_wait_menu",
+                            type = "frame",
+                            direction = "vertical",
+                            caption="Waiting for spawn owner to respond..."}
+    local sGui = player.gui.center.join_shared_spawn_wait_menu
+    sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+
+
+    -- Warnings and explanations...
+    sGui.add{name = "warning_lbl1", type = "label",
+                    caption="You will spawn once the host selects yes..."}
+    sGui.add{name = "warning_spacer", type = "label",
+                    caption=" "}
+    ApplyStyle(sGui.warning_lbl1, my_warning_style)
+    ApplyStyle(sGui.warning_spacer, my_spacer_style)
+    
+    sGui.add{name = "cancel_shared_spawn_wait_menu",
+                    type = "button",
+                    caption="Cancel (Return to starting spawn options)"}
+end
+
+-- Handle the gui click of the buddy wait menu
+function SharedSpawnJoinWaitMenuClick(event)
+    if not (event and event.element and event.element.valid) then return end
+    local player = game.players[event.player_index]
+    local elemName = event.element.name
+
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
+    if (player.gui.center.join_shared_spawn_wait_menu == nil) then
+        return -- Gui event unrelated to this gui.
+    end
+
+    -- Check if player is cancelling the request.
+    if (elemName == "cancel_shared_spawn_wait_menu") then
+        player.gui.center.join_shared_spawn_wait_menu.destroy() 
+        DisplaySpawnOptions(player)
+        
+        -- Find and remove the player from the joinQueue they were in.
+        for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
+            if (sharedSpawn.joinQueue ~= nil) then
+                for index,requestingPlayer in pairs(sharedSpawn.joinQueue) do
+                    if (requestingPlayer == player.name) then
+                        table.remove(global.sharedSpawns[spawnName].joinQueue, index)
+                        game.players[spawnName].print(player.name .. " cancelled their request to join your spawn.")
+                        return
+                    end
+                end
+            end
+        end
+
+        DebugPrint("ERROR! Failed to remove player from joinQueue!")
+        player.print("ERROR! Failed to remove player from joinQueue!")
     end
 end
 
@@ -595,6 +667,34 @@ function ExpandSpawnCtrlGui(player, tick)
             ApplyStyle(spwnCtrls.respawn_cooldown_note2, my_note_style)
             ApplyStyle(spwnCtrls.respawn_cooldown_spacer1, my_spacer_style)            
         end
+
+        -- Display a list of people in the join queue for your base.
+        if (ENABLE_SHARED_SPAWNS and IsSharedSpawnActive(player)) then
+            if ((global.sharedSpawns[player.name].joinQueue ~= nil) and
+                (#global.sharedSpawns[player.name].joinQueue > 0)) then
+
+                spwnCtrls.add{name = "drop_down_msg_lbl1", type = "label",
+                                caption="Select a player from the join queue:"}
+                spwnCtrls.add{name = "join_queue_dropdown",
+                                type = "drop-down",
+                                items = global.sharedSpawns[player.name].joinQueue}
+                spwnCtrls.add{name = "accept_player_request",
+                                type = "button",
+                                caption="Accept"}
+                spwnCtrls.add{name = "reject_player_request",
+                                type = "button",
+                                caption="Reject"}
+                ApplyStyle(spwnCtrls.drop_down_msg_lbl1, my_label_style)
+            else
+                spwnCtrls.add{name = "empty_join_queue_note1", type = "label",
+                        caption="You have no players requesting to join you at this time."}
+
+                ApplyStyle(spwnCtrls.empty_join_queue_note1, my_note_style)
+            end
+            spwnCtrls.add{name = "join_queue_spacer", type = "label",
+                            caption=" "}
+            ApplyStyle(spwnCtrls.join_queue_spacer, my_spacer_style)
+        end
     end
 end
 
@@ -610,6 +710,7 @@ function SpawnCtrlGuiOptionsSelect(event)
         return
     end
 
+    -- Handle changes to spawn sharing.
     if (name == "accessToggle") then
         if event.element.state then
             if DoesPlayerHaveCustomSpawn(player) then
@@ -634,15 +735,15 @@ function SpawnCtrlGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
         
     local player = game.players[event.element.player_index]
-    local name = event.element.name
+    local elemName = event.element.name
 
     if not player then
         DebugPrint("Another gui click happened with no valid player...")
         return
     end
 
-    if (name == "spwn_ctrls") then
-        ExpandSpawnCtrlGui(player, event.tick)       
+    if (elemName == "spwn_ctrls") then
+        ExpandSpawnCtrlGui(player, event.tick)
     end
 
     if (event.element.parent) then
@@ -652,11 +753,76 @@ function SpawnCtrlGuiClick(event)
     end
 
     -- Sets a new respawn point and resets the cooldown.
-    if (name == "setRespawnLocation") then
+    if (elemName == "setRespawnLocation") then
         if DoesPlayerHaveCustomSpawn(player) then
             ChangePlayerSpawn(player, player.position)
             ExpandSpawnCtrlGui(player, event.tick) 
             player.print("Re-spawn point updated!")
+        end
+    end
+
+    -- Accept or reject pending player join requests to a shared base
+    if ((elemName == "accept_player_request") or (elemName == "reject_player_request")) then
+
+        if ((event.element.parent.join_queue_dropdown == nil) or
+            (event.element.parent.join_queue_dropdown.selected_index == 0)) then
+            player.print("Selected player is no longer waiting to join!")
+            ExpandSpawnCtrlGui(player, event.tick) 
+            return
+        end
+
+        joinQueueIndex = event.element.parent.join_queue_dropdown.selected_index
+        joinQueuePlayerChoice = event.element.parent.join_queue_dropdown.get_item(joinQueueIndex)
+
+        if ((game.players[joinQueuePlayerChoice] == nil) or
+            (not game.players[joinQueuePlayerChoice].connected)) then
+            player.print("Selected player is no longer waiting to join!")
+            ExpandSpawnCtrlGui(player, event.tick) 
+            return
+        end
+
+        if (elemName == "reject_player_request") then
+            player.print("You rejected " .. joinQueuePlayerChoice .. "'s request to join your base.")
+            SendMsg(joinQueuePlayerChoice, "Your request to join was rejected.")
+            
+
+            game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy() 
+            DisplaySpawnOptions(game.players[joinQueuePlayerChoice])
+            
+            -- Find and remove the player from the joinQueue they were in.
+            for index,requestingPlayer in pairs(global.sharedSpawns[player.name].joinQueue) do
+                if (requestingPlayer == joinQueuePlayerChoice) then
+                    table.remove(global.sharedSpawns[player.name].joinQueue, index)
+                    return
+                end
+            end
+        
+        elseif (elemName == "accept_player_request") then
+
+            -- Send an announcement
+            SendBroadcastMsg(joinQueuePlayerChoice .. " is joining " .. player.name .. "'s base!")
+            
+            -- Close the waiting players menu
+            game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy() 
+            
+            -- Find and remove the player from the joinQueue they were in.
+            for index,requestingPlayer in pairs(global.sharedSpawns[player.name].joinQueue) do
+                if (requestingPlayer == joinQueuePlayerChoice) then
+                    table.remove(global.sharedSpawns[player.name].joinQueue, index)
+                end
+            end
+
+            -- Spawn the player
+            joiningPlayer = game.players[joinQueuePlayerChoice]
+            ChangePlayerSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
+            SendPlayerToSpawn(joiningPlayer)
+            GivePlayerStarterItems(joiningPlayer)
+            table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
+            joiningPlayer.force = game.players[player.name].force
+
+            -- Create the button at the top left for setting respawn point and sharing base.
+            CreateSpawnCtrlGui(joiningPlayer)
+            ExpandSpawnCtrlGui(player, event.tick) 
         end
     end
 end
@@ -700,14 +866,17 @@ function DisplayBuddySpawnOptions(player)
         end
     end
 
+    buddyGui.add{name = "drop_down_msg_lbl1", type = "label",
+                    caption="Select a buddy from the waiting list:"}
     buddyGui.add{name = "waiting_buddies_dropdown",
                     type = "drop-down",
-                    caption="Waiting Buddies:",
                     items = buddyList}
-
-
+    buddyGui.add{name = "refresh_buddy_list",
+                    type = "button",
+                    caption="Refresh Buddy List"}
     buddyGui.add{name = "waiting_buddies_spacer", type = "label",
                     caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    ApplyStyle(buddyGui.drop_down_msg_lbl1, my_label_style)
     ApplyStyle(buddyGui.waiting_buddies_spacer, my_spacer_style)
 
 
@@ -757,9 +926,6 @@ function DisplayBuddySpawnOptions(player)
     ApplyStyle(buddyGui.buddy_spawn_spacer, my_spacer_style)
 
 
-    buddyGui.add{name = "refresh_buddy_list",
-                    type = "button",
-                    caption="Refresh Buddy List"}
     buddyGui.add{name = "buddy_spawn_cancel",
                     type = "button",
                     caption="Cancel (Return to Previous Options)"}

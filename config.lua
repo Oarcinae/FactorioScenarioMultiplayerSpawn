@@ -265,7 +265,7 @@ ENABLE_SHARED_TEAM_CHAT = true
 ---------------------------------------
 -- Special Action Cooldowns
 ---------------------------------------
-RESPAWN_COOLDOWN_IN_MINUTES = 60
+RESPAWN_COOLDOWN_IN_MINUTES = 15
 RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least 5 minutes

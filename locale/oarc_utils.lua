@@ -114,6 +114,13 @@ function SendBroadcastMsg(msg)
     end
 end
 
+-- Send a message to a player, safely checks if they exist and are online.
+function SendMsg(playerName, msg)
+    if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
+        game.players[playerName].print(msg)
+    end
+end
+
 -- Special case for ensuring that if I create the server, my messages are
 -- used instead of the generic insert msg warning.
 function SetServerWelcomeMessages()
@@ -272,6 +279,17 @@ function ShareChatBetweenForces(player, msg)
             end
         end
     end
+end
+
+-- Merges force2 INTO force1 but keeps all research between both forces.
+function MergeForcesKeepResearch(force1, force2)
+    for techName,luaTech in pairs(force2.technologies)
+        if (luaTech.researched) then
+           force1.technologies[techName].researched = true
+           force1.technologies[techName].level = luaTech.level
+        end
+    end
+    game.merge_forces(force2, force1)
 end
 
 -- Undecorator
