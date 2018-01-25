@@ -121,6 +121,10 @@ end
 
 -- Display the spawn options and explanation
 function DisplaySpawnOptions(player)
+    if (player.gui.center.spawn_opts ~= nil) then
+        DebugPrint("Tried to display spawn options when it was already displayed!")
+        return
+    end
     player.gui.center.add{name = "spawn_opts",
                             type = "frame",
                             direction = "vertical",
@@ -253,13 +257,13 @@ function DisplaySpawnOptions(player)
         ApplyStyle(sGui.join_other_spawn_lbl1, my_warning_style)
     end
 
-    -- Hack for a 2 player twin spawn.
-    if BUDDY_SPAWN then
+    -- New awesome buddy spawning system
+    if ENABLE_SHARED_SPAWNS and ENABLE_BUDDY_SPAWN then
         sGui.add{name = "buddy_spawn",
                         type = "button",
                         caption="Buddy Spawn"}
         sGui.add{name = "buddy_spawn_lbl1", type = "label",
-                        caption="You spawn with a buddy. You must both click this together."}
+                        caption="You spawn next to a buddy of your choosing."}
     end
 
     -- Some final notes
@@ -290,7 +294,7 @@ function DisplaySpawnOptions(player)
 end
 
 
-function SpawnOptsGuiOptionsSelect(event)
+function SpawnOptsRadioSelect(event)
     if not (event and event.element and event.element.valid) then return end
     local elemName = event.element.name
 
@@ -300,6 +304,18 @@ function SpawnOptsGuiOptionsSelect(event)
     elseif (elemName == "isolated_spawn_new_team_radio") then
         event.element.parent.isolated_spawn_main_team_radio.state=false
     end
+
+    if (elemName == "buddy_spawn_main_team_radio") then
+        event.element.parent.buddy_spawn_new_team_radio.state=false
+        event.element.parent.buddy_spawn_buddy_team_radio.state=false
+    elseif (elemName == "buddy_spawn_new_team_radio") then
+        event.element.parent.buddy_spawn_main_team_radio.state=false
+        event.element.parent.buddy_spawn_buddy_team_radio.state=false
+    elseif (elemName == "buddy_spawn_buddy_team_radio") then
+        event.element.parent.buddy_spawn_main_team_radio.state=false
+        event.element.parent.buddy_spawn_new_team_radio.state=false
+    end
+
 end
 
 
@@ -347,7 +363,7 @@ function SpawnOptsGuiClick(event)
     if (elemName == "default_spawn_btn") then
         GivePlayerStarterItems(player)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
-        SendBroadcastMsg(player.name .. " joined the main force!")
+        SendBroadcastMsg(player.name .. " is joining the main force!")
         ChartArea(player.force, player.position, 4, player.surface)
         -- Create the button at the top left for setting respawn point and sharing base.
         CreateSpawnCtrlGui(player)
@@ -383,11 +399,11 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, newSpawn)
         
         -- Send the player there
-        SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
+        QueuePlayerForDelayedSpawn(player, newSpawn, moatChoice)
         if (elemName == "isolated_spawn_near") then
-            SendBroadcastMsg(player.name .. " joined the game from a distance!")
+            SendBroadcastMsg(player.name .. " is joining the game from a distance!")
         elseif (elemName == "isolated_spawn_far") then
-            SendBroadcastMsg(player.name .. " joined the game from a great distance!")
+            SendBroadcastMsg(player.name .. " is joining the game from a great distance!")
         end
 
         -- Create the button at the top left for setting respawn point and sharing base.
@@ -407,58 +423,10 @@ function SpawnOptsGuiClick(event)
 
     -- Hacky buddy spawn system
     elseif (elemName == "buddy_spawn") then
+        table.insert(global.waitingBuddies, player.name)
+        SendBroadcastMsg(player.name .. " is looking for a buddy.")
 
-        if (TableLength(global.waitingBuddies) == 0) then
-            table.insert(global.waitingBuddies, player.name)
-            SendBroadcastMsg(player.name .. " is waiting for a buddy.")
-
-        else
-            buddy_name = table.remove(global.waitingBuddies)
-
-            -- Create a new spawn point
-            local newSpawn = {x=0,y=0}
-
-            -- Create a new force for player if they choose that radio button
-            if ENABLE_SEPARATE_TEAMS and joinOwnTeamRadio then
-                local newForce = CreatePlayerCustomForce(player)
-                local buddyForce = CreatePlayerCustomForce(game.players[buddy_name])
-
-                if (FRONTIER_ROCKET_SILO_MODE and newForce and buddyForce) then
-                    ChartRocketSiloArea(newForce, game.surfaces[GAME_SURFACE_NAME])
-                    ChartRocketSiloArea(buddyForce, game.surfaces[GAME_SURFACE_NAME])
-                end
-            end
-
-            -- Find coordinates of a good place to spawn
-            newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
-
-            -- If that fails, find a random map edge in a rand direction.
-            if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
-                newSpawn = FindMapEdge(GetRandomVector(), player.surface)
-                DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
-            end
-
-            -- Create that spawn in the global vars
-            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*4), y=newSpawn.y}
-            ChangePlayerSpawn(player, newSpawn)
-            ChangePlayerSpawn(game.players[buddy_name], buddySpawn)
-            
-            -- Send the player there
-            SendPlayerToNewSpawnAndCreateIt(player, newSpawn, moatChoice)
-            SendPlayerToNewSpawnAndCreateIt(game.players[buddy_name], buddySpawn, moatChoice)
-            SendBroadcastMsg(player.name .. " and " .. buddy_name .. " joined the game from a distance!")
-           
-            -- Create the button at the top left for setting respawn point and sharing base.
-            CreateSpawnCtrlGui(player)
-            CreateSpawnCtrlGui(game.players[buddy_name])
-
-            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
-            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
-            player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
-            game.players[buddy_name].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
-            game.players[buddy_name].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
-            game.players[buddy_name].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
-        end
+        DisplayBuddySpawnOptions(player)
     end
 end
 
@@ -529,7 +497,7 @@ function SharedSpwnOptsGuiClick(event)
                 SendPlayerToSpawn(player)
                 GivePlayerStarterItems(player)
                 table.insert(sharedSpawn.players, player.name)
-                SendBroadcastMsg(player.name .. " joined " .. spawnName .. "'s base!")
+                SendBroadcastMsg(player.name .. " is joining " .. spawnName .. "'s base!")
                 player.force = game.players[spawnName].force
                 if (player.gui.center.shared_spawn_opts ~= nil) then
                     player.gui.center.shared_spawn_opts.destroy()
@@ -690,5 +658,497 @@ function SpawnCtrlGuiClick(event)
             ExpandSpawnCtrlGui(player, event.tick) 
             player.print("Re-spawn point updated!")
         end
+    end
+end
+
+-- Display the buddy spawn menu
+function DisplayBuddySpawnOptions(player)
+    player.gui.center.add{name = "buddy_spawn_opts",
+                            type = "frame",
+                            direction = "vertical",
+                            caption="Buddy Spawn Options"}
+    local buddyGui = player.gui.center.buddy_spawn_opts
+    buddyGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    buddyGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+
+
+    -- Warnings and explanations...
+    buddyGui.add{name = "warning_lbl1", type = "label",
+                    caption="Once a buddy accepts a spawn request, it is final!"}
+    buddyGui.add{name = "warning_spacer", type = "label",
+                    caption=" "}
+    ApplyStyle(buddyGui.warning_lbl1, my_warning_style)
+    ApplyStyle(buddyGui.warning_spacer, my_spacer_style)
+
+    buddyGui.add{name = "spawn_msg_lbl1", type = "label",
+                    caption=SPAWN_MSG1}
+    buddyGui.add{name = "spawn_msg_lbl2", type = "label",
+                    caption=SPAWN_MSG2}
+    buddyGui.add{name = "spawn_msg_lbl3", type = "label",
+                    caption=SPAWN_MSG3}
+    buddyGui.add{name = "spawn_msg_spacer", type = "label",
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    ApplyStyle(buddyGui.spawn_msg_lbl1, my_label_style)
+    ApplyStyle(buddyGui.spawn_msg_lbl2, my_label_style)
+    ApplyStyle(buddyGui.spawn_msg_lbl3, my_label_style)
+    ApplyStyle(buddyGui.spawn_msg_spacer, my_spacer_style)
+
+    buddyList = {}
+    for _,buddyName in pairs(global.waitingBuddies) do
+        if (buddyName ~= player.name) then
+            table.insert(buddyList, buddyName)
+        end
+    end
+
+    buddyGui.add{name = "waiting_buddies_dropdown",
+                    type = "drop-down",
+                    caption="Waiting Buddies:",
+                    items = buddyList}
+
+
+    buddyGui.add{name = "waiting_buddies_spacer", type = "label",
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    ApplyStyle(buddyGui.waiting_buddies_spacer, my_spacer_style)
+
+
+    -- The buddy spawning options.
+    local buddySpawnFlow = buddyGui.add{name = "spawn_buddy_flow",
+                                    type = "flow",
+                                    direction="vertical"}
+    
+
+    buddySpawnFlow.add{name = "buddy_spawn_main_team_radio",
+                    type = "radiobutton",
+                    caption="Join Main Team (shared research)",
+                    state=true}
+    buddySpawnFlow.add{name = "buddy_spawn_new_team_radio",
+                    type = "radiobutton",
+                    caption="Create Your Own Team (own research tree)",
+                    state=false}
+    buddySpawnFlow.add{name = "buddy_spawn_buddy_team_radio",
+                    type = "radiobutton",
+                    caption="Create Your Own Buddy Team (buddy and you share research)",
+                    state=false}
+    if (SPAWN_MOAT_CHOICE_ENABLED) then
+        buddySpawnFlow.add{name = "buddy_spawn_moat_option_checkbox",
+                        type = "checkbox",
+                        caption="Surround your spawn with a moat",
+                        state=false}
+    end
+
+    buddySpawnFlow.add{name = "buddy_options_spacer", type = "label",
+                caption=" "}
+    ApplyStyle(buddySpawnFlow.buddy_options_spacer, my_spacer_style)
+
+
+    buddySpawnFlow.add{name = "buddy_spawn_request_near",
+                    type = "button",
+                    caption="Request Buddy Spawn (Near)"}
+    buddySpawnFlow.add{name = "buddy_spawn_request_far",
+                    type = "button",
+                    caption="Request Buddy Spawn (Far)"}
+    
+    buddySpawnFlow.add{name = "buddy_spawn_lbl1", type = "label",
+                    caption="You are spawned in a new area, with some starting resources."}    
+    ApplyStyle(buddySpawnFlow.buddy_spawn_lbl1, my_label_style)
+
+    buddyGui.add{name = "buddy_spawn_spacer", type = "label",
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    ApplyStyle(buddyGui.buddy_spawn_spacer, my_spacer_style)
+
+
+    buddyGui.add{name = "refresh_buddy_list",
+                    type = "button",
+                    caption="Refresh Buddy List"}
+    buddyGui.add{name = "buddy_spawn_cancel",
+                    type = "button",
+                    caption="Cancel (Return to Previous Options)"}
+
+    -- Some final notes
+    buddyGui.add{name = "note_spacer1", type = "label",
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    buddyGui.add{name = "note_spacer2", type = "label",
+                    caption=" "}
+
+    if MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN then
+        buddyGui.add{name = "shared_spawn_note1", type = "label",
+                    caption="If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join." }
+        ApplyStyle(buddyGui.shared_spawn_note1, my_note_style)
+    end
+    buddyGui.add{name = "note_lbl1", type = "label",
+                    caption="Near spawn is between " .. NEAR_MIN_DIST*CHUNK_SIZE .. "-" .. NEAR_MAX_DIST*CHUNK_SIZE ..  " tiles away from the center of the map."}
+    buddyGui.add{name = "note_lbl2", type = "label",
+                    caption="Far spawn is between " .. FAR_MIN_DIST*CHUNK_SIZE .. "-" .. FAR_MAX_DIST*CHUNK_SIZE ..  " tiles away from the center of the map."}
+    buddyGui.add{name = "note_lbl3", type = "label",
+                    caption="Buddy spawns are only 1 chunk apart."}
+    buddyGui.add{name = "note_spacer3", type = "label",
+                    caption=" "}
+    ApplyStyle(buddyGui.note_lbl1, my_note_style)
+    ApplyStyle(buddyGui.note_lbl2, my_note_style)
+    ApplyStyle(buddyGui.note_lbl3, my_note_style)
+    ApplyStyle(buddyGui.note_spacer1, my_spacer_style)
+    ApplyStyle(buddyGui.note_spacer2, my_spacer_style)
+    ApplyStyle(buddyGui.note_spacer3, my_spacer_style)
+end
+
+
+
+-- Handle the gui click of the spawn options
+function BuddySpawnOptsGuiClick(event)
+    if not (event and event.element and event.element.valid) then return end
+    local player = game.players[event.player_index]
+    local elemName = event.element.name
+
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
+    if (player.gui.center.buddy_spawn_opts == nil) then
+        return -- Gui event unrelated to this gui.
+    end
+
+    -- Just refresh the buddy list dropdown values only.
+    if (elemName == "refresh_buddy_list") then 
+        player.gui.center.buddy_spawn_opts.waiting_buddies_dropdown.clear_items()
+
+        for _,buddyName in pairs(global.waitingBuddies) do
+            if (player.name ~= buddyName) then
+                player.gui.center.buddy_spawn_opts.waiting_buddies_dropdown.add_item(buddyName)
+            end
+        end
+        return
+    end
+
+    -- Handle the cancel button to exit this menu
+    if (elemName == "buddy_spawn_cancel") then 
+        player.gui.center.buddy_spawn_opts.destroy() 
+        DisplaySpawnOptions(player)
+
+        -- Remove them from the buddy list when they cancel
+        for i=#global.waitingBuddies,1,-1 do
+            name = global.waitingBuddies[i]
+            if (name == player.name) then
+                table.remove(global.waitingBuddies, i)
+            end
+        end
+    end
+
+    local joinMainTeamRadio, joinOwnTeamRadio, joinBuddyTeamRadio, moatChoice = false
+    local buddyChoice = nil
+
+    -- Handle the spawn request button clicks
+    if ((elemName == "buddy_spawn_request_near") or
+        (elemName == "buddy_spawn_request_far")) then
+
+        buddySpawnGui = player.gui.center.buddy_spawn_opts
+
+        dropDownIndex = buddySpawnGui.waiting_buddies_dropdown.selected_index
+        if (dropDownIndex > 0) then
+            buddyChoice = buddySpawnGui.waiting_buddies_dropdown.get_item(dropDownIndex)
+        else
+            player.print("You have not selected a valid buddy! Please try again.")
+            return
+        end
+
+        buddyIsStillWaiting = false
+        for _,buddyName in pairs(global.waitingBuddies) do
+            if (buddyChoice == buddyName) then
+                buddyIsStillWaiting = true
+                break
+            end
+        end
+        if (not buddyIsStillWaiting) then
+            player.print("Selected buddy is no longer available! Please try again.")
+            player.gui.center.buddy_spawn_opts.destroy()
+            DisplayBuddySpawnOptions(player)
+            return
+        end
+
+        joinMainTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_main_team_radio.state
+        joinOwnTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_new_team_radio.state
+        joinBuddyTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_buddy_team_radio.state
+        if (SPAWN_MOAT_CHOICE_ENABLED) then
+            moatChoice =  buddySpawnGui.spawn_buddy_flow.buddy_spawn_moat_option_checkbox.state
+        end
+
+        -- Save the chosen spawn options somewhere for later use.
+        global.buddySpawnOptions[player.name] = {joinMainTeamRadio=joinMainTeamRadio,
+                                                    joinOwnTeamRadio=joinOwnTeamRadio,
+                                                    joinBuddyTeamRadio=joinBuddyTeamRadio,
+                                                    moatChoice=moatChoice,
+                                                    buddyChoice=buddyChoice,
+                                                    distChoice=elemName}
+
+        player.gui.center.buddy_spawn_opts.destroy()   
+
+        -- Display prompts to the players
+        DisplayBuddySpawnWaitMenu(player)
+        DisplayBuddySpawnRequestMenu(game.players[buddyChoice], player.name)
+        if (game.players[buddyChoice].gui.center.buddy_spawn_opts ~= nil) then
+            game.players[buddyChoice].gui.center.buddy_spawn_opts.destroy()
+        end
+
+        -- Remove them from the buddy list while they make up their minds.
+        for i=#global.waitingBuddies,1,-1 do
+            name = global.waitingBuddies[i]
+            if ((name == player.name) or (name == buddyChoice)) then
+                table.remove(global.waitingBuddies, i)
+            end
+        end
+
+    else       
+        return -- Do nothing, no valid element item was clicked.
+    end
+end
+
+
+function DisplayBuddySpawnWaitMenu(player)
+
+    player.gui.center.add{name = "buddy_wait_menu",
+                            type = "frame",
+                            direction = "vertical",
+                            caption="Waiting for buddy to respond..."}
+    local sGui = player.gui.center.buddy_wait_menu
+    sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+
+
+    -- Warnings and explanations...
+    sGui.add{name = "warning_lbl1", type = "label",
+                    caption="You will spawn once your buddy selects yes..."}
+    sGui.add{name = "warning_spacer", type = "label",
+                    caption=" "}
+    ApplyStyle(sGui.warning_lbl1, my_warning_style)
+    ApplyStyle(sGui.warning_spacer, my_spacer_style)
+    
+    sGui.add{name = "cancel_buddy_wait_menu",
+                    type = "button",
+                    caption="Cancel (Return to starting spawn options)"}
+end
+
+-- Handle the gui click of the buddy wait menu
+function BuddySpawnWaitMenuClick(event)
+    if not (event and event.element and event.element.valid) then return end
+    local player = game.players[event.player_index]
+    local elemName = event.element.name
+
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
+    if (player.gui.center.buddy_wait_menu == nil) then
+        return -- Gui event unrelated to this gui.
+    end
+
+    -- Check if player is cancelling the request.
+    if (elemName == "cancel_buddy_wait_menu") then
+        player.gui.center.buddy_wait_menu.destroy() 
+        DisplaySpawnOptions(player)
+
+        buddy = game.players[global.buddySpawnOptions[player.name].buddyChoice]
+
+        if (buddy.gui.center.buddy_request_menu ~= nil) then
+            buddy.gui.center.buddy_request_menu.destroy() 
+        end
+        if (buddy.gui.center.buddy_spawn ~= nil) then
+            buddy.gui.center.buddy_spawn_opts.destroy()
+        end 
+        DisplaySpawnOptions(buddy)
+
+        buddy.print(player.name .. " cancelled their buddy request!")
+    end
+end
+
+function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
+    
+    player.gui.center.add{name = "buddy_request_menu",
+                            type = "frame",
+                            direction = "vertical",
+                            caption="Buddy Request!"}
+    local sGui = player.gui.center.buddy_request_menu
+    sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+
+
+    -- Warnings and explanations...
+    sGui.add{name = "warning_lbl1", type = "label",
+                    caption=requestingBuddyName .. " is requesting a buddy spawn from you!"}
+    sGui.add{name = "warning_spacer", type = "label",
+                    caption=" "}
+    ApplyStyle(sGui.warning_lbl1, my_warning_style)
+    ApplyStyle(sGui.warning_spacer, my_spacer_style)
+    
+
+    teamText = "error!"
+    if (global.buddySpawnOptions[requestingBuddyName].joinMainTeamRadio) then
+        teamText = "the main team"
+    elseif (global.buddySpawnOptions[requestingBuddyName].joinOwnTeamRadio) then
+        teamText = "on separate teams"
+    elseif (global.buddySpawnOptions[requestingBuddyName].joinBuddyTeamRadio) then
+        teamText = "a buddy team"
+    end
+
+    moatText = " "
+    if (global.buddySpawnOptions[requestingBuddyName].moatChoice) then
+        moatText = " surrounded by a moat "
+    end
+
+    distText = "error!"
+    if (global.buddySpawnOptions[requestingBuddyName].distChoice == "buddy_spawn_request_near") then
+        distText = "near to the center of the map!"
+    elseif (global.buddySpawnOptions[requestingBuddyName].distChoice == "buddy_spawn_request_far") then
+        distText = "far from the center of the map!"
+    end
+
+
+    requestText = requestingBuddyName .. " would like to join " .. teamText .. " next to you" .. moatText .. distText
+
+
+    sGui.add{name = "note_lbl1", type = "label",
+                    caption=requestText}
+    sGui.add{name = "note_spacer1", type = "label",
+                    caption=" "}
+    ApplyStyle(sGui.note_lbl1, my_note_style)
+    ApplyStyle(sGui.note_spacer1, my_spacer_style)
+
+    sGui.add{name = "accept_buddy_request",
+                    type = "button",
+                    caption="Accept"}
+    sGui.add{name = "decline_buddy_request",
+                    type = "button",
+                    caption="Decline"}
+end
+
+-- Handle the gui click of the buddy request menu
+function BuddySpawnRequestMenuClick(event)
+    if not (event and event.element and event.element.valid) then return end
+    local player = game.players[event.player_index]
+    local elemName = event.element.name
+
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
+    if (player.gui.center.buddy_request_menu == nil) then
+        return -- Gui event unrelated to this gui.
+    end
+
+    -- Check if it's a button press and lookup the matching buddy info
+    if ((elemName == "accept_buddy_request") or (elemName == "decline_buddy_request")) then
+
+        requesterName = nil
+        requesterOptions = {}
+        for name,opts in pairs(global.buddySpawnOptions) do
+            if (opts.buddyChoice == player.name) then
+                requesterName = name
+                requesterOptions = opts
+            end
+        end
+        
+        if (requesterName == nil) then
+            player.print("Error! Invalid buddy info...")
+            DebugPrint("Error! Invalid buddy info...")
+
+            player.gui.center.buddy_request_menu.destroy() 
+            DisplaySpawnOptions(player)
+        end
+    else
+        return -- Not a button click
+    end
+
+
+    -- Check if player is cancelling the request.
+    if (elemName == "accept_buddy_request") then
+
+        if (game.players[requesterName].gui.center.buddy_wait_menu ~= nil) then
+            game.players[requesterName].gui.center.buddy_wait_menu.destroy() 
+        end
+        if (player.gui.center.buddy_request_menu ~= nil) then
+            player.gui.center.buddy_request_menu.destroy()
+        end 
+
+        -- Create a new spawn point
+        local newSpawn = {x=0,y=0}
+
+        -- Create a new force for each player if they chose that option
+        if requesterOptions.joinOwnTeamRadio then
+            local newForce = CreatePlayerCustomForce(player)
+            local buddyForce = CreatePlayerCustomForce(game.players[requesterName])
+
+            if (FRONTIER_ROCKET_SILO_MODE and newForce and buddyForce) then
+                ChartRocketSiloArea(newForce, game.surfaces[GAME_SURFACE_NAME])
+                ChartRocketSiloArea(buddyForce, game.surfaces[GAME_SURFACE_NAME])
+            end
+
+        -- Create a new force for the combined players if they chose that option
+        elseif requesterOptions.joinBuddyTeamRadio then
+            local buddyForce = CreatePlayerCustomForce(game.players[requesterName])
+            player.force = buddyForce
+
+            if (FRONTIER_ROCKET_SILO_MODE and newForce and buddyForce) then
+                ChartRocketSiloArea(buddyForce, game.surfaces[GAME_SURFACE_NAME])
+            end
+        end
+
+        -- Find coordinates of a good place to spawn
+        if (requesterOptions.distChoice == "buddy_spawn_request_far") then
+            newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
+        elseif (requesterOptions.distChoice == "buddy_spawn_request_near") then
+            newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
+        end
+
+        -- If that fails, find a random map edge in a rand direction.
+        if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
+            newSpawn = FindMapEdge(GetRandomVector(), player.surface)
+            DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+        end
+
+        -- Create that spawn in the global vars
+        if (requesterOptions.moatChoice) then
+            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*4), y=newSpawn.y}
+        else
+            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*3), y=newSpawn.y}
+        end
+        ChangePlayerSpawn(player, newSpawn)
+        ChangePlayerSpawn(game.players[requesterName], buddySpawn)
+        
+        -- Send the player there
+        QueuePlayerForDelayedSpawn(player, newSpawn, requesterOptions.moatChoice)
+        QueuePlayerForDelayedSpawn(game.players[requesterName], buddySpawn, requesterOptions.moatChoice)
+        SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
+       
+        -- Create the button at the top left for setting respawn point and sharing base.
+        CreateSpawnCtrlGui(player)
+        CreateSpawnCtrlGui(game.players[requesterName])
+
+        player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
+        player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
+        player.print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
+        game.players[requesterName].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!")
+        game.players[requesterName].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!")
+        game.players[requesterName].print("PLEASE WAIT WHILE YOUR SPAWN POINT IS GENERATED!!!")
+
+
+    end
+
+
+    if (elemName == "decline_buddy_request") then
+        player.gui.center.buddy_request_menu.destroy() 
+        DisplaySpawnOptions(player)
+
+        requesterBuddy = game.players[requesterName]
+
+        if (requesterBuddy.gui.center.buddy_wait_menu ~= nil) then
+            requesterBuddy.gui.center.buddy_wait_menu.destroy() 
+        end
+        if (requesterBuddy.gui.center.buddy_spawn ~= nil) then
+            requesterBuddy.gui.center.buddy_spawn_opts.destroy()
+        end 
+        DisplaySpawnOptions(requesterBuddy)
+
+        requesterBuddy.print(player.name .. " declined your buddy request!")
     end
 end

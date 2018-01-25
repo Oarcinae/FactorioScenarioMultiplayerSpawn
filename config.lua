@@ -18,7 +18,7 @@ WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Hav
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
 OTHER_MSG1 = "Latest updates in this scenario version:"
-OTHER_MSG2 = "0.16 experimental release."
+OTHER_MSG2 = "0.16 experimental release. Now with BUDDY SPAWN system."
 -- Optional other messages below:
 OTHER_MSG3 = "Standard multiplayer spawn allows spawning in far locations."
 OTHER_MSG4 = "You can be on the main team or your own."
@@ -50,6 +50,10 @@ WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 -- Separate spawns
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
+
+-- This allows 2 players to spawn next to each other in the wilderness,
+-- each with their own starting point. It adds more GUI selection options.
+ENABLE_BUDDY_SPAWN = true
 
 -- RSO soft-mod (included in the scenario)
 ENABLE_RSO = true
@@ -364,5 +368,4 @@ global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=1
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = true
-BUDDY_SPAWN = true
+global.oarcDebugEnabled = false

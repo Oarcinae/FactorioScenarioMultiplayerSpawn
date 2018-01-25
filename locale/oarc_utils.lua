@@ -150,6 +150,15 @@ function TableLength(T)
   return count
 end
 
+-- Simple function to get distance between two positions.
+function getDistance(posA, posB)
+    -- Get the length for each of the components x and y
+    local xDist = posB.x - posA.x
+    local yDist = posB.y - posA.y
+
+    return math.sqrt( (xDist ^ 2) + (yDist ^ 2) ) 
+end
+
 -- Chart area for a force
 function ChartArea(force, position, chunkDist, surface)
     force.chart(surface,
@@ -320,15 +329,15 @@ function IsChunkAreaUngenerated(chunkPos, chunkDist, surface)
 end
 
 -- Clear out enemies around an area with a certain distance
-function ClearNearbyEnemies(player, safeDist)
+function ClearNearbyEnemies(pos, safeDist, surface)
     local safeArea = {left_top=
-                    {x=player.position.x-safeDist,
-                     y=player.position.y-safeDist},
+                    {x=pos.x-safeDist,
+                     y=pos.y-safeDist},
                   right_bottom=
-                    {x=player.position.x+safeDist,
-                     y=player.position.y+safeDist}}
+                    {x=pos.x+safeDist,
+                     y=pos.y+safeDist}}
 
-    for _, entity in pairs(player.surface.find_entities_filtered{area = safeArea, force = "enemy"}) do
+    for _, entity in pairs(surface.find_entities_filtered{area = safeArea, force = "enemy"}) do
         entity.destroy()
     end
 end
@@ -926,12 +935,12 @@ end
 
 
 
--- Create the spawn areas.
+-- Clear the spawn areas.
 -- This should be run inside the chunk generate event and be given a list of all
 -- unique spawn points.
 -- This clears enemies in the immediate area, creates a slightly safe area around it,
--- And spawns the basic resources as well
-function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
+-- It no LONGER generates the resources though as that is now handled in a delayed event!
+function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
     for name,spawn in pairs(spawnPointTable) do
 
         -- Create a bunch of useful area and position variables
@@ -957,7 +966,7 @@ function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
         if CheckIfInArea(chunkAreaCenter,landArea) then
 
             -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
             RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
             RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
             RemoveDecorationsArea(surface, chunkArea)
@@ -978,15 +987,15 @@ function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
         -- Provide starting resources
         -- This is run on the bottom, right chunk of the spawn area which should be
         -- generated last, so it should work everytime.
-        if CheckIfInArea(spawnPosOffset,chunkArea) then
-            CreateWaterStrip(surface,
-                            {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
-                            WATER_SPAWN_LENGTH)
-            CreateWaterStrip(surface,
-                            {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y+1},
-                            WATER_SPAWN_LENGTH)
-            GenerateStartingResources(surface, spawn.pos)
-        end
+        -- if CheckIfInArea(spawnPosOffset,chunkArea) then
+        --     CreateWaterStrip(surface,
+        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
+        --                     WATER_SPAWN_LENGTH)
+        --     CreateWaterStrip(surface,
+        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y+1},
+        --                     WATER_SPAWN_LENGTH)
+        --     GenerateStartingResources(surface, spawn.pos)
+        -- end
     end
 end
 

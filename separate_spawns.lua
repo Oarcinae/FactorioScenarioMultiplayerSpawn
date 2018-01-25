@@ -36,7 +36,7 @@ function SeparateSpawnsGenerateChunk(event)
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it does a few things like make the area
     -- safe and provide a guaranteed area of land and water tiles.
-    CreateSpawnAreas(surface, chunkArea, global.uniqueSpawns)
+    SetupAndClearSpawnAreas(surface, chunkArea, global.uniqueSpawns)
 end
 
 
@@ -68,9 +68,19 @@ function FindUnusedSpawns(event)
 
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
-            if ENABLE_ABANDONED_BASE_REMOVAL then
+
+            -- Check if it was near someone else's base.
+            nearOtherSpawn = false
+            for _,otherSpawnPos in pairs(global.uniqueSpawns) do
+                if (getDistance(spawnPos, otherSpawnPos) < (CHUNK_SIZE*10)) then
+                    nearOtherSpawn = true
+                end
+            end
+
+            if (ENABLE_ABANDONED_BASE_REMOVAL and not nearOtherSpawn) then
 				local spawnPos = global.uniqueSpawns[player.name].pos
 				global.uniqueSpawns[player.name] = nil
+
 				SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
 				OarcRegrowthMarkForRemoval(spawnPos, 10)
 				global.chunk_regrow.force_removal_flag = game.tick
@@ -200,6 +210,12 @@ function InitSpawnGlobalsAndForces()
     if (global.waitingBuddies == nil) then
         global.waitingBuddies = {}
     end
+    if (global.delayedSpawns == nil) then
+        global.delayedSpawns = {}
+    end
+    if (global.buddySpawnOptions == nil) then
+        global.buddySpawnOptions = {}
+    end
 
     game.create_force(MAIN_FORCE)
     game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
@@ -228,21 +244,59 @@ function ChangePlayerSpawn(player, pos)
     global.playerCooldowns[player.name] = {setRespawn=game.tick}
 end
 
+function QueuePlayerForDelayedSpawn(player, spawn, moatEnabled)
+    
+    -- If we get a valid spawn point, setup the area
+    if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
+        global.uniqueSpawns[player.name] = {pos=spawn,moat=moatEnabled}
+
+        player.print("Generating your spawn now, please wait 10 seconds...")
+        player.surface.request_to_generate_chunks(spawn, 4)
+        delayedTick = game.tick + 10*TICKS_PER_SECOND
+        table.insert(global.delayedSpawns, {player=player, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
+
+    else      
+        DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
+        SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. player.name)
+    end
+end
+
+
+-- Check a table to see if there are any players waiting to spawn
+-- Check if we are past the delayed tick count
+-- Spawn the players and remove them from the table.
+function DelayedSpawnOnTick()
+    if ((game.tick % (30)) == 1) then
+        if ((global.delayedSpawns ~= nil) and (#global.delayedSpawns > 0)) then
+            for i=#global.delayedSpawns,1,-1 do
+                delayedSpawn = global.delayedSpawns[i]
+
+                if (delayedSpawn.delayedTick < game.tick) then
+                    SendPlayerToNewSpawnAndCreateIt(delayedSpawn.player, delayedSpawn.spawn, delayedSpawn.moatEnabled)
+                    table.remove(global.delayedSpawns, i)
+                end
+            end
+        end
+    end
+end
+
 function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
+
+    -- Make sure the area is super safe.
+    ClearNearbyEnemies(spawn, SAFE_AREA_TILE_DIST, game.surfaces[GAME_SURFACE_NAME])
+
+    -- Create the spawn resources here
+    CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
+                    {x=spawn.x+WATER_SPAWN_OFFSET_X, y=spawn.y+WATER_SPAWN_OFFSET_Y},
+                    WATER_SPAWN_LENGTH)
+    CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
+                    {x=spawn.x+WATER_SPAWN_OFFSET_X, y=spawn.y+WATER_SPAWN_OFFSET_Y+1},
+                    WATER_SPAWN_LENGTH)
+    GenerateStartingResources(surface, spawn)
 
     -- Send the player to that position
     player.teleport(spawn, GAME_SURFACE_NAME)
     GivePlayerStarterItems(player)
-    ChartArea(player.force, player.position, 4, player.surface)
-
-    -- If we get a valid spawn point, setup the area
-    if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
-        global.uniqueSpawns[player.name] = {pos=spawn,moat=moatEnabled}
-        ClearNearbyEnemies(player, SAFE_AREA_TILE_DIST)
-    else      
-        DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
-        SendBroadcastMsg("Failed to create spawn point for: " .. player.name)
-    end
 end
 
 function SendPlayerToSpawn(player)

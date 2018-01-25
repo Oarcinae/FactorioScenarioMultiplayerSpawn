@@ -180,13 +180,16 @@ script.on_event(defines.events.on_gui_click, function(event)
         SpawnOptsGuiClick(event)
         SpawnCtrlGuiClick(event)
         SharedSpwnOptsGuiClick(event)
+        BuddySpawnOptsGuiClick(event)
+        BuddySpawnWaitMenuClick(event)
+        BuddySpawnRequestMenuClick(event)
     end
 
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
     if ENABLE_SEPARATE_SPAWNS then
-        SpawnOptsGuiOptionsSelect(event)
+        SpawnOptsRadioSelect(event)
         SpawnCtrlGuiOptionsSelect(event)
     end
 end)
@@ -277,6 +280,10 @@ script.on_event(defines.events.on_tick, function(event)
 
     if ENABLE_ABANDONED_BASE_REMOVAL then
         OarcRegrowthForceRemovalOnTick()
+    end
+
+    if ENABLE_SEPARATE_SPAWNS then
+        DelayedSpawnOnTick()
     end
 
 end)
