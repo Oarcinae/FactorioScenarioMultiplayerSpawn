@@ -149,7 +149,7 @@ local function rng_for_reg_pos(pos)
 	local seed = normalize( valX * valY * global.seed )
 	rng.re_seed( seed )
 	
-	-- debug("Generator for " .. pos.x .. "," .. pos.y .. " created with seed " .. seed .. " x:" .. valX .. " y:" .. valY)
+	debug("Generator for " .. pos.x .. "," .. pos.y .. " created with seed " .. seed .. " x:" .. valX .. " y:" .. valY)
 	
 	return rng
 end
@@ -1243,13 +1243,16 @@ local function roll_region(c_x, c_y)
 
 	-- if (not (global.regions[r_x] and global.regions[r_x][r_y]) or regrow_rso) then
 
-	if global.regions[r_x] and global.regions[r_x][r_y] then
+	if (global.regions[r_x] and global.regions[r_x][r_y] and not regrow_rso) then
 		r_data = global.regions[r_x][r_y]
 	else
 		--if this chunk is the first in its region to be generated
 		if not global.regions[r_x] then global.regions[r_x] = {} end
 		global.regions[r_x][r_y]={}
 		r_data = global.regions[r_x][r_y]
+		if (regrow_rso and not deterministic) then
+			global.seed = math.random(0,4294967295)
+		end
 		rng = rng_for_reg_pos{x=r_x,y=r_y}
 		
 		local rollCount = math.ceil(#configIndexed / 10) - 1 -- 0 based counter is more convenient here
