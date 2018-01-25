@@ -283,7 +283,7 @@ end
 
 -- Merges force2 INTO force1 but keeps all research between both forces.
 function MergeForcesKeepResearch(force1, force2)
-    for techName,luaTech in pairs(force2.technologies)
+    for techName,luaTech in pairs(force2.technologies) do
         if (luaTech.researched) then
            force1.technologies[techName].researched = true
            force1.technologies[techName].level = luaTech.level
