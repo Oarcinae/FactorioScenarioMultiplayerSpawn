@@ -69,6 +69,8 @@ function FindUnusedSpawns(event)
         -- If a uniqueSpawn was created for the player, mark it as unused.
         if (global.uniqueSpawns[player.name] ~= nil) then
 
+            local spawnPos = global.uniqueSpawns[player.name].pos
+                
             -- Check if it was near someone else's base.
             nearOtherSpawn = false
             for _,otherSpawnPos in pairs(global.uniqueSpawns) do
@@ -78,7 +80,6 @@ function FindUnusedSpawns(event)
             end
 
             if (ENABLE_ABANDONED_BASE_REMOVAL and not nearOtherSpawn) then
-				local spawnPos = global.uniqueSpawns[player.name].pos
 				global.uniqueSpawns[player.name] = nil
 
 				SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")

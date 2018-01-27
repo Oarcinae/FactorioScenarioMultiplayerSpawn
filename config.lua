@@ -36,7 +36,7 @@ SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
-SERVER_OWNER_IS_OARC = false -- This should be false for you, it's just a convenience for me.
+SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
 WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
 WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
 
@@ -59,7 +59,7 @@ ENABLE_BUDDY_SPAWN = true
 ENABLE_RSO = true
 
 -- Frontier style rocket silo mode
-FRONTIER_ROCKET_SILO_MODE = false
+FRONTIER_ROCKET_SILO_MODE = true
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
