@@ -63,7 +63,7 @@ FRONTIER_ROCKET_SILO_MODE = true
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
-ENABLE_UNDECORATOR = false
+ENABLE_UNDECORATOR = true
 
 -- Enable Tags
 ENABLE_TAGS = true
