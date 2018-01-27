@@ -273,7 +273,7 @@ function DelayedSpawnOnTick()
                 delayedSpawn = global.delayedSpawns[i]
 
                 if (delayedSpawn.delayedTick < game.tick) then
-                    if ((delayedSpawn.player ~= nil) and (delayedSpawn.player.connected)) then
+                    if (delayedSpawn.player ~= nil) then
                         SendPlayerToNewSpawnAndCreateIt(delayedSpawn.player, delayedSpawn.spawn, delayedSpawn.moatEnabled)
                     end
                     table.remove(global.delayedSpawns, i)
