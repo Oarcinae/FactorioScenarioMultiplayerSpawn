@@ -399,7 +399,7 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, newSpawn)
         
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player, newSpawn, moatChoice)
+        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice)
         if (elemName == "isolated_spawn_near") then
             SendBroadcastMsg(player.name .. " is joining the game from a distance!")
         elseif (elemName == "isolated_spawn_far") then
@@ -1282,8 +1282,8 @@ function BuddySpawnRequestMenuClick(event)
         ChangePlayerSpawn(game.players[requesterName], buddySpawn)
         
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player, newSpawn, requesterOptions.moatChoice)
-        QueuePlayerForDelayedSpawn(game.players[requesterName], buddySpawn, requesterOptions.moatChoice)
+        QueuePlayerForDelayedSpawn(player.name, newSpawn, requesterOptions.moatChoice)
+        QueuePlayerForDelayedSpawn(requesterName, buddySpawn, requesterOptions.moatChoice)
         SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
        
         -- Create the button at the top left for setting respawn point and sharing base.

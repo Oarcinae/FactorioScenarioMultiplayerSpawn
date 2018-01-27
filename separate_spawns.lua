@@ -245,7 +245,7 @@ function ChangePlayerSpawn(player, pos)
     global.playerCooldowns[player.name] = {setRespawn=game.tick}
 end
 
-function QueuePlayerForDelayedSpawn(player, spawn, moatEnabled)
+function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
     
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
@@ -254,7 +254,7 @@ function QueuePlayerForDelayedSpawn(player, spawn, moatEnabled)
         player.print("Generating your spawn now, please wait 10 seconds...")
         player.surface.request_to_generate_chunks(spawn, 4)
         delayedTick = game.tick + 10*TICKS_PER_SECOND
-        table.insert(global.delayedSpawns, {player=player, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
+        table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
 
     else      
         DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
@@ -273,8 +273,8 @@ function DelayedSpawnOnTick()
                 delayedSpawn = global.delayedSpawns[i]
 
                 if (delayedSpawn.delayedTick < game.tick) then
-                    if (delayedSpawn.player ~= nil) then
-                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn.player, delayedSpawn.spawn, delayedSpawn.moatEnabled)
+                    if (game.players[delayedSpawn.playerName] ~= nil) then
+                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn.playerName, delayedSpawn.spawn, delayedSpawn.moatEnabled)
                     end
                     table.remove(global.delayedSpawns, i)
                 end
@@ -283,7 +283,7 @@ function DelayedSpawnOnTick()
     end
 end
 
-function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
+function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
 
     -- Make sure the area is super safe.
     ClearNearbyEnemies(spawn, SAFE_AREA_TILE_DIST, game.surfaces[GAME_SURFACE_NAME])
@@ -298,8 +298,8 @@ function SendPlayerToNewSpawnAndCreateIt(player, spawn, moatEnabled)
     GenerateStartingResources(surface, spawn)
 
     -- Send the player to that position
-    player.teleport(spawn, GAME_SURFACE_NAME)
-    GivePlayerStarterItems(player)
+    game.players[playerName].teleport(spawn, GAME_SURFACE_NAME)
+    GivePlayerStarterItems(game.players[playerName])
 end
 
 function SendPlayerToSpawn(player)
