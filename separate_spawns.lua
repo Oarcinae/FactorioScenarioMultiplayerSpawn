@@ -85,10 +85,9 @@ function FindUnusedSpawns(event)
             nearOtherSpawn = false
             for spawnPlayerName,otherSpawnPos in pairs(global.uniqueSpawns) do
                 if ((spawnPlayerName ~= player.name) and (getDistance(spawnPos, otherSpawnPos.pos) < (CHUNK_SIZE*10))) then
-                    DebugPrint("Won't remove base as it's close to another spawn.")
+                    DebugPrint("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
                     nearOtherSpawn = true
                 end
-                DebugPrint("Checking distance to spawn: " .. spawnPlayerName)
             end
 
             if (ENABLE_ABANDONED_BASE_REMOVAL and not nearOtherSpawn) then
@@ -268,6 +267,8 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
         delayedTick = game.tick + 10*TICKS_PER_SECOND
         table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
 
+        DisplayPleaseWaitForSpawnDialog(game.players[playerName])
+
     else      
         DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
         SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
@@ -312,6 +313,10 @@ function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
     -- Send the player to that position
     game.players[playerName].teleport(spawn, GAME_SURFACE_NAME)
     GivePlayerStarterItems(game.players[playerName])
+
+    if (game.players[playerName].gui.center.wait_for_spawn_dialog ~= nil) then
+        game.players[playerName].gui.center.wait_for_spawn_dialog.destroy()
+    end
 end
 
 function SendPlayerToSpawn(player)

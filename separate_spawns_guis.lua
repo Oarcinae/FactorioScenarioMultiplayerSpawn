@@ -1318,3 +1318,31 @@ function BuddySpawnRequestMenuClick(event)
         requesterBuddy.print(player.name .. " declined your buddy request!")
     end
 end
+
+
+function DisplayPleaseWaitForSpawnDialog(player)
+    
+    player.gui.center.add{name = "wait_for_spawn_dialog",
+                            type = "frame",
+                            direction = "vertical",
+                            caption="Please wait!"}
+    local pleaseWaitGui = player.gui.center.wait_for_spawn_dialog
+    pleaseWaitGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    pleaseWaitGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+
+
+    -- Warnings and explanations...
+    pleaseWaitGui.add{name = "warning_lbl1", type = "label",
+                    caption="Your spawn is being created now."}
+    pleaseWaitGui.add{name = "warning_lbl2", type = "label",
+                    caption="You will be teleported there in about 10 seconds!"}
+    pleaseWaitGui.add{name = "warning_lbl3", type = "label",
+                    caption="Please standby..."}
+    pleaseWaitGui.add{name = "warning_spacer", type = "label",
+                    caption=" "}
+    ApplyStyle(pleaseWaitGui.warning_lbl1, my_warning_style)
+    ApplyStyle(pleaseWaitGui.warning_lbl2, my_warning_style)
+    ApplyStyle(pleaseWaitGui.warning_lbl3, my_warning_style)
+    ApplyStyle(pleaseWaitGui.warning_spacer, my_spacer_style)
+
+end
