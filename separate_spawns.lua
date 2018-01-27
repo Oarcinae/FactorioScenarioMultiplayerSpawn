@@ -70,7 +70,7 @@ function FindUnusedSpawns(event)
         if (global.uniqueSpawns[player.name] ~= nil) then
 
             local spawnPos = global.uniqueSpawns[player.name].pos
-                
+
             -- Check if it was near someone else's base.
             nearOtherSpawn = false
             for _,otherSpawnPos in pairs(global.uniqueSpawns) do
@@ -273,7 +273,9 @@ function DelayedSpawnOnTick()
                 delayedSpawn = global.delayedSpawns[i]
 
                 if (delayedSpawn.delayedTick < game.tick) then
-                    SendPlayerToNewSpawnAndCreateIt(delayedSpawn.player, delayedSpawn.spawn, delayedSpawn.moatEnabled)
+                    if ((delayedSpawn.player ~= nil) and (delayedSpawn.player.connected)) then
+                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn.player, delayedSpawn.spawn, delayedSpawn.moatEnabled)
+                    end
                     table.remove(global.delayedSpawns, i)
                 end
             end
