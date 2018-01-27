@@ -368,4 +368,4 @@ global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=1
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = false
+global.oarcDebugEnabled = true

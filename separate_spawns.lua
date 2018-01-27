@@ -53,6 +53,16 @@ function FindUnusedSpawns(event)
             global.playerSpawns[player.name] = nil
         end
       
+        -- Remove them from the delayer spawn queue if they are in it
+        for i=#global.delayedSpawns,1,-1 do
+            delayedSpawn = global.delayedSpawns[i]
+
+            if (player.name == delayedSpawn.playerName) then
+                table.remove(global.delayedSpawns, i)
+                DebugPrint("Removing player from delayed spawn queue: " .. player.name)
+            end
+        end
+
         -- Transfer or remove a shared spawn if player is owner
         if (global.sharedSpawns[player.name] ~= nil) then
             
@@ -75,6 +85,7 @@ function FindUnusedSpawns(event)
             nearOtherSpawn = false
             for _,otherSpawnPos in pairs(global.uniqueSpawns) do
                 if (getDistance(spawnPos, otherSpawnPos.pos) < (CHUNK_SIZE*10)) then
+                    DebugPrint("Won't remove base as it's close to another spawn.")
                     nearOtherSpawn = true
                 end
             end
