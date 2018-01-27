@@ -18,7 +18,7 @@ WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Hav
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
 OTHER_MSG1 = "Latest updates in this scenario version:"
-OTHER_MSG2 = "0.16 experimental release. Now with BUDDY SPAWN system."
+OTHER_MSG2 = "0.16 experimental release. Now with BUDDY SPAWN system. MAY BE BUGGY AND CRASH!"
 -- Optional other messages below:
 OTHER_MSG3 = "Standard multiplayer spawn allows spawning in far locations."
 OTHER_MSG4 = "You can be on the main team or your own."
