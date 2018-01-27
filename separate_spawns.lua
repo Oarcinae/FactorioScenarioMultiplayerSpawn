@@ -249,16 +249,16 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
     
     -- If we get a valid spawn point, setup the area
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
-        global.uniqueSpawns[player.name] = {pos=spawn,moat=moatEnabled}
+        global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled}
 
-        player.print("Generating your spawn now, please wait 10 seconds...")
-        player.surface.request_to_generate_chunks(spawn, 4)
+        game.players[playerName].print("Generating your spawn now, please wait 10 seconds...")
+        game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
         delayedTick = game.tick + 10*TICKS_PER_SECOND
         table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
 
     else      
         DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
-        SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. player.name)
+        SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
     end
 end
 
