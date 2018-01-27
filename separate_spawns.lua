@@ -74,7 +74,7 @@ function FindUnusedSpawns(event)
             -- Check if it was near someone else's base.
             nearOtherSpawn = false
             for _,otherSpawnPos in pairs(global.uniqueSpawns) do
-                if (getDistance(spawnPos, otherSpawnPos) < (CHUNK_SIZE*10)) then
+                if (getDistance(spawnPos, otherSpawnPos.pos) < (CHUNK_SIZE*10)) then
                     nearOtherSpawn = true
                 end
             end
