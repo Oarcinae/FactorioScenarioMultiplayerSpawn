@@ -210,7 +210,7 @@ end)
 script.on_event(defines.events.on_player_joined_game, function(event)
 
     CreateGameOptionsGui(event)
-    
+
     PlayerJoinedMessages(event)
 
     if ENABLE_PLAYER_LIST then
@@ -278,6 +278,10 @@ script.on_event(defines.events.on_built_entity, function(event)
 
     if ENABLE_REGROWTH then
         OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    end
+
+    if ENABLE_ANTI_GRIEFING then
+        SetItemBlueprintTimeToLive(event)
     end
 end)
 

@@ -631,6 +631,15 @@ function SetForceGhostTimeToLive(force)
     end
 end
 
+function SetItemBlueprintTimeToLive(event)
+    local type = event.created_entity.type    
+    if type == "entity-ghost" or type == "tile-ghost" or type == "item-request-proxy" then
+        if GHOST_TIME_TO_LIVE ~= 0 then
+            event.created_entity.time_to_live = GHOST_TIME_TO_LIVE
+        end
+    end
+end
+
 --------------------------------------------------------------------------------
 -- Gravestone soft mod. With my own modifications/improvements.
 --------------------------------------------------------------------------------
