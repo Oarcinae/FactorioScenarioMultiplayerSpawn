@@ -209,6 +209,8 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
 
+    CreateGameOptionsGui(event)
+    
     PlayerJoinedMessages(event)
 
     if ENABLE_PLAYER_LIST then
@@ -219,7 +221,6 @@ script.on_event(defines.events.on_player_joined_game, function(event)
         CreateTagGui(event)
     end
 
-    CreateGameOptionsGui(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)

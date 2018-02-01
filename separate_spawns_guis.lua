@@ -382,10 +382,6 @@ function SpawnOptsGuiClick(event)
         -- Create a new force for player if they choose that radio button
         if ENABLE_SEPARATE_TEAMS and joinOwnTeamRadio then
             local newForce = CreatePlayerCustomForce(player)
-
-            if (FRONTIER_ROCKET_SILO_MODE and (newForce ~= nil)) then
-                ChartRocketSiloArea(newForce, game.surfaces[GAME_SURFACE_NAME])
-            end
         end
 
         -- Find coordinates of a good place to spawn

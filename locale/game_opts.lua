@@ -118,6 +118,11 @@ local function ExpandGameOptionsGui(player)
                         caption="You can chose to spawn alongside a buddy if you spawn together at the same time."}
                     ApplyStyle(frame.buddy_spawn_mod, my_longer_label_style)
         end
+        if (ENABLE_SHARED_SPAWNS) then
+            frame.add{name = "share_spawn_mod", type = "label",
+                        caption="Spawn hosts may choose to share their spawn and allow other players to join them."}
+                    ApplyStyle(frame.share_spawn_mod, my_longer_label_style)
+        end
         if (ENABLE_SEPARATE_TEAMS and ENABLE_SHARED_TEAM_VISION) then
             frame.add{name = "shared_team_vision_mod", type = "label",
                         caption="Everyone (all teams) have shared vision."}

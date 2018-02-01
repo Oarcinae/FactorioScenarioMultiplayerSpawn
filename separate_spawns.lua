@@ -379,7 +379,7 @@ function CreatePlayerCustomForce(player)
     end
 
     -- Chart silo areas if necessary
-    if ENABLE_SILO_VISION then
+    if FRONTIER_ROCKET_SILO_MODE and ENABLE_SILO_VISION then
         for idx,siloPos in pairs(global.siloPosition) do
                 newForce.chart(surface, {{siloPos.x-(CHUNK_SIZE*2),
                                         siloPos.y-(CHUNK_SIZE*2)},
