@@ -49,9 +49,9 @@ local function ExpandGameOptionsGui(player)
         frame.add{name = "evo_factor_time", type = "label",
                         caption="Enemy evolution time factor: " .. game.map_settings.enemy_evolution.time_factor}
         frame.add{name = "evo_factor_pollution", type = "label",
-                        caption="Enemy evolution time factor: " .. game.map_settings.enemy_evolution.pollution_factor}
+                        caption="Enemy evolution pollution factor: " .. game.map_settings.enemy_evolution.pollution_factor}
         frame.add{name = "evo_factor_destroy", type = "label",
-                        caption="Enemy evolution time factor: " .. game.map_settings.enemy_evolution.destroy_factor}
+                        caption="Enemy evolution destroy factor: " .. game.map_settings.enemy_evolution.destroy_factor}
         if game.map_settings.enemy_expansion.enabled then
             enemy_expansion_txt = "enabled"
         else
