@@ -53,6 +53,14 @@ local function CreateRocketSilo(surface, siloPosition, force)
         entity.destroy()
     end
 
+    -- Remove nearby enemies again
+    for _, entity in pairs(surface.find_entities_filtered{area = {{siloPosition.x-(CHUNK_SIZE*4),
+                                                                    siloPosition.y-(CHUNK_SIZE*4)},
+                                                                    {siloPosition.x+(CHUNK_SIZE*4),
+                                                                    siloPosition.y+(CHUNK_SIZE*4)}}, force = "enemy"}) do
+        entity.destroy()
+    end
+
     -- Set tiles below the silo
     tiles = {}
     i = 1
@@ -97,8 +105,8 @@ end
 -- Generate clean land and trees around silo area on chunk generate event
 function GenerateRocketSiloChunk(event)
 
-    -- All silo chunk generate events should be done within the first minute.
-    if (game.tick < 1*TICKS_PER_MINUTE) then
+    -- Silo generation can take awhile depending on the number of silos.
+    if (game.tick < SILO_NUM_SPAWNS*10*TICKS_PER_SECOND) then
         local surface = event.surface
         local chunkArea = event.area
 
@@ -107,11 +115,11 @@ function GenerateRocketSiloChunk(event)
         
         for idx,siloPos in pairs(global.siloPosition) do
             local safeArea = {left_top=
-                                {x=siloPos.x-150,
-                                 y=siloPos.y-150},
+                                {x=siloPos.x-(CHUNK_SIZE*4),
+                                 y=siloPos.y-(CHUNK_SIZE*4)},
                               right_bottom=
-                                {x=siloPos.x+150,
-                                 y=siloPos.y+150}}
+                                {x=siloPos.x+(CHUNK_SIZE*4),
+                                 y=siloPos.y+(CHUNK_SIZE*4)}}
                                      
 
             -- Clear enemies directly next to the rocket
@@ -119,16 +127,16 @@ function GenerateRocketSiloChunk(event)
                 for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, force = "enemy"}) do
                     entity.destroy()
                 end
+
+                -- Remove trees/resources inside the spawn area
+                RemoveInCircle(surface, chunkArea, "tree", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
+                RemoveInCircle(surface, chunkArea, "resource", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
+                RemoveInCircle(surface, chunkArea, "cliff", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
+                RemoveDecorationsArea(surface, chunkArea)
+
+                -- Create rocket silo
+                CreateCropOctagon(surface, siloPos, chunkArea, 40)
             end
-
-            -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveInCircle(surface, chunkArea, "resource", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveInCircle(surface, chunkArea, "cliff", siloPos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveDecorationsArea(surface, chunkArea)
-
-            -- Create rocket silo
-            CreateCropOctagon(surface, siloPos, chunkArea, 40)
         end
     end
 end
@@ -150,7 +158,7 @@ global.oarc_silos_generated = false
 function DelayedSiloCreationOnTick(event)
 
     -- Delay the creation of the silos so we place them on already generated lands.
-    if (not global.oarc_silos_generated and (game.tick >= 30*TICKS_PER_SECOND)) then
+    if (not global.oarc_silos_generated and (game.tick >= SILO_NUM_SPAWNS*10*TICKS_PER_SECOND)) then
         DebugPrint("Frontier silos generated!")
         global.oarc_silos_generated = true
         GenerateAllSilos(game.surfaces[GAME_SURFACE_NAME])

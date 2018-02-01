@@ -298,6 +298,7 @@ ENEMY_DESTROY_FACTOR_DIVISOR = 1
 
 -- Number of silos found in the wild.
 -- These will spawn in a circle at given distance from the center of the map
+-- If you set this number too high, you'll have a lot of delay at the start of the game.
 SILO_NUM_SPAWNS = 3
 
 -- How many chunks away from the center of the map should the silo be spawned
