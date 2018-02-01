@@ -1225,10 +1225,10 @@ local function roll_region(c_x, c_y)
 	local configIndexed = global.configIndexed
 
 	-- Reroll regions every region_size^2 chunk generation calls.
-	local regrow_rso = false
+	global.regrow_rso = false
 	if (ENABLE_REGROWTH) then
 		if (global.chunk_regrow.rso_region_roll_counter > (region_size*region_size/2)) then
-			regrow_rso = true
+			global.regrow_rso = true
 			global.chunk_regrow.rso_region_roll_counter = 0
 	else
 			global.chunk_regrow.rso_region_roll_counter = global.chunk_regrow.rso_region_roll_counter + 1
@@ -1243,17 +1243,19 @@ local function roll_region(c_x, c_y)
 
 	-- if (not (global.regions[r_x] and global.regions[r_x][r_y]) or regrow_rso) then
 
-	if (global.regions[r_x] and global.regions[r_x][r_y] and not regrow_rso) then
+	if (global.regions[r_x] and global.regions[r_x][r_y] and not global.regrow_rso) then
 		r_data = global.regions[r_x][r_y]
 	else
 		--if this chunk is the first in its region to be generated
 		if not global.regions[r_x] then global.regions[r_x] = {} end
 		global.regions[r_x][r_y]={}
 		r_data = global.regions[r_x][r_y]
-		if (regrow_rso and not deterministic) then
-			global.seed = global.seed + 1
+		if (global.regrow_rso and not deterministic) then
+			rng = rng_for_reg_pos{x=r_x*math.random(-1,1),y=r_y*math.random(-1,1)}
+		else
+			rng = rng_for_reg_pos{x=r_x,y=r_y}
 		end
-		rng = rng_for_reg_pos{x=r_x,y=r_y}
+		
 		
 		local rollCount = math.ceil(#configIndexed / 10) - 1 -- 0 based counter is more convenient here
 		rollCount = math.min(rollCount, 3)
