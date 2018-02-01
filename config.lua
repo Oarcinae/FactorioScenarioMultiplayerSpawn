@@ -92,7 +92,7 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 ENABLE_SHARED_TEAM_VISION = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
-ENABLE_REGROWTH = false
+ENABLE_REGROWTH = true
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
 -- This can also be used without enabling regrowth.

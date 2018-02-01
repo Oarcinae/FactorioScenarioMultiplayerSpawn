@@ -1251,7 +1251,7 @@ local function roll_region(c_x, c_y)
 		global.regions[r_x][r_y]={}
 		r_data = global.regions[r_x][r_y]
 		if (regrow_rso and not deterministic) then
-			global.seed = math.random(0,4294967295)
+			global.seed = global.seed + 1
 		end
 		rng = rng_for_reg_pos{x=r_x,y=r_y}
 		
