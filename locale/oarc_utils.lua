@@ -231,6 +231,7 @@ function GiveQuickStartPowerArmor(player)
                   p_armor.put({name = "solar-panel-equipment"})
             end
         player.insert{name="construction-robot", count = 100}
+        player.insert{name="belt-immunity-equipment", count = 1}
     end
 end
 

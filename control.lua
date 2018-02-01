@@ -32,7 +32,7 @@ require("locale/game_opts")
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
 require("locale/temp/rgcommand")
-require("locale/temp/runcommand")
+require("locale/temp/helper_commands")
 
 -- Main Configuration File
 require("config")
