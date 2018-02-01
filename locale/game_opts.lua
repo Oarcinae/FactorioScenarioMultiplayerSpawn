@@ -45,7 +45,7 @@ local function ExpandGameOptionsGui(player)
         frame.add{name = "server_time", type = "label",
                         caption="Server Run Time: " .. formattime_hours_mins(game.tick)}
         frame.add{name = "evo_now", type = "label",
-                        caption="Current Evolution: " .. game.forces["enemy"].evolution_factor}
+                        caption="Current Evolution: " .. string.format("%.4f", game.forces["enemy"].evolution_factor)}
         frame.add{name = "evo_factor_time", type = "label",
                         caption="Enemy evolution time factor: " .. game.map_settings.enemy_evolution.time_factor}
         frame.add{name = "evo_factor_pollution", type = "label",
