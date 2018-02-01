@@ -85,6 +85,20 @@ my_player_list_style_spacer = {
 }
 my_color_red = {r=1,g=0.1,b=0.1}
 
+my_longer_label_style = {
+    maximal_width = 600,
+    maximal_height = 10,
+    font_color = {r=1,g=1,b=1},
+    top_padding = 0,
+    bottom_padding = 0
+}
+my_longer_warning_style = {
+    maximal_width = 600,
+    maximal_height = 10,
+    font_color = {r=1,g=0.1,b=0.1},
+    top_padding = 0,
+    bottom_padding = 0
+}
 
 --------------------------------------------------------------------------------
 -- General Helper Functions
@@ -608,6 +622,13 @@ end
 function AntiGriefing(force)
     force.zoom_to_world_deconstruction_planner_enabled=false
     force.friendly_fire=false
+    SetForceGhostTimeToLive(force)
+end
+
+function SetForceGhostTimeToLive(force)
+    if GHOST_TIME_TO_LIVE ~= 0 then
+        force.ghost_time_to_live = GHOST_TIME_TO_LIVE+1
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -677,34 +698,6 @@ function DropGravestoneChests(player)
 
     if (grave ~= nil) then
         player.print("Successfully dropped your items into a chest! Go get them quick!")
-    end
-end
-
---------------------------------------------------------------------------------
--- Frontier style rocket silo stuff
---------------------------------------------------------------------------------
-
--- This creates a random silo position, stored to global.siloPosition
--- It uses the config setting SILO_CHUNK_DISTANCE and spawns the silo somewhere
--- on a circle edge with radius using that distance.
-function SetRandomSiloPosition()
-    if (global.siloPosition == nil) then
-        -- Get an X,Y on a circle far away.
-        local distX = math.random(0,SILO_CHUNK_DISTANCE_X)
-        local distY = RandomNegPos() * math.floor(math.sqrt(SILO_CHUNK_DISTANCE_X^2 - distX^2))
-        local distX = RandomNegPos() * distX
-
-        -- Set those values.
-        local siloX = distX*CHUNK_SIZE + CHUNK_SIZE/2
-        local siloY = distY*CHUNK_SIZE + CHUNK_SIZE/2
-        global.siloPosition = {x = siloX, y = siloY}
-    end
-end
-
--- Sets the global.siloPosition var to the set in the config file
-function SetFixedSiloPosition()
-    if (global.siloPosition == nil) then
-        global.siloPosition = SILO_POSITION
     end
 end
 
@@ -929,11 +922,15 @@ function GenerateStartingResources(surface, pos)
 
     -- Tree generation is taken care of in chunk generation
 
-    -- Generate 2 oil patches
-    surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={pos.x+START_RESOURCE_OIL_A_POS_X, pos.y+START_RESOURCE_OIL_A_POS_Y}})
-    surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={pos.x+START_RESOURCE_OIL_B_POS_X, pos.y+START_RESOURCE_OIL_B_POS_Y}})
+    -- Generate oil patches
+    oil_patch_x=pos.x+START_RESOURCE_OIL_POS_X
+    oil_patch_y=pos.y+START_RESOURCE_OIL_POS_Y
+    for i=1,START_RESOURCE_OIL_NUM_PATCHES do
+        surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
+                    position={oil_patch_x, oil_patch_y}})
+        oil_patch_x=oil_patch_x+START_RESOURCE_OIL_X_OFFSET
+        oil_patch_y=oil_patch_y+START_RESOURCE_OIL_Y_OFFSET
+    end
 
     -- Generate Stone
     GenerateResourcePatch(surface, "stone", START_RESOURCE_STONE_SIZE, stonePos, START_STONE_AMOUNT)

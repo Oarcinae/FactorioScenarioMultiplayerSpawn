@@ -80,9 +80,9 @@ ENABLE_PLAYER_LIST = true
 -- Enable Gravestone Chests
 ENABLE_GRAVESTONE_ON_DEATH = false
 
- -- Items dumped into chest when you leave.
+-- Items dumped into chest when you leave.
 ENABLE_GRAVESTONE_ON_LEAVING = false
- -- If anyone leaves within first X minutes, items get dumped into chest.
+-- If anyone leaves within first X minutes, items get dumped into chest.
 ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 15
 
 -- Enable quick start items
@@ -105,7 +105,7 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 ---------------------------------------
 -- Starting Items
 ---------------------------------------
--- Items provided to the player the first time they join ("quick start" commented out)
+-- Items provided to the player the first time they join
 PLAYER_SPAWN_START_ITEMS = {
     {name="pistol", count=1},
     {name="firearm-magazine", count=100},
@@ -143,12 +143,12 @@ PLAYER_RESPAWN_START_ITEMS = {
 CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 5
 
 -- Near Distance in chunks
-NEAR_MIN_DIST = 0 --50
-NEAR_MAX_DIST = 50 --125
-                   --
+NEAR_MIN_DIST = 0
+NEAR_MAX_DIST = 50
+
 -- Far Distance in chunks
-FAR_MIN_DIST = 200 --50
-FAR_MAX_DIST = 300 --125
+FAR_MIN_DIST = 200
+FAR_MAX_DIST = 300
           
 ---------------------------------------
 -- Resource & Spawn Circle Options
@@ -207,10 +207,14 @@ START_RESOURCE_URANIUM_POS_Y = -34
 START_RESOURCE_URANIUM_SIZE = 0 -- Disabled by default.
 
 -- Specify 2 oil spot locations for starting oil.
-START_RESOURCE_OIL_A_POS_X = -39
-START_RESOURCE_OIL_A_POS_Y = -2
-START_RESOURCE_OIL_B_POS_X = -39
-START_RESOURCE_OIL_B_POS_Y = 2
+START_RESOURCE_OIL_NUM_PATCHES = 2
+-- The first patch
+START_RESOURCE_OIL_POS_X = -39
+START_RESOURCE_OIL_POS_Y = -2
+-- How far each patch is offset from the others and in which direction
+-- Default (x=0, y=-4) means that patches spawn in a vertical row downwards.
+START_RESOURCE_OIL_X_OFFSET = 0
+START_RESOURCE_OIL_Y_OFFSET = -4
 
 
 -- Force the land area circle at the spawn to be fully grass
@@ -255,7 +259,7 @@ ENABLE_DEFAULT_SPAWN = false
 
 -- Enable if people can allow others to join their base
 ENABLE_SHARED_SPAWNS = true
-MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 3
+MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 0
 
 -- Share local team chat with all teams
 -- This makes it so you don't have to use /s
@@ -270,7 +274,7 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
 -- Require playes to be online for at least 5 minutes
 -- Else their character is removed and their spawn point is freed up for use
-MIN_ONLINE_TIME_IN_MINUTES = 10
+MIN_ONLINE_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 
@@ -279,28 +283,38 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 
 -- Enable/Disable enemy expansion
-ENEMY_EXPANSION = true
+ENEMY_EXPANSION = false
 
 -- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = true -- Set this to true to disable time based evolution completely.
-ENEMY_TIME_FACTOR_DIVISOR = 1
-ENEMY_POLLUTION_FACTOR_DISABLE = true -- Set this to true to disable pollution based evolution completely.
-ENEMY_POLLUTION_FACTOR_DIVISOR = 1
+ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DIVISOR = 10
+ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
+ENEMY_POLLUTION_FACTOR_DIVISOR = 10
 ENEMY_DESTROY_FACTOR_DIVISOR = 1
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
 --------------------------------------------------------------------------------
 
-SILO_CHUNK_DISTANCE_X = 15
-SILO_DISTANCE_X = SILO_CHUNK_DISTANCE_X*CHUNK_SIZE + CHUNK_SIZE/2
-SILO_DISTANCE_Y = 16
+-- Number of silos found in the wild.
+-- These will spawn in a circle at given distance from the center of the map
+SILO_NUM_SPAWNS = 3
 
--- Should be in the middle of a chunk
-SILO_POSITION = {x = SILO_DISTANCE_X, y = SILO_DISTANCE_Y}
+-- How many chunks away from the center of the map should the silo be spawned
+SILO_CHUNK_DISTANCE = 100
 
--- If this is enabled, the static position is ignored.
-ENABLE_RANDOM_SILO_POSITION = true
+-- If this is enabled, you get ONE silo at the location specified below.
+SILO_FIXED_POSITION = false
+
+-- If you want to set a fixed spawn location for a single silo
+SILO_POSITION = {x = 0, y = 100}
+
+-- Set this to false so that you have to search for the silo's.
+ENABLE_SILO_VISION = true
+
+-- Add beacons around the silo (Philip's modm)
+ENABLE_SILO_BEACONS = false
+ENABLE_SILO_RADAR = false
 
 --------------------------------------------------------------------------------
 -- Long Reach Options
@@ -363,9 +377,19 @@ global.clMapGen.autoplace_controls = {
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
 global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=10, name="cliff"}
 
+--------------------------------------------------------------------------------
+-- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
+-- These things were added from other people's requests/changes and are disabled by default.
+--------------------------------------------------------------------------------
+-- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
+ENABLE_ANTI_GRIEFING = false
+
+-- Makes blueprint ghosts dissapear if they have been placed longer than this
+GHOST_TIME_TO_LIVE = 3 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+
 -------------------------------------------------------------------------------
 -- DEBUG
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me
-global.oarcDebugEnabled = true
+global.oarcDebugEnabled = false

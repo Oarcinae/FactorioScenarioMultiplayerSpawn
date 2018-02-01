@@ -182,28 +182,30 @@ function DisplaySpawnOptions(player)
                                     type = "flow",
                                     direction="vertical"}
     
+
+    -- Radio buttons to pick your team.
     if (ENABLE_SEPARATE_TEAMS) then
         soloSpawnFlow.add{name = "isolated_spawn_main_team_radio",
                         type = "radiobutton",
                         caption="Join Main Team (shared research)",
-                        state=true}
+                        state=false}                  
         soloSpawnFlow.add{name = "isolated_spawn_new_team_radio",
                         type = "radiobutton",
                         caption="Create Your Own Team (own research tree)",
                         state=false}
-        if (SPAWN_MOAT_CHOICE_ENABLED) then
-            soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
-                            type = "checkbox",
-                            caption="Surround your spawn with a moat",
-                            state=false}
-        end
-        -- soloSpawnFlow.add{name = "team_chat_warning_lbl1", type = "label",
-        --                 caption="You must type '/s' before your msg to chat with other teams!!!"}
-        -- ApplyStyle(soloSpawnFlow.team_chat_warning_lbl1, my_warning_style)
-        soloSpawnFlow.add{name = "team_chat_warning_spacer", type = "label",
-                    caption=" "}
-        ApplyStyle(soloSpawnFlow.team_chat_warning_spacer, my_spacer_style)
     end
+
+    -- Allow players to spawn with a moat around their area.
+    if (SPAWN_MOAT_CHOICE_ENABLED) then
+        soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
+                        type = "checkbox",
+                        caption="Surround your spawn with a moat",
+                        state=false}
+    end
+
+    soloSpawnFlow.add{name = "team_chat_warning_spacer", type = "label",
+                caption=" "}
+    ApplyStyle(soloSpawnFlow.team_chat_warning_spacer, my_spacer_style)
 
     soloSpawnFlow.add{name = "isolated_spawn_near",
                     type = "button",
@@ -272,7 +274,7 @@ function DisplaySpawnOptions(player)
     sGui.add{name = "note_spacer2", type = "label",
                     caption=" "}
 
-    if MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN then
+    if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN > 0) then
         sGui.add{name = "shared_spawn_note1", type = "label",
                     caption="If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join." }
         ApplyStyle(sGui.shared_spawn_note1, my_note_style)
@@ -294,11 +296,12 @@ function DisplaySpawnOptions(player)
 end
 
 
+-- This just updates the radio buttons when players click them.
 function SpawnOptsRadioSelect(event)
     if not (event and event.element and event.element.valid) then return end
     local elemName = event.element.name
 
-    -- This just updates the radio buttons.
+
     if (elemName == "isolated_spawn_main_team_radio") then
         event.element.parent.isolated_spawn_new_team_radio.state=false
     elseif (elemName == "isolated_spawn_new_team_radio") then
@@ -350,10 +353,13 @@ function SpawnOptsGuiClick(event)
                 player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_main_team_radio.state
             joinOwnTeamRadio =
                 player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_new_team_radio.state
-            if (SPAWN_MOAT_CHOICE_ENABLED) then
-                moatChoice = 
-                    player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
-            end
+        else
+            joinMainTeamRadio = true
+            joinOwnTeamRadio = false
+        end
+        if (SPAWN_MOAT_CHOICE_ENABLED) then
+            moatChoice = 
+                player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
         player.gui.center.spawn_opts.destroy()   
     else       
@@ -451,8 +457,12 @@ function DisplaySharedSpawnOptions(player)
             (game.players[spawnName] ~= nil) and
             game.players[spawnName].connected) then
             local spotsRemaining = MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN - GetOnlinePlayersAtSharedSpawn(spawnName)
-            if (spotsRemaining > 0) then
+            if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN == 0) then
+                shGui.add{type="button", caption=spawnName, name=spawnName}
+            elseif (spotsRemaining > 0) then
                 shGui.add{type="button", caption=spawnName .. " (" .. spotsRemaining .. " spots remaining)", name=spawnName}
+            end
+            if (shGui.spawnName ~= nil) then
                 shGui.add{name = spawnName .. "spacer_lbl", type = "label", caption=" "}
                 ApplyStyle(shGui[spawnName], my_small_button_style)
                 ApplyStyle(shGui[spawnName .. "spacer_lbl"], my_spacer_style)
@@ -886,18 +896,21 @@ function DisplayBuddySpawnOptions(player)
                                     direction="vertical"}
     
 
-    buddySpawnFlow.add{name = "buddy_spawn_main_team_radio",
-                    type = "radiobutton",
-                    caption="Join Main Team (shared research)",
-                    state=true}
-    buddySpawnFlow.add{name = "buddy_spawn_new_team_radio",
-                    type = "radiobutton",
-                    caption="Create Your Own Team (own research tree)",
-                    state=false}
-    buddySpawnFlow.add{name = "buddy_spawn_buddy_team_radio",
-                    type = "radiobutton",
-                    caption="Create Your Own Buddy Team (buddy and you share research)",
-                    state=false}
+    -- Allow picking of teams
+    if (ENABLE_SEPARATE_TEAMS) then
+        buddySpawnFlow.add{name = "buddy_spawn_main_team_radio",
+                        type = "radiobutton",
+                        caption="Join Main Team (shared research)",
+                        state=true}
+        buddySpawnFlow.add{name = "buddy_spawn_new_team_radio",
+                        type = "radiobutton",
+                        caption="Create Your Own Team (own research tree)",
+                        state=false}
+        buddySpawnFlow.add{name = "buddy_spawn_buddy_team_radio",
+                        type = "radiobutton",
+                        caption="Create Your Own Buddy Team (buddy and you share research)",
+                        state=false}
+    end
     if (SPAWN_MOAT_CHOICE_ENABLED) then
         buddySpawnFlow.add{name = "buddy_spawn_moat_option_checkbox",
                         type = "checkbox",
@@ -1031,9 +1044,15 @@ function BuddySpawnOptsGuiClick(event)
             return
         end
 
-        joinMainTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_main_team_radio.state
-        joinOwnTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_new_team_radio.state
-        joinBuddyTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_buddy_team_radio.state
+        if (ENABLE_SEPARATE_TEAMS) then
+            joinMainTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_main_team_radio.state
+            joinOwnTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_new_team_radio.state
+            joinBuddyTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_buddy_team_radio.state
+        else
+            joinMainTeamRadio = true
+            joinOwnTeamRadio = false
+            joinBuddyTeamRadio = false
+        end
         if (SPAWN_MOAT_CHOICE_ENABLED) then
             moatChoice =  buddySpawnGui.spawn_buddy_flow.buddy_spawn_moat_option_checkbox.state
         end
@@ -1335,7 +1354,7 @@ function DisplayPleaseWaitForSpawnDialog(player)
     pleaseWaitGui.add{name = "warning_lbl1", type = "label",
                     caption="Your spawn is being created now."}
     pleaseWaitGui.add{name = "warning_lbl2", type = "label",
-                    caption="You will be teleported there in about 10 seconds!"}
+                    caption="You will be teleported there in a few seconds!"}
     pleaseWaitGui.add{name = "warning_lbl3", type = "label",
                     caption="Please standby..."}
     pleaseWaitGui.add{name = "warning_spacer", type = "label",

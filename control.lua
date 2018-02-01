@@ -27,6 +27,12 @@ require("locale/oarc_utils")
 require("locale/rso/rso_control")
 require("locale/frontier_silo")
 require("locale/tag")
+require("locale/game_opts")
+
+-- For Philip. I currently do not use this and need to add proper support for
+-- commands like this in the future.
+require("locale/temp/rgcommand")
+require("locale/temp/runcommand")
 
 -- Main Configuration File
 require("config")
@@ -103,14 +109,14 @@ script.on_init(function(event)
         InitSpawnGlobalsAndForces()
     end
 
-    if ENABLE_RANDOM_SILO_POSITION then
-        SetRandomSiloPosition()
+    if SILO_FIXED_POSITION then
+        SetFixedSiloPosition(SILO_POSITION)
     else
-        SetFixedSiloPosition()
+        SetRandomSiloPosition(SILO_NUM_SPAWNS)
     end
 
     if FRONTIER_ROCKET_SILO_MODE then
-        ChartRocketSiloArea(game.forces[MAIN_FORCE], game.surfaces[GAME_SURFACE_NAME])
+        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
     end
 
     SetServerWelcomeMessages()
@@ -186,6 +192,8 @@ script.on_event(defines.events.on_gui_click, function(event)
         SharedSpawnJoinWaitMenuClick(event)
     end
 
+    GameOptionsGuiClick(event)
+
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
@@ -210,6 +218,8 @@ script.on_event(defines.events.on_player_joined_game, function(event)
     if ENABLE_TAGS then
         CreateTagGui(event)
     end
+
+    CreateGameOptionsGui(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -285,6 +295,10 @@ script.on_event(defines.events.on_tick, function(event)
 
     if ENABLE_SEPARATE_SPAWNS then
         DelayedSpawnOnTick()
+    end
+
+    if FRONTIER_ROCKET_SILO_MODE then
+        DelayedSiloCreationOnTick()
     end
 
 end)

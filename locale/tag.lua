@@ -1,5 +1,6 @@
--- control.lua
+-- tag.lua
 -- Apr 2017
+-- Allows adding play tags
 
 function CreateTagGui(event)
   local player = game.players[event.player_index]

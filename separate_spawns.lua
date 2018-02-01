@@ -188,8 +188,11 @@ function GetNumberOfAvailableSharedSpawns()
     local count = 0
 
     for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
-        if (sharedSpawn.openAccess) then
-            if (GetOnlinePlayersAtSharedSpawn(ownerName) < MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN) then
+        if (sharedSpawn.openAccess and
+            (game.players[ownerName] ~= nil) and
+            game.players[ownerName].connected) then
+            if ((MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN == 0) or
+                (GetOnlinePlayersAtSharedSpawn(ownerName) < MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN)) then
                 count = count+1
             end
         end
@@ -238,7 +241,9 @@ function InitSpawnGlobalsAndForces()
 
     SetCeaseFireBetweenAllForces()
     SetFriendlyBetweenAllForces()
-    -- AntiGriefing(game.forces[MAIN_FORCE])
+    if (ENABLE_ANTI_GRIEFING) then
+        AntiGriefing(game.forces[MAIN_FORCE])
+    end
 end
 
 
@@ -262,9 +267,9 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
         global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled}
 
-        game.players[playerName].print("Generating your spawn now, please wait 10 seconds...")
+        game.players[playerName].print("Generating your spawn now, please wait a few seconds...")
         game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
-        delayedTick = game.tick + 10*TICKS_PER_SECOND
+        delayedTick = game.tick + 3*TICKS_PER_SECOND
         table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
 
         DisplayPleaseWaitForSpawnDialog(game.players[playerName])
@@ -363,64 +368,25 @@ function CreatePlayerCustomForce(player)
         end
         player.force = newForce
         SetCeaseFireBetweenAllForces()
-        SetFriendlyBetweenAllForces() 
+        SetFriendlyBetweenAllForces()
+        if (ENABLE_ANTI_GRIEFING) then
+            AntiGriefing(newForce)
+        end
         SendBroadcastMsg(player.name.." has started their own team!")     
     else
         player.force = MAIN_FORCE
         player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
     end
 
+    -- Chart silo areas if necessary
+    if ENABLE_SILO_VISION then
+        for idx,siloPos in pairs(global.siloPosition) do
+                newForce.chart(surface, {{siloPos.x-(CHUNK_SIZE*2),
+                                        siloPos.y-(CHUNK_SIZE*2)},
+                                        {siloPos.x+(CHUNK_SIZE*2),
+                                        siloPos.y+(CHUNK_SIZE*2)}})
+        end
+    end
+
     return newForce
 end
-
--- For each force, if it's a valid force, chart the chunk that all active players
--- are in.
--- I have no idea how compute intensive this function is. If it starts to lag the game
--- we'll have to figure out how to change it.
--- function ShareVisionBetweenPlayers()
-
---     if ((game.tick % 10) == 0) then
-        
---         for _,force in pairs(game.forces) do
---             if (force ~= nil) then
---                 if ((force.name ~= enemy) and
---                     (force.name ~= neutral) and
---                     (force.name ~= player)) then
-
---                     for _,player in pairs(game.connected_players) do
---                         force.chart(GAME_SURFACE_NAME,
---                                     {{player.position.x-(2*CHUNK_SIZE),
---                                      player.position.y-(2*CHUNK_SIZE)},
---                                      {player.position.x+(2*CHUNK_SIZE),
---                                      player.position.y+(2*CHUNK_SIZE)}})
---                     end
---                 end
---             end
---         end
---     end
--- end
-
-
--- For each force, if it's a valid force, chart the chunk that was just scanned
--- for all forces.
--- I have no idea how compute intensive this function is. If it starts to lag the game
--- we'll have to figure out how to change it.
--- function ShareRadarBetweenForces(event)
-
---     for _,force in pairs(game.forces) do
---         if (force ~= nil) then
---             if ((force.name ~= enemy) and
---                 (force.name ~= neutral) and
---                 (force.name ~= player)) then
-
---                 for _,player in pairs(game.connected_players) do
---                     force.chart(GAME_SURFACE_NAME,
---                                 {{event.chunk_position.x*CHUNK_SIZE,
---                                  event.chunk_position.y*CHUNK_SIZE},
---                                  {event.chunk_position.x*CHUNK_SIZE,
---                                  event.chunk_position.y*CHUNK_SIZE}})
---                 end
---             end
---         end
---     end
--- end
