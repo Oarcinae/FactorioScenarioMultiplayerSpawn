@@ -551,16 +551,16 @@ function ConfigureAlienStartingParams()
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
 
     -- game.map_settings.enemy_expansion.min_base_spacing = 10
-    -- game.map_settings.enemy_expansion.max_expansion_distance = 10
+    game.map_settings.enemy_expansion.max_expansion_distance = 20
 
-    -- game.map_settings.enemy_expansion.settler_group_min_size = 5
-    -- game.map_settings.enemy_expansion.settler_group_max_size = 20
+    game.map_settings.enemy_expansion.settler_group_min_size = 2
+    game.map_settings.enemy_expansion.settler_group_max_size = 10
 
     -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 4
     -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 4
 
-    -- game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*30
-    -- game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*120
+    game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*2
+    game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*20
 end
 
 -- Add Long Reach to Character
