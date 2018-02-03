@@ -535,6 +535,7 @@ function ConfigureAlienStartingParams()
     -- "time_factor": 0.000004,
     -- "destroy_factor": 0.002,
     -- "pollution_factor": 0.000015
+
     if ENEMY_TIME_FACTOR_DISABLE then
         game.map_settings.enemy_evolution.time_factor = 0
     else
@@ -547,22 +548,129 @@ function ConfigureAlienStartingParams()
         game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
     end
 
-    game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
+    if ENEMY_DESTROY_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.destroy_factor = 0
+    else
+        game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
+    end
+    
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
 
     if (OARC_DIFFICULTY_CUSTOM) then
 
-        -- game.map_settings.enemy_expansion.min_base_spacing = 10
+        game.map_settings.pollution.diffusion_ratio = 0.05
+        game.map_settings.pollution.ageing = 1.2
+
         game.map_settings.enemy_expansion.max_expansion_distance = 20
 
         game.map_settings.enemy_expansion.settler_group_min_size = 2
         game.map_settings.enemy_expansion.settler_group_max_size = 10
 
-        -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 4
-        -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 4
+        game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*15
+        game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*60
 
-        game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*2
-        game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*20
+        game.map_settings.unit_group.min_group_gathering_time = TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_group_gathering_time = 6 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_wait_time_for_late_members = 1 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_unit_group_size = 50
+
+        -- game.map_settings.pollution.enabled=true,
+        -- -- these are values for 60 ticks (1 simulated second)
+        -- --
+        -- -- amount that is diffused to neighboring chunk
+        -- -- (possibly repeated for other directions as well)
+        -- game.map_settings.pollution.diffusion_ratio=0.02,
+        -- -- this much PUs must be on the chunk to start diffusing
+        -- game.map_settings.pollution.min_to_diffuse=15,
+        -- -- constant modifier a percentage of 1 - the pollution eaten by a chunks tiles
+        -- game.map_settings.pollution.ageing=1,
+        -- -- anything bigger than this is visualised as this value
+        -- game.map_settings.pollution.expected_max_per_chunk=7000,
+        -- -- anything lower than this (but > 0) is visualised as this value
+        -- game.map_settings.pollution.min_to_show_per_chunk=700,
+        -- game.map_settings.pollution.min_pollution_to_damage_trees = 3500,
+        -- game.map_settings.pollution.pollution_with_max_forest_damage = 10000,
+        -- game.map_settings.pollution.pollution_per_tree_damage = 2000,
+        -- game.map_settings.pollution.pollution_restored_per_tree_damage = 500,
+        -- game.map_settings.pollution.max_pollution_to_restore_trees = 1000
+
+
+        -- game.map_settings.enemy_expansion.enabled = true,
+        -- -- Distance in chunks from the furthest base around.
+        -- -- This prevents expansions from reaching too far into the
+        -- -- player's territory
+        -- game.map_settings.enemy_expansion.max_expansion_distance = 7,
+
+        -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 2,
+        -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 2,
+
+        -- -- A candidate chunk's score is given as follows:
+        -- --   player = 0
+        -- --   for neighbour in all chunks within enemy_building_influence_radius from chunk:
+        -- --     player += number of player buildings on neighbour
+        -- --             * building_coefficient
+        -- --             * neighbouring_chunk_coefficient^distance(chunk, neighbour)
+        -- --
+        -- --   base = 0
+        -- --   for neighbour in all chunk within friendly_base_influence_radius from chunk:
+        -- --     base += num of enemy bases on neighbour
+        -- --           * other_base_coefficient
+        -- --           * neighbouring_base_chunk_coefficient^distance(chunk, neighbour)
+        -- --
+        -- --   score(chunk) = 1 / (1 + player + base)
+        -- --
+        -- -- The iteration is over a square region centered around the chunk for which the calculation is done,
+        -- -- and includes the central chunk as well. distance is the Manhattan distance, and ^ signifies exponentiation.
+        -- game.map_settings.enemy_expansion.building_coefficient = 0.1,
+        -- game.map_settings.enemy_expansion.other_base_coefficient = 2.0,
+        -- game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.5,
+        -- game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.4;
+
+        -- -- A chunk has to have at most this much percent unbuildable tiles for it to be considered a candidate.
+        -- -- This is to avoid chunks full of water to be marked as candidates.
+        -- game.map_settings.enemy_expansion.max_colliding_tiles_coefficient = 0.9,
+
+        -- -- Size of the group that goes to build new base (in game this is multiplied by the
+        -- -- evolution factor).
+        -- game.map_settings.enemy_expansion.settler_group_min_size = 5,
+        -- game.map_settings.enemy_expansion.settler_group_max_size = 20,
+
+        -- -- Ticks to expand to a single
+        -- -- position for a base is used.
+        -- --
+        -- -- cooldown is calculated as follows:
+        -- --   cooldown = lerp(max_expansion_cooldown, min_expansion_cooldown, -e^2 + 2 * e),
+        -- -- where lerp is the linear interpolation function, and e is the current evolution factor.
+        -- game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600,
+        -- game.map_settings.enemy_expansion.max_expansion_cooldown = 60 * 3600
+
+        -- -- pollution triggered group waiting time is a random time between min and max gathering time
+        -- game.map_settings.unit_group.min_group_gathering_time = 3600,
+        -- game.map_settings.unit_group.max_group_gathering_time = 10 * 3600,
+        -- -- after the gathering is finished the group can still wait for late members,
+        -- -- but it doesn't accept new ones anymore
+        -- game.map_settings.unit_group.max_wait_time_for_late_members = 2 * 3600,
+        -- -- limits for group radius (calculated by number of numbers)
+        -- game.map_settings.unit_group.max_group_radius = 30.0,
+        -- game.map_settings.unit_group.min_group_radius = 5.0,
+        -- -- when a member falls behind the group he can speedup up till this much of his regular speed
+        -- game.map_settings.unit_group.max_member_speedup_when_behind = 1.4,
+        -- -- When a member gets ahead of its group, it will slow down to at most this factor of its speed
+        -- game.map_settings.unit_group.max_member_slowdown_when_ahead = 0.6,
+        -- -- When members of a group are behind, the entire group will slow down to at most this factor of its max speed
+        -- game.map_settings.unit_group.max_group_slowdown_factor = 0.3,
+        -- -- If a member falls behind more than this times the group radius, the group will slow down to max_group_slowdown_factor
+        -- game.map_settings.unit_group.max_group_member_fallback_factor = 3,
+        -- -- If a member falls behind more than this time the group radius, it will be removed from the group.
+        -- game.map_settings.unit_group.member_disown_distance = 10,
+        -- game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60,
+
+        -- -- Maximum number of automatically created unit groups gathering for attack at any time.
+        -- game.map_settings.unit_group.max_gathering_unit_groups = 30,
+
+        -- -- Maximum size of an attack unit group. This only affects automatically-created unit groups; manual groups
+        -- -- created through the API are unaffected.
+        -- game.map_settings.unit_group.max_unit_group_size = 200
 
     end
 end

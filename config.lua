@@ -290,6 +290,7 @@ ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evol
 ENEMY_TIME_FACTOR_DIVISOR = 10
 ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
 ENEMY_POLLUTION_FACTOR_DIVISOR = 10
+ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
 ENEMY_DESTROY_FACTOR_DIVISOR = 1
 
 --------------------------------------------------------------------------------
