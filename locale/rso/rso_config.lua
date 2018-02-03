@@ -27,7 +27,7 @@ richness_distance_factor= 0.5 	-- exponent for richness distance factor calculat
 fluid_richness_distance_factor = 0.8 -- exponent for richness distance factor calculation for fluids
 size_distance_factor=0.15	   	-- exponent for size distance factor calculation
 
-deterministic = false           	-- set to false to use system for all decisions  math.random
+deterministic = true           	-- set to false to use system for all decisions  math.random
 
 -- mode is no longer used by generation process - it autodetects endless resources
 -- endless_resource_mode = false   -- if true, the size of each resource is modified by the following modifier. Use with the endless resources mod.

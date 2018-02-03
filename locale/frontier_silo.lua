@@ -145,12 +145,19 @@ end
 function GenerateRocketSiloAreas(surface)
     for idx,siloPos in pairs(global.siloPosition) do
         if (ENABLE_SILO_VISION) then
-            game.forces[MAIN_FORCE].chart(surface, {{siloPos.x-(CHUNK_SIZE*2),
-                                    siloPos.y-(CHUNK_SIZE*2)},
-                                    {siloPos.x+(CHUNK_SIZE*2),
-                                    siloPos.y+(CHUNK_SIZE*2)}})
+            ChartRocketSiloAreas(surface, game.forces[MAIN_FORCE])
         end
         surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 3)
+    end
+end
+
+-- Chart chunks where we plan to place the rocket silos.
+function ChartRocketSiloAreas(surface, force)
+    for idx,siloPos in pairs(global.siloPosition) do
+        force.chart(surface, {{siloPos.x-(CHUNK_SIZE*2),
+                                siloPos.y-(CHUNK_SIZE*2)},
+                                {siloPos.x+(CHUNK_SIZE*2),
+                                siloPos.y+(CHUNK_SIZE*2)}})
     end
 end
 

@@ -92,7 +92,7 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 ENABLE_SHARED_TEAM_VISION = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
-ENABLE_REGROWTH = false -- THIS STILL CAUSES DESYNCS
+ENABLE_REGROWTH = false
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
 -- This can also be used without enabling regrowth.
@@ -321,7 +321,7 @@ ENABLE_SILO_RADAR = false
 -- Long Reach Options
 --------------------------------------------------------------------------------
 
-BUILD_DIST_BONUS = 125
+BUILD_DIST_BONUS = 64
 REACH_DIST_BONUS = BUILD_DIST_BONUS
 RESOURCE_DIST_BONUS = 2
 
@@ -389,8 +389,10 @@ ENABLE_ANTI_GRIEFING = false
 GHOST_TIME_TO_LIVE = 3 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 -------------------------------------------------------------------------------
--- DEBUG
+-- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
+
+OARC_DIFFICULTY_CUSTOM = false
 
 -- DEBUG prints for me
 global.oarcDebugEnabled = false

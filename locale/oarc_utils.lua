@@ -550,17 +550,21 @@ function ConfigureAlienStartingParams()
     game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
 
-    -- game.map_settings.enemy_expansion.min_base_spacing = 10
-    game.map_settings.enemy_expansion.max_expansion_distance = 20
+    if (OARC_DIFFICULTY_CUSTOM) then
 
-    game.map_settings.enemy_expansion.settler_group_min_size = 2
-    game.map_settings.enemy_expansion.settler_group_max_size = 10
+        -- game.map_settings.enemy_expansion.min_base_spacing = 10
+        game.map_settings.enemy_expansion.max_expansion_distance = 20
 
-    -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 4
-    -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 4
+        game.map_settings.enemy_expansion.settler_group_min_size = 2
+        game.map_settings.enemy_expansion.settler_group_max_size = 10
 
-    game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*2
-    game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*20
+        -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 4
+        -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 4
+
+        game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*2
+        game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*20
+
+    end
 end
 
 -- Add Long Reach to Character

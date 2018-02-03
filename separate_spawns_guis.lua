@@ -1259,19 +1259,10 @@ function BuddySpawnRequestMenuClick(event)
             local newForce = CreatePlayerCustomForce(player)
             local buddyForce = CreatePlayerCustomForce(game.players[requesterName])
 
-            if (FRONTIER_ROCKET_SILO_MODE and newForce and buddyForce) then
-                ChartRocketSiloArea(newForce, game.surfaces[GAME_SURFACE_NAME])
-                ChartRocketSiloArea(buddyForce, game.surfaces[GAME_SURFACE_NAME])
-            end
-
         -- Create a new force for the combined players if they chose that option
         elseif requesterOptions.joinBuddyTeamRadio then
             local buddyForce = CreatePlayerCustomForce(game.players[requesterName])
             player.force = buddyForce
-
-            if (FRONTIER_ROCKET_SILO_MODE and newForce and buddyForce) then
-                ChartRocketSiloArea(buddyForce, game.surfaces[GAME_SURFACE_NAME])
-            end
         end
 
         -- Find coordinates of a good place to spawn

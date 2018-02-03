@@ -366,6 +366,10 @@ function CreatePlayerCustomForce(player)
         if ENABLE_SHARED_TEAM_VISION then
             newForce.share_chart = true
         end
+        -- Chart silo areas if necessary
+        if FRONTIER_ROCKET_SILO_MODE and ENABLE_SILO_VISION then
+            ChartRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME], newForce)
+        end
         player.force = newForce
         SetCeaseFireBetweenAllForces()
         SetFriendlyBetweenAllForces()
@@ -376,16 +380,6 @@ function CreatePlayerCustomForce(player)
     else
         player.force = MAIN_FORCE
         player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
-    end
-
-    -- Chart silo areas if necessary
-    if FRONTIER_ROCKET_SILO_MODE and ENABLE_SILO_VISION then
-        for idx,siloPos in pairs(global.siloPosition) do
-                newForce.chart(surface, {{siloPos.x-(CHUNK_SIZE*2),
-                                        siloPos.y-(CHUNK_SIZE*2)},
-                                        {siloPos.x+(CHUNK_SIZE*2),
-                                        siloPos.y+(CHUNK_SIZE*2)}})
-        end
     end
 
     return newForce

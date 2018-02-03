@@ -1250,11 +1250,11 @@ local function roll_region(c_x, c_y)
 		if not global.regions[r_x] then global.regions[r_x] = {} end
 		global.regions[r_x][r_y]={}
 		r_data = global.regions[r_x][r_y]
-		if (global.regrow_rso and not deterministic) then
-			rng = rng_for_reg_pos{x=r_x*math.random(-1,1),y=r_y*math.random(-1,1)}
-		else
+		-- if (global.regrow_rso and not deterministic) then
+		-- 	rng = rng_for_reg_pos{x=r_x*math.random(-1,1),y=r_y*math.random(-1,1)}
+		-- else
 			rng = rng_for_reg_pos{x=r_x,y=r_y}
-		end
+		-- end
 		
 		
 		local rollCount = math.ceil(#configIndexed / 10) - 1 -- 0 based counter is more convenient here
