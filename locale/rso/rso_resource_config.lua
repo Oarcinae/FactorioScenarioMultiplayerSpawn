@@ -123,7 +123,7 @@ local function fillEnemies()
         
         spawns_per_region={min=2,max=4},
         size={min=2,max=4},
-        size_per_region_factor=1,
+        size_per_region_factor=0.3,
         richness=3,
         
         absolute_probability=absolute_enemy_chance, -- chance to spawn in region

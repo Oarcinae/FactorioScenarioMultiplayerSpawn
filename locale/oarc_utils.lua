@@ -558,8 +558,8 @@ function ConfigureAlienStartingParams()
 
     if (OARC_DIFFICULTY_CUSTOM) then
 
-        game.map_settings.pollution.diffusion_ratio = 0.05
-        game.map_settings.pollution.ageing = 1.2
+        game.map_settings.pollution.diffusion_ratio = 0.08
+        game.map_settings.pollution.ageing = 1
 
         game.map_settings.enemy_expansion.max_expansion_distance = 20
 
@@ -570,9 +570,9 @@ function ConfigureAlienStartingParams()
         game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*60
 
         game.map_settings.unit_group.min_group_gathering_time = TICKS_PER_MINUTE
-        game.map_settings.unit_group.max_group_gathering_time = 6 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_group_gathering_time = 4 * TICKS_PER_MINUTE
         game.map_settings.unit_group.max_wait_time_for_late_members = 1 * TICKS_PER_MINUTE
-        game.map_settings.unit_group.max_unit_group_size = 50
+        game.map_settings.unit_group.max_unit_group_size = 15
 
         -- game.map_settings.pollution.enabled=true,
         -- -- these are values for 60 ticks (1 simulated second)
