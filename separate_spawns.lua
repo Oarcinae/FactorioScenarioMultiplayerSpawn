@@ -269,7 +269,7 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
 
         game.players[playerName].print("Generating your spawn now, please wait a few seconds...")
         game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
-        delayedTick = game.tick + 3*TICKS_PER_SECOND
+        delayedTick = game.tick + 10*TICKS_PER_SECOND
         table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
 
         DisplayPleaseWaitForSpawnDialog(game.players[playerName])
