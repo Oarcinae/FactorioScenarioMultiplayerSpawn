@@ -291,6 +291,7 @@ function DelayedSpawnOnTick()
                 delayedSpawn = global.delayedSpawns[i]
 
                 if (delayedSpawn.delayedTick < game.tick) then
+                    -- TODO, add check here for if chunks around spawn are generated surface.is_chunk_generated(chunkPos)
                     if (game.players[delayedSpawn.playerName] ~= nil) then
                         SendPlayerToNewSpawnAndCreateIt(delayedSpawn.playerName, delayedSpawn.spawn, delayedSpawn.moatEnabled)
                     end

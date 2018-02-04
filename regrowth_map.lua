@@ -3,7 +3,8 @@
 --
 -- Code tracks all chunks generated and allows for deleting inactive chunks
 -- Relies on some changes to RSO to provide random resource locations the next
--- time the land is regenerated.
+-- time the land is regenerated. -- (THIS IS CURRENTLY NOT WORKING IN 0.16,
+-- resources always how up in the same spot!)
 -- 
 -- Basic rules of regrowth:
 -- 1. Area around player is safe for quite a large distance.
