@@ -121,6 +121,11 @@ end
 
 -- Display the spawn options and explanation
 function DisplaySpawnOptions(player)
+    if (player == nil) then
+        DebugPrint("DisplaySpawnOptions with no valid player...")
+        return
+    end
+
     if (player.gui.center.spawn_opts ~= nil) then
         DebugPrint("Tried to display spawn options when it was already displayed!")
         return
@@ -791,9 +796,11 @@ function SpawnCtrlGuiClick(event)
             player.print("You rejected " .. joinQueuePlayerChoice .. "'s request to join your base.")
             SendMsg(joinQueuePlayerChoice, "Your request to join was rejected.")
             
-
-            game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy() 
-            DisplaySpawnOptions(game.players[joinQueuePlayerChoice])
+            -- Close the waiting players menu
+            if (game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu) then
+                game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy()
+                DisplaySpawnOptions(game.players[joinQueuePlayerChoice])
+            end
             
             -- Find and remove the player from the joinQueue they were in.
             for index,requestingPlayer in pairs(global.sharedSpawns[player.name].joinQueue) do
@@ -805,12 +812,6 @@ function SpawnCtrlGuiClick(event)
         
         elseif (elemName == "accept_player_request") then
 
-            -- Send an announcement
-            SendBroadcastMsg(joinQueuePlayerChoice .. " is joining " .. player.name .. "'s base!")
-            
-            -- Close the waiting players menu
-            game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy() 
-            
             -- Find and remove the player from the joinQueue they were in.
             for index,requestingPlayer in pairs(global.sharedSpawns[player.name].joinQueue) do
                 if (requestingPlayer == joinQueuePlayerChoice) then
@@ -818,17 +819,30 @@ function SpawnCtrlGuiClick(event)
                 end
             end
 
-            -- Spawn the player
-            joiningPlayer = game.players[joinQueuePlayerChoice]
-            ChangePlayerSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
-            SendPlayerToSpawn(joiningPlayer)
-            GivePlayerStarterItems(joiningPlayer)
-            table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
-            joiningPlayer.force = game.players[player.name].force
+            -- If player exists, then do stuff.
+            if (game.players[joinQueuePlayerChoice]) then
+                -- Send an announcement
+                SendBroadcastMsg(joinQueuePlayerChoice .. " is joining " .. player.name .. "'s base!")
+            
+                -- Close the waiting players menu
+                if (game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu) then
+                    game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy() 
+                end
+            
+                -- Spawn the player
+                joiningPlayer = game.players[joinQueuePlayerChoice]
+                ChangePlayerSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
+                SendPlayerToSpawn(joiningPlayer)
+                GivePlayerStarterItems(joiningPlayer)
+                table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
+                joiningPlayer.force = game.players[player.name].force
 
-            -- Create the button at the top left for setting respawn point and sharing base.
-            CreateSpawnCtrlGui(joiningPlayer)
-            ExpandSpawnCtrlGui(player, event.tick) 
+                -- Create the button at the top left for setting respawn point and sharing base.
+                CreateSpawnCtrlGui(joiningPlayer)
+                ExpandSpawnCtrlGui(player, event.tick) 
+            else
+                SendBroadcastMsg(joinQueuePlayerChoice .. " left the game. What an ass.")
+            end
         end
     end
 end
@@ -1029,7 +1043,9 @@ function BuddySpawnOptsGuiClick(event)
         buddyIsStillWaiting = false
         for _,buddyName in pairs(global.waitingBuddies) do
             if (buddyChoice == buddyName) then
-                buddyIsStillWaiting = true
+                if (game.players[buddyChoice]) then
+                    buddyIsStillWaiting = true
+                end
                 break
             end
         end
@@ -1143,7 +1159,12 @@ function BuddySpawnWaitMenuClick(event)
 end
 
 function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
-    
+
+    if not player then
+        DebugPrint("Another gui click happened with no valid player...")
+        return
+    end
+
     player.gui.center.add{name = "buddy_request_menu",
                             type = "frame",
                             direction = "vertical",
