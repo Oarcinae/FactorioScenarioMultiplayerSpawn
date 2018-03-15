@@ -135,7 +135,7 @@ function GenerateRocketSiloChunk(event)
                 RemoveDecorationsArea(surface, chunkArea)
 
                 -- Create rocket silo
-                CreateCropOctagon(surface, siloPos, chunkArea, 40)
+                CreateCropOctagon(surface, siloPos, chunkArea, CHUNK_SIZE*2)
             end
         end
     end

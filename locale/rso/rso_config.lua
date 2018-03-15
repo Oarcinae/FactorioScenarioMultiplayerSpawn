@@ -1,6 +1,6 @@
 debug_enabled = false
 
-region_size = 8    -- alternative mean to control how further away resources would be, default - 256 tiles or 8 chunks
+region_size = 10    -- alternative mean to control how further away resources would be, default - 256 tiles or 8 chunks
 				    -- each region is region_size*region_size chunks
 				    -- each chunk is 32*32 tiles
 
@@ -8,7 +8,7 @@ use_donut_shapes = false		-- setting this to false will remove donuts from possi
 
 starting_area_size = 0         	-- starting area in regions, safe from random nonsense
 
-absolute_resource_chance = 0.50 -- chance to spawn an resource in a region
+absolute_resource_chance = 0.40 -- chance to spawn an resource in a region
 starting_richness_mult = 1		-- multiply starting area richness for resources
 global_richness_mult = 1		-- multiply richness for all resources except starting area
 global_size_mult = 1			-- multiply size for all ores, doesn't affect starting area
@@ -23,9 +23,9 @@ multi_resource_chance_diminish = 0.6	-- diminishing effect factor on multi_resou
 
 min_amount=250 					-- default value for minimum amount of resource in single pile
 
-richness_distance_factor= 0.5 	-- exponent for richness distance factor calculation
+richness_distance_factor= 0.8 	-- exponent for richness distance factor calculation
 fluid_richness_distance_factor = 0.8 -- exponent for richness distance factor calculation for fluids
-size_distance_factor=0.15	   	-- exponent for size distance factor calculation
+size_distance_factor=0.3	   	-- exponent for size distance factor calculation
 
 deterministic = true           	-- set to false to use system for all decisions  math.random
 

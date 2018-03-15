@@ -27,14 +27,14 @@ my_fixed_width_style = {
 my_label_style = {
     minimal_width = 450,
     maximal_width = 450,
-    maximal_height = 10,
+    -- maximal_height = 10,
     font_color = {r=1,g=1,b=1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_note_style = {
     minimal_width = 450,
-    maximal_height = 10,
+    -- maximal_height = 10,
     font = "default-small-semibold",
     font_color = {r=1,g=0.5,b=0.5},
     top_padding = 0,
@@ -43,7 +43,7 @@ my_note_style = {
 my_warning_style = {
     minimal_width = 450,
     maximal_width = 450,
-    maximal_height = 10,
+    -- maximal_height = 10,
     font_color = {r=1,g=0.1,b=0.1},
     top_padding = 0,
     bottom_padding = 0
@@ -52,7 +52,7 @@ my_spacer_style = {
     minimal_width = 450,
     maximal_width = 450,
     minimal_height = 20,
-    maximal_height = 20,
+    -- maximal_height = 20,
     font_color = {r=0,g=0,b=0},
     top_padding = 0,
     bottom_padding = 0
@@ -71,30 +71,38 @@ my_player_list_admin_style = {
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    maximal_height = 15
+    -- maximal_height = 15
 }
 my_player_list_style = {
     font = "default-semibold",
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    maximal_height = 15
+    -- maximal_height = 15
+}
+my_player_list_offline_style = {
+    -- font = "default-semibold",
+    font_color = {r=0.5,g=0.5,b=0.5},
+    minimal_width = 200,
+    top_padding = 0,
+    bottom_padding = 0,
+    -- maximal_height = 15
 }
 my_player_list_style_spacer = {
-    maximal_height = 15
+    -- maximal_height = 15
 }
 my_color_red = {r=1,g=0.1,b=0.1}
 
 my_longer_label_style = {
     maximal_width = 600,
-    maximal_height = 10,
+    -- maximal_height = 10,
     font_color = {r=1,g=1,b=1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_longer_warning_style = {
     maximal_width = 600,
-    maximal_height = 10,
+    -- maximal_height = 10,
     font_color = {r=1,g=0.1,b=0.1},
     top_padding = 0,
     bottom_padding = 0
@@ -714,6 +722,15 @@ local function ExpandPlayerListGui(player)
                 ApplyStyle(text, my_player_list_style)
             end
         end
+        if (PLAYER_LIST_OFFLINE_PLAYERS) then
+            for _,player in pairs(game.players) do
+                if (not player.connected) then
+                    local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
+                    local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
+                    ApplyStyle(text, my_player_list_offline_style)
+                end
+            end
+        end
         local spacer = scrollFrame.add{type="label", caption="     ", name="plist_spacer_plist"}
         ApplyStyle(spacer, my_player_list_style_spacer)
     end
@@ -788,7 +805,7 @@ function DropGravestoneChests(player)
         
         local inv = player.get_inventory(id)
         
-        if (not inv.is_empty()) then
+        if ((#inv > 0) and not inv.is_empty()) then
             for j = 1, #inv do
                 if inv[j].valid_for_read then
                     
@@ -926,8 +943,8 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius)
 
             -- Create a circle of trees around the spawn point.
             if ((distVar < tileRadSqr-200) and 
-                (distVar > tileRadSqr-300)) then
-                surface.create_entity({name="tree-01", amount=1, position={i, j}})
+                (distVar > tileRadSqr-400)) then
+                surface.create_entity({name="tree-02", amount=1, position={i, j}})
             end
         end
     end
@@ -946,7 +963,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius)
 
             local distVar1 = math.floor(math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j)))
             local distVar2 = math.floor(math.abs(centerPos.x - i) + math.abs(centerPos.y - j))
-            local distVar = math.max(distVar1, distVar2 * 0.707);
+            local distVar = math.max(distVar1*1.1, distVar2 * 0.707*1.1);
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadius+2) then
@@ -979,15 +996,15 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius)
             local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
 
             -- Create a circle of water
-            if ((distVar < tileRadSqr+400) and 
-                (distVar > tileRadSqr-500)) then
+            if ((distVar < tileRadSqr+(2000*MOAT_SIZE_MODIFIER)) and 
+                (distVar > tileRadSqr)) then
                 table.insert(waterTiles, {name = "water", position ={i,j}})
             end
 
             -- Enforce land inside the edges of the circle to make sure it's
             -- a clean transition
-            if ((distVar < tileRadSqr-500) and 
-                (distVar > tileRadSqr-1000)) then
+            if ((distVar <= tileRadSqr) and 
+                (distVar > tileRadSqr-10000)) then
                 table.insert(waterTiles, {name = "grass-1", position ={i,j}})
             end
         end
@@ -1008,6 +1025,9 @@ end
 -- Function to generate a resource patch, of a certain size/amount at a pos.
 function GenerateResourcePatch(surface, resourceName, diameter, pos, amount)
     local midPoint = math.floor(diameter/2)
+    if (diameter == 0) then
+        return
+    end
     for y=0, diameter do
         for x=0, diameter do
             if (not ENABLE_RESOURCE_SHAPE_CIRCLE or ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2)) then
@@ -1116,7 +1136,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
             end
             if (SPAWN_MOAT_CHOICE_ENABLED) then
                 if (spawn.moat) then
-                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST+10)
+                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
                 end
             end
         end

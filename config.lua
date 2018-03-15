@@ -18,7 +18,7 @@ WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Hav
 WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
 
 OTHER_MSG1 = "Latest updates in this scenario version:"
-OTHER_MSG2 = "0.16 experimental release. New spawning permissions and buddy spawns."
+OTHER_MSG2 = "0.16 experimental release. Tweaks to fix spawn issues / text / difficulty."
 -- Optional other messages below:
 OTHER_MSG3 = "This scenario gives you or your friends your own starting area."
 OTHER_MSG4 = "You can be on the main team or your own. All teams are friendly."
@@ -76,6 +76,7 @@ ENABLE_AUTOFILL = true
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
+PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 
 -- Enable Gravestone Chests
 ENABLE_GRAVESTONE_ON_DEATH = false
@@ -92,7 +93,9 @@ ENABLE_POWER_ARMOR_QUICK_START = false
 ENABLE_SHARED_TEAM_VISION = true
 
 -- Enable map regrowth, see regrowth_map.lua for more info.
+-- I'm not a fan of this anymore, but it helps keep the map size down
 ENABLE_REGROWTH = false
+
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
 -- This can also be used without enabling regrowth.
@@ -161,10 +164,12 @@ FAR_MAX_DIST = 300
 
 -- Allow players to choose to spawn with a moat
 SPAWN_MOAT_CHOICE_ENABLED = true
+-- If you change the spawn area size, you might have to adjust this as well
+MOAT_SIZE_MODIFIER = 1
 
 -- Create a circle of land area for the spawn
--- This is the radius (I think?) in TILES.
-ENFORCE_LAND_AREA_TILE_DIST = 48
+-- If you make this much bigger than a few chunks, good luck.
+ENFORCE_LAND_AREA_TILE_DIST = CHUNK_SIZE*1.8
 
 -- Location of water strip (horizontal)
 WATER_SPAWN_OFFSET_X = -4
@@ -224,6 +229,7 @@ ENABLE_SPAWN_FORCE_GRASS = true
 SPAWN_TREE_CIRCLE_ENABLED = true
 
 -- Set this to true for the spawn area to be surrounded by an octagon of trees
+-- I don't recommend using this with moatsm
 SPAWN_TREE_OCTAGON_ENABLED = true
 
 ---------------------------------------
@@ -239,7 +245,7 @@ SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
 WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 5
+WARN_AREA_REDUCTION_RATIO = 10
 
 
 ---------------------------------------
@@ -283,7 +289,7 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 
 -- Enable/Disable enemy expansion
-ENEMY_EXPANSION = false
+ENEMY_EXPANSION = true
 
 -- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
 ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
@@ -370,10 +376,10 @@ global.clMapGen.autoplace_controls = {
     ["stone"]={frequency= "very-low", size= "low", richness= "high"},
     ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
 
-    ["desert"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["dirt"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["desert"]={frequency= "low", size= "low", richness= "normal"},
+    ["dirt"]={frequency= "low", size= "low", richness= "normal"},
     ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["sand"]={frequency= "normal", size= "normal", richness= "normal"},
+    ["sand"]={frequency= "low", size= "low", richness= "normal"},
     ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
 }
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
@@ -387,12 +393,11 @@ global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=1
 ENABLE_ANTI_GRIEFING = false
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 3 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 -------------------------------------------------------------------------------
 -- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
-
 OARC_DIFFICULTY_CUSTOM = false
 
 -- DEBUG prints for me

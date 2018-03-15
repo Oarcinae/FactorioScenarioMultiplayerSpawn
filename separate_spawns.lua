@@ -267,12 +267,14 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
     if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
         global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled}
 
-        game.players[playerName].print("Generating your spawn now, please wait a few seconds...")
+        local delay_spawn_seconds = 5*(math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE))
+
+        game.players[playerName].print("Generating your spawn now, please wait a few for " .. delay_spawn_seconds .. " seconds...")
         game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
-        delayedTick = game.tick + 10*TICKS_PER_SECOND
+        delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
         table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
 
-        DisplayPleaseWaitForSpawnDialog(game.players[playerName])
+        DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
     else      
         DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
@@ -319,6 +321,9 @@ function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
     -- Send the player to that position
     game.players[playerName].teleport(spawn, GAME_SURFACE_NAME)
     GivePlayerStarterItems(game.players[playerName])
+
+    -- Chart the area.
+    ChartArea(game.players[playerName].force, game.players[playerName].position, math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE), game.players[playerName].surface)
 
     if (game.players[playerName].gui.center.wait_for_spawn_dialog ~= nil) then
         game.players[playerName].gui.center.wait_for_spawn_dialog.destroy()

@@ -5,8 +5,8 @@
 
 require("separate_spawns")
 
-local SPAWN_GUI_MAX_WIDTH = 550
-local SPAWN_GUI_MAX_HEIGHT = 800
+local SPAWN_GUI_MAX_WIDTH = 1000
+local SPAWN_GUI_MAX_HEIGHT = 1000
 
 -- Use this for testing shared spawns...
 -- local sharedSpawnExample1 = {openAccess=true,
@@ -142,10 +142,10 @@ function DisplaySpawnOptions(player)
     -- Warnings and explanations...
     sGui.add{name = "warning_lbl1", type = "label",
                     caption="This is your ONLY chance to choose a spawn option. Choose carefully..."}
-    sGui.add{name = "warning_spacer", type = "label",
-                    caption=" "}
+    -- sGui.add{name = "warning_spacer", type = "label",
+    --                 caption=" "}
     ApplyStyle(sGui.warning_lbl1, my_warning_style)
-    ApplyStyle(sGui.warning_spacer, my_spacer_style)
+    -- ApplyStyle(sGui.warning_spacer, my_spacer_style)
 
     sGui.add{name = "spawn_msg_lbl1", type = "label",
                     caption=SPAWN_MSG1}
@@ -266,11 +266,15 @@ function DisplaySpawnOptions(player)
 
     -- New awesome buddy spawning system
     if ENABLE_SHARED_SPAWNS and ENABLE_BUDDY_SPAWN then
+        sGui.add{name = "buddy_spawn_msg_spacer", type = "label",
+                        caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+        ApplyStyle(sGui.buddy_spawn_msg_spacer, my_spacer_style)
+
         sGui.add{name = "buddy_spawn",
                         type = "button",
                         caption="Buddy Spawn"}
         sGui.add{name = "buddy_spawn_lbl1", type = "label",
-                        caption="You spawn next to a buddy of your choosing."}
+                        caption="Buddy System requires 2 players in this menu at the same time, you spawn beside each other."}
     end
 
     -- Some final notes
@@ -375,7 +379,7 @@ function SpawnOptsGuiClick(event)
         GivePlayerStarterItems(player)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg(player.name .. " is joining the main force!")
-        ChartArea(player.force, player.position, 4, player.surface)
+        ChartArea(player.force, player.position, math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE), player.surface)
         -- Create the button at the top left for setting respawn point and sharing base.
         CreateSpawnCtrlGui(player)
 
@@ -1347,7 +1351,7 @@ function BuddySpawnRequestMenuClick(event)
 end
 
 
-function DisplayPleaseWaitForSpawnDialog(player)
+function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
     
     player.gui.center.add{name = "wait_for_spawn_dialog",
                             type = "frame",
@@ -1362,7 +1366,7 @@ function DisplayPleaseWaitForSpawnDialog(player)
     pleaseWaitGui.add{name = "warning_lbl1", type = "label",
                     caption="Your spawn is being created now."}
     pleaseWaitGui.add{name = "warning_lbl2", type = "label",
-                    caption="You will be teleported there in a few seconds!"}
+                    caption="You will be teleported there in "..delay_seconds.." seconds!"}
     pleaseWaitGui.add{name = "warning_lbl3", type = "label",
                     caption="Please standby..."}
     pleaseWaitGui.add{name = "warning_spacer", type = "label",
