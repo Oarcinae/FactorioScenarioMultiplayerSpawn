@@ -6,7 +6,7 @@ region_size = 10    -- alternative mean to control how further away resources wo
 
 use_donut_shapes = false		-- setting this to false will remove donuts from possible resource layouts
 
-starting_area_size = 0         	-- starting area in regions, safe from random nonsense
+starting_area_size = 1         	-- starting area in regions, safe from random nonsense
 
 absolute_resource_chance = 0.40 -- chance to spawn an resource in a region
 starting_richness_mult = 1		-- multiply starting area richness for resources

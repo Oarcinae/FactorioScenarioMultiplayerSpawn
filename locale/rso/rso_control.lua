@@ -1525,7 +1525,7 @@ function RSO_init()
 		
 		updateConfig()
 
-		spawn_starting_resources(global.mainSurface, 1 )
+		spawn_starting_resources(surface, 1 )
 				
 		initDone = true
 

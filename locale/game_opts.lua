@@ -24,65 +24,34 @@ local function ExpandGameOptionsGui(player)
                                             direction="vertical"}
 
         -- General Server Info:
-        frame.add{name = "info_1", type = "label",
-                        caption=WELCOME_MSG_OARC}
-        frame.add{name = "info_2", type = "label",
-                        caption=WELCOME_MSG1}
-        frame.add{name = "info_3", type = "label",
-                        caption=WELCOME_MSG2}
-        frame.add{name = "info_4", type = "label",
-                        caption=WELCOME_MSG6}
-        frame.add{name = "info_spacer", type = "label",
-                        caption=" "}
-        ApplyStyle(frame.info_1, my_longer_label_style)
-        ApplyStyle(frame.info_2, my_longer_label_style)
-        ApplyStyle(frame.info_3, my_longer_label_style)
-        ApplyStyle(frame.info_4, my_longer_label_style)
-        ApplyStyle(frame.info_spacer, my_spacer_style)
-
+        AddLabel(frame, "info_1", global.welcome_msg, my_longer_label_style)
+        AddLabel(frame, "info_2", SERVER_MSG, my_longer_label_style)
+        AddSpacer(frame, "info_spacer1")
 
         -- Enemy Settings:
-        frame.add{name = "server_time", type = "label",
-                        caption="Server Run Time: " .. formattime_hours_mins(game.tick)}
-        frame.add{name = "evo_now", type = "label",
-                        caption="Current Evolution: " .. string.format("%.4f", game.forces["enemy"].evolution_factor)}
-        frame.add{name = "evo_factor_time", type = "label",
-                        caption="Enemy evolution time factor: " .. game.map_settings.enemy_evolution.time_factor}
-        frame.add{name = "evo_factor_pollution", type = "label",
-                        caption="Enemy evolution pollution factor: " .. game.map_settings.enemy_evolution.pollution_factor}
-        frame.add{name = "evo_factor_destroy", type = "label",
-                        caption="Enemy evolution destroy factor: " .. game.map_settings.enemy_evolution.destroy_factor}
-        if game.map_settings.enemy_expansion.enabled then
-            enemy_expansion_txt = "enabled"
-        else
-            enemy_expansion_txt = "disabled"
-        end
-        frame.add{name = "enemy_expansion", type = "label",
-                        caption="Enemy expansion is " .. enemy_expansion_txt}
-        frame.add{name = "enemy_spacer", type = "label",
-                        caption=" "}
-        ApplyStyle(frame.server_time, my_longer_label_style)
-        ApplyStyle(frame.evo_now, my_longer_label_style)
-        ApplyStyle(frame.evo_factor_time, my_longer_label_style)
-        ApplyStyle(frame.evo_factor_pollution, my_longer_label_style)
-        ApplyStyle(frame.evo_factor_destroy, my_longer_label_style)
-        ApplyStyle(frame.enemy_expansion, my_longer_label_style)
-        ApplyStyle(frame.enemy_spacer, my_spacer_style)
+        local enemy_expansion_txt = "disabled"
+        if game.map_settings.enemy_expansion.enabled then enemy_expansion_txt = "enabled" end
 
+        local enemy_text="Server Run Time: " .. formattime_hours_mins(game.tick) .. "\n" ..
+        "Current Evolution: " .. string.format("%.4f", game.forces["enemy"].evolution_factor) .. "\n" ..
+        "Enemy evolution time factor: " .. game.map_settings.enemy_evolution.time_factor .. "\n" ..
+        "Enemy evolution pollution factor: " .. game.map_settings.enemy_evolution.pollution_factor .. "\n" ..
+        "Enemy evolution destroy factor: " .. game.map_settings.enemy_evolution.destroy_factor .. "\n" ..
+        "Enemy expansion is " .. enemy_expansion_txt
+
+        AddLabel(frame, "enemy_info", enemy_text, my_longer_label_style)
+        AddSpacer(frame, "enemy_info_spacer1")
 
         -- Game Mode:
-        frame.add{name = "core_mod_en", type = "label",
-                        caption="Core game mode (separate spawns) is enabled."}
-        ApplyStyle(frame.core_mod_en, my_longer_label_style)
+        AddLabel(frame, "core_mod_en", "Core game mode (separate spawns) is enabled.", my_longer_label_style)
         if (not ENABLE_SEPARATE_SPAWNS) then
             frame.core_mod_en.caption="Core game mode (separate spawns) is DISABLED."
-            frame.core_mod_en.font_color=my_color_red
+            frame.core_mod_en.style.font_color=my_color_red
         end
 
         -- Soft Mods:
-        if (ENABLE_SEPARATE_SPAWNS) then
-            soft_mods_string = "Oarc Core"
-        else
+        local soft_mods_string = "Oarc Core"
+        if (not ENABLE_SEPARATE_SPAWNS) then
             soft_mods_string = "Oarc Core [DISABLED!]"
         end
         if (ENABLE_RSO) then
@@ -103,64 +72,41 @@ local function ExpandGameOptionsGui(player)
         if (ENABLE_PLAYER_LIST) then
             soft_mods_string = soft_mods_string .. ", Player List"
         end
-        frame.add{name = "soft_mods", type = "label",
-                        caption="Soft Mods Enabled: " .. soft_mods_string}
-        ApplyStyle(frame.soft_mods, my_longer_label_style)
+
+        local game_info_str = "Soft Mods Enabled: " .. soft_mods_string
 
         -- Spawn options:
         if (ENABLE_SEPARATE_TEAMS) then
-            frame.add{name = "separate_teams_mod", type = "label",
-                        caption="You are allowed to spawn on your own team (have your own research tree). All teams are COOP."}
-            ApplyStyle(frame.separate_teams_mod, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."You are allowed to spawn on your own team (have your own research tree). All teams are friendly!"
         end
         if (ENABLE_BUDDY_SPAWN) then
-            frame.add{name = "buddy_spawn_mod", type = "label",
-                        caption="You can chose to spawn alongside a buddy if you spawn together at the same time."}
-                    ApplyStyle(frame.buddy_spawn_mod, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
         end
         if (ENABLE_SHARED_SPAWNS) then
-            frame.add{name = "share_spawn_mod", type = "label",
-                        caption="Spawn hosts may choose to share their spawn and allow other players to join them."}
-                    ApplyStyle(frame.share_spawn_mod, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."Spawn hosts may choose to share their spawn and allow other players to join them."
         end
         if (ENABLE_SEPARATE_TEAMS and ENABLE_SHARED_TEAM_VISION) then
-            frame.add{name = "shared_team_vision_mod", type = "label",
-                        caption="Everyone (all teams) have shared vision."}
-                    ApplyStyle(frame.shared_team_vision_mod, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."Everyone (all teams) have shared vision."
         end
-
-        -- Silo:
         if (FRONTIER_ROCKET_SILO_MODE) then
-            frame.add{name = "silo_mod", type = "label",
-                        caption="Silos are NOT craftable. There is at least one already located on the map."}
-                    ApplyStyle(frame.silo_mod, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."Silos are NOT craftable. There is at least one already located on the map."
         end
-
-        -- Regrowth:
         if (ENABLE_REGROWTH) then
-            frame.add{name = "regrowth_mod", type = "label",
-                        caption="Old parts of the map will slowly be deleted over time (chunks without any player buildings)."}
-                    ApplyStyle(frame.regrowth_mod, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
         end
-
-        -- Minimum Play Time:
-        if (ENABLE_ABANDONED_BASE_REMOVAL) then
-            frame.add{name = "base_removal", type = "label",
-                        caption="If you leave within " .. MIN_ONLINE_TIME_IN_MINUTES .. " minutes of joining, your base and character will be deleted."}
-            ApplyStyle(frame.base_removal, my_longer_warning_style)
-        end
-
-        -- Quick Start:
         if (ENABLE_POWER_ARMOR_QUICK_START) then
-            frame.add{name = "power_armor_quick_start", type = "label",
-                        caption="Power armor quick start enabled."}
-                    ApplyStyle(frame.power_armor_quick_start, my_longer_label_style)
+            game_info_str = game_info_str.."\n".."Power armor quick start enabled."
+        end
+
+        AddLabel(frame, "game_info_label", game_info_str, my_longer_label_style)
+
+        if (ENABLE_ABANDONED_BASE_REMOVAL) then
+            AddLabel(frame, "leave_warning_msg", "If you leave within " .. MIN_ONLINE_TIME_IN_MINUTES .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
+            frame.leave_warning_msg.style.font_color=my_color_red
         end
 
         -- Ending Spacer
-        frame.add{name = "end_spacer", type = "label",
-                        caption=" "}
-        ApplyStyle(frame.end_spacer, my_spacer_style)
+        AddSpacer(frame, "end_spacer")
 
         -- ADMIN CONTROLS
         if (player.admin) then

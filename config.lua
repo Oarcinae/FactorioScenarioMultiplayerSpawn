@@ -7,38 +7,32 @@
 
 --------------------------------------------------------------------------------
 -- Messages
+-- You will want to change some of these to be your own.
+-- Make sure SERVER_OWNER_IS_OARC = false
 --------------------------------------------------------------------------------
 
+-- This stuff is printed in the console. It's probably ignored most of the time.
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
 GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
 MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
 
+-- This stuff is shown in the welcome GUI. Make sure it's valid.
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
-WELCOME_MSG1 = "Rules: Be polite. Ask before changing other players's stuff. Have fun!"
-WELCOME_MSG2 = "This server is running a custom scenario that changes spawn locations."
+SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
+"This server is running a custom scenario that changes spawn locations."
 
-OTHER_MSG1 = "Latest updates in this scenario version:"
-OTHER_MSG2 = "0.16 experimental release. Tweaks to fix spawn issues / text / difficulty."
--- Optional other messages below:
-OTHER_MSG3 = "This scenario gives you or your friends your own starting area."
-OTHER_MSG4 = "You can be on the main team or your own. All teams are friendly."
-OTHER_MSG5 = "If you leave in the first 15 minutes, your base and character will be deleted!"
+SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
+"0.16 experimental release. Tweaks to fix spawn issues / text / difficulty.\n"..
+"This scenario gives you and/or your friends your own starting area.\n"..
+"You can be on the main team or your own. All teams are friendly.\n"..
+"If you leave in the first 15 minutes, your base and character will be deleted!"
 
+SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for the land around your new spawn area to generate... Please wait for 10-20 seconds when you select your first spawn."
 
-WELCOME_MSG3 = "Due to the way this scenario works, it may take some time for the land"
-WELCOME_MSG4 = "around your new spawn area to generate..."
-WELCOME_MSG5 = "Please wait for 10-20 seconds when you select your first spawn."
-WELCOME_MSG6 = "Contact: SteamID:Oarc | oarcinae@gmail.com"
+CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | discord.gg/TPYxRrS"
 
-SPAWN_MSG1 = "Current Spawn Mode: WILDERNESS"
-SPAWN_MSG2 = "In this mode, there is no default spawn. Everyone starts in the wild!"
-SPAWN_MSG3 = "Resources are spread out far apart but are quite rich."
-
--- These are my specific welcome messages that get used only if I am the user
--- that creates the game.
-SERVER_OWNER_IS_OARC = true -- This should be false for you, it's just a convenience for me.
-WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"
+-- This should be false for you, it's just a convenience for me.
+SERVER_OWNER_IS_OARC = false
 
 
 --------------------------------------------------------------------------------
@@ -167,6 +161,7 @@ SPAWN_MOAT_CHOICE_ENABLED = true
 -- If you change the spawn area size, you might have to adjust this as well
 MOAT_SIZE_MODIFIER = 1
 
+-- THIS IS WHAT SETS THE SPAWN CIRCLE SIZE!
 -- Create a circle of land area for the spawn
 -- If you make this much bigger than a few chunks, good luck.
 ENFORCE_LAND_AREA_TILE_DIST = CHUNK_SIZE*1.8
@@ -261,7 +256,8 @@ ENABLE_SEPARATE_TEAMS = true
 MAIN_FORCE = "Main Force"
 
 -- Enable if people can spawn at the main base
-ENABLE_DEFAULT_SPAWN = false
+-- THIS CURRENTLY IS BROKEN! YOU WILL NOT GET ANY RESOURCES IF YOU USE RSO!
+ENABLE_DEFAULT_SPAWN = false -- DON'T USE THIS
 
 -- Enable if people can allow others to join their base
 ENABLE_SHARED_SPAWNS = true
@@ -309,7 +305,7 @@ ENEMY_DESTROY_FACTOR_DIVISOR = 1
 SILO_NUM_SPAWNS = 3
 
 -- How many chunks away from the center of the map should the silo be spawned
-SILO_CHUNK_DISTANCE = 100
+SILO_CHUNK_DISTANCE = 200
 
 -- If this is enabled, you get ONE silo at the location specified below.
 SILO_FIXED_POSITION = false
@@ -376,10 +372,10 @@ global.clMapGen.autoplace_controls = {
     ["stone"]={frequency= "very-low", size= "low", richness= "high"},
     ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
 
-    ["desert"]={frequency= "low", size= "low", richness= "normal"},
-    ["dirt"]={frequency= "low", size= "low", richness= "normal"},
+    ["desert"]={frequency= "low", size= "low", richness= "low"},
+    ["dirt"]={frequency= "low", size= "low", richness= "low"},
     ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["sand"]={frequency= "low", size= "low", richness= "normal"},
+    ["sand"]={frequency= "low", size= "low", richness= "low"},
     ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
 }
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
@@ -402,3 +398,8 @@ OARC_DIFFICULTY_CUSTOM = false
 
 -- DEBUG prints for me
 global.oarcDebugEnabled = false
+
+-- These are my specific welcome messages that get used only if I am the user
+-- that creates the game.
+WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
+WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"

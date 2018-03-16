@@ -25,34 +25,31 @@ my_fixed_width_style = {
     maximal_width = 450
 }
 my_label_style = {
-    minimal_width = 450,
-    maximal_width = 450,
-    -- maximal_height = 10,
+    -- minimal_width = 450,
+    -- maximal_width = 50,
+    single_line = false,
     font_color = {r=1,g=1,b=1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_note_style = {
-    minimal_width = 450,
-    -- maximal_height = 10,
+    -- minimal_width = 450,
+    single_line = false,
     font = "default-small-semibold",
     font_color = {r=1,g=0.5,b=0.5},
     top_padding = 0,
     bottom_padding = 0
 }
 my_warning_style = {
-    minimal_width = 450,
-    maximal_width = 450,
-    -- maximal_height = 10,
+    -- minimal_width = 450,
+    -- maximal_width = 450,
+    single_line = false,
     font_color = {r=1,g=0.1,b=0.1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_spacer_style = {
-    minimal_width = 450,
-    maximal_width = 450,
-    minimal_height = 20,
-    -- maximal_height = 20,
+    minimal_height = 10,
     font_color = {r=0,g=0,b=0},
     top_padding = 0,
     bottom_padding = 0
@@ -71,14 +68,14 @@ my_player_list_admin_style = {
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    -- maximal_height = 15
+    single_line = false,
 }
 my_player_list_style = {
     font = "default-semibold",
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    -- maximal_height = 15
+    single_line = false,
 }
 my_player_list_offline_style = {
     -- font = "default-semibold",
@@ -86,23 +83,23 @@ my_player_list_offline_style = {
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    -- maximal_height = 15
+    single_line = false,
 }
 my_player_list_style_spacer = {
-    -- maximal_height = 15
+    minimal_height = 20,
 }
 my_color_red = {r=1,g=0.1,b=0.1}
 
 my_longer_label_style = {
     maximal_width = 600,
-    -- maximal_height = 10,
+    single_line = false,
     font_color = {r=1,g=1,b=1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_longer_warning_style = {
     maximal_width = 600,
-    -- maximal_height = 10,
+    single_line = false,
     font_color = {r=1,g=0.1,b=0.1},
     top_padding = 0,
     bottom_padding = 0
@@ -332,6 +329,27 @@ function ApplyStyle (guiIn, styleIn)
     for k,v in pairs(styleIn) do
         guiIn.style[k]=v
     end 
+end
+
+-- Shorter way to add a label with a style
+function AddLabel(guiIn, name, message, style)
+    guiIn.add{name = name, type = "label",
+                    caption=message}
+    ApplyStyle(guiIn[name], style)
+end
+
+-- Shorter way to add a spacer
+function AddSpacer(guiIn, name)
+    guiIn.add{name = name, type = "label",
+                    caption=" "}
+    ApplyStyle(guiIn[name], my_spacer_style)
+end
+
+-- Shorter way to add a spacer with a decorative line
+function AddSpacerLine(guiIn, name)
+    guiIn.add{name = name, type = "label",
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    ApplyStyle(guiIn[name], my_spacer_style)
 end
 
 -- Get a random 1 or -1
@@ -715,14 +733,16 @@ local function ExpandPlayerListGui(player)
         scrollFrame.horizontal_scroll_policy = "never"
         for _,player in pairs(game.connected_players) do
             local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
-            local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
             if (player.admin) then
-                ApplyStyle(text, my_player_list_admin_style)
+                AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_admin_style)
             else
-                ApplyStyle(text, my_player_list_style)
+                AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_style)
             end
         end
+
+        -- List offline players
         if (PLAYER_LIST_OFFLINE_PLAYERS) then
+            AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_style)
             for _,player in pairs(game.players) do
                 if (not player.connected) then
                     local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
@@ -996,7 +1016,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius)
             local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
 
             -- Create a circle of water
-            if ((distVar < tileRadSqr+(2000*MOAT_SIZE_MODIFIER)) and 
+            if ((distVar < tileRadSqr+(1500*MOAT_SIZE_MODIFIER)) and 
                 (distVar > tileRadSqr)) then
                 table.insert(waterTiles, {name = "water", position ={i,j}})
             end

@@ -5,7 +5,7 @@
 
 require("separate_spawns")
 
-local SPAWN_GUI_MAX_WIDTH = 1000
+local SPAWN_GUI_MAX_WIDTH = 500
 local SPAWN_GUI_MAX_HEIGHT = 1000
 
 -- Use this for testing shared spawns...
@@ -35,64 +35,17 @@ function DisplayWelcomeTextGui(player)
     wGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     wGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
+    -- Start with server message.
+    AddLabel(wGui, "server_msg_lbl1", SERVER_MSG, my_label_style)
+    AddLabel(wGui, "contact_info_msg_lbl1", CONTACT_MSG, my_label_style)
+    AddSpacer(wGui, "server_msg_spacer1")
 
+    -- Informational message about the scenario
+    AddLabel(wGui, "scenario_info_msg_lbl1", SCENARIO_INFO_MSG, my_label_style)
+    AddSpacer(wGui, "scenario_info_msg_spacer1")
 
-    wGui.add{name = "welcome_msg_lbl1", type = "label",
-                    caption=WELCOME_MSG1}
-    wGui.add{name = "welcome_msg_lbl2", type = "label",
-                    caption=WELCOME_MSG2}
-    wGui.add{name = "welcome_msg_spacer1", type = "label",
-                    caption=" "}
-
-    ApplyStyle(wGui.welcome_msg_lbl1, my_label_style)
-    ApplyStyle(wGui.welcome_msg_lbl2, my_label_style)
-    ApplyStyle(wGui.welcome_msg_spacer1, my_spacer_style)
-
-    wGui.add{name = "other_msg_lbl1", type = "label",
-                    caption=OTHER_MSG1}
-    wGui.add{name = "other_msg_lbl2", type = "label",
-                    caption=OTHER_MSG2}
-    if (OTHER_MSG3 ~= nil) then
-        wGui.add{name = "other_msg_lbl3", type = "label",
-                    caption=OTHER_MSG3}
-        ApplyStyle(wGui.other_msg_lbl3, my_label_style)
-    end
-    if (OTHER_MSG4 ~= nil) then
-        wGui.add{name = "other_msg_lbl4", type = "label",
-                    caption=OTHER_MSG4}
-        ApplyStyle(wGui.other_msg_lbl4, my_label_style)
-    end
-    if (OTHER_MSG5 ~= nil) then
-        wGui.add{name = "other_msg_lbl5", type = "label",
-                    caption=OTHER_MSG5}
-        ApplyStyle(wGui.other_msg_lbl5, my_label_style)
-    end
-    wGui.add{name = "other_msg_spacer1", type = "label",
-                    caption=" "}
-
-    ApplyStyle(wGui.other_msg_lbl1, my_label_style)
-    ApplyStyle(wGui.other_msg_lbl2, my_label_style)
-    ApplyStyle(wGui.other_msg_spacer1, my_spacer_style)
-
-    wGui.add{name = "welcome_msg_lbl3", type = "label",
-                    caption=WELCOME_MSG3}
-    wGui.add{name = "welcome_msg_lbl4", type = "label",
-                    caption=WELCOME_MSG4}
-    wGui.add{name = "welcome_msg_lbl5", type = "label",
-                    caption=WELCOME_MSG5}
-    wGui.add{name = "welcome_msg_lbl6", type = "label",
-                    caption=WELCOME_MSG6}
-    wGui.add{name = "welcome_msg_spacer2", type = "label",
-                    caption=" "}
-
-    ApplyStyle(wGui.welcome_msg_lbl3, my_warning_style)
-    ApplyStyle(wGui.welcome_msg_lbl4, my_warning_style)
-    ApplyStyle(wGui.welcome_msg_lbl5, my_warning_style)
-    ApplyStyle(wGui.welcome_msg_lbl6, my_label_style)
-    ApplyStyle(wGui.welcome_msg_spacer2, my_spacer_style)
-
-
-
+    -- Warning about spawn creation time
+    AddLabel(wGui, "spawn_time_msg_lbl1", SPAWN_WARN_MSG, my_warning_style)
     wGui.add{name = "welcome_okay_btn",
                     type = "button",
                     caption="I Understand"}
@@ -140,46 +93,19 @@ function DisplaySpawnOptions(player)
 
 
     -- Warnings and explanations...
-    sGui.add{name = "warning_lbl1", type = "label",
-                    caption="This is your ONLY chance to choose a spawn option. Choose carefully..."}
-    -- sGui.add{name = "warning_spacer", type = "label",
-    --                 caption=" "}
-    ApplyStyle(sGui.warning_lbl1, my_warning_style)
-    -- ApplyStyle(sGui.warning_spacer, my_spacer_style)
+    local warn_msg = "Click the INFO button in the top left to learn more about this scenario! This is your ONLY chance to choose a spawn option. Choose carefully..."
+    AddLabel(sGui, "warning_lbl1", warn_msg, my_warning_style)
+    AddLabel(sGui, "spawn_msg_lbl1", SPAWN_MSG1, my_label_style)
 
-    sGui.add{name = "spawn_msg_lbl1", type = "label",
-                    caption=SPAWN_MSG1}
-    sGui.add{name = "spawn_msg_lbl2", type = "label",
-                    caption=SPAWN_MSG2}
-    sGui.add{name = "spawn_msg_lbl3", type = "label",
-                    caption=SPAWN_MSG3}
-    sGui.add{name = "spawn_msg_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(sGui.spawn_msg_lbl1, my_label_style)
-    ApplyStyle(sGui.spawn_msg_lbl2, my_label_style)
-    ApplyStyle(sGui.spawn_msg_lbl3, my_label_style)
-    ApplyStyle(sGui.spawn_msg_spacer, my_spacer_style)
-
-
+    -- Button and message about the regular vanilla spawn
     if ENABLE_DEFAULT_SPAWN then
         sGui.add{name = "default_spawn_btn",
-                        type = "button",
-                        caption="Default Spawn"}
-        sGui.add{name = "normal_spawn_lbl1", type = "label",
-                        caption="This is the default spawn behavior of a vanilla game."}
-        sGui.add{name = "normal_spawn_lbl2", type = "label",
-                        caption="You join the default team in the center of the map."}
-        ApplyStyle(sGui.normal_spawn_lbl1, my_label_style)
-        ApplyStyle(sGui.normal_spawn_lbl2, my_label_style)
-    else
-        sGui.add{name = "normal_spawn_lbl1", type = "label",
-                        caption="Default spawn is disabled in this mode."}
-        ApplyStyle(sGui.normal_spawn_lbl1, my_warning_style)
+                    type = "button",
+                    caption="Vanilla Spawn"}
+        local normal_spawn_text = "This is the default spawn behavior of a vanilla game. You join the default team in the center of the map."
+        AddLabel(sGui, "normal_spawn_lbl1", normal_spawn_text, my_label_style)
+        AddSpacerLine(sGui, "normal_spawn_spacer")
     end
-    sGui.add{name = "normal_spawn_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(sGui.normal_spawn_spacer, my_spacer_style)
-
 
     -- The main spawning options. Solo near and solo far.
     -- If enable, you can also choose to be on your own team.
@@ -187,7 +113,6 @@ function DisplaySpawnOptions(player)
                                     type = "flow",
                                     direction="vertical"}
     
-
     -- Radio buttons to pick your team.
     if (ENABLE_SEPARATE_TEAMS) then
         soloSpawnFlow.add{name = "isolated_spawn_main_team_radio",
@@ -208,24 +133,19 @@ function DisplaySpawnOptions(player)
                         state=false}
     end
 
-    soloSpawnFlow.add{name = "team_chat_warning_spacer", type = "label",
-                caption=" "}
-    ApplyStyle(soloSpawnFlow.team_chat_warning_spacer, my_spacer_style)
-
-    soloSpawnFlow.add{name = "isolated_spawn_near",
+    -- Isolated spawn options. The core gameplay of this scenario.
+    local soloSpawnbuttons = soloSpawnFlow.add{name = "spawn_solo_flow",
+                                                type = "flow",
+                                                direction="horizontal"}
+    soloSpawnbuttons.add{name = "isolated_spawn_near",
                     type = "button",
                     caption="Solo Spawn (Near)"}
-    soloSpawnFlow.add{name = "isolated_spawn_far",
+    soloSpawnbuttons.add{name = "isolated_spawn_far",
                     type = "button",
                     caption="Solo Spawn (Far)"}
-    
-    soloSpawnFlow.add{name = "isolated_spawn_lbl1", type = "label",
-                    caption="You are spawned in a new area, with some starting resources."}    
-    ApplyStyle(soloSpawnFlow.isolated_spawn_lbl1, my_label_style)
-
-    sGui.add{name = "isolated_spawn_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(sGui.isolated_spawn_spacer, my_spacer_style)
+    AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
+        "You are spawned in a new area, with some starting resources.", my_label_style)
+    AddSpacerLine(soloSpawnFlow, "isolated_spawn_spacer")
 
 
     -- Spawn options to join another player's base.
@@ -235,73 +155,41 @@ function DisplaySpawnOptions(player)
             sGui.add{name = "join_other_spawn",
                             type = "button",
                             caption="Join Someone (" .. numAvailSpawns .. " available)"}
-            sGui.add{name = "join_other_spawn_lbl1", type = "label",
-                            caption="You are spawned in someone else's base."}
-            sGui.add{name = "join_other_spawn_lbl2", type = "label",
-                            caption="This requires at least 1 person to have allowed access to their base."}
-            sGui.add{name = "join_other_spawn_lbl3", type = "label",
-                            caption="This choice is final and you will not be able to create your own spawn later."}
-            sGui.add{name = "join_other_spawn_spacer", type = "label",
-                            caption=" "}
-            ApplyStyle(sGui.join_other_spawn_lbl1, my_label_style)
-            ApplyStyle(sGui.join_other_spawn_lbl2, my_label_style)
-            ApplyStyle(sGui.join_other_spawn_lbl3, my_label_style)
-            ApplyStyle(sGui.join_other_spawn_spacer, my_spacer_style)
+            local join_spawn_text = "You are spawned in someone else's base. This requires at least 1 person to have allowed access to their base. This choice is final and you will not be able to create your own spawn later."
+            AddLabel(sGui, "join_other_spawn_lbl1", join_spawn_text, my_label_style)
         else
-            sGui.add{name = "join_other_spawn_lbl1", type = "label",
-                            caption="There are currently no shared bases availble to spawn at."}
-            sGui.add{name = "join_other_spawn_spacer", type = "label",
-                            caption=" "}
-            ApplyStyle(sGui.join_other_spawn_lbl1, my_warning_style)
-            ApplyStyle(sGui.join_other_spawn_spacer, my_spacer_style)
+            AddLabel(sGui, "join_other_spawn_lbl1", "There are currently no shared bases availble to spawn at.", my_label_style)
             sGui.add{name = "join_other_spawn_check",
                             type = "button",
                             caption="Check Again"}
         end
     else
-        sGui.add{name = "join_other_spawn_lbl1", type = "label",
-                        caption="Shared spawns are disabled in this mode."}
-        ApplyStyle(sGui.join_other_spawn_lbl1, my_warning_style)
+        AddLabel(soloSpawnFlow, "join_other_spawn_lbl1",
+            "Shared spawns are disabled in this mode.", my_warning_style)
     end
 
     -- New awesome buddy spawning system
     if ENABLE_SHARED_SPAWNS and ENABLE_BUDDY_SPAWN then
-        sGui.add{name = "buddy_spawn_msg_spacer", type = "label",
-                        caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-        ApplyStyle(sGui.buddy_spawn_msg_spacer, my_spacer_style)
-
+        AddSpacerLine(sGui, "buddy_spawn_msg_spacer")
         sGui.add{name = "buddy_spawn",
                         type = "button",
                         caption="Buddy Spawn"}
-        sGui.add{name = "buddy_spawn_lbl1", type = "label",
-                        caption="Buddy System requires 2 players in this menu at the same time, you spawn beside each other."}
+        AddLabel(sGui, "buddy_spawn_lbl1",
+            "The buddy system requires 2 players in this menu at the same time, you spawn beside each other, each with your own resources.", my_label_style)
     end
 
     -- Some final notes
-    sGui.add{name = "note_spacer1", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    sGui.add{name = "note_spacer2", type = "label",
-                    caption=" "}
+    AddSpacerLine(sGui, "note_spacer1")
 
     if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN > 0) then
-        sGui.add{name = "shared_spawn_note1", type = "label",
-                    caption="If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join." }
-        ApplyStyle(sGui.shared_spawn_note1, my_note_style)
+        AddLabel(sGui, "buddy_spawn_lbl1",
+                "If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
+                my_note_style)
     end
-    sGui.add{name = "note_lbl1", type = "label",
-                    caption="Near spawn is between " .. NEAR_MIN_DIST*CHUNK_SIZE .. "-" .. NEAR_MAX_DIST*CHUNK_SIZE ..  " tiles away from the center of the map."}
-    sGui.add{name = "note_lbl2", type = "label",
-                    caption="Far spawn is between " .. FAR_MIN_DIST*CHUNK_SIZE .. "-" .. FAR_MAX_DIST*CHUNK_SIZE ..  " tiles away from the center of the map."}
-    sGui.add{name = "note_lbl3", type = "label",
-                    caption="Solo spawns are dangerous! Expect a fight to reach other players."}
-    sGui.add{name = "note_spacer3", type = "label",
-                    caption=" "}
-    ApplyStyle(sGui.note_lbl1, my_note_style)
-    ApplyStyle(sGui.note_lbl2, my_note_style)
-    ApplyStyle(sGui.note_lbl3, my_note_style)
-    ApplyStyle(sGui.note_spacer1, my_spacer_style)
-    ApplyStyle(sGui.note_spacer2, my_spacer_style)
-    ApplyStyle(sGui.note_spacer3, my_spacer_style)
+    spawn_distance_notes="Near spawn is between " .. NEAR_MIN_DIST .. "-" .. NEAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
+    "Far spawn is between " .. FAR_MIN_DIST .. "-" .. FAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
+    "Solo spawns are dangerous! Expect a fight to reach other players."
+    AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
 
@@ -468,9 +356,8 @@ function DisplaySharedSpawnOptions(player)
                 shGui.add{type="button", caption=spawnName .. " (" .. spotsRemaining .. " spots remaining)", name=spawnName}
             end
             if (shGui.spawnName ~= nil) then
-                shGui.add{name = spawnName .. "spacer_lbl", type = "label", caption=" "}
+                -- AddSpacer(buddyGui, spawnName .. "spacer_lbl")
                 ApplyStyle(shGui[spawnName], my_small_button_style)
-                ApplyStyle(shGui[spawnName .. "spacer_lbl"], my_spacer_style)
             end
         end
     end
@@ -547,13 +434,7 @@ function DisplaySharedSpawnJoinWaitMenu(player)
 
 
     -- Warnings and explanations...
-    sGui.add{name = "warning_lbl1", type = "label",
-                    caption="You will spawn once the host selects yes..."}
-    sGui.add{name = "warning_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(sGui.warning_lbl1, my_warning_style)
-    ApplyStyle(sGui.warning_spacer, my_spacer_style)
-    
+    AddLabel(sGui, "warning_lbl1", "You will spawn once the host selects yes...", my_warning_style)   
     sGui.add{name = "cancel_shared_spawn_wait_menu",
                     type = "button",
                     caption="Cancel (Return to starting spawn options)"}
@@ -665,31 +546,19 @@ function ExpandSpawnCtrlGui(player, tick)
         if ((tick - global.playerCooldowns[player.name].setRespawn) > RESPAWN_COOLDOWN_TICKS) then
             spwnCtrls.add{type="button", name="setRespawnLocation", caption="Set New Respawn Location (1 hour cooldown)"}
             spwnCtrls["setRespawnLocation"].style.font = "default-small-semibold"
-            spwnCtrls.add{name = "respawn_cooldown_note2", type = "label",
-                    caption="This will set your respawn point to your current location."}
-            spwnCtrls.add{name = "respawn_cooldown_spacer1", type = "label",
-                caption=" "}
-            ApplyStyle(spwnCtrls.respawn_cooldown_note2, my_note_style)
-            ApplyStyle(spwnCtrls.respawn_cooldown_spacer1, my_spacer_style)   
+
         else
-            spwnCtrls.add{name = "respawn_cooldown_note1", type = "label",
-                    caption="Set Respawn Cooldown Remaining: " .. formattime(RESPAWN_COOLDOWN_TICKS-(tick - global.playerCooldowns[player.name].setRespawn))}
-            spwnCtrls.add{name = "respawn_cooldown_note2", type = "label",
-                    caption="This will set your respawn point to your current location."}
-            spwnCtrls.add{name = "respawn_cooldown_spacer1", type = "label",
-                caption=" "}
-            ApplyStyle(spwnCtrls.respawn_cooldown_note1, my_note_style)
-            ApplyStyle(spwnCtrls.respawn_cooldown_note2, my_note_style)
-            ApplyStyle(spwnCtrls.respawn_cooldown_spacer1, my_spacer_style)            
+            AddLabel(spwnCtrls, "respawn_cooldown_note1", "Set Respawn Cooldown Remaining: " .. formattime(RESPAWN_COOLDOWN_TICKS-(tick - global.playerCooldowns[player.name].setRespawn)), my_note_style)           
         end
+        AddLabel(spwnCtrls, "respawn_cooldown_note2", "This will set your respawn point to your current location.", my_note_style)
 
         -- Display a list of people in the join queue for your base.
         if (ENABLE_SHARED_SPAWNS and IsSharedSpawnActive(player)) then
             if ((global.sharedSpawns[player.name].joinQueue ~= nil) and
                 (#global.sharedSpawns[player.name].joinQueue > 0)) then
 
-                spwnCtrls.add{name = "drop_down_msg_lbl1", type = "label",
-                                caption="Select a player from the join queue:"}
+
+                AddLabel(spwnCtrls, "drop_down_msg_lbl1", "Select a player from the join queue:", my_label_style)
                 spwnCtrls.add{name = "join_queue_dropdown",
                                 type = "drop-down",
                                 items = global.sharedSpawns[player.name].joinQueue}
@@ -699,16 +568,11 @@ function ExpandSpawnCtrlGui(player, tick)
                 spwnCtrls.add{name = "reject_player_request",
                                 type = "button",
                                 caption="Reject"}
-                ApplyStyle(spwnCtrls.drop_down_msg_lbl1, my_label_style)
             else
-                spwnCtrls.add{name = "empty_join_queue_note1", type = "label",
-                        caption="You have no players requesting to join you at this time."}
-
-                ApplyStyle(spwnCtrls.empty_join_queue_note1, my_note_style)
+                AddLabel(spwnCtrls, "empty_join_queue_note1", "You have no players requesting to join you at this time.", my_note_style)
             end
             spwnCtrls.add{name = "join_queue_spacer", type = "label",
                             caption=" "}
-            ApplyStyle(spwnCtrls.join_queue_spacer, my_spacer_style)
         end
     end
 end
@@ -799,6 +663,7 @@ function SpawnCtrlGuiClick(event)
         if (elemName == "reject_player_request") then
             player.print("You rejected " .. joinQueuePlayerChoice .. "'s request to join your base.")
             SendMsg(joinQueuePlayerChoice, "Your request to join was rejected.")
+            ExpandSpawnCtrlGui(player, event.tick) 
             
             -- Close the waiting players menu
             if (game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu) then
@@ -863,25 +728,9 @@ function DisplayBuddySpawnOptions(player)
 
 
     -- Warnings and explanations...
-    buddyGui.add{name = "warning_lbl1", type = "label",
-                    caption="Once a buddy accepts a spawn request, it is final!"}
-    buddyGui.add{name = "warning_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(buddyGui.warning_lbl1, my_warning_style)
-    ApplyStyle(buddyGui.warning_spacer, my_spacer_style)
-
-    buddyGui.add{name = "spawn_msg_lbl1", type = "label",
-                    caption=SPAWN_MSG1}
-    buddyGui.add{name = "spawn_msg_lbl2", type = "label",
-                    caption=SPAWN_MSG2}
-    buddyGui.add{name = "spawn_msg_lbl3", type = "label",
-                    caption=SPAWN_MSG3}
-    buddyGui.add{name = "spawn_msg_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(buddyGui.spawn_msg_lbl1, my_label_style)
-    ApplyStyle(buddyGui.spawn_msg_lbl2, my_label_style)
-    ApplyStyle(buddyGui.spawn_msg_lbl3, my_label_style)
-    ApplyStyle(buddyGui.spawn_msg_spacer, my_spacer_style)
+    buddy_info_msg="To use this, make sure you and your buddy are in this menu at the same time. Only one of you must send the request. Select your buddy from the list (refresh if your buddy's name is not visible) and select your spawn options. Click one of the request buttons to send the request. The other buddy can then accept (or deny) the request. This will allow you both to spawn next to each other, each with your own spawn area. Once a buddy accepts a spawn request, it is final!"
+    AddLabel(buddyGui, "buddy_info_msg", buddy_info_msg, my_label_style)
+    AddSpacerLine(buddyGui, "buddy_info_spacer")
 
     buddyList = {}
     for _,buddyName in pairs(global.waitingBuddies) do
@@ -890,19 +739,14 @@ function DisplayBuddySpawnOptions(player)
         end
     end
 
-    buddyGui.add{name = "drop_down_msg_lbl1", type = "label",
-                    caption="Select a buddy from the waiting list:"}
+    AddLabel(buddyGui, "drop_down_msg_lbl1", "First, select a buddy from the waiting list. Then choose the spawn options and send your request:", my_label_style)
     buddyGui.add{name = "waiting_buddies_dropdown",
                     type = "drop-down",
                     items = buddyList}
     buddyGui.add{name = "refresh_buddy_list",
                     type = "button",
                     caption="Refresh Buddy List"}
-    buddyGui.add{name = "waiting_buddies_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(buddyGui.drop_down_msg_lbl1, my_label_style)
-    ApplyStyle(buddyGui.waiting_buddies_spacer, my_spacer_style)
-
+    -- AddSpacerLine(buddyGui, "waiting_buddies_spacer")
 
     -- The buddy spawning options.
     local buddySpawnFlow = buddyGui.add{name = "spawn_buddy_flow",
@@ -932,25 +776,15 @@ function DisplayBuddySpawnOptions(player)
                         state=false}
     end
 
-    buddySpawnFlow.add{name = "buddy_options_spacer", type = "label",
-                caption=" "}
-    ApplyStyle(buddySpawnFlow.buddy_options_spacer, my_spacer_style)
-
-
+    AddSpacer(buddyGui, "buddy_options_spacer")
     buddySpawnFlow.add{name = "buddy_spawn_request_near",
                     type = "button",
                     caption="Request Buddy Spawn (Near)"}
     buddySpawnFlow.add{name = "buddy_spawn_request_far",
                     type = "button",
                     caption="Request Buddy Spawn (Far)"}
-    
-    buddySpawnFlow.add{name = "buddy_spawn_lbl1", type = "label",
-                    caption="You are spawned in a new area, with some starting resources."}    
-    ApplyStyle(buddySpawnFlow.buddy_spawn_lbl1, my_label_style)
+    AddSpacerLine(buddyGui, "buddy_spawn_spacer")
 
-    buddyGui.add{name = "buddy_spawn_spacer", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(buddyGui.buddy_spawn_spacer, my_spacer_style)
 
 
     buddyGui.add{name = "buddy_spawn_cancel",
@@ -958,30 +792,17 @@ function DisplayBuddySpawnOptions(player)
                     caption="Cancel (Return to Previous Options)"}
 
     -- Some final notes
-    buddyGui.add{name = "note_spacer1", type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    buddyGui.add{name = "note_spacer2", type = "label",
-                    caption=" "}
+    AddSpacerLine(buddyGui, "note_spacer1")
 
-    if MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN then
-        buddyGui.add{name = "shared_spawn_note1", type = "label",
-                    caption="If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join." }
-        ApplyStyle(buddyGui.shared_spawn_note1, my_note_style)
+    if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN > 0) then
+        AddLabel(buddyGui, "buddy_spawn_lbl1",
+                "You can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
+                my_note_style)
     end
-    buddyGui.add{name = "note_lbl1", type = "label",
-                    caption="Near spawn is between " .. NEAR_MIN_DIST*CHUNK_SIZE .. "-" .. NEAR_MAX_DIST*CHUNK_SIZE ..  " tiles away from the center of the map."}
-    buddyGui.add{name = "note_lbl2", type = "label",
-                    caption="Far spawn is between " .. FAR_MIN_DIST*CHUNK_SIZE .. "-" .. FAR_MAX_DIST*CHUNK_SIZE ..  " tiles away from the center of the map."}
-    buddyGui.add{name = "note_lbl3", type = "label",
-                    caption="Buddy spawns are only 1 chunk apart."}
-    buddyGui.add{name = "note_spacer3", type = "label",
-                    caption=" "}
-    ApplyStyle(buddyGui.note_lbl1, my_note_style)
-    ApplyStyle(buddyGui.note_lbl2, my_note_style)
-    ApplyStyle(buddyGui.note_lbl3, my_note_style)
-    ApplyStyle(buddyGui.note_spacer1, my_spacer_style)
-    ApplyStyle(buddyGui.note_spacer2, my_spacer_style)
-    ApplyStyle(buddyGui.note_spacer3, my_spacer_style)
+    spawn_distance_notes="Near spawn is between " .. NEAR_MIN_DIST .. "-" .. NEAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
+    "Far spawn is between " .. FAR_MIN_DIST .. "-" .. FAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
+    "Solo spawns are dangerous! Expect a fight to reach other players."
+    AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
 
@@ -1116,13 +937,8 @@ function DisplayBuddySpawnWaitMenu(player)
 
 
     -- Warnings and explanations...
-    sGui.add{name = "warning_lbl1", type = "label",
-                    caption="You will spawn once your buddy selects yes..."}
-    sGui.add{name = "warning_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(sGui.warning_lbl1, my_warning_style)
-    ApplyStyle(sGui.warning_spacer, my_spacer_style)
-    
+    AddLabel(sGui, "warning_lbl1", "You will spawn once your buddy selects yes...", my_warning_style)
+    AddSpacer(sGui, "warning_spacer")    
     sGui.add{name = "cancel_buddy_wait_menu",
                     type = "button",
                     caption="Cancel (Return to starting spawn options)"}
@@ -1179,14 +995,8 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
 
 
     -- Warnings and explanations...
-    sGui.add{name = "warning_lbl1", type = "label",
-                    caption=requestingBuddyName .. " is requesting a buddy spawn from you!"}
-    sGui.add{name = "warning_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(sGui.warning_lbl1, my_warning_style)
-    ApplyStyle(sGui.warning_spacer, my_spacer_style)
+    AddLabel(sGui, "warning_lbl1", requestingBuddyName .. " is requesting a buddy spawn from you!", my_warning_style)
     
-
     teamText = "error!"
     if (global.buddySpawnOptions[requestingBuddyName].joinMainTeamRadio) then
         teamText = "the main team"
@@ -1210,14 +1020,9 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
 
 
     requestText = requestingBuddyName .. " would like to join " .. teamText .. " next to you" .. moatText .. distText
+    AddLabel(sGui, "note_lbl1", requestText, my_warning_style)
+    AddSpacer(sGui, "note_spacer1")  
 
-
-    sGui.add{name = "note_lbl1", type = "label",
-                    caption=requestText}
-    sGui.add{name = "note_spacer1", type = "label",
-                    caption=" "}
-    ApplyStyle(sGui.note_lbl1, my_note_style)
-    ApplyStyle(sGui.note_spacer1, my_spacer_style)
 
     sGui.add{name = "accept_buddy_request",
                     type = "button",
@@ -1305,9 +1110,9 @@ function BuddySpawnRequestMenuClick(event)
 
         -- Create that spawn in the global vars
         if (requesterOptions.moatChoice) then
-            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*4), y=newSpawn.y}
+            buddySpawn = {x=newSpawn.x+(ENFORCE_LAND_AREA_TILE_DIST*2)+10, y=newSpawn.y}
         else
-            buddySpawn = {x=newSpawn.x+(CHUNK_SIZE*3), y=newSpawn.y}
+            buddySpawn = {x=newSpawn.x+(ENFORCE_LAND_AREA_TILE_DIST*2), y=newSpawn.y}
         end
         ChangePlayerSpawn(player, newSpawn)
         ChangePlayerSpawn(game.players[requesterName], buddySpawn)
@@ -1363,17 +1168,9 @@ function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
 
 
     -- Warnings and explanations...
-    pleaseWaitGui.add{name = "warning_lbl1", type = "label",
-                    caption="Your spawn is being created now."}
-    pleaseWaitGui.add{name = "warning_lbl2", type = "label",
-                    caption="You will be teleported there in "..delay_seconds.." seconds!"}
-    pleaseWaitGui.add{name = "warning_lbl3", type = "label",
-                    caption="Please standby..."}
-    pleaseWaitGui.add{name = "warning_spacer", type = "label",
-                    caption=" "}
-    ApplyStyle(pleaseWaitGui.warning_lbl1, my_warning_style)
-    ApplyStyle(pleaseWaitGui.warning_lbl2, my_warning_style)
-    ApplyStyle(pleaseWaitGui.warning_lbl3, my_warning_style)
-    ApplyStyle(pleaseWaitGui.warning_spacer, my_spacer_style)
+    local wait_warning_text = "Your spawn is being created now.\n"..
+        "You will be teleported there in "..delay_seconds.." seconds!\n"..
+        "Please standby..."
 
+    AddLabel(pleaseWaitGui, "warning_lbl1", wait_warning_text, my_warning_style)
 end
