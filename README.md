@@ -1,10 +1,7 @@
 # FactorioScenarioMultiplayerSpawn
 A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
-0.16 is EXPERIMENTAL RIGHT NOW... Both the game and the scenario.
-
-# NOTE
-It appears as though the method of saving a zip file on one computer and then using that to host on another headless server may causes crashes / GUI issues. Please try launching the game from the command line instead. See STEP 3 - Option 3.
+0.16 is now stable and well supported!
 
 ## Instructions
 
@@ -32,7 +29,7 @@ Rename the "FactorioScenarioMultiplayerSpawn" folder to something shorter and mo
 Start a multiplayer game on your client like normal.
 
 #### OPTION 2 (Headless)
-(Bugged in 0.16) Generate a new map, use that save file to host if you want to.
+Generate a new map, use that save file to host if you want to.
 
 #### OPTION 3 (Headless)
 Place the scenario code in the game's scenario folder, typically something like "..\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\\.."
