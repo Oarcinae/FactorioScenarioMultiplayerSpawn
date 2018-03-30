@@ -27,6 +27,12 @@ require("locale/oarc_utils")
 require("locale/rso/rso_control")
 require("locale/frontier_silo")
 require("locale/tag")
+require("locale/game_opts")
+
+-- For Philip. I currently do not use this and need to add proper support for
+-- commands like this in the future.
+require("locale/temp/rgcommand")
+require("locale/temp/helper_commands")
 
 -- Main Configuration File
 require("config")
@@ -86,15 +92,13 @@ script.on_init(function(event)
 
     -- CreateLobbySurface() -- Currently unused, but have plans for future.
     
+    -- Configures the map settings for enemies
+    -- This controls evolution growth factors and enemy expansion settings.
+    ConfigureAlienStartingParams()
+
     -- Here I create the game surface. I do this so that I don't have to worry
     -- about the game menu settings and I can now generate a map from the command
     -- line more easily!
-    -- 
-    -- If you are using RSO, map settings are ignored and you MUST configure
-    -- the relevant map settings in config.lua
-    -- 
-    -- If you disable RSO, the map settings will be set from the ones that you
-    -- choose from the game GUI when you start a new scenario.
     if ENABLE_RSO then
         CreateGameSurface(RSO_MODE)
     else
@@ -105,35 +109,21 @@ script.on_init(function(event)
         InitSpawnGlobalsAndForces()
     end
 
-    if ENABLE_RANDOM_SILO_POSITION then
-        SetRandomSiloPosition()
+    if SILO_FIXED_POSITION then
+        SetFixedSiloPosition(SILO_POSITION)
     else
-        SetFixedSiloPosition()
+        SetRandomSiloPosition(SILO_NUM_SPAWNS)
     end
 
     if FRONTIER_ROCKET_SILO_MODE then
-        ChartRocketSiloArea(game.forces[MAIN_FORCE], game.surfaces[GAME_SURFACE_NAME])
+        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
     end
-
-    -- Configures the map settings for enemies
-    -- This controls evolution growth factors and enemy expansion settings.
-    ConfigureAlienStartingParams()
 
     SetServerWelcomeMessages()
 
     if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
         OarcRegrowthInit()
     end
-
-    --If any (not global.) globals are written to at this point, an error will be thrown.
-    --eg, x = 2 will throw an error because it's not global.x
-    -- setmetatable(_G, {
-    --     __newindex = function(_, n)
-    --         log("Attempt to write to undeclared var " .. n)
-    --         game.print("Attempt to write to undeclared var " .. n)
-    --     end
-    -- })
-    -- -- THIS REQUIRES A LOT OF CHANGES TO RSO SOFT MOD...
 
 end)
 
@@ -169,12 +159,13 @@ script.on_event(defines.events.on_chunk_generated, function(event)
         GenerateRocketSiloChunk(event)
     end
 
-    -- This MUST come after RSO generation!
-    if ENABLE_SEPARATE_SPAWNS then
+    if ENABLE_SEPARATE_SPAWNS and not USE_VANILLA_STARTING_SPAWN then
         SeparateSpawnsGenerateChunk(event)
     end
 
-    CreateHoldingPenGenerateChunk(event)
+    if not ENABLE_DEFAULT_SPAWN then
+        CreateHoldingPen(event.surface, event.area, 16, false)
+    end
 end)
 
 
@@ -195,8 +186,21 @@ script.on_event(defines.events.on_gui_click, function(event)
         SpawnOptsGuiClick(event)
         SpawnCtrlGuiClick(event)
         SharedSpwnOptsGuiClick(event)
+        BuddySpawnOptsGuiClick(event)
+        BuddySpawnWaitMenuClick(event)
+        BuddySpawnRequestMenuClick(event)
+        SharedSpawnJoinWaitMenuClick(event)
     end
 
+    GameOptionsGuiClick(event)
+
+end)
+
+script.on_event(defines.events.on_gui_checked_state_changed, function (event)
+    if ENABLE_SEPARATE_SPAWNS then
+        SpawnOptsRadioSelect(event)
+        SpawnCtrlGuiOptionsSelect(event)
+    end
 end)
 
 
@@ -205,15 +209,18 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
 
+    CreateGameOptionsGui(event)
+
     PlayerJoinedMessages(event)
+
+    if ENABLE_PLAYER_LIST then
+        CreatePlayerListGui(event)
+    end
 
     if ENABLE_TAGS then
         CreateTagGui(event)
     end
 
-    if ENABLE_PLAYER_LIST then
-        CreatePlayerListGui(event)
-    end
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -272,6 +279,10 @@ script.on_event(defines.events.on_built_entity, function(event)
     if ENABLE_REGROWTH then
         OarcRegrowthOffLimitsChunk(event.created_entity.position)
     end
+
+    if ENABLE_ANTI_GRIEFING then
+        SetItemBlueprintTimeToLive(event)
+    end
 end)
 
 
@@ -279,11 +290,6 @@ end)
 -- Shared vision, charts a small area around other players
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    -- Every few seconds, chart all players to "share vision"
-    if ENABLE_SHARED_TEAM_VISION then
-        ShareVisionBetweenPlayers()
-    end
-
     if ENABLE_REGROWTH then
         OarcRegrowthOnTick()
     end
@@ -292,6 +298,21 @@ script.on_event(defines.events.on_tick, function(event)
         OarcRegrowthForceRemovalOnTick()
     end
 
+    if ENABLE_SEPARATE_SPAWNS then
+        DelayedSpawnOnTick()
+    end
+
+    if FRONTIER_ROCKET_SILO_MODE then
+        DelayedSiloCreationOnTick()
+    end
+
+end)
+
+
+script.on_event(defines.events.on_sector_scanned, function (event)
+    if ENABLE_REGROWTH then
+        OarcRegrowthSectorScan(event)
+    end
 end)
 
 ----------------------------------------
@@ -300,9 +321,6 @@ end)
 -- built stuff as permanent.
 ----------------------------------------
 if ENABLE_REGROWTH then
-    script.on_event(defines.events.on_sector_scanned, function (event)
-        OarcRegrowthSectorScan(event)
-    end)
 
     script.on_event(defines.events.on_robot_built_entity, function (event)
         OarcRegrowthOffLimitsChunk(event.created_entity.position)

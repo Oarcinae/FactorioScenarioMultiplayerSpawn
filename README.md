@@ -1,8 +1,7 @@
 # FactorioScenarioMultiplayerSpawn
 A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
-Only supports 0.15.x at this time!
-Go to the dev branch for a mostly working 0.16 version: https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn/tree/dev_0.16
+0.16 is now stable and well supported!
 
 ## Instructions
 
@@ -26,7 +25,20 @@ Rename the "FactorioScenarioMultiplayerSpawn" folder to something shorter and mo
 
 ### STEP 3
 
+#### OPTION 1 (Client Hosted)
+Start a multiplayer game on your client like normal.
+
+#### OPTION 2 (Headless)
 Generate a new map, use that save file to host if you want to.
+
+#### OPTION 3 (Headless)
+Place the scenario code in the game's scenario folder, typically something like "..\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\\.."
+
+Start a new game (generates a random map based on the config in config.lua) from the command line:
+./factorio --start-server-load-scenario FactorioScenarioMultiplayerSpawn --server-settings my-server-settings.json
+
+If you want to RESUME from this method, use something like this:
+./factorio --start-server-load-latest --server-settings my-server-settings.json
 
 
 ## Configuration

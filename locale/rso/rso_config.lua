@@ -6,9 +6,9 @@ region_size = 10    -- alternative mean to control how further away resources wo
 
 use_donut_shapes = false		-- setting this to false will remove donuts from possible resource layouts
 
-starting_area_size = 0         	-- starting area in regions, safe from random nonsense
+starting_area_size = 1         	-- starting area in regions, safe from random nonsense
 
-absolute_resource_chance = 0.50 -- chance to spawn an resource in a region
+absolute_resource_chance = 0.40 -- chance to spawn an resource in a region
 starting_richness_mult = 1		-- multiply starting area richness for resources
 global_richness_mult = 1		-- multiply richness for all resources except starting area
 global_size_mult = 1			-- multiply size for all ores, doesn't affect starting area
@@ -23,11 +23,11 @@ multi_resource_chance_diminish = 0.6	-- diminishing effect factor on multi_resou
 
 min_amount=250 					-- default value for minimum amount of resource in single pile
 
-richness_distance_factor= 1 	-- exponent for richness distance factor calculation
+richness_distance_factor= 0.8 	-- exponent for richness distance factor calculation
 fluid_richness_distance_factor = 0.8 -- exponent for richness distance factor calculation for fluids
-size_distance_factor=0.15	   	-- exponent for size distance factor calculation
+size_distance_factor=0.3	   	-- exponent for size distance factor calculation
 
-deterministic = false           	-- set to false to use system for all decisions  math.random
+deterministic = true           	-- set to false to use system for all decisions  math.random
 
 -- mode is no longer used by generation process - it autodetects endless resources
 -- endless_resource_mode = false   -- if true, the size of each resource is modified by the following modifier. Use with the endless resources mod.
@@ -47,9 +47,11 @@ useEnemiesInPeaceMod = false -- additional override for peace mod detection - wh
 
 -- Always leave this setting to true in this soft mod scenario version! -- OARC
 ignoreMapGenSettings = true -- stops the default behaviour of reading map gen settings
-
-fluidResourcesFactor = 20 -- temporary factor for calculation of resource %-ages for fluids
                           -- 
 useResourceCollisionDetection = true	-- enables avoidace calculations to reduce ores overlaping of each other
-resourceCollisionDetectionRatio = 0.8	-- at least this much of ore field needs to be placable to spawn it
+resourceCollisionDetectionRatio = 0.999 -- threshold to exit placement early
+resourceCollisionDetectionRatioFallback = 0.75 	-- at least this much of ore field needs to be placable to spawn it
 resourceCollisionFieldSkip = true		-- determines if ore field should be skipped completely if placement based on ratio failed
+
+remove_trees = false
+reveal_spawn_resources = false

@@ -25,34 +25,31 @@ my_fixed_width_style = {
     maximal_width = 450
 }
 my_label_style = {
-    minimal_width = 450,
-    maximal_width = 450,
-    maximal_height = 10,
+    -- minimal_width = 450,
+    -- maximal_width = 50,
+    single_line = false,
     font_color = {r=1,g=1,b=1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_note_style = {
-    minimal_width = 450,
-    maximal_height = 10,
+    -- minimal_width = 450,
+    single_line = false,
     font = "default-small-semibold",
     font_color = {r=1,g=0.5,b=0.5},
     top_padding = 0,
     bottom_padding = 0
 }
 my_warning_style = {
-    minimal_width = 450,
-    maximal_width = 450,
-    maximal_height = 10,
+    -- minimal_width = 450,
+    -- maximal_width = 450,
+    single_line = false,
     font_color = {r=1,g=0.1,b=0.1},
     top_padding = 0,
     bottom_padding = 0
 }
 my_spacer_style = {
-    minimal_width = 450,
-    maximal_width = 450,
-    minimal_height = 20,
-    maximal_height = 20,
+    minimal_height = 10,
     font_color = {r=0,g=0,b=0},
     top_padding = 0,
     bottom_padding = 0
@@ -71,20 +68,42 @@ my_player_list_admin_style = {
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    maximal_height = 15
+    single_line = false,
 }
 my_player_list_style = {
     font = "default-semibold",
     minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
-    maximal_height = 15
+    single_line = false,
+}
+my_player_list_offline_style = {
+    -- font = "default-semibold",
+    font_color = {r=0.5,g=0.5,b=0.5},
+    minimal_width = 200,
+    top_padding = 0,
+    bottom_padding = 0,
+    single_line = false,
 }
 my_player_list_style_spacer = {
-    maximal_height = 15
+    minimal_height = 20,
 }
 my_color_red = {r=1,g=0.1,b=0.1}
 
+my_longer_label_style = {
+    maximal_width = 600,
+    single_line = false,
+    font_color = {r=1,g=1,b=1},
+    top_padding = 0,
+    bottom_padding = 0
+}
+my_longer_warning_style = {
+    maximal_width = 600,
+    single_line = false,
+    font_color = {r=1,g=0.1,b=0.1},
+    top_padding = 0,
+    bottom_padding = 0
+}
 
 --------------------------------------------------------------------------------
 -- General Helper Functions
@@ -111,6 +130,13 @@ end
 function SendBroadcastMsg(msg)
     for name,player in pairs(game.connected_players) do
         player.print(msg)
+    end
+end
+
+-- Send a message to a player, safely checks if they exist and are online.
+function SendMsg(playerName, msg)
+    if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
+        game.players[playerName].print(msg)
     end
 end
 
@@ -148,6 +174,15 @@ function TableLength(T)
   local count = 0
   for _ in pairs(T) do count = count + 1 end
   return count
+end
+
+-- Simple function to get distance between two positions.
+function getDistance(posA, posB)
+    -- Get the length for each of the components x and y
+    local xDist = posB.x - posA.x
+    local yDist = posB.y - posA.y
+
+    return math.sqrt( (xDist ^ 2) + (yDist ^ 2) ) 
 end
 
 -- Chart area for a force
@@ -201,6 +236,7 @@ function GiveQuickStartPowerArmor(player)
                   p_armor.put({name = "solar-panel-equipment"})
             end
         player.insert{name="construction-robot", count = 100}
+        player.insert{name="belt-immunity-equipment", count = 1}
     end
 end
 
@@ -265,6 +301,17 @@ function ShareChatBetweenForces(player, msg)
     end
 end
 
+-- Merges force2 INTO force1 but keeps all research between both forces.
+function MergeForcesKeepResearch(force1, force2)
+    for techName,luaTech in pairs(force2.technologies) do
+        if (luaTech.researched) then
+           force1.technologies[techName].researched = true
+           force1.technologies[techName].level = luaTech.level
+        end
+    end
+    game.merge_forces(force2, force1)
+end
+
 -- Undecorator
 function RemoveDecorationsArea(surface, area)
     surface.destroy_decoratives(area)
@@ -282,6 +329,27 @@ function ApplyStyle (guiIn, styleIn)
     for k,v in pairs(styleIn) do
         guiIn.style[k]=v
     end 
+end
+
+-- Shorter way to add a label with a style
+function AddLabel(guiIn, name, message, style)
+    guiIn.add{name = name, type = "label",
+                    caption=message}
+    ApplyStyle(guiIn[name], style)
+end
+
+-- Shorter way to add a spacer
+function AddSpacer(guiIn, name)
+    guiIn.add{name = name, type = "label",
+                    caption=" "}
+    ApplyStyle(guiIn[name], my_spacer_style)
+end
+
+-- Shorter way to add a spacer with a decorative line
+function AddSpacerLine(guiIn, name)
+    guiIn.add{name = name, type = "label",
+                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
+    ApplyStyle(guiIn[name], my_spacer_style)
 end
 
 -- Get a random 1 or -1
@@ -320,15 +388,15 @@ function IsChunkAreaUngenerated(chunkPos, chunkDist, surface)
 end
 
 -- Clear out enemies around an area with a certain distance
-function ClearNearbyEnemies(player, safeDist)
+function ClearNearbyEnemies(pos, safeDist, surface)
     local safeArea = {left_top=
-                    {x=player.position.x-safeDist,
-                     y=player.position.y-safeDist},
+                    {x=pos.x-safeDist,
+                     y=pos.y-safeDist},
                   right_bottom=
-                    {x=player.position.x+safeDist,
-                     y=player.position.y+safeDist}}
+                    {x=pos.x+safeDist,
+                     y=pos.y+safeDist}}
 
-    for _, entity in pairs(player.surface.find_entities_filtered{area = safeArea, force = "enemy"}) do
+    for _, entity in pairs(surface.find_entities_filtered{area = safeArea, force = "enemy"}) do
         entity.destroy()
     end
 end
@@ -441,7 +509,9 @@ end
 -- Removes the entity type from the area given
 function RemoveInArea(surface, area, type)
     for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do
-        entity.destroy()
+        if entity.valid and entity and entity.position then
+            entity.destroy()
+        end
     end
 end
 
@@ -449,8 +519,10 @@ end
 -- Only if it is within given distance from given position.
 function RemoveInCircle(surface, area, type, pos, dist)
     for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do
-        if ((pos.x - entity.position.x)^2 + (pos.y - entity.position.y)^2 < dist^2) then
-            entity.destroy()
+        if entity.valid and entity and entity.position then
+            if ((pos.x - entity.position.x)^2 + (pos.y - entity.position.y)^2 < dist^2) then
+                entity.destroy()
+            end
         end
     end
 end
@@ -484,10 +556,149 @@ end
 
 -- Adjust alien params
 function ConfigureAlienStartingParams()
-    game.map_settings.enemy_evolution.time_factor=0
-    game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
-    game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
+
+    -- These are the default values for reference:
+    -- "time_factor": 0.000004,
+    -- "destroy_factor": 0.002,
+    -- "pollution_factor": 0.000015
+
+    if ENEMY_TIME_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.time_factor = 0
+    else
+        game.map_settings.enemy_evolution.time_factor=game.map_settings.enemy_evolution.time_factor / ENEMY_TIME_FACTOR_DIVISOR
+    end
+
+    if ENEMY_POLLUTION_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.pollution_factor = 0
+    else
+        game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
+    end
+
+    if ENEMY_DESTROY_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.destroy_factor = 0
+    else
+        game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
+    end
+    
     game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
+
+    if (OARC_DIFFICULTY_CUSTOM) then
+
+        game.map_settings.pollution.diffusion_ratio = 0.08
+        game.map_settings.pollution.ageing = 1
+
+        game.map_settings.enemy_expansion.max_expansion_distance = 20
+
+        game.map_settings.enemy_expansion.settler_group_min_size = 2
+        game.map_settings.enemy_expansion.settler_group_max_size = 10
+
+        game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*15
+        game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*60
+
+        game.map_settings.unit_group.min_group_gathering_time = TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_group_gathering_time = 4 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_wait_time_for_late_members = 1 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_unit_group_size = 15
+
+        -- game.map_settings.pollution.enabled=true,
+        -- -- these are values for 60 ticks (1 simulated second)
+        -- --
+        -- -- amount that is diffused to neighboring chunk
+        -- -- (possibly repeated for other directions as well)
+        -- game.map_settings.pollution.diffusion_ratio=0.02,
+        -- -- this much PUs must be on the chunk to start diffusing
+        -- game.map_settings.pollution.min_to_diffuse=15,
+        -- -- constant modifier a percentage of 1 - the pollution eaten by a chunks tiles
+        -- game.map_settings.pollution.ageing=1,
+        -- -- anything bigger than this is visualised as this value
+        -- game.map_settings.pollution.expected_max_per_chunk=7000,
+        -- -- anything lower than this (but > 0) is visualised as this value
+        -- game.map_settings.pollution.min_to_show_per_chunk=700,
+        -- game.map_settings.pollution.min_pollution_to_damage_trees = 3500,
+        -- game.map_settings.pollution.pollution_with_max_forest_damage = 10000,
+        -- game.map_settings.pollution.pollution_per_tree_damage = 2000,
+        -- game.map_settings.pollution.pollution_restored_per_tree_damage = 500,
+        -- game.map_settings.pollution.max_pollution_to_restore_trees = 1000
+
+
+        -- game.map_settings.enemy_expansion.enabled = true,
+        -- -- Distance in chunks from the furthest base around.
+        -- -- This prevents expansions from reaching too far into the
+        -- -- player's territory
+        -- game.map_settings.enemy_expansion.max_expansion_distance = 7,
+
+        -- game.map_settings.enemy_expansion.friendly_base_influence_radius = 2,
+        -- game.map_settings.enemy_expansion.enemy_building_influence_radius = 2,
+
+        -- -- A candidate chunk's score is given as follows:
+        -- --   player = 0
+        -- --   for neighbour in all chunks within enemy_building_influence_radius from chunk:
+        -- --     player += number of player buildings on neighbour
+        -- --             * building_coefficient
+        -- --             * neighbouring_chunk_coefficient^distance(chunk, neighbour)
+        -- --
+        -- --   base = 0
+        -- --   for neighbour in all chunk within friendly_base_influence_radius from chunk:
+        -- --     base += num of enemy bases on neighbour
+        -- --           * other_base_coefficient
+        -- --           * neighbouring_base_chunk_coefficient^distance(chunk, neighbour)
+        -- --
+        -- --   score(chunk) = 1 / (1 + player + base)
+        -- --
+        -- -- The iteration is over a square region centered around the chunk for which the calculation is done,
+        -- -- and includes the central chunk as well. distance is the Manhattan distance, and ^ signifies exponentiation.
+        -- game.map_settings.enemy_expansion.building_coefficient = 0.1,
+        -- game.map_settings.enemy_expansion.other_base_coefficient = 2.0,
+        -- game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.5,
+        -- game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.4;
+
+        -- -- A chunk has to have at most this much percent unbuildable tiles for it to be considered a candidate.
+        -- -- This is to avoid chunks full of water to be marked as candidates.
+        -- game.map_settings.enemy_expansion.max_colliding_tiles_coefficient = 0.9,
+
+        -- -- Size of the group that goes to build new base (in game this is multiplied by the
+        -- -- evolution factor).
+        -- game.map_settings.enemy_expansion.settler_group_min_size = 5,
+        -- game.map_settings.enemy_expansion.settler_group_max_size = 20,
+
+        -- -- Ticks to expand to a single
+        -- -- position for a base is used.
+        -- --
+        -- -- cooldown is calculated as follows:
+        -- --   cooldown = lerp(max_expansion_cooldown, min_expansion_cooldown, -e^2 + 2 * e),
+        -- -- where lerp is the linear interpolation function, and e is the current evolution factor.
+        -- game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600,
+        -- game.map_settings.enemy_expansion.max_expansion_cooldown = 60 * 3600
+
+        -- -- pollution triggered group waiting time is a random time between min and max gathering time
+        -- game.map_settings.unit_group.min_group_gathering_time = 3600,
+        -- game.map_settings.unit_group.max_group_gathering_time = 10 * 3600,
+        -- -- after the gathering is finished the group can still wait for late members,
+        -- -- but it doesn't accept new ones anymore
+        -- game.map_settings.unit_group.max_wait_time_for_late_members = 2 * 3600,
+        -- -- limits for group radius (calculated by number of numbers)
+        -- game.map_settings.unit_group.max_group_radius = 30.0,
+        -- game.map_settings.unit_group.min_group_radius = 5.0,
+        -- -- when a member falls behind the group he can speedup up till this much of his regular speed
+        -- game.map_settings.unit_group.max_member_speedup_when_behind = 1.4,
+        -- -- When a member gets ahead of its group, it will slow down to at most this factor of its speed
+        -- game.map_settings.unit_group.max_member_slowdown_when_ahead = 0.6,
+        -- -- When members of a group are behind, the entire group will slow down to at most this factor of its max speed
+        -- game.map_settings.unit_group.max_group_slowdown_factor = 0.3,
+        -- -- If a member falls behind more than this times the group radius, the group will slow down to max_group_slowdown_factor
+        -- game.map_settings.unit_group.max_group_member_fallback_factor = 3,
+        -- -- If a member falls behind more than this time the group radius, it will be removed from the group.
+        -- game.map_settings.unit_group.member_disown_distance = 10,
+        -- game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60,
+
+        -- -- Maximum number of automatically created unit groups gathering for attack at any time.
+        -- game.map_settings.unit_group.max_gathering_unit_groups = 30,
+
+        -- -- Maximum size of an attack unit group. This only affects automatically-created unit groups; manual groups
+        -- -- created through the API are unaffected.
+        -- game.map_settings.unit_group.max_unit_group_size = 200
+
+    end
 end
 
 -- Add Long Reach to Character
@@ -522,11 +733,22 @@ local function ExpandPlayerListGui(player)
         scrollFrame.horizontal_scroll_policy = "never"
         for _,player in pairs(game.connected_players) do
             local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
-            local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
             if (player.admin) then
-                ApplyStyle(text, my_player_list_admin_style)
+                AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_admin_style)
             else
-                ApplyStyle(text, my_player_list_style)
+                AddLabel(scrollFrame, player.name.."_plist", caption_str, my_player_list_style)
+            end
+        end
+
+        -- List offline players
+        if (PLAYER_LIST_OFFLINE_PLAYERS) then
+            AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_style)
+            for _,player in pairs(game.players) do
+                if (not player.connected) then
+                    local caption_str = player.name.." ["..player.force.name.."]".." ("..formattime_hours_mins(player.online_time)..")"
+                    local text = scrollFrame.add{type="label", caption=caption_str, name=player.name.."_plist"}
+                    ApplyStyle(text, my_player_list_offline_style)
+                end
             end
         end
         local spacer = scrollFrame.add{type="label", caption="     ", name="plist_spacer_plist"}
@@ -550,6 +772,22 @@ end
 function AntiGriefing(force)
     force.zoom_to_world_deconstruction_planner_enabled=false
     force.friendly_fire=false
+    SetForceGhostTimeToLive(force)
+end
+
+function SetForceGhostTimeToLive(force)
+    if GHOST_TIME_TO_LIVE ~= 0 then
+        force.ghost_time_to_live = GHOST_TIME_TO_LIVE+1
+    end
+end
+
+function SetItemBlueprintTimeToLive(event)
+    local type = event.created_entity.type    
+    if type == "entity-ghost" or type == "tile-ghost" then
+        if GHOST_TIME_TO_LIVE ~= 0 then
+            event.created_entity.time_to_live = GHOST_TIME_TO_LIVE
+        end
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -587,7 +825,7 @@ function DropGravestoneChests(player)
         
         local inv = player.get_inventory(id)
         
-        if (not inv.is_empty()) then
+        if ((#inv > 0) and not inv.is_empty()) then
             for j = 1, #inv do
                 if inv[j].valid_for_read then
                     
@@ -619,34 +857,6 @@ function DropGravestoneChests(player)
 
     if (grave ~= nil) then
         player.print("Successfully dropped your items into a chest! Go get them quick!")
-    end
-end
-
---------------------------------------------------------------------------------
--- Frontier style rocket silo stuff
---------------------------------------------------------------------------------
-
--- This creates a random silo position, stored to global.siloPosition
--- It uses the config setting SILO_CHUNK_DISTANCE and spawns the silo somewhere
--- on a circle edge with radius using that distance.
-function SetRandomSiloPosition()
-    if (global.siloPosition == nil) then
-        -- Get an X,Y on a circle far away.
-        local distX = math.random(0,SILO_CHUNK_DISTANCE_X)
-        local distY = RandomNegPos() * math.floor(math.sqrt(SILO_CHUNK_DISTANCE_X^2 - distX^2))
-        local distX = RandomNegPos() * distX
-
-        -- Set those values.
-        local siloX = distX*CHUNK_SIZE + CHUNK_SIZE/2
-        local siloY = distY*CHUNK_SIZE + CHUNK_SIZE/2
-        global.siloPosition = {x = siloX, y = siloY}
-    end
-end
-
--- Sets the global.siloPosition var to the set in the config file
-function SetFixedSiloPosition()
-    if (global.siloPosition == nil) then
-        global.siloPosition = SILO_POSITION
     end
 end
 
@@ -713,7 +923,7 @@ function AutoFillVehicle(player, vehicle)
 
     -- Attempt to transfer some fuel
     if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
-        TransferItemMultipleTypes(mainInv, vehicle, {"rocket-fuel", "solid-fuel", "coal", "raw-wood"}, 50)
+        TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "raw-wood"}, 50)
     end
 
     -- Attempt to transfer some ammo
@@ -747,14 +957,14 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius)
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadSqr) then
                 if (surface.get_tile(i,j).collides_with("water-tile") or ENABLE_SPAWN_FORCE_GRASS) then
-                    table.insert(dirtTiles, {name = "grass", position ={i,j}})
+                    table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
 
             -- Create a circle of trees around the spawn point.
             if ((distVar < tileRadSqr-200) and 
-                (distVar > tileRadSqr-300)) then
-                surface.create_entity({name="tree-01", amount=1, position={i, j}})
+                (distVar > tileRadSqr-400)) then
+                surface.create_entity({name="tree-02", amount=1, position={i, j}})
             end
         end
     end
@@ -773,12 +983,12 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius)
 
             local distVar1 = math.floor(math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j)))
             local distVar2 = math.floor(math.abs(centerPos.x - i) + math.abs(centerPos.y - j))
-            local distVar = math.max(distVar1, distVar2 * 0.707);
+            local distVar = math.max(distVar1*1.1, distVar2 * 0.707*1.1);
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadius+2) then
                 if (surface.get_tile(i,j).collides_with("water-tile") or ENABLE_SPAWN_FORCE_GRASS) then
-                    table.insert(dirtTiles, {name = "grass", position ={i,j}})
+                    table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
 
@@ -806,16 +1016,16 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius)
             local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
 
             -- Create a circle of water
-            if ((distVar < tileRadSqr+400) and 
-                (distVar > tileRadSqr-500)) then
+            if ((distVar < tileRadSqr+(1500*MOAT_SIZE_MODIFIER)) and 
+                (distVar > tileRadSqr)) then
                 table.insert(waterTiles, {name = "water", position ={i,j}})
             end
 
             -- Enforce land inside the edges of the circle to make sure it's
             -- a clean transition
-            if ((distVar < tileRadSqr-500) and 
-                (distVar > tileRadSqr-1000)) then
-                table.insert(waterTiles, {name = "grass", position ={i,j}})
+            if ((distVar <= tileRadSqr) and 
+                (distVar > tileRadSqr-10000)) then
+                table.insert(waterTiles, {name = "grass-1", position ={i,j}})
             end
         end
     end
@@ -835,6 +1045,9 @@ end
 -- Function to generate a resource patch, of a certain size/amount at a pos.
 function GenerateResourcePatch(surface, resourceName, diameter, pos, amount)
     local midPoint = math.floor(diameter/2)
+    if (diameter == 0) then
+        return
+    end
     for y=0, diameter do
         for x=0, diameter do
             if (not ENABLE_RESOURCE_SHAPE_CIRCLE or ((x-midPoint)^2 + (y-midPoint)^2 < midPoint^2)) then
@@ -871,11 +1084,15 @@ function GenerateStartingResources(surface, pos)
 
     -- Tree generation is taken care of in chunk generation
 
-    -- Generate 2 oil patches
-    surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={pos.x+START_RESOURCE_OIL_A_POS_X, pos.y+START_RESOURCE_OIL_A_POS_Y}})
-    surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={pos.x+START_RESOURCE_OIL_B_POS_X, pos.y+START_RESOURCE_OIL_B_POS_Y}})
+    -- Generate oil patches
+    oil_patch_x=pos.x+START_RESOURCE_OIL_POS_X
+    oil_patch_y=pos.y+START_RESOURCE_OIL_POS_Y
+    for i=1,START_RESOURCE_OIL_NUM_PATCHES do
+        surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
+                    position={oil_patch_x, oil_patch_y}})
+        oil_patch_x=oil_patch_x+START_RESOURCE_OIL_X_OFFSET
+        oil_patch_y=oil_patch_y+START_RESOURCE_OIL_Y_OFFSET
+    end
 
     -- Generate Stone
     GenerateResourcePatch(surface, "stone", START_RESOURCE_STONE_SIZE, stonePos, START_STONE_AMOUNT)
@@ -895,12 +1112,12 @@ end
 
 
 
--- Create the spawn areas.
+-- Clear the spawn areas.
 -- This should be run inside the chunk generate event and be given a list of all
 -- unique spawn points.
 -- This clears enemies in the immediate area, creates a slightly safe area around it,
--- And spawns the basic resources as well
-function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
+-- It no LONGER generates the resources though as that is now handled in a delayed event!
+function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
     for name,spawn in pairs(spawnPointTable) do
 
         -- Create a bunch of useful area and position variables
@@ -926,8 +1143,10 @@ function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
         if CheckIfInArea(chunkAreaCenter,landArea) then
 
             -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
             RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+            RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+            RemoveDecorationsArea(surface, chunkArea)
 
             if (SPAWN_TREE_CIRCLE_ENABLED) then
                 CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
@@ -937,7 +1156,7 @@ function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
             end
             if (SPAWN_MOAT_CHOICE_ENABLED) then
                 if (spawn.moat) then
-                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST+10)
+                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
                 end
             end
         end
@@ -945,68 +1164,47 @@ function CreateSpawnAreas(surface, chunkArea, spawnPointTable)
         -- Provide starting resources
         -- This is run on the bottom, right chunk of the spawn area which should be
         -- generated last, so it should work everytime.
-        if CheckIfInArea(spawnPosOffset,chunkArea) then
-            CreateWaterStrip(surface,
-                            {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
-                            WATER_SPAWN_LENGTH)
-            GenerateStartingResources(surface, spawn.pos)
-        end
+        -- if CheckIfInArea(spawnPosOffset,chunkArea) then
+        --     CreateWaterStrip(surface,
+        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
+        --                     WATER_SPAWN_LENGTH)
+        --     CreateWaterStrip(surface,
+        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y+1},
+        --                     WATER_SPAWN_LENGTH)
+        --     GenerateStartingResources(surface, spawn.pos)
+        -- end
     end
 end
 
 --------------------------------------------------------------------------------
 -- Surface Generation Functions
 --------------------------------------------------------------------------------
--- To use RSO resources, we have to disable vanilla ore generation
-local surface_autoplace_none = {
-    ["coal"]={
-        size="none"
-    },
-    ["copper-ore"]={
-        size="none"
-    },
-    ["iron-ore"]={
-        size="none"
-    },
-    ["stone"]={
-        size="none"
-    },
-    ["uranium-ore"]={
-        size="none"
-    },
-    ["crude-oil"]={
-        size="none"
-    },
-    ["enemy-base"]={
-        size="none"
-    }
-}
 
 RSO_MODE = 1
 VANILLA_MODE = 2
 
-function CreateLobbySurface()
-    local surface = game.create_surface("Lobby",{width = 1, height = 1})
-    surface.set_tiles({{name = "out-of-map",position = {1,1}}})
-end              
-
 function CreateGameSurface(mode)
     local mapSettings =  game.surfaces["nauvis"].map_gen_settings
+
+    if CMD_LINE_MAP_GEN then
+        mapSettings.terrain_segmentation = global.clMapGen.terrain_segmentation
+        mapSettings.water = global.clMapGen.water
+        mapSettings.starting_area = global.clMapGen.starting_area
+        mapSettings.peaceful_mode = global.clMapGen.peaceful_mode
+        mapSettings.seed = global.clMapGen.seed
+        mapSettings.autoplace_controls = global.clMapGen.autoplace_controls
+        mapSettings.cliff_settings = global.clMapGen.cliff_settings
+    end
+
+    -- To use RSO resources, we have to disable vanilla ore generation
     if (mode == RSO_MODE) then
-        mapSettings.terrain_segmentation=MAP_SETTINGS_RSO_TERRAIN_SEGMENTATION
-        mapSettings.water=MAP_SETTINGS_RSO_WATER
-        mapSettings.starting_area=MAP_SETTINGS_RSO_STARTING_AREA
-        mapSettings.peaceful_mode=MAP_SETTINGS_RSO_PEACEFUL
-        mapSettings.seed=math.random(999999999);
-        mapSettings.autoplace_controls = {
-            ["coal"]={ size="none" },
-            ["copper-ore"]={ size="none" },
-            ["iron-ore"]={ size="none" },
-            ["stone"]={ size="none" },
-            ["uranium-ore"]={ size="none" },
-            ["crude-oil"]={ size="none" },
-            ["enemy-base"]={ size="none" }
-        }
+        mapSettings.autoplace_controls["coal"].size="none"
+        mapSettings.autoplace_controls["copper-ore"].size="none"
+        mapSettings.autoplace_controls["iron-ore"].size="none"
+        mapSettings.autoplace_controls["stone"].size="none"
+        mapSettings.autoplace_controls["uranium-ore"].size="none"
+        mapSettings.autoplace_controls["crude-oil"].size="none"
+        mapSettings.autoplace_controls["enemy-base"].size="none"
     end
 
     local surface = game.create_surface(GAME_SURFACE_NAME,mapSettings)
@@ -1025,7 +1223,7 @@ function CreateWall(surface, pos)
     end
 end
 
-function CreateHoldingPen(surface, chunkArea)
+function CreateHoldingPen(surface, chunkArea, sizeTiles, walls)
     if (((chunkArea.left_top.x == -32) or (chunkArea.left_top.x == 0)) and
         ((chunkArea.left_top.y == -32) or (chunkArea.left_top.y == 0))) then
 
@@ -1033,6 +1231,7 @@ function CreateHoldingPen(surface, chunkArea)
         RemoveAliensInArea(surface, chunkArea)
         RemoveInArea(surface, chunkArea, "tree")
         RemoveInArea(surface, chunkArea, "resource")
+        RemoveInArea(surface, chunkArea, "cliff")
 
         -- This loop runs through each tile
         local grassTiles = {}
@@ -1040,35 +1239,39 @@ function CreateHoldingPen(surface, chunkArea)
         for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
             for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
-                -- Fill all area with grass only
-                table.insert(grassTiles, {name = "grass", position ={i,j}})
+                if ((i>-sizeTiles) and (i<(sizeTiles-1)) and (j>-sizeTiles) and (j<(sizeTiles-1))) then
 
-                -- Create the spawn box walls
-                if (j<15 and j>-16) then
+                    -- Fill all area with grass only
+                    table.insert(grassTiles, {name = "grass-1", position ={i,j}})
 
-                    -- Create horizontal sides of center spawn box
-                    if (((j>-16 and j<-12) or (j<15 and j>11)) and (i<15 and i>-16)) then
-                        -- CreateWall(surface, {i,j})
-                        table.insert(waterTiles, {name = "water", position ={i,j}})
+                    -- Create the spawn box walls
+                    if (j<(sizeTiles-1) and j>-sizeTiles) then
+
+                        -- Create horizontal sides of center spawn box
+                        if (((j>-sizeTiles and j<-(sizeTiles-4)) or (j<(sizeTiles-1) and j>(sizeTiles-5))) and (i<(sizeTiles-1) and i>-sizeTiles)) then
+                            if walls then
+                                CreateWall(surface, {i,j})
+                            else
+                                table.insert(waterTiles, {name = "water", position ={i,j}})
+                            end
+                        end
+
+                        -- Create vertical sides of center spawn box
+                        if ((i>-sizeTiles and i<-(sizeTiles-4)) or (i<(sizeTiles-1) and i>(sizeTiles-5))) then
+                            if walls then
+                                CreateWall(surface, {i,j})
+                            else
+                                table.insert(waterTiles, {name = "water", position ={i,j}})
+                            end
+                        end
+
                     end
-
-                    -- Create vertical sides of center spawn box
-                    if ((i>-16 and i<-12) or (i<15 and i>11)) then
-                        -- CreateWall(surface, {i,j})
-                        table.insert(waterTiles, {name = "water", position ={i,j}})
-                    end
-
                 end
-                
             end
         end
         surface.set_tiles(grassTiles)
         surface.set_tiles(waterTiles)
     end
-end
-
-function CreateHoldingPenGenerateChunk(event)
-    CreateHoldingPen(event.surface, event.area)
 end
 
 --------------------------------------------------------------------------------

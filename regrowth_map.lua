@@ -3,7 +3,8 @@
 --
 -- Code tracks all chunks generated and allows for deleting inactive chunks
 -- Relies on some changes to RSO to provide random resource locations the next
--- time the land is regenerated.
+-- time the land is regenerated. -- (THIS IS CURRENTLY NOT WORKING IN 0.16,
+-- resources always how up in the same spot!)
 -- 
 -- Basic rules of regrowth:
 -- 1. Area around player is safe for quite a large distance.
@@ -48,7 +49,7 @@ function OarcRegrowthInit()
     global.chunk_regrow.min_y = 0
     global.chunk_regrow.max_y = 0
     global.chunk_regrow.y_index = 0
-    global.chunk_regrow.force_removal_flag = 0
+    global.chunk_regrow.force_removal_flag = -1000
 
     OarcRegrowthOffLimits({x=0,y=0}, 10)
 end
@@ -320,7 +321,7 @@ function OarcRegrowthOnTick()
     -- Send a broadcast warning before it happens.
     if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-601) then
         if (#global.chunk_regrow.removal_list > 100) then
-            SendBroadcastMsg("Map cleanup in 10 seconds...")
+            SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
         end
     end
 
@@ -328,7 +329,7 @@ function OarcRegrowthOnTick()
     if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-1) then
         if (#global.chunk_regrow.removal_list > 100) then
             OarcRegrowthRemoveAllChunks()
-            SendBroadcastMsg("Map cleanup done...")
+            SendBroadcastMsg("Map cleanup done, sorry for your loss.")
         end
     end
 end
@@ -339,10 +340,10 @@ end
 function OarcRegrowthForceRemovalOnTick()
     -- Catch force remove flag
     if (game.tick == global.chunk_regrow.force_removal_flag+60) then
-        SendBroadcastMsg("Map cleanup in 10 seconds...")
+        SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
     end
     if (game.tick == global.chunk_regrow.force_removal_flag+660) then
         OarcRegrowthRemoveAllChunks()
-        SendBroadcastMsg("Map cleanup done...")
+        SendBroadcastMsg("Map cleanup done, sorry for your loss.")
     end
 end
