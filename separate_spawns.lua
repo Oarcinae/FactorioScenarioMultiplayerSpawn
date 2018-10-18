@@ -316,7 +316,7 @@ function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
     CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
                     {x=spawn.x+WATER_SPAWN_OFFSET_X, y=spawn.y+WATER_SPAWN_OFFSET_Y+1},
                     WATER_SPAWN_LENGTH)
-    GenerateStartingResources(surface, spawn)
+    GenerateStartingResources(game.surfaces[GAME_SURFACE_NAME], spawn)
 
     -- Send the player to that position
     game.players[playerName].teleport(spawn, GAME_SURFACE_NAME)
