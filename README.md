@@ -3,6 +3,8 @@ A custom scenario for allowing separate spawn locations in multiplayer. Designed
 
 0.16 is now stable and well supported!
 
+0.17 IS IN WORK! I will release a dev branch once it's ready for testing!
+
 ## Instructions
 
 ### STEP 1
