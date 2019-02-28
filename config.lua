@@ -47,29 +47,29 @@ ENABLE_SEPARATE_SPAWNS = true
 
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
-ENABLE_BUDDY_SPAWN = true
+ENABLE_BUDDY_SPAWN = false
 
 -- RSO soft-mod (included in the scenario)
-ENABLE_RSO = true
+ENABLE_RSO = false
 
 -- Frontier style rocket silo mode
-FRONTIER_ROCKET_SILO_MODE = true
+FRONTIER_ROCKET_SILO_MODE = false
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
-ENABLE_UNDECORATOR = true
+ENABLE_UNDECORATOR = false
 
 -- Enable Tags
-ENABLE_TAGS = true
+ENABLE_TAGS = false
 
 -- Enable Long Reach
-ENABLE_LONGREACH = true
+ENABLE_LONGREACH = false
 
 -- Enable Autofill
-ENABLE_AUTOFILL = true
+ENABLE_AUTOFILL = false
 
 -- Enable Playerlist
-ENABLE_PLAYER_LIST = true
+ENABLE_PLAYER_LIST = false
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 
 -- Enable Gravestone Chests
@@ -350,7 +350,7 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 
 -- Set this to true if you are creating the scenario at the cmd line.
-CMD_LINE_MAP_GEN = true
+CMD_LINE_MAP_GEN = false
 
 -- Adjust settings here to set your map stuff.
 -- "Sizes can be specified as none, very-low, low, normal, high, very-high"

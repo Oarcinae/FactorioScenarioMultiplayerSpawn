@@ -23,16 +23,16 @@
 
 
 -- Generic Utility Includes
-require("locale/oarc_utils")
-require("locale/rso/rso_control")
-require("locale/frontier_silo")
-require("locale/tag")
-require("locale/game_opts")
+require("oarc_utils")
+-- require("locale/rso/rso_control")
+-- require("locale/frontier_silo")
+-- require("locale/tag")
+-- require("locale/game_opts")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
-require("locale/temp/rgcommand")
-require("locale/temp/helper_commands")
+-- require("locale/temp/rgcommand")
+-- require("locale/temp/helper_commands")
 
 -- Main Configuration File
 require("config")
@@ -99,31 +99,27 @@ script.on_init(function(event)
     -- Here I create the game surface. I do this so that I don't have to worry
     -- about the game menu settings and I can now generate a map from the command
     -- line more easily!
-    if ENABLE_RSO then
-        CreateGameSurface(RSO_MODE)
-    else
-        CreateGameSurface(VANILLA_MODE)
-    end
+    CreateGameSurface(VANILLA_MODE)
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
     end
 
-    if SILO_FIXED_POSITION then
-        SetFixedSiloPosition(SILO_POSITION)
-    else
-        SetRandomSiloPosition(SILO_NUM_SPAWNS)
-    end
+    -- if SILO_FIXED_POSITION then
+    --     SetFixedSiloPosition(SILO_POSITION)
+    -- else
+    --     SetRandomSiloPosition(SILO_NUM_SPAWNS)
+    -- end
 
-    if FRONTIER_ROCKET_SILO_MODE then
-        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
-    end
+    -- if FRONTIER_ROCKET_SILO_MODE then
+    --     GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
+    -- end
 
     SetServerWelcomeMessages()
 
-    if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
-        OarcRegrowthInit()
-    end
+    -- if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
+    --     OarcRegrowthInit()
+    -- end
 
 end)
 
@@ -132,32 +128,32 @@ end)
 -- Freeplay rocket launch info
 -- Slightly modified for my purposes
 ----------------------------------------
-script.on_event(defines.events.on_rocket_launched, function(event)
-    if FRONTIER_ROCKET_SILO_MODE then
-        RocketLaunchEvent(event)
-    end
-end)
+-- script.on_event(defines.events.on_rocket_launched, function(event)
+--     if FRONTIER_ROCKET_SILO_MODE then
+--         RocketLaunchEvent(event)
+--     end
+-- end)
 
 
 ----------------------------------------
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
-    if ENABLE_REGROWTH then
-        OarcRegrowthChunkGenerate(event.area.left_top)
-    end
+    -- if ENABLE_REGROWTH then
+    --     OarcRegrowthChunkGenerate(event.area.left_top)
+    -- end
 
-    if ENABLE_UNDECORATOR then
-        UndecorateOnChunkGenerate(event)
-    end
+    -- if ENABLE_UNDECORATOR then
+    --     UndecorateOnChunkGenerate(event)
+    -- end
 
-    if ENABLE_RSO then
-        RSO_ChunkGenerated(event)
-    end
+    -- if ENABLE_RSO then
+    --     RSO_ChunkGenerated(event)
+    -- end
 
-    if FRONTIER_ROCKET_SILO_MODE then
-        GenerateRocketSiloChunk(event)
-    end
+    -- if FRONTIER_ROCKET_SILO_MODE then
+    --     GenerateRocketSiloChunk(event)
+    -- end
 
     if ENABLE_SEPARATE_SPAWNS and not USE_VANILLA_STARTING_SPAWN then
         SeparateSpawnsGenerateChunk(event)
@@ -173,13 +169,13 @@ end)
 -- Gui Click
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
-    if ENABLE_TAGS then
-        TagGuiClick(event)
-    end
+    -- if ENABLE_TAGS then
+    --     TagGuiClick(event)
+    -- end
 
-    if ENABLE_PLAYER_LIST then
-        PlayerListGuiClick(event)
-    end
+    -- if ENABLE_PLAYER_LIST then
+    --     PlayerListGuiClick(event)
+    -- end
 
     if ENABLE_SEPARATE_SPAWNS then
         WelcomeTextGuiClick(event)
@@ -192,7 +188,7 @@ script.on_event(defines.events.on_gui_click, function(event)
         SharedSpawnJoinWaitMenuClick(event)
     end
 
-    GameOptionsGuiClick(event)
+    -- GameOptionsGuiClick(event)
 
 end)
 
@@ -209,7 +205,7 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
 
-    CreateGameOptionsGui(event)
+    -- CreateGameOptionsGui(event)
 
     PlayerJoinedMessages(event)
 
@@ -229,9 +225,9 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
-    if ENABLE_LONGREACH then
-        GivePlayerLongReach(game.players[event.player_index])
-    end
+    -- if ENABLE_LONGREACH then
+    --     GivePlayerLongReach(game.players[event.player_index])
+    -- end
 
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
@@ -247,64 +243,64 @@ script.on_event(defines.events.on_player_respawned, function(event)
    
     PlayerRespawnItems(event)
 
-    if ENABLE_LONGREACH then
-        GivePlayerLongReach(game.players[event.player_index])
-    end
+    -- if ENABLE_LONGREACH then
+    --     GivePlayerLongReach(game.players[event.player_index])
+    -- end
 end)
 
-script.on_event(defines.events.on_pre_player_died, function(event)
-    if ENABLE_GRAVESTONE_ON_DEATH then
-        DropGravestoneChests(game.players[event.player_index])
-    end
-end)
+-- script.on_event(defines.events.on_pre_player_died, function(event)
+--     if ENABLE_GRAVESTONE_ON_DEATH then
+--         DropGravestoneChests(game.players[event.player_index])
+--     end
+-- end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
-    if ENABLE_GRAVESTONE_ON_LEAVING then
-        if (game.players[event.player_index].online_time <
-            ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS) then
-            DropGravestoneChests(game.players[event.player_index])
-        end
-    end 
+    -- if ENABLE_GRAVESTONE_ON_LEAVING then
+    --     if (game.players[event.player_index].online_time <
+    --         ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS) then
+    --         DropGravestoneChests(game.players[event.player_index])
+    --     end
+    -- end 
 
-    if ENABLE_SEPARATE_SPAWNS then
-        FindUnusedSpawns(event)
-    end
+    -- if ENABLE_SEPARATE_SPAWNS then
+    --     FindUnusedSpawns(event)
+    -- end
 end)
 
-script.on_event(defines.events.on_built_entity, function(event)
-    if ENABLE_AUTOFILL then
-        Autofill(event)
-    end
+-- script.on_event(defines.events.on_built_entity, function(event)
+    -- if ENABLE_AUTOFILL then
+    --     Autofill(event)
+    -- end
 
-    if ENABLE_REGROWTH then
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
-    end
+    -- if ENABLE_REGROWTH then
+    --     OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    -- end
 
-    if ENABLE_ANTI_GRIEFING then
-        SetItemBlueprintTimeToLive(event)
-    end
-end)
+    -- if ENABLE_ANTI_GRIEFING then
+    --     SetItemBlueprintTimeToLive(event)
+    -- end
+-- end)
 
 
 ----------------------------------------
 -- Shared vision, charts a small area around other players
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    if ENABLE_REGROWTH then
-        OarcRegrowthOnTick()
-    end
+    -- if ENABLE_REGROWTH then
+    --     OarcRegrowthOnTick()
+    -- end
 
-    if ENABLE_ABANDONED_BASE_REMOVAL then
-        OarcRegrowthForceRemovalOnTick()
-    end
+    -- if ENABLE_ABANDONED_BASE_REMOVAL then
+    --     OarcRegrowthForceRemovalOnTick()
+    -- end
 
     if ENABLE_SEPARATE_SPAWNS then
         DelayedSpawnOnTick()
     end
 
-    if FRONTIER_ROCKET_SILO_MODE then
-        DelayedSiloCreationOnTick()
-    end
+    -- if FRONTIER_ROCKET_SILO_MODE then
+    --     DelayedSiloCreationOnTick()
+    -- end
 
 end)
 
@@ -320,21 +316,21 @@ end)
 -- Refresh areas where stuff is built, and mark any chunks with player
 -- built stuff as permanent.
 ----------------------------------------
-if ENABLE_REGROWTH then
+-- if ENABLE_REGROWTH then
 
-    script.on_event(defines.events.on_robot_built_entity, function (event)
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
-    end)
+--     script.on_event(defines.events.on_robot_built_entity, function (event)
+--         OarcRegrowthOffLimitsChunk(event.created_entity.position)
+--     end)
 
-    script.on_event(defines.events.on_player_mined_entity, function(event)
-        OarcRegrowthCheckChunkEmpty(event)
-    end)
+--     script.on_event(defines.events.on_player_mined_entity, function(event)
+--         OarcRegrowthCheckChunkEmpty(event)
+--     end)
     
-    script.on_event(defines.events.on_robot_mined_entity, function(event)
-        OarcRegrowthCheckChunkEmpty(event)
-    end)
+--     script.on_event(defines.events.on_robot_mined_entity, function(event)
+--         OarcRegrowthCheckChunkEmpty(event)
+--     end)
 
-end
+-- end
 
 
 
@@ -353,9 +349,9 @@ end)
 -- On Research Finished
 -- This is where you can permanently remove researched techs
 ----------------------------------------
-script.on_event(defines.events.on_research_finished, function(event)
-    if FRONTIER_ROCKET_SILO_MODE then
-        RemoveRecipe(event.research.force, "rocket-silo")
-    end
-end)
+-- script.on_event(defines.events.on_research_finished, function(event)
+--     if FRONTIER_ROCKET_SILO_MODE then
+--         RemoveRecipe(event.research.force, "rocket-silo")
+--     end
+-- end)
 
