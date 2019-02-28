@@ -1,7 +1,8 @@
 # FactorioScenarioMultiplayerSpawn
 A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
-0.16 is now stable and well supported!
+## WARNING! IN DEVELOPMENT! NOT STABLE!
+I just started 0.17 compatibility work... this is buggy as HELL. Don't expect any smooth experience. And with scenarios, you lose ALL progress when it crashes. This is NOT like a mod where you can remove it and sometimes recover your map.
 
 ## Instructions
 
