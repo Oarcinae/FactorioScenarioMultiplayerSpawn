@@ -1018,7 +1018,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius)
             -- Create a circle of water
             if ((distVar < tileRadSqr+(1500*MOAT_SIZE_MODIFIER)) and 
                 (distVar > tileRadSqr)) then
-                table.insert(waterTiles, {name = "water", position ={i,j}})
+                table.insert(waterTiles, {name = "water-shallow", position ={i,j}})
             end
 
             -- Enforce land inside the edges of the circle to make sure it's
@@ -1183,7 +1183,7 @@ end
 RSO_MODE = 1
 VANILLA_MODE = 2
 
-function CreateGameSurface(mode)
+function CreateGameSurface(dww)
     local mapSettings =  game.surfaces["nauvis"].map_gen_settings
 
     if CMD_LINE_MAP_GEN then
@@ -1192,8 +1192,11 @@ function CreateGameSurface(mode)
         mapSettings.starting_area = global.clMapGen.starting_area
         mapSettings.peaceful_mode = global.clMapGen.peaceful_mode
         mapSettings.seed = global.clMapGen.seed
+        mapSettings.height = global.clMapGen.height
+        mapSettings.width = global.clMapGen.width
         mapSettings.autoplace_controls = global.clMapGen.autoplace_controls
         mapSettings.cliff_settings = global.clMapGen.cliff_settings
+        mapSettings.property_expression_names = global.clMapGen.property_expression_names
     end
 
     -- To use RSO resources, we have to disable vanilla ore generation

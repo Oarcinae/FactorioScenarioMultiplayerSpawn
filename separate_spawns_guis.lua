@@ -46,9 +46,15 @@ function DisplayWelcomeTextGui(player)
 
     -- Warning about spawn creation time
     AddLabel(wGui, "spawn_time_msg_lbl1", SPAWN_WARN_MSG, my_warning_style)
-    wGui.add{name = "welcome_okay_btn",
+    local button_flow = wGui.add{type = "flow"}
+    button_flow.style.horizontal_align = "right"
+    button_flow.style.horizontally_stretchable = true
+    button_flow.add{name = "welcome_okay_btn",
                     type = "button",
-                    caption="I Understand"}
+                    caption="I Understand",
+                    style = "confirm_button"}
+    
+
 end
 
 
@@ -137,12 +143,16 @@ function DisplaySpawnOptions(player)
     local soloSpawnbuttons = soloSpawnFlow.add{name = "spawn_solo_flow",
                                                 type = "flow",
                                                 direction="horizontal"}
+    soloSpawnbuttons.style.horizontal_align = "center"
+    soloSpawnbuttons.style.horizontally_stretchable = true
     soloSpawnbuttons.add{name = "isolated_spawn_near",
                     type = "button",
-                    caption="Solo Spawn (Near)"}
+                    caption="Solo Spawn (Near)",
+                    style = "confirm_button"}
     soloSpawnbuttons.add{name = "isolated_spawn_far",
                     type = "button",
-                    caption="Solo Spawn (Far)"}
+                    caption="Solo Spawn (Far)",
+                    style = "confirm_button"}
     AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
         "You are spawned in a new area, with some starting resources.", my_label_style)
     AddSpacerLine(soloSpawnFlow, "isolated_spawn_spacer")
@@ -365,7 +375,8 @@ function DisplaySharedSpawnOptions(player)
 
     shGui.add{name = "shared_spawn_cancel",
                     type = "button",
-                    caption="Cancel (Return to Previous Options)"}
+                    caption="Cancel (Return to Previous Options)",
+                    style = "back_button"}
 end
 
 -- Handle the gui click of the shared spawn options
@@ -437,7 +448,8 @@ function DisplaySharedSpawnJoinWaitMenu(player)
     AddLabel(sGui, "warning_lbl1", "You will spawn once the host selects yes...", my_warning_style)   
     sGui.add{name = "cancel_shared_spawn_wait_menu",
                     type = "button",
-                    caption="Cancel (Return to starting spawn options)"}
+                    caption="Cancel (Return to starting spawn options)",
+                    style = "back_button"}
 end
 
 -- Handle the gui click of the buddy wait menu
@@ -535,8 +547,6 @@ function ExpandSpawnCtrlGui(player, tick)
                 spwnCtrls.add{type="checkbox", name="accessToggle",
                                 caption="Allow others to join your base.",
                                 state=IsSharedSpawnActive(player)}
-                spwnCtrls["accessToggle"].style.top_padding = 10
-                spwnCtrls["accessToggle"].style.bottom_padding = 10
                 ApplyStyle(spwnCtrls["accessToggle"], my_fixed_width_style)
             end
         end
@@ -789,7 +799,8 @@ function DisplayBuddySpawnOptions(player)
 
     buddyGui.add{name = "buddy_spawn_cancel",
                     type = "button",
-                    caption="Cancel (Return to Previous Options)"}
+                    caption="Cancel (Return to Previous Options)",
+                    style = "back_button"}
 
     -- Some final notes
     AddSpacerLine(buddyGui, "note_spacer1")

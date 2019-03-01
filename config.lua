@@ -1,5 +1,5 @@
 -- config.lua
--- Apr 2017
+-- Feb 2019
 -- Configuration Options
 -- 
 -- You should be able to leave most of the settings here as defaults.
@@ -13,8 +13,10 @@
 
 -- This stuff is printed in the console. It's probably ignored most of the time.
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
-GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
+-- GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
+-- MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
+GAME_MODE_MSG = "Game modes are a WIP."
+MODULES_ENABLED = "Soft Mods Enabled: None"
 
 -- This stuff is shown in the welcome GUI. Make sure it's valid.
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
@@ -22,7 +24,7 @@ SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have 
 "This server is running a custom scenario that changes spawn locations."
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
-"0.16 experimental release. Tweaks to fix spawn issues / text / difficulty.\n"..
+"0.17 experimental release. Lots of features removed, still WIP!\n"..
 "This scenario gives you and/or your friends your own starting area.\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
@@ -47,9 +49,9 @@ ENABLE_SEPARATE_SPAWNS = true
 
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
-ENABLE_BUDDY_SPAWN = false
+ENABLE_BUDDY_SPAWN = true
 
--- RSO soft-mod (included in the scenario)
+-- There's a good chance I will no longer be including RSO as a soft mod.
 ENABLE_RSO = false
 
 -- Frontier style rocket silo mode
@@ -350,36 +352,57 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 
 -- Set this to true if you are creating the scenario at the cmd line.
-CMD_LINE_MAP_GEN = false
+CMD_LINE_MAP_GEN = true
 
 -- Adjust settings here to set your map stuff.
 -- "Sizes can be specified as none, very-low, low, normal, high, very-high"
 global.clMapGen = {}
-global.clMapGen.terrain_segmentation="normal"
-global.clMapGen.water="normal"
-global.clMapGen.starting_area="low"
+global.clMapGen.terrain_segmentation=1
+global.clMapGen.water = 1
+global.clMapGen.starting_area=1
 global.clMapGen.peaceful_mode=false
-global.clMapGen.seed=nil;
+global.clMapGen.seed=nil
+global.clMapGen.height = 2000000
+global.clMapGen.width = 2000000
+
 -- These are my go to default vanilla settings, it's not RSO, but it's okay.
 global.clMapGen.autoplace_controls = {
-    
-    -- Resources and enemies only matter if you are NOT using RSO.
-    ["coal"]={frequency="very-low", size= "low", richness= "high"},
-    ["copper-ore"]={frequency= "very-low", size= "low", richness= "high"},
-    ["crude-oil"]={frequency= "low", size= "low", richness= "high"},
-    ["enemy-base"]={frequency= "low", size= "normal", richness= "normal"},
-    ["iron-ore"]={frequency= "very-low", size= "low", richness= "high"},
-    ["stone"]={frequency= "very-low", size= "low", richness= "high"},
-    ["uranium-ore"]={frequency= "low", size= "low", richness= "high"},
-
-    ["desert"]={frequency= "low", size= "low", richness= "low"},
-    ["dirt"]={frequency= "low", size= "low", richness= "low"},
-    ["grass"]={frequency= "normal", size= "normal", richness= "normal"},
-    ["sand"]={frequency= "low", size= "low", richness= "low"},
-    ["trees"]={frequency= "normal", size= "normal", richness= "normal"}
+    ["coal"]        = {frequency = 0.20, richness = 1.00, size = 1.50},
+    ["copper-ore"]  = {frequency = 0.20, richness = 1.00, size = 1.50},
+    ["crude-oil"]   = {frequency = 0.20, richness = 1.00, size = 1.50},
+    ["enemy-base"]  = {frequency = 0.20, richness = 1.00, size = 0.50},
+    ["iron-ore"]    = {frequency = 0.20, richness = 1.00, size = 1.50},
+    ["stone"]       = {frequency = 0.20, richness = 1.00, size = 1.50},
+    ["trees"]       = {frequency = 0.20, richness = 1.00, size = 1.50},
+    ["uranium-ore"] = {frequency = 0.20, richness = 1.00, size = 1.50}
 }
+
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
-global.clMapGen.cliff_settings={cliff_elevation_0=10, cliff_elevation_interval=10, name="cliff"}
+global.clMapGen.cliff_settings = {
+    cliff_elevation_0 = 10,
+    cliff_elevation_interval = 10,
+    name = "cliff",
+    richness = 1
+}
+
+global.clMapGen.property_expression_names = {
+    ["control-setting:aux:bias"] = "0.00",
+    ["control-setting:aux:frequency:multiplier"] = "1.00",
+    ["control-setting:moisture:bias"] = "0.00",
+    ["control-setting:moisture:frequency:multiplier"] = "1.00",
+    elevation = "0_17-islands+continents"
+}
+
+
+  -- starting_points = {
+  --   {
+  --     x = 0,
+  --     y = 0
+  --   }
+  -- }
+
+  
+
 
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
