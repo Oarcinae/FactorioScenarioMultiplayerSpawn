@@ -287,7 +287,7 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 --------------------------------------------------------------------------------
 
 -- Enable/Disable enemy expansion
-ENEMY_EXPANSION = true
+ENEMY_EXPANSION = false
 
 -- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
 ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
@@ -352,6 +352,8 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 
 -- Set this to true if you are creating the scenario at the cmd line.
+-- Set this to false if you want to configure the world settings using the in-game
+-- scenario settings.
 CMD_LINE_MAP_GEN = true
 
 -- Adjust settings here to set your map stuff.
@@ -367,14 +369,14 @@ global.clMapGen.width = 2000000
 
 -- These are my go to default vanilla settings, it's not RSO, but it's okay.
 global.clMapGen.autoplace_controls = {
-    ["coal"]        = {frequency = 0.20, richness = 1.00, size = 1.50},
-    ["copper-ore"]  = {frequency = 0.20, richness = 1.00, size = 1.50},
-    ["crude-oil"]   = {frequency = 0.20, richness = 1.00, size = 1.50},
-    ["enemy-base"]  = {frequency = 0.20, richness = 1.00, size = 0.50},
-    ["iron-ore"]    = {frequency = 0.20, richness = 1.00, size = 1.50},
-    ["stone"]       = {frequency = 0.20, richness = 1.00, size = 1.50},
-    ["trees"]       = {frequency = 0.20, richness = 1.00, size = 1.50},
-    ["uranium-ore"] = {frequency = 0.20, richness = 1.00, size = 1.50}
+    ["coal"]        = {frequency = 0.20, richness = 0.50, size = 1.50},
+    ["copper-ore"]  = {frequency = 0.20, richness = 0.50, size = 1.50},
+    ["crude-oil"]   = {frequency = 0.20, richness = 0.50, size = 1.50},
+    ["enemy-base"]  = {frequency = 0.20, richness = 0.50, size = 0.50},
+    ["iron-ore"]    = {frequency = 0.20, richness = 0.50, size = 1.50},
+    ["stone"]       = {frequency = 0.20, richness = 0.50, size = 1.50},
+    ["trees"]       = {frequency = 0.50, richness = 1.00, size = 1.50},
+    ["uranium-ore"] = {frequency = 0.20, richness = 0.50, size = 1.50}
 }
 
 -- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
@@ -390,7 +392,7 @@ global.clMapGen.property_expression_names = {
     ["control-setting:aux:frequency:multiplier"] = "1.00",
     ["control-setting:moisture:bias"] = "0.00",
     ["control-setting:moisture:frequency:multiplier"] = "1.00",
-    elevation = "0_17-islands+continents"
+    -- elevation = "0_17-islands+continents"
 }
 
 

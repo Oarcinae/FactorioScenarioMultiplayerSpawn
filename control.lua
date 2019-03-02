@@ -1,5 +1,5 @@
 -- control.lua
--- Apr 2017
+-- Mar 2019
 
 -- Oarc's Separated Spawn Scenario
 -- 
@@ -16,31 +16,31 @@
 
 
 
--- To keep the scenario more manageable I have done the following:
+-- To keep the scenario more manageable (for myself) I have done the following:
 --      1. Keep all event calls in control.lua (here)
 --      2. Put all config options in config.lua
---      3. Put mods into their own files where possible (RSO has multiple)
+--      3. Put other stuff  into their own files where possible.
 
 
 -- Generic Utility Includes
-require("oarc_utils")
--- require("locale/rso/rso_control")
--- require("locale/frontier_silo")
--- require("locale/tag")
--- require("locale/game_opts")
+require("lib/oarc_utils")
+-- require("lib/rso/rso_control")
+-- require("lib/frontier_silo")
+-- require("lib/tag")
+require("lib/game_opts")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
--- require("locale/temp/rgcommand")
--- require("locale/temp/helper_commands")
+-- require("lib/temp/rgcommand")
+-- require("lib/temp/helper_commands")
 
 -- Main Configuration File
 require("config")
 
 -- Scenario Specific Includes
-require("separate_spawns")
-require("separate_spawns_guis")
-require("regrowth_map")
+require("lib/separate_spawns")
+require("lib/separate_spawns_guis")
+-- require("regrowth_map")
 
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
@@ -188,7 +188,7 @@ script.on_event(defines.events.on_gui_click, function(event)
         SharedSpawnJoinWaitMenuClick(event)
     end
 
-    -- GameOptionsGuiClick(event)
+    GameOptionsGuiClick(event)
 
 end)
 
@@ -205,7 +205,7 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
 
-    -- CreateGameOptionsGui(event)
+    CreateGameOptionsGui(event)
 
     PlayerJoinedMessages(event)
 

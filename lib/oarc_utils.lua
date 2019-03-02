@@ -1018,7 +1018,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius)
             -- Create a circle of water
             if ((distVar < tileRadSqr+(1500*MOAT_SIZE_MODIFIER)) and 
                 (distVar > tileRadSqr)) then
-                table.insert(waterTiles, {name = "water-shallow", position ={i,j}})
+                table.insert(waterTiles, {name = "water", position ={i,j}})
             end
 
             -- Enforce land inside the edges of the circle to make sure it's
@@ -1146,7 +1146,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
             RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
             RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
             RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveDecorationsArea(surface, chunkArea)
+            -- RemoveDecorationsArea(surface, chunkArea)
 
             if (SPAWN_TREE_CIRCLE_ENABLED) then
                 CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
