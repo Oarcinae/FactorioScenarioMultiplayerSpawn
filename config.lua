@@ -52,26 +52,26 @@ ENABLE_SEPARATE_SPAWNS = true
 ENABLE_BUDDY_SPAWN = true
 
 -- There's a good chance I will no longer be including RSO as a soft mod.
-ENABLE_RSO = false
+-- ENABLE_RSO = false
 
 -- Frontier style rocket silo mode
-FRONTIER_ROCKET_SILO_MODE = false
+FRONTIER_ROCKET_SILO_MODE = true
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
 ENABLE_UNDECORATOR = false
 
 -- Enable Tags
-ENABLE_TAGS = false
+ENABLE_TAGS = true
 
 -- Enable Long Reach
-ENABLE_LONGREACH = false
+ENABLE_LONGREACH = true
 
 -- Enable Autofill
-ENABLE_AUTOFILL = false
+ENABLE_AUTOFILL = true
 
 -- Enable Playerlist
-ENABLE_PLAYER_LIST = false
+ENABLE_PLAYER_LIST = true
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 
 -- Enable Gravestone Chests
@@ -95,7 +95,7 @@ ENABLE_REGROWTH = false
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
 -- This can also be used without enabling regrowth.
-ENABLE_ABANDONED_BASE_REMOVAL = true
+ENABLE_ABANDONED_BASE_REMOVAL = false
 
 --------------------------------------------------------------------------------
 -- Spawn Options
@@ -223,7 +223,7 @@ START_RESOURCE_OIL_Y_OFFSET = -4
 ENABLE_SPAWN_FORCE_GRASS = true
 
 -- Set this to true for the spawn area to be surrounded by a circle of trees
-SPAWN_TREE_CIRCLE_ENABLED = true
+SPAWN_TREE_CIRCLE_ENABLED = false
 
 -- Set this to true for the spawn area to be surrounded by an octagon of trees
 -- I don't recommend using this with moatsm
@@ -276,7 +276,7 @@ ENABLE_SHARED_TEAM_CHAT = true
 RESPAWN_COOLDOWN_IN_MINUTES = 15
 RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 
--- Require playes to be online for at least 5 minutes
+-- Require playes to be online for at least X minutes
 -- Else their character is removed and their spawn point is freed up for use
 MIN_ONLINE_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
@@ -325,7 +325,6 @@ ENABLE_SILO_RADAR = false
 --------------------------------------------------------------------------------
 -- Long Reach Options
 --------------------------------------------------------------------------------
-
 BUILD_DIST_BONUS = 64
 REACH_DIST_BONUS = BUILD_DIST_BONUS
 RESOURCE_DIST_BONUS = 2
@@ -333,77 +332,16 @@ RESOURCE_DIST_BONUS = 2
 --------------------------------------------------------------------------------
 -- Autofill Options
 --------------------------------------------------------------------------------
-
 AUTOFILL_TURRET_AMMO_QUANTITY = 10
-
---------------------------------------------------------------------------------
--- RSO Soft-Mod Configurations
--- Configure these to tweak the RSO values.
---------------------------------------------------------------------------------
--- CONFIGURE STUFF INSIDE rso_config.lua
--- RSO resources can be very lucky/unlucky...
--- don't complain if you can't find a resource.
 
 
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
--- Configure these if you are running headless since there is no way to set
--- resources otherwise.
+-- In past versions I had a way to config map settings here to be used for cmd
+-- line launching, but now you should just be using --map-get-settings option
+-- since it works with --start-server-load-scenario
+-- Read the README.md file for instructions.
 --------------------------------------------------------------------------------
-
--- Set this to true if you are creating the scenario at the cmd line.
--- Set this to false if you want to configure the world settings using the in-game
--- scenario settings.
-CMD_LINE_MAP_GEN = false
-
--- Adjust settings here to set your map stuff.
--- "Sizes can be specified as none, very-low, low, normal, high, very-high"
-global.clMapGen = {}
-global.clMapGen.terrain_segmentation=1
-global.clMapGen.water = 1
-global.clMapGen.starting_area=1
-global.clMapGen.peaceful_mode=false
-global.clMapGen.seed=nil
-global.clMapGen.height = 2000000
-global.clMapGen.width = 2000000
-
--- These are my go to default vanilla settings, it's not RSO, but it's okay.
-global.clMapGen.autoplace_controls = {
-    ["coal"]        = {frequency = 0.20, richness = 0.50, size = 1.50},
-    ["copper-ore"]  = {frequency = 0.20, richness = 0.50, size = 1.50},
-    ["crude-oil"]   = {frequency = 0.20, richness = 0.50, size = 1.50},
-    ["enemy-base"]  = {frequency = 0.20, richness = 0.50, size = 0.50},
-    ["iron-ore"]    = {frequency = 0.20, richness = 0.50, size = 1.50},
-    ["stone"]       = {frequency = 0.20, richness = 0.50, size = 1.50},
-    ["trees"]       = {frequency = 0.50, richness = 1.00, size = 1.50},
-    ["uranium-ore"] = {frequency = 0.20, richness = 0.50, size = 1.50}
-}
-
--- Cliff defaults are 10 and 10, set both to 0 to turn cliffs off I think?
-global.clMapGen.cliff_settings = {
-    cliff_elevation_0 = 10,
-    cliff_elevation_interval = 10,
-    name = "cliff",
-    richness = 1
-}
-
-global.clMapGen.property_expression_names = {
-    ["control-setting:aux:bias"] = "0.00",
-    ["control-setting:aux:frequency:multiplier"] = "1.00",
-    ["control-setting:moisture:bias"] = "0.00",
-    ["control-setting:moisture:frequency:multiplier"] = "1.00",
-    -- elevation = "0_17-islands+continents"
-}
-
-
-  -- starting_points = {
-  --   {
-  --     x = 0,
-  --     y = 0
-  --   }
-  -- }
-
-  
 
 
 --------------------------------------------------------------------------------

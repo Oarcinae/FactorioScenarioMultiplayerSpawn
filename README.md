@@ -4,7 +4,7 @@ A custom scenario for allowing separate spawn locations in multiplayer. Designed
 ## WARNING! IN DEVELOPMENT! NOT STABLE!
 I just started 0.17 compatibility work... this is buggy as HELL. Don't expect any smooth experience. And with scenarios, you lose ALL progress when it crashes. This is NOT like a mod where you can remove it and sometimes recover your map.
 
-## Instructions
+## Instructions for starting a server
 
 ### STEP 1
 
@@ -30,9 +30,11 @@ Rename the "FactorioScenarioMultiplayerSpawn" folder to something shorter and mo
 Start a multiplayer game on your client like normal.
 
 #### OPTION 2 (Headless)
-Generate a new map, use that save file to host if you want to.
+Generate a new map like normal, save the game and use that save file to host.
+This uses the "--start-server save_file.zip" cmd line option.
+Example: ./factorio --start-server save_file.zip --server-settings your-server-settings.json
 
-#### OPTION 3 (Headless)
+#### OPTION 3 (Headless - No zip save BS)
 Place the scenario code in the game's scenario folder, typically something like "..\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\\.."
 
 Start a new game (generates a random map based on the config in config.lua) from the command line:
@@ -41,14 +43,24 @@ Start a new game (generates a random map based on the config in config.lua) from
 If you want to RESUME from this method, use something like this:
 ./factorio --start-server-load-latest --server-settings my-server-settings.json
 
+##### This is an example of my bash script that I use to start my game:
+ #!/bin/bash
+
+settings_files="--server-settings oarc-server-settings.json --server-banlist banlist.json"
+admin_list="--server-adminlist server-adminlist.json"
+map_gen_settings="--map-gen-settings map-gen-oarc.json"
+log_file="--console-log oarc-server.log"
+start_scenario_cmd="--start-server-load-scenario FactorioScenarioMultiplayerSpawn"
+
+/factorio/bin/x64/factorio $start_scenario_cmd $settings_files $log_file $admin_list $map_gen_settings
+
 
 ## Configuration
 
 Look in config.lua for some controls over the different modules.  
-
 Not all configurations have been fully tested so modify at your own risk.
 
-If you want to change the RSO config, look for the rso_config and rso_resource_config files.
+Resource & terrain map configuration should be done at launch or using --map-gen-settings.
 
 
 ## TODO
@@ -60,10 +72,6 @@ For now, just take a look at the source and it should be easy to understand I ho
 
 ## Credit
 
-RSO is not my own creation. It was done by Orzelek. I requested permission to include it in my scenario.  
-
-https://mods.factorio.com/mods/orzelek/rso-mod
-
 Several other portions of the code (tags, frontier style rocket silo) have also been adapted from other scenario code.
 
 Credit to 3Ra for help as well: https://github.com/3RaGaming
@@ -72,8 +80,6 @@ Praise be to Mylon
 
 
 ## Random Notes
-
-While it is an option to disable RSO, I would not recommend doing that. I can't guarantee any bugs or issues as I focus mostly on testing with RSO enabled.
 
 Feel free to submit bugs/fixes/requests/pulls/forks whatever you want.
 

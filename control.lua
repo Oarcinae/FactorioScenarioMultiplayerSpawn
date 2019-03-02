@@ -24,9 +24,8 @@
 
 -- Generic Utility Includes
 require("lib/oarc_utils")
--- require("lib/rso/rso_control")
--- require("lib/frontier_silo")
--- require("lib/tag")
+require("lib/frontier_silo")
+require("lib/tag")
 require("lib/game_opts")
 
 -- For Philip. I currently do not use this and need to add proper support for
@@ -40,7 +39,7 @@ require("config")
 -- Scenario Specific Includes
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
--- require("regrowth_map")
+require("lib/regrowth_map")
 
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
@@ -89,9 +88,7 @@ end
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
-
-    -- CreateLobbySurface() -- Currently unused, but have plans for future.
-    
+  
     -- Configures the map settings for enemies
     -- This controls evolution growth factors and enemy expansion settings.
     ConfigureAlienStartingParams()
@@ -105,15 +102,15 @@ script.on_init(function(event)
         InitSpawnGlobalsAndForces()
     end
 
-    -- if SILO_FIXED_POSITION then
-    --     SetFixedSiloPosition(SILO_POSITION)
-    -- else
-    --     SetRandomSiloPosition(SILO_NUM_SPAWNS)
-    -- end
+    if SILO_FIXED_POSITION then
+        SetFixedSiloPosition(SILO_POSITION)
+    else
+        SetRandomSiloPosition(SILO_NUM_SPAWNS)
+    end
 
-    -- if FRONTIER_ROCKET_SILO_MODE then
-    --     GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
-    -- end
+    if FRONTIER_ROCKET_SILO_MODE then
+        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
+    end
 
     SetServerWelcomeMessages()
 
@@ -128,11 +125,11 @@ end)
 -- Freeplay rocket launch info
 -- Slightly modified for my purposes
 ----------------------------------------
--- script.on_event(defines.events.on_rocket_launched, function(event)
---     if FRONTIER_ROCKET_SILO_MODE then
---         RocketLaunchEvent(event)
---     end
--- end)
+script.on_event(defines.events.on_rocket_launched, function(event)
+    if FRONTIER_ROCKET_SILO_MODE then
+        RocketLaunchEvent(event)
+    end
+end)
 
 
 ----------------------------------------
@@ -143,17 +140,13 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     --     OarcRegrowthChunkGenerate(event.area.left_top)
     -- end
 
-    -- if ENABLE_UNDECORATOR then
-    --     UndecorateOnChunkGenerate(event)
-    -- end
+    if ENABLE_UNDECORATOR then
+        UndecorateOnChunkGenerate(event)
+    end
 
-    -- if ENABLE_RSO then
-    --     RSO_ChunkGenerated(event)
-    -- end
-
-    -- if FRONTIER_ROCKET_SILO_MODE then
-    --     GenerateRocketSiloChunk(event)
-    -- end
+    if FRONTIER_ROCKET_SILO_MODE then
+        GenerateRocketSiloChunk(event)
+    end
 
     if ENABLE_SEPARATE_SPAWNS and not USE_VANILLA_STARTING_SPAWN then
         SeparateSpawnsGenerateChunk(event)
@@ -169,13 +162,13 @@ end)
 -- Gui Click
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
-    -- if ENABLE_TAGS then
-    --     TagGuiClick(event)
-    -- end
+    if ENABLE_TAGS then
+        TagGuiClick(event)
+    end
 
-    -- if ENABLE_PLAYER_LIST then
-    --     PlayerListGuiClick(event)
-    -- end
+    if ENABLE_PLAYER_LIST then
+        PlayerListGuiClick(event)
+    end
 
     if ENABLE_SEPARATE_SPAWNS then
         WelcomeTextGuiClick(event)
@@ -225,9 +218,9 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
-    -- if ENABLE_LONGREACH then
-    --     GivePlayerLongReach(game.players[event.player_index])
-    -- end
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
 
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
@@ -243,9 +236,9 @@ script.on_event(defines.events.on_player_respawned, function(event)
    
     PlayerRespawnItems(event)
 
-    -- if ENABLE_LONGREACH then
-    --     GivePlayerLongReach(game.players[event.player_index])
-    -- end
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
 end)
 
 -- script.on_event(defines.events.on_pre_player_died, function(event)
@@ -262,15 +255,15 @@ script.on_event(defines.events.on_player_left_game, function(event)
     --     end
     -- end 
 
-    -- if ENABLE_SEPARATE_SPAWNS then
-    --     FindUnusedSpawns(event)
-    -- end
+    if ENABLE_SEPARATE_SPAWNS then
+        FindUnusedSpawns(event)
+    end
 end)
 
--- script.on_event(defines.events.on_built_entity, function(event)
-    -- if ENABLE_AUTOFILL then
-    --     Autofill(event)
-    -- end
+script.on_event(defines.events.on_built_entity, function(event)
+    if ENABLE_AUTOFILL then
+        Autofill(event)
+    end
 
     -- if ENABLE_REGROWTH then
     --     OarcRegrowthOffLimitsChunk(event.created_entity.position)
@@ -279,7 +272,7 @@ end)
     -- if ENABLE_ANTI_GRIEFING then
     --     SetItemBlueprintTimeToLive(event)
     -- end
--- end)
+end)
 
 
 ----------------------------------------
@@ -290,17 +283,17 @@ script.on_event(defines.events.on_tick, function(event)
     --     OarcRegrowthOnTick()
     -- end
 
-    -- if ENABLE_ABANDONED_BASE_REMOVAL then
-    --     OarcRegrowthForceRemovalOnTick()
-    -- end
+    if ENABLE_ABANDONED_BASE_REMOVAL then
+        OarcRegrowthForceRemovalOnTick()
+    end
 
     if ENABLE_SEPARATE_SPAWNS then
         DelayedSpawnOnTick()
     end
 
-    -- if FRONTIER_ROCKET_SILO_MODE then
-    --     DelayedSiloCreationOnTick()
-    -- end
+    if FRONTIER_ROCKET_SILO_MODE then
+        DelayedSiloCreationOnTick()
+    end
 
 end)
 
@@ -349,9 +342,9 @@ end)
 -- On Research Finished
 -- This is where you can permanently remove researched techs
 ----------------------------------------
--- script.on_event(defines.events.on_research_finished, function(event)
---     if FRONTIER_ROCKET_SILO_MODE then
---         RemoveRecipe(event.research.force, "rocket-silo")
---     end
--- end)
+script.on_event(defines.events.on_research_finished, function(event)
+    if FRONTIER_ROCKET_SILO_MODE then
+        RemoveRecipe(event.research.force, "rocket-silo")
+    end
+end)
 

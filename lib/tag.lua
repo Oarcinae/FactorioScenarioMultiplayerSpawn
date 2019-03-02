@@ -32,7 +32,7 @@ local function ExpandTagGui(player)
     if (frame) then
         frame.destroy()
     else
-        local frame = player.gui.left.add{type="frame", name="tag-panel", caption="What are you doing:"}
+        local frame = player.gui.left.add{type="frame", name="tag-panel", caption="What are you doing:", direction = "vertical"}
     		for _, role in pairs(roles) do
     			frame.add{type="button", caption=role.display_name, name=role.display_name}
  			end

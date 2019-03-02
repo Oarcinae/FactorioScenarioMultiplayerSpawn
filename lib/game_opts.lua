@@ -54,9 +54,9 @@ local function ExpandGameOptionsGui(player)
         if (not ENABLE_SEPARATE_SPAWNS) then
             soft_mods_string = "Oarc Core [DISABLED!]"
         end
-        if (ENABLE_RSO) then
-            soft_mods_string = soft_mods_string .. ", RSO"
-        end
+        -- if (ENABLE_RSO) then
+        --     soft_mods_string = soft_mods_string .. ", RSO"
+        -- end
         if (ENABLE_UNDECORATOR) then
             soft_mods_string = soft_mods_string .. ", Undecorator"
         end

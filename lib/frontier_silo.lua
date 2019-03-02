@@ -3,7 +3,7 @@
 -- My take on frontier silos for my Oarc scenario
 
 require("config")
-require("locale/oarc_utils")
+require("lib/oarc_utils")
 
 --------------------------------------------------------------------------------
 -- Frontier style rocket silo stuff
@@ -65,7 +65,7 @@ local function CreateRocketSilo(surface, siloPosition, force)
     tiles = {}
     i = 1
     for dx = -5,5 do
-        for dy = -6,5 do
+        for dy = -5,5 do
             tiles[i] = {name = "concrete", position = {siloPosition.x+dx, siloPosition.y+dy}}
             i=i+1
         end
