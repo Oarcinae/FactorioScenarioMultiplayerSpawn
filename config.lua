@@ -354,7 +354,7 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 -- Set this to true if you are creating the scenario at the cmd line.
 -- Set this to false if you want to configure the world settings using the in-game
 -- scenario settings.
-CMD_LINE_MAP_GEN = true
+CMD_LINE_MAP_GEN = false
 
 -- Adjust settings here to set your map stuff.
 -- "Sizes can be specified as none, very-low, low, normal, high, very-high"
