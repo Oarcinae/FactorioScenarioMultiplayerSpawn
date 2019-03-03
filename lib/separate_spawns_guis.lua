@@ -192,7 +192,7 @@ function DisplaySpawnOptions(player)
     AddSpacerLine(sGui, "note_spacer1")
 
     if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN > 0) then
-        AddLabel(sGui, "buddy_spawn_lbl1",
+        AddLabel(sGui, "max_players_lbl2",
                 "If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
                 my_note_style)
     end
@@ -806,7 +806,7 @@ function DisplayBuddySpawnOptions(player)
     AddSpacerLine(buddyGui, "note_spacer1")
 
     if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN > 0) then
-        AddLabel(buddyGui, "buddy_spawn_lbl1",
+        AddLabel(buddyGui, "buddy_max_players_lbl1",
                 "You can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
                 my_note_style)
     end
