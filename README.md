@@ -4,6 +4,14 @@ A custom scenario for allowing separate spawn locations in multiplayer. Designed
 ## WARNING! IN DEVELOPMENT! NOT STABLE!
 I just started 0.17 compatibility work... this is buggy as HELL. Don't expect any smooth experience. And with scenarios, you lose ALL progress when it crashes. This is NOT like a mod where you can remove it and sometimes recover your map.
 
+## 0.17 Changes
+
+#### Soft mods removal
+I have removed most of the soft mods, including RSO. Now that 0.17 has proper auto mod syncing with the server, you should use actual mods. That will make the scenario easier to maintain and require less changes whenever you update since there will be less to configure.
+
+#### Removal of cmd line map gen settings
+0.17 allows you to provide map generation settings using --map-gen-settings when you launch the scenario from the command line. You should be using that to generate your maps. I will include an example/recommended settings with the scenario but it's up to you to make sure your game launches with whatever settings you want. 
+
 ## Instructions for starting a server
 
 ### STEP 1

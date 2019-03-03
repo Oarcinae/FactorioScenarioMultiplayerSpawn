@@ -51,10 +51,8 @@ ENABLE_SEPARATE_SPAWNS = true
 -- each with their own starting point. It adds more GUI selection options.
 ENABLE_BUDDY_SPAWN = true
 
--- There's a good chance I will no longer be including RSO as a soft mod.
--- ENABLE_RSO = false
-
 -- Frontier style rocket silo mode
+-- This means you can't build silos, but some spawn out in the wild for you to use.
 FRONTIER_ROCKET_SILO_MODE = true
 
 -- Enable Undecorator
@@ -64,26 +62,9 @@ ENABLE_UNDECORATOR = false
 -- Enable Tags
 ENABLE_TAGS = true
 
--- Enable Long Reach
-ENABLE_LONGREACH = true
-
--- Enable Autofill
-ENABLE_AUTOFILL = true
-
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
-
--- Enable Gravestone Chests
-ENABLE_GRAVESTONE_ON_DEATH = false
-
--- Items dumped into chest when you leave.
-ENABLE_GRAVESTONE_ON_LEAVING = false
--- If anyone leaves within first X minutes, items get dumped into chest.
-ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS = 15
-
--- Enable quick start items
-ENABLE_POWER_ARMOR_QUICK_START = false
 
 -- Enable shared vision between teams (all teams are COOP regardless)
 ENABLE_SHARED_TEAM_VISION = true

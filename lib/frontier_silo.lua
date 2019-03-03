@@ -162,13 +162,13 @@ function ChartRocketSiloAreas(surface, force)
 end
 
 global.oarc_silos_generated = false
-function DelayedSiloCreationOnTick(event)
+function DelayedSiloCreationOnTick(surface)
 
     -- Delay the creation of the silos so we place them on already generated lands.
     if (not global.oarc_silos_generated and (game.tick >= SILO_NUM_SPAWNS*10*TICKS_PER_SECOND)) then
         DebugPrint("Frontier silos generated!")
         global.oarc_silos_generated = true
-        GenerateAllSilos(game.surfaces[GAME_SURFACE_NAME])
+        GenerateAllSilos(surface)
     end
 
 end 

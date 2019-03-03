@@ -19,19 +19,23 @@
 -- To keep the scenario more manageable (for myself) I have done the following:
 --      1. Keep all event calls in control.lua (here)
 --      2. Put all config options in config.lua
---      3. Put other stuff  into their own files where possible.
+--      3. Put other stuff into their own files where possible.
 
 
 -- Generic Utility Includes
 require("lib/oarc_utils")
+
+-- Other soft-mod type features.
 require("lib/frontier_silo")
 require("lib/tag")
 require("lib/game_opts")
+require("lib/regrowth_map")
+require("lib/player_list")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
--- require("lib/temp/rgcommand")
--- require("lib/temp/helper_commands")
+-- require("lib/rgcommand")
+-- require("lib/helper_commands")
 
 -- Main Configuration File
 require("config")
@@ -39,7 +43,9 @@ require("config")
 -- Scenario Specific Includes
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
-require("lib/regrowth_map")
+
+-- In this case, we are using the default surface.
+GAME_SURFACE_NAME="nauvis"
 
 --------------------------------------------------------------------------------
 -- Rocket Launch Event Code
@@ -93,11 +99,6 @@ script.on_init(function(event)
     -- This controls evolution growth factors and enemy expansion settings.
     ConfigureAlienStartingParams()
 
-    -- Here I create the game surface. I do this so that I don't have to worry
-    -- about the game menu settings and I can now generate a map from the command
-    -- line more easily!
-    CreateGameSurface(VANILLA_MODE)
-
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
     end
@@ -114,10 +115,9 @@ script.on_init(function(event)
 
     SetServerWelcomeMessages()
 
-    -- if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
-    --     OarcRegrowthInit()
-    -- end
-
+    if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
+        OarcRegrowthInit()
+    end
 end)
 
 
@@ -136,9 +136,9 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
-    -- if ENABLE_REGROWTH then
-    --     OarcRegrowthChunkGenerate(event.area.left_top)
-    -- end
+    if ENABLE_REGROWTH then
+        OarcRegrowthChunkGenerate(event.area.left_top)
+    end
 
     if ENABLE_UNDECORATOR then
         UndecorateOnChunkGenerate(event)
@@ -218,10 +218,6 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
-    if ENABLE_LONGREACH then
-        GivePlayerLongReach(game.players[event.player_index])
-    end
-
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
     else
@@ -236,42 +232,18 @@ script.on_event(defines.events.on_player_respawned, function(event)
    
     PlayerRespawnItems(event)
 
-    if ENABLE_LONGREACH then
-        GivePlayerLongReach(game.players[event.player_index])
-    end
 end)
 
--- script.on_event(defines.events.on_pre_player_died, function(event)
---     if ENABLE_GRAVESTONE_ON_DEATH then
---         DropGravestoneChests(game.players[event.player_index])
---     end
--- end)
-
 script.on_event(defines.events.on_player_left_game, function(event)
-    -- if ENABLE_GRAVESTONE_ON_LEAVING then
-    --     if (game.players[event.player_index].online_time <
-    --         ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS) then
-    --         DropGravestoneChests(game.players[event.player_index])
-    --     end
-    -- end 
-
     if ENABLE_SEPARATE_SPAWNS then
         FindUnusedSpawns(event)
     end
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
-    if ENABLE_AUTOFILL then
-        Autofill(event)
+    if ENABLE_REGROWTH then
+        OarcRegrowthOffLimitsChunk(event.created_entity.position)
     end
-
-    -- if ENABLE_REGROWTH then
-    --     OarcRegrowthOffLimitsChunk(event.created_entity.position)
-    -- end
-
-    -- if ENABLE_ANTI_GRIEFING then
-    --     SetItemBlueprintTimeToLive(event)
-    -- end
 end)
 
 
@@ -279,9 +251,9 @@ end)
 -- Shared vision, charts a small area around other players
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    -- if ENABLE_REGROWTH then
-    --     OarcRegrowthOnTick()
-    -- end
+    if ENABLE_REGROWTH then
+        OarcRegrowthOnTick()
+    end
 
     if ENABLE_ABANDONED_BASE_REMOVAL then
         OarcRegrowthForceRemovalOnTick()
@@ -292,7 +264,7 @@ script.on_event(defines.events.on_tick, function(event)
     end
 
     if FRONTIER_ROCKET_SILO_MODE then
-        DelayedSiloCreationOnTick()
+        DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
     end
 
 end)
@@ -309,21 +281,21 @@ end)
 -- Refresh areas where stuff is built, and mark any chunks with player
 -- built stuff as permanent.
 ----------------------------------------
--- if ENABLE_REGROWTH then
+if ENABLE_REGROWTH then
 
---     script.on_event(defines.events.on_robot_built_entity, function (event)
---         OarcRegrowthOffLimitsChunk(event.created_entity.position)
---     end)
+    script.on_event(defines.events.on_robot_built_entity, function (event)
+        OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    end)
 
---     script.on_event(defines.events.on_player_mined_entity, function(event)
---         OarcRegrowthCheckChunkEmpty(event)
---     end)
+    script.on_event(defines.events.on_player_mined_entity, function(event)
+        OarcRegrowthCheckChunkEmpty(event)
+    end)
     
---     script.on_event(defines.events.on_robot_mined_entity, function(event)
---         OarcRegrowthCheckChunkEmpty(event)
---     end)
+    script.on_event(defines.events.on_robot_mined_entity, function(event)
+        OarcRegrowthCheckChunkEmpty(event)
+    end)
 
--- end
+end
 
 
 
