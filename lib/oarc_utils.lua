@@ -4,7 +4,7 @@
 -- My general purpose utility functions for factorio
 -- Also contains some constants and gui styles
 
-require("lib/oarc_gui_utils.lua")
+require("lib/oarc_gui_utils")
 
 --------------------------------------------------------------------------------
 -- Useful constants
