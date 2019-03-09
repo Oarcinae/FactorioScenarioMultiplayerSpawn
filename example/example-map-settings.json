@@ -1,4 +1,3 @@
-// This is my slightly modified version of factorio's default example-map-settings.
 {
   "difficulty_settings":
   {
@@ -25,15 +24,15 @@
   "enemy_evolution":
   {
     "enabled": true,
-    "time_factor": 0, // Default is 0.000004
-    "destroy_factor": 0.001, // Default is 0.002
-    "pollution_factor": 0.000010 // Default is 0.000015
+    "time_factor": 0,
+    "destroy_factor": 0.001,
+    "pollution_factor": 0.000010
   },
   "enemy_expansion":
   {
-    "enabled": true, // Default is true.
+    "enabled": true,
     "min_base_spacing": 3,
-    "max_expansion_distance": 10, // Default is 7.
+    "max_expansion_distance": 10,
     "friendly_base_influence_radius": 2,
     "enemy_building_influence_radius": 2,
     "building_coefficient": 0.1,
@@ -43,13 +42,13 @@
     "max_colliding_tiles_coefficient": 0.9,
     "settler_group_min_size": 2,
     "settler_group_max_size": 10,
-    "min_expansion_cooldown": 54000, // Default is 14400
-    "max_expansion_cooldown": 216000 // Default is 216000
+    "min_expansion_cooldown": 54000,
+    "max_expansion_cooldown": 216000
   },
   "unit_group":
   {
     "min_group_gathering_time": 3600,
-    "max_group_gathering_time": 14400, // Default is 36000
+    "max_group_gathering_time": 14400,
     "max_wait_time_for_late_members": 3600,
     "max_group_radius": 30.0,
     "min_group_radius": 5.0,
@@ -60,7 +59,7 @@
     "member_disown_distance": 10,
     "tick_tolerance_when_member_arrives": 60,
     "max_gathering_unit_groups": 30,
-    "max_unit_group_size": 20 // Default is 200
+    "max_unit_group_size": 20
   },
   "steering":
   {

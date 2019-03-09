@@ -1,4 +1,3 @@
-// This is my slightly modified version of factorio's default example-map-gen-settings.
 {
     "_comment": "Sizes can be specified as none, very-low, low, normal, high, very-high",
 
@@ -6,7 +5,7 @@
     "water" : 1,
     "starting_area" : "none",
     "peaceful_mode" : false,
-    "research_queue_from_the_start" : "always", // Doesn't seem to do anything
+    "research_queue_from_the_start" : "always",
 
     "autoplace_controls" : {
         "coal"        : {"frequency" : 0.20, "richness" : 0.50, "size" : 1.50},
