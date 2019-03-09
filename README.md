@@ -10,7 +10,7 @@ I just started 0.17 compatibility work... this is buggy as HELL. Don't expect an
 I have removed most of the soft mods, including RSO. Now that 0.17 has proper auto mod syncing with the server, you should use actual mods. That will make the scenario easier to maintain and require less changes whenever you update since there will be less to configure.
 
 #### Removal of cmd line map gen settings
-0.17 allows you to provide map generation settings using --map-gen-settings when you launch the scenario from the command line. You should be using that to generate your maps. I will include an example/recommended settings with the scenario but it's up to you to make sure your game launches with whatever settings you want. 
+0.17 allows you to provide map generation settings using --map-gen-settings when you launch the scenario from the command line. You should be using that to generate your maps. I will include an example/recommended settings with the scenario but it's up to you to make sure your game launches with whatever settings you want. Also --map-settings.
 
 ## Instructions for starting a server
 
@@ -57,10 +57,11 @@ If you want to RESUME from this method, use something like this:
 settings_files="--server-settings oarc-server-settings.json --server-banlist banlist.json"
 admin_list="--server-adminlist server-adminlist.json"
 map_gen_settings="--map-gen-settings map-gen-oarc.json"
+map_settings="--map-settings map-settings-oarc.json"
 log_file="--console-log oarc-server.log"
 start_scenario_cmd="--start-server-load-scenario FactorioScenarioMultiplayerSpawn"
 
-/factorio/bin/x64/factorio $start_scenario_cmd $settings_files $log_file $admin_list $map_gen_settings
+/factorio/bin/x64/factorio $start_scenario_cmd $settings_files $log_file $admin_list $map_gen_settings $map_settings
 
 
 ## Configuration
@@ -69,6 +70,7 @@ Look in config.lua for some controls over the different modules.
 Not all configurations have been fully tested so modify at your own risk.
 
 Resource & terrain map configuration should be done at launch or using --map-gen-settings.
+Use the examples in the example folder if you want my take on map/resource/enemy gen.
 
 
 ## TODO

@@ -94,10 +94,6 @@ end
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
-  
-    -- Configures the map settings for enemies
-    -- This controls evolution growth factors and enemy expansion settings.
-    ConfigureAlienStartingParams()
 
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
@@ -218,6 +214,10 @@ script.on_event(defines.events.on_player_created, function(event)
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
 
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
+
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
     else
@@ -232,6 +232,9 @@ script.on_event(defines.events.on_player_respawned, function(event)
    
     PlayerRespawnItems(event)
 
+    if ENABLE_LONGREACH then
+        GivePlayerLongReach(game.players[event.player_index])
+    end
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
@@ -241,6 +244,10 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
+    if ENABLE_AUTOFILL then
+        Autofill(event)
+    end
+
     if ENABLE_REGROWTH then
         OarcRegrowthOffLimitsChunk(event.created_entity.position)
     end

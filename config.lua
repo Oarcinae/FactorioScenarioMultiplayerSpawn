@@ -62,6 +62,12 @@ ENABLE_UNDECORATOR = false
 -- Enable Tags
 ENABLE_TAGS = true
 
+-- Enable Long Reach
+ENABLE_LONGREACH = true
+
+-- Enable Autofill
+ENABLE_AUTOFILL = true
+
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
@@ -264,21 +270,6 @@ MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 
 --------------------------------------------------------------------------------
--- Alien Options
---------------------------------------------------------------------------------
-
--- Enable/Disable enemy expansion
-ENEMY_EXPANSION = false
-
--- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
-ENEMY_TIME_FACTOR_DIVISOR = 10
-ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
-ENEMY_POLLUTION_FACTOR_DIVISOR = 10
-ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
-ENEMY_DESTROY_FACTOR_DIVISOR = 1
-
---------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
 --------------------------------------------------------------------------------
 
@@ -319,27 +310,32 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
 -- In past versions I had a way to config map settings here to be used for cmd
--- line launching, but now you should just be using --map-get-settings option
+-- line launching, but now you should just be using --map-gen-settings option
 -- since it works with --start-server-load-scenario
 -- Read the README.md file for instructions.
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- Alien Options
+-- In past versions I had a way to config map settings here to be used for cmd
+-- line launching, but now you should just be using --map-settings option
+-- since it works with --start-server-load-scenario
+-- Read the README.md file for instructions.
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
 -- These things were added from other people's requests/changes and are disabled by default.
 --------------------------------------------------------------------------------
 -- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
-ENABLE_ANTI_GRIEFING = false
+-- ENABLE_ANTI_GRIEFING = false
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+-- GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 -------------------------------------------------------------------------------
 -- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
-OARC_DIFFICULTY_CUSTOM = false
-
 -- DEBUG prints for me
 global.oarcDebugEnabled = false
 
