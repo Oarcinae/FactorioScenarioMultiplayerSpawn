@@ -990,15 +990,15 @@ function PlayerSpawnItems(event)
 end
 
 -- Autofill softmod
--- function Autofill(event)
---     local player = game.players[event.player_index]
---     local eventEntity = event.created_entity
+function Autofill(event)
+    local player = game.players[event.player_index]
+    local eventEntity = event.created_entity
 
---     if (eventEntity.name == "gun-turret") then
---         AutofillTurret(player, eventEntity)
---     end
+    if (eventEntity.name == "gun-turret") then
+        AutofillTurret(player, eventEntity)
+    end
 
---     if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
---         AutoFillVehicle(player, eventEntity)
---     end
--- end
+    if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
+        AutoFillVehicle(player, eventEntity)
+    end
+end
