@@ -82,7 +82,7 @@ ENABLE_REGROWTH = false
 -- If you have regrowth enabled, this should also be enabled.
 -- It removes bases for players that join and leave the game quickly.
 -- This can also be used without enabling regrowth.
-ENABLE_ABANDONED_BASE_REMOVAL = false
+ENABLE_ABANDONED_BASE_REMOVAL = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options
