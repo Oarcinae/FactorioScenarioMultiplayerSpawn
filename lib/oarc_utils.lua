@@ -473,9 +473,9 @@ function DowngradeWormsDistanceBasedOnChunkGenerate(event)
     elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MIN_DIST*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
     elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MAX_DIST*CHUNK_SIZE)) then
-        DowngradeWormsInArea(event.surface, event.area, 50, 80, 99)
+        DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
-        DowngradeWormsInArea(event.surface, event.area, 10, 40, 85)
+        DowngradeWormsInArea(event.surface, event.area, 0, 20, 85)
     end
 end
 

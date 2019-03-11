@@ -13,10 +13,8 @@
 
 -- This stuff is printed in the console. It's probably ignored most of the time.
 WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
--- GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
--- MODULES_ENABLED = "Mods Enabled: Separate Spawns, RSO, Long-Reach, Autofill, Undecorator, Player List"
-GAME_MODE_MSG = "Game modes are a WIP."
-MODULES_ENABLED = "Soft Mods Enabled: None"
+GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
+MODULES_ENABLED = "Soft Mods Enabled: Separate Spawns, Long-Reach, Autofill, Player List"
 
 -- This stuff is shown in the welcome GUI. Make sure it's valid.
 WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
@@ -24,7 +22,7 @@ SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have 
 "This server is running a custom scenario that changes spawn locations."
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
-"0.17 experimental release. Lots of features removed, still WIP!\n"..
+"0.17 experimental release. Improved enemy difficulty/spawning!\n"..
 "This scenario gives you and/or your friends your own starting area.\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
