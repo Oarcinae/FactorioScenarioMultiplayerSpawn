@@ -426,16 +426,131 @@ function ReduceAliensInArea(surface, area, reductionFactor)
             entity.destroy()
         end
     end
+end
 
-    -- Remove all big and huge worms
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = "medium-worm-turret"}) do
-            entity.destroy()
+-- Downgrades worms in an area based on chance.
+-- 100% small would mean all worms are changed to small.
+function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_percent)
+
+    local worm_types = {"small-worm-turret", "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret"}
+
+    for _, entity in pairs(surface.find_entities_filtered{area = area, name = worm_types}) do
+        
+        -- Roll a number between 0-100
+        local rand_percent = math.random(0,100)
+        local worm_pos = entity.position
+        local worm_name = entity.name
+
+        -- If number is more than small percent, change to small
+        if (rand_percent <= small_percent) then
+            if (not (worm_name == "small-worm-turret")) then
+                entity.destroy()
+                surface.create_entity{name = "small-worm-turret", position = worm_pos, force = game.forces.enemy}
+            end            
+
+        -- ELSE If number is more than medium percent, change to small
+        elseif (rand_percent <= medium_percent) then
+            if (not (worm_name == "medium-worm-turret")) then
+                entity.destroy()
+                surface.create_entity{name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy}
+            end
+
+        -- ELSE If number is more than big percent, change to small
+        elseif (rand_percent <= big_percent) then
+            if (not (worm_name == "big-worm-turret")) then
+                entity.destroy()
+                surface.create_entity{name = "big-worm-turret", position = worm_pos, force = game.forces.enemy}
+            end
+
+        -- ELSE ignore it.
+        end
     end
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = "big-worm-turret"}) do
-            entity.destroy()
+end
+
+function DowngradeWormsDistanceBasedOnChunkGenerate(event)
+    if (getDistance({x=0,y=0}, event.area.left_top) < (NEAR_MAX_DIST*CHUNK_SIZE)) then
+        DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MIN_DIST*CHUNK_SIZE)) then
+        DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (FAR_MAX_DIST*CHUNK_SIZE)) then
+        DowngradeWormsInArea(event.surface, event.area, 50, 80, 99)
+    else
+        DowngradeWormsInArea(event.surface, event.area, 10, 40, 85)
     end
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = "behemoth-worm-turret"}) do
-            entity.destroy()
+end
+
+-- A function to help me remove worms in an area.
+-- Yeah kind of an unecessary wrapper, but makes my life easier to remember the worm types.
+function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
+    local worm_types = {}
+
+    if (small) then
+        table.insert(worm_types, "small-worm-turret")
+    end
+    if (medium) then
+        table.insert(worm_types, "medium-worm-turret")
+    end
+    if (big) then
+        table.insert(worm_types, "big-worm-turret")
+    end
+    if (behemoth) then
+        table.insert(worm_types, "behemoth-worm-turret")
+    end
+    
+    -- Destroy
+    if (TableLength(worm_types) > 0) then
+        for _, entity in pairs(surface.find_entities_filtered{area = area, name = worm_types}) do
+                entity.destroy()
+        end
+    else
+        DebugPrint("RemoveWormsInArea had empty worm_types list!")
+    end
+end
+
+-- Adjust alien params
+-- I'll probably remove this if --map-settings works with command line launches.
+function ConfigureAlienStartingParams()
+    if ENEMY_TIME_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.time_factor = 0
+    else
+        game.map_settings.enemy_evolution.time_factor=game.map_settings.enemy_evolution.time_factor / ENEMY_TIME_FACTOR_DIVISOR
+    end
+
+    if ENEMY_POLLUTION_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.pollution_factor = 0
+    else
+        game.map_settings.enemy_evolution.pollution_factor = game.map_settings.enemy_evolution.pollution_factor / ENEMY_POLLUTION_FACTOR_DIVISOR
+    end
+
+    if ENEMY_DESTROY_FACTOR_DISABLE then
+        game.map_settings.enemy_evolution.destroy_factor = 0
+    else
+        game.map_settings.enemy_evolution.destroy_factor = game.map_settings.enemy_evolution.destroy_factor / ENEMY_DESTROY_FACTOR_DIVISOR
+    end
+    
+    game.map_settings.enemy_expansion.enabled = ENEMY_EXPANSION
+
+    -- This is my own extra tweaks, still pretty experimental.
+    if (OARC_DIFFICULTY_CUSTOM) then
+        -- More diffusion / larger area.
+        game.map_settings.pollution.diffusion_ratio = 0.06 
+
+        -- Biters expand further.
+        game.map_settings.enemy_expansion.max_expansion_distance = 20 
+
+        -- Small biter groups.
+        game.map_settings.enemy_expansion.settler_group_min_size = 2 
+        game.map_settings.enemy_expansion.settler_group_max_size = 10
+
+        -- Longer cooldown / slower expansion.
+        game.map_settings.enemy_expansion.min_expansion_cooldown = TICKS_PER_MINUTE*15
+        game.map_settings.enemy_expansion.max_expansion_cooldown = TICKS_PER_MINUTE*60
+
+        -- Smaller groups, more frequent?
+        game.map_settings.unit_group.min_group_gathering_time = TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_group_gathering_time = 4 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_wait_time_for_late_members = 1 * TICKS_PER_MINUTE
+        game.map_settings.unit_group.max_unit_group_size = 15
     end
 end
 
@@ -741,160 +856,6 @@ function GenerateResourcePatch(surface, resourceName, diameter, pos, amount)
 end
 
 
-
--- Generate the basic starter resource around a given location.
-function GenerateStartingResources(surface, pos)
-    -- Generate stone
-    local stonePos = {x=pos.x+START_RESOURCE_STONE_POS_X,
-                  y=pos.y+START_RESOURCE_STONE_POS_Y}
-
-    -- Generate coal
-    local coalPos = {x=pos.x+START_RESOURCE_COAL_POS_X,
-                  y=pos.y+START_RESOURCE_COAL_POS_Y}
-
-    -- Generate copper ore
-    local copperOrePos = {x=pos.x+START_RESOURCE_COPPER_POS_X,
-                  y=pos.y+START_RESOURCE_COPPER_POS_Y}
-                  
-    -- Generate iron ore
-    local ironOrePos = {x=pos.x+START_RESOURCE_IRON_POS_X,
-                  y=pos.y+START_RESOURCE_IRON_POS_Y}
-
-    -- Generate uranium
-    local uraniumOrePos = {x=pos.x+START_RESOURCE_URANIUM_POS_X,
-                  y=pos.y+START_RESOURCE_URANIUM_POS_Y}
-
-    -- Tree generation is taken care of in chunk generation
-
-    -- Generate oil patches
-    oil_patch_x=pos.x+START_RESOURCE_OIL_POS_X
-    oil_patch_y=pos.y+START_RESOURCE_OIL_POS_Y
-    for i=1,START_RESOURCE_OIL_NUM_PATCHES do
-        surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
-                    position={oil_patch_x, oil_patch_y}})
-        oil_patch_x=oil_patch_x+START_RESOURCE_OIL_X_OFFSET
-        oil_patch_y=oil_patch_y+START_RESOURCE_OIL_Y_OFFSET
-    end
-
-    -- Generate Stone
-    GenerateResourcePatch(surface, "stone", START_RESOURCE_STONE_SIZE, stonePos, START_STONE_AMOUNT)
-
-    -- Generate Coal
-    GenerateResourcePatch(surface, "coal", START_RESOURCE_COAL_SIZE, coalPos, START_COAL_AMOUNT)
-
-    -- Generate Copper
-    GenerateResourcePatch(surface, "copper-ore", START_RESOURCE_COPPER_SIZE, copperOrePos, START_COPPER_AMOUNT)
-
-    -- Generate Iron
-    GenerateResourcePatch(surface, "iron-ore", START_RESOURCE_IRON_SIZE, ironOrePos, START_IRON_AMOUNT)
-
-    -- Generate Uranium
-    GenerateResourcePatch(surface, "uranium-ore", START_RESOURCE_URANIUM_SIZE, uraniumOrePos, START_URANIUM_AMOUNT)
-end
-
-
-
--- Clear the spawn areas.
--- This should be run inside the chunk generate event and be given a list of all
--- unique spawn points.
--- This clears enemies in the immediate area, creates a slightly safe area around it,
--- It no LONGER generates the resources though as that is now handled in a delayed event!
-function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
-    for name,spawn in pairs(spawnPointTable) do
-
-        -- Create a bunch of useful area and position variables
-        local landArea = GetAreaAroundPos(spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+CHUNK_SIZE)
-        local safeArea = GetAreaAroundPos(spawn.pos, SAFE_AREA_TILE_DIST)
-        local warningArea = GetAreaAroundPos(spawn.pos, WARNING_AREA_TILE_DIST)
-        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                                         y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-        local spawnPosOffset = {x=spawn.pos.x+ENFORCE_LAND_AREA_TILE_DIST,
-                                         y=spawn.pos.y+ENFORCE_LAND_AREA_TILE_DIST}
-
-        -- Make chunks near a spawn safe by removing enemies
-        if CheckIfInArea(chunkAreaCenter,safeArea) then
-            RemoveAliensInArea(surface, chunkArea)
-        
-        -- Create a warning area with reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,warningArea) then
-            ReduceAliensInArea(surface, chunkArea, WARN_AREA_REDUCTION_RATIO)
-        end
-
-        -- If the chunk is within the main land area, then clear trees/resources
-        -- and create the land spawn areas (guaranteed land with a circle of trees)
-        if CheckIfInArea(chunkAreaCenter,landArea) then
-
-            -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
-            RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            -- RemoveDecorationsArea(surface, chunkArea)
-
-            if (SPAWN_TREE_CIRCLE_ENABLED) then
-                CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-            end
-            if (SPAWN_TREE_OCTAGON_ENABLED) then
-                CreateCropOctagon(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-            end
-            if (SPAWN_MOAT_CHOICE_ENABLED) then
-                if (spawn.moat) then
-                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-                end
-            end
-        end
-
-        -- Provide starting resources
-        -- This is run on the bottom, right chunk of the spawn area which should be
-        -- generated last, so it should work everytime.
-        -- if CheckIfInArea(spawnPosOffset,chunkArea) then
-        --     CreateWaterStrip(surface,
-        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y},
-        --                     WATER_SPAWN_LENGTH)
-        --     CreateWaterStrip(surface,
-        --                     {x=spawn.pos.x+WATER_SPAWN_OFFSET_X, y=spawn.pos.y+WATER_SPAWN_OFFSET_Y+1},
-        --                     WATER_SPAWN_LENGTH)
-        --     GenerateStartingResources(surface, spawn.pos)
-        -- end
-    end
-end
-
---------------------------------------------------------------------------------
--- Surface Generation Functions
---------------------------------------------------------------------------------
-
--- RSO_MODE = 1
--- VANILLA_MODE = 2
-
--- function CreateGameSurface(dww)
---     local mapSettings =  game.surfaces["nauvis"].map_gen_settings
-
---     if CMD_LINE_MAP_GEN then
---         mapSettings.terrain_segmentation = global.clMapGen.terrain_segmentation
---         mapSettings.water = global.clMapGen.water
---         mapSettings.starting_area = global.clMapGen.starting_area
---         mapSettings.peaceful_mode = global.clMapGen.peaceful_mode
---         mapSettings.seed = global.clMapGen.seed
---         mapSettings.height = global.clMapGen.height
---         mapSettings.width = global.clMapGen.width
---         mapSettings.autoplace_controls = global.clMapGen.autoplace_controls
---         mapSettings.cliff_settings = global.clMapGen.cliff_settings
---         mapSettings.property_expression_names = global.clMapGen.property_expression_names
---     end
-
---     -- To use RSO resources, we have to disable vanilla ore generation
---     if (mode == RSO_MODE) then
---         mapSettings.autoplace_controls["coal"].size="none"
---         mapSettings.autoplace_controls["copper-ore"].size="none"
---         mapSettings.autoplace_controls["iron-ore"].size="none"
---         mapSettings.autoplace_controls["stone"].size="none"
---         mapSettings.autoplace_controls["uranium-ore"].size="none"
---         mapSettings.autoplace_controls["crude-oil"].size="none"
---         mapSettings.autoplace_controls["enemy-base"].size="none"
---     end
-
---     local surface = game.create_surface(GAME_SURFACE_NAME,mapSettings)
---     surface.set_tiles({{name = "out-of-map",position = {1,1}}})
--- end
 
 
 --------------------------------------------------------------------------------

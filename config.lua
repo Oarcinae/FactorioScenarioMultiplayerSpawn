@@ -224,13 +224,18 @@ SPAWN_TREE_OCTAGON_ENABLED = true
 -- +/- this in x and y direction
 SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
 
--- Warning area has reduced aliens
+-- Warning area has significantly reduced aliens
 -- +/- this in x and y direction
 WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 10
+WARN_AREA_REDUCTION_RATIO = 20
 
+-- Danger area has slightly reduce aliens
+REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*30
+
+-- 1 : X (spawners alive : spawners destroyed) in this area
+REDUCED_DANGER_AREA_REDUCTION_RATIO = 5
 
 ---------------------------------------
 -- Other Forces/Teams Options
@@ -268,6 +273,16 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 MIN_ONLINE_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
+--------------------------------------------------------------------------------
+-- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
+-- These things were added from other people's requests/changes.
+-- It is very very basic only, nothing fancy.
+--------------------------------------------------------------------------------
+-- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
+ENABLE_ANTI_GRIEFING = true
+
+-- Makes blueprint ghosts dissapear if they have been placed longer than this
+GHOST_TIME_TO_LIVE = 15 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
@@ -317,11 +332,27 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 --------------------------------------------------------------------------------
 -- Alien Options
--- In past versions I had a way to config map settings here to be used for cmd
--- line launching, but now you should just be using --map-settings option
--- since it works with --start-server-load-scenario
--- Read the README.md file for instructions.
+-- I WANTED to use --map-settings but it doesn't seem to work with
+-- cmd line --start-server-load-scenario. So we're back to this. Le sigh.
 --------------------------------------------------------------------------------
+
+-- You must disable this if you want to configure the enemy settings from
+-- the game GUI.
+CMD_LINE_GEN = true
+
+-- Enable/Disable enemy expansion
+ENEMY_EXPANSION = true
+
+-- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
+ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DIVISOR = 10
+ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
+ENEMY_POLLUTION_FACTOR_DIVISOR = 10
+ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
+ENEMY_DESTROY_FACTOR_DIVISOR = 1
+
+-- Adjust biter type spawning based on distance to spawns.
+OARC_MODIFIED_ENEMY_SPAWNING = true
 
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
@@ -336,6 +367,9 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 -------------------------------------------------------------------------------
 -- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
+
+OARC_DIFFICULTY_CUSTOM = false
+
 -- DEBUG prints for me
 global.oarcDebugEnabled = false
 

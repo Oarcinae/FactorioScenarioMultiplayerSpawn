@@ -4,6 +4,8 @@
 -- Code that handles everything regarding giving each player a separate spawn
 -- Includes the GUI stuff
 
+require("lib/oarc_utils")
+require("config")
 
 --------------------------------------------------------------------------------
 -- EVENT RELATED FUNCTIONS
@@ -33,6 +35,11 @@ function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
     local chunkArea = event.area
     
+    -- Modify enemies first.
+    if OARC_MODIFIED_ENEMY_SPAWNING then
+        DowngradeWormsDistanceBasedOnChunkGenerate(event)
+    end
+
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it does a few things like make the area
     -- safe and provide a guaranteed area of land and water tiles.
@@ -127,10 +134,149 @@ function FindUnusedSpawns(event)
     end
 end
 
+-- Clear the spawn areas.
+-- This should be run inside the chunk generate event and be given a list of all
+-- unique spawn points.
+-- This clears enemies in the immediate area, creates a slightly safe area around it,
+-- It no LONGER generates the resources though as that is now handled in a delayed event!
+function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
+    for name,spawn in pairs(spawnPointTable) do
+
+        -- Create a bunch of useful area and position variables
+        local landArea = GetAreaAroundPos(spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+CHUNK_SIZE)
+        local safeArea = GetAreaAroundPos(spawn.pos, SAFE_AREA_TILE_DIST)
+        local warningArea = GetAreaAroundPos(spawn.pos, WARNING_AREA_TILE_DIST)
+        local reducedArea = GetAreaAroundPos(spawn.pos, REDUCED_DANGER_AREA_TILE_DIST)
+        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
+                                         y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
+        local spawnPosOffset = {x=spawn.pos.x+ENFORCE_LAND_AREA_TILE_DIST,
+                                         y=spawn.pos.y+ENFORCE_LAND_AREA_TILE_DIST}
+
+        -- Make chunks near a spawn safe by removing enemies
+        if CheckIfInArea(chunkAreaCenter,safeArea) then
+            RemoveAliensInArea(surface, chunkArea)
+        
+        -- Create a warning area with heavily reduced enemies
+        elseif CheckIfInArea(chunkAreaCenter,warningArea) then
+            ReduceAliensInArea(surface, chunkArea, WARN_AREA_REDUCTION_RATIO)
+            -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
+            RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
+
+        -- Create a third area with moderatly reduced enemies
+        elseif CheckIfInArea(chunkAreaCenter,reducedArea) then
+            ReduceAliensInArea(surface, chunkArea, REDUCED_DANGER_AREA_REDUCTION_RATIO)
+            -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
+            RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
+        end
+
+        -- If the chunk is within the main land area, then clear trees/resources
+        -- and create the land spawn areas (guaranteed land with a circle of trees)
+        if CheckIfInArea(chunkAreaCenter,landArea) then
+
+            -- Remove trees/resources inside the spawn area
+            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
+            RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+            RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+            -- RemoveDecorationsArea(surface, chunkArea)
+
+            if (SPAWN_TREE_CIRCLE_ENABLED) then
+                CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+            end
+            if (SPAWN_TREE_OCTAGON_ENABLED) then
+                CreateCropOctagon(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+            end
+            if (SPAWN_MOAT_CHOICE_ENABLED) then
+                if (spawn.moat) then
+                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+                end
+            end
+        end
+    end
+end
+
+-- I wrote this to ensure everyone gets safer spawns regardless of evolution level.
+-- This is intended to downgrade any biters/spitters spawning near player bases.
+-- I'm not sure the performance impact of this but I'm hoping it's not bad.
+function ModifyEnemySpawnsNearPlayerStartingAreas(event)
+
+    if (not event.entity or not (event.entity.force.name == "enemy")) then
+        DebugPrint("ModifyBiterSpawns - Unexpected use.")
+        return
+    end
+
+    local enemy_pos = event.entity.position
+    local surface = event.entity.surface
+    local enemy_name = event.entity.name
+
+    for name,spawn in pairs(global.uniqueSpawns) do
+        if (getDistance(enemy_pos, spawn.pos) < WARNING_AREA_TILE_DIST) then
+            if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
+                event.entity.destroy()
+                surface.create_entity{name = "medium-biter", position = pos, force = game.forces.enemy}
+                DebugPrint("Downgraded biter close to spawn.")
+            elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
+                event.entity.destroy()
+                surface.create_entity{name = "medium-spitter", position = pos, force = game.forces.enemy}
+                DebugPrint("Downgraded spitter close to spawn.")
+            end
+        elseif (getDistance(enemy_pos, spawn.pos) < REDUCED_DANGER_AREA_REDUCTION_RATIO) then
+            if (enemy_name == "behemoth-biter") then
+                event.entity.destroy()
+                surface.create_entity{name = "medium-biter", position = pos, force = game.forces.enemy}
+                DebugPrint("Downgraded biter further from spawn.")
+            elseif (enemy_name == "behemoth-spitter") then
+                event.entity.destroy()
+                surface.create_entity{name = "medium-spitter", position = pos, force = game.forces.enemy}
+                DebugPrint("Downgraded spitter further from spawn.")
+            end
+        end
+    end
+end
 
 --------------------------------------------------------------------------------
 -- NON-EVENT RELATED FUNCTIONS
 --------------------------------------------------------------------------------
+
+-- Generate the basic starter resource around a given location.
+function GenerateStartingResources(surface, pos)
+    local stonePos = {x=pos.x+START_RESOURCE_STONE_POS_X,
+                  y=pos.y+START_RESOURCE_STONE_POS_Y}
+    local coalPos = {x=pos.x+START_RESOURCE_COAL_POS_X,
+                  y=pos.y+START_RESOURCE_COAL_POS_Y}
+    local copperOrePos = {x=pos.x+START_RESOURCE_COPPER_POS_X,
+                  y=pos.y+START_RESOURCE_COPPER_POS_Y}
+    local ironOrePos = {x=pos.x+START_RESOURCE_IRON_POS_X,
+                  y=pos.y+START_RESOURCE_IRON_POS_Y}
+    local uraniumOrePos = {x=pos.x+START_RESOURCE_URANIUM_POS_X,
+                  y=pos.y+START_RESOURCE_URANIUM_POS_Y}
+
+    -- Tree generation is taken care of in chunk generation
+
+    -- Generate oil patches
+    oil_patch_x=pos.x+START_RESOURCE_OIL_POS_X
+    oil_patch_y=pos.y+START_RESOURCE_OIL_POS_Y
+    for i=1,START_RESOURCE_OIL_NUM_PATCHES do
+        surface.create_entity({name="crude-oil", amount=START_OIL_AMOUNT,
+                    position={oil_patch_x, oil_patch_y}})
+        oil_patch_x=oil_patch_x+START_RESOURCE_OIL_X_OFFSET
+        oil_patch_y=oil_patch_y+START_RESOURCE_OIL_Y_OFFSET
+    end
+
+    -- Generate Stone
+    GenerateResourcePatch(surface, "stone", START_RESOURCE_STONE_SIZE, stonePos, START_STONE_AMOUNT)
+
+    -- Generate Coal
+    GenerateResourcePatch(surface, "coal", START_RESOURCE_COAL_SIZE, coalPos, START_COAL_AMOUNT)
+
+    -- Generate Copper
+    GenerateResourcePatch(surface, "copper-ore", START_RESOURCE_COPPER_SIZE, copperOrePos, START_COPPER_AMOUNT)
+
+    -- Generate Iron
+    GenerateResourcePatch(surface, "iron-ore", START_RESOURCE_IRON_SIZE, ironOrePos, START_IRON_AMOUNT)
+
+    -- Generate Uranium
+    GenerateResourcePatch(surface, "uranium-ore", START_RESOURCE_URANIUM_SIZE, uraniumOrePos, START_URANIUM_AMOUNT)
+end
 
 -- Add a spawn to the shared spawn global
 -- Used for tracking which players are assigned to it, where it is and if
@@ -306,7 +452,7 @@ end
 
 function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
 
-    -- Make sure the area is super safe.
+    -- DOUBLE CHECK and make sure the area is super safe.
     ClearNearbyEnemies(spawn, SAFE_AREA_TILE_DIST, game.surfaces[GAME_SURFACE_NAME])
 
     -- Create the spawn resources here

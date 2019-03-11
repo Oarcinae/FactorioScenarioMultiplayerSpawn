@@ -124,7 +124,7 @@ function DisplaySpawnOptions(player)
         soloSpawnFlow.add{name = "isolated_spawn_main_team_radio",
                         type = "radiobutton",
                         caption="Join Main Team (shared research)",
-                        state=false}                  
+                        state=true}                  
         soloSpawnFlow.add{name = "isolated_spawn_new_team_radio",
                         type = "radiobutton",
                         caption="Create Your Own Team (own research tree)",
