@@ -196,7 +196,7 @@ function DisplaySpawnOptions(player)
                 "If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
                 my_note_style)
     end
-    spawn_distance_notes="Near spawn is between " .. NEAR_MIN_DIST .. "-" .. NEAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
+    local spawn_distance_notes="Near spawn is between " .. NEAR_MIN_DIST .. "-" .. NEAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
     "Far spawn is between " .. FAR_MIN_DIST .. "-" .. FAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
     "Solo spawns are dangerous! Expect a fight to reach other players."
     AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
@@ -660,8 +660,8 @@ function SpawnCtrlGuiClick(event)
             return
         end
 
-        joinQueueIndex = event.element.parent.join_queue_dropdown.selected_index
-        joinQueuePlayerChoice = event.element.parent.join_queue_dropdown.get_item(joinQueueIndex)
+        local joinQueueIndex = event.element.parent.join_queue_dropdown.selected_index
+        local joinQueuePlayerChoice = event.element.parent.join_queue_dropdown.get_item(joinQueueIndex)
 
         if ((game.players[joinQueuePlayerChoice] == nil) or
             (not game.players[joinQueuePlayerChoice].connected)) then
@@ -709,7 +709,7 @@ function SpawnCtrlGuiClick(event)
                 end
             
                 -- Spawn the player
-                joiningPlayer = game.players[joinQueuePlayerChoice]
+                local joiningPlayer = game.players[joinQueuePlayerChoice]
                 ChangePlayerSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
                 SendPlayerToSpawn(joiningPlayer)
                 GivePlayerStarterItems(joiningPlayer)
@@ -810,7 +810,7 @@ function DisplayBuddySpawnOptions(player)
                 "You can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
                 my_note_style)
     end
-    spawn_distance_notes="Near spawn is between " .. NEAR_MIN_DIST .. "-" .. NEAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
+    local spawn_distance_notes="Near spawn is between " .. NEAR_MIN_DIST .. "-" .. NEAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
     "Far spawn is between " .. FAR_MIN_DIST .. "-" .. FAR_MAX_DIST ..  " chunks away from the center of the map.\n"..
     "Solo spawns are dangerous! Expect a fight to reach other players."
     AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
@@ -852,7 +852,7 @@ function BuddySpawnOptsGuiClick(event)
 
         -- Remove them from the buddy list when they cancel
         for i=#global.waitingBuddies,1,-1 do
-            name = global.waitingBuddies[i]
+            local name = global.waitingBuddies[i]
             if (name == player.name) then
                 table.remove(global.waitingBuddies, i)
             end
@@ -866,9 +866,9 @@ function BuddySpawnOptsGuiClick(event)
     if ((elemName == "buddy_spawn_request_near") or
         (elemName == "buddy_spawn_request_far")) then
 
-        buddySpawnGui = player.gui.center.buddy_spawn_opts
+        local buddySpawnGui = player.gui.center.buddy_spawn_opts
 
-        dropDownIndex = buddySpawnGui.waiting_buddies_dropdown.selected_index
+        local dropDownIndex = buddySpawnGui.waiting_buddies_dropdown.selected_index
         if (dropDownIndex > 0) then
             buddyChoice = buddySpawnGui.waiting_buddies_dropdown.get_item(dropDownIndex)
         else
@@ -876,7 +876,7 @@ function BuddySpawnOptsGuiClick(event)
             return
         end
 
-        buddyIsStillWaiting = false
+        local buddyIsStillWaiting = false
         for _,buddyName in pairs(global.waitingBuddies) do
             if (buddyChoice == buddyName) then
                 if (game.players[buddyChoice]) then
@@ -975,7 +975,7 @@ function BuddySpawnWaitMenuClick(event)
         player.gui.center.buddy_wait_menu.destroy() 
         DisplaySpawnOptions(player)
 
-        buddy = game.players[global.buddySpawnOptions[player.name].buddyChoice]
+        local buddy = game.players[global.buddySpawnOptions[player.name].buddyChoice]
 
         if (buddy.gui.center.buddy_request_menu ~= nil) then
             buddy.gui.center.buddy_request_menu.destroy() 
@@ -1008,7 +1008,7 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
     -- Warnings and explanations...
     AddLabel(sGui, "warning_lbl1", requestingBuddyName .. " is requesting a buddy spawn from you!", my_warning_style)
     
-    teamText = "error!"
+    local teamText = "error!"
     if (global.buddySpawnOptions[requestingBuddyName].joinMainTeamRadio) then
         teamText = "the main team"
     elseif (global.buddySpawnOptions[requestingBuddyName].joinOwnTeamRadio) then
@@ -1017,12 +1017,12 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
         teamText = "a buddy team"
     end
 
-    moatText = " "
+    local moatText = " "
     if (global.buddySpawnOptions[requestingBuddyName].moatChoice) then
         moatText = " surrounded by a moat "
     end
 
-    distText = "error!"
+    local distText = "error!"
     if (global.buddySpawnOptions[requestingBuddyName].distChoice == "buddy_spawn_request_near") then
         distText = "near to the center of the map!"
     elseif (global.buddySpawnOptions[requestingBuddyName].distChoice == "buddy_spawn_request_far") then
@@ -1030,7 +1030,7 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
     end
 
 
-    requestText = requestingBuddyName .. " would like to join " .. teamText .. " next to you" .. moatText .. distText
+    local requestText = requestingBuddyName .. " would like to join " .. teamText .. " next to you" .. moatText .. distText
     AddLabel(sGui, "note_lbl1", requestText, my_warning_style)
     AddSpacer(sGui, "note_spacer1")  
 
@@ -1061,8 +1061,8 @@ function BuddySpawnRequestMenuClick(event)
     -- Check if it's a button press and lookup the matching buddy info
     if ((elemName == "accept_buddy_request") or (elemName == "decline_buddy_request")) then
 
-        requesterName = nil
-        requesterOptions = {}
+        local requesterName = nil
+        local requesterOptions = {}
         for name,opts in pairs(global.buddySpawnOptions) do
             if (opts.buddyChoice == player.name) then
                 requesterName = name
@@ -1120,6 +1120,7 @@ function BuddySpawnRequestMenuClick(event)
         end
 
         -- Create that spawn in the global vars
+        local buddySpawn = {x=0,y=0}
         if (requesterOptions.moatChoice) then
             buddySpawn = {x=newSpawn.x+(ENFORCE_LAND_AREA_TILE_DIST*2)+10, y=newSpawn.y}
         else
@@ -1152,7 +1153,7 @@ function BuddySpawnRequestMenuClick(event)
         player.gui.center.buddy_request_menu.destroy() 
         DisplaySpawnOptions(player)
 
-        requesterBuddy = game.players[requesterName]
+        local requesterBuddy = game.players[requesterName]
 
         if (requesterBuddy.gui.center.buddy_wait_menu ~= nil) then
             requesterBuddy.gui.center.buddy_wait_menu.destroy() 

@@ -82,6 +82,9 @@ ENABLE_REGROWTH = false
 -- This can also be used without enabling regrowth.
 ENABLE_ABANDONED_BASE_REMOVAL = true
 
+-- Enable the new 0.17 research queue by default.
+ENABLE_RESEARCH_QUEUE = true
+
 --------------------------------------------------------------------------------
 -- Spawn Options
 --------------------------------------------------------------------------------
@@ -342,12 +345,12 @@ CMD_LINE_GEN = true
 ENEMY_EXPANSION = true
 
 -- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = false -- Set this to true to disable time based evolution completely.
+ENEMY_TIME_FACTOR_DISABLE = true -- Set this to true to disable time based evolution completely.
 ENEMY_TIME_FACTOR_DIVISOR = 10
 ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
 ENEMY_POLLUTION_FACTOR_DIVISOR = 10
 ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
-ENEMY_DESTROY_FACTOR_DIVISOR = 1
+ENEMY_DESTROY_FACTOR_DIVISOR = 2
 
 -- Adjust biter type spawning based on distance to spawns.
 OARC_MODIFIED_ENEMY_SPAWNING = true

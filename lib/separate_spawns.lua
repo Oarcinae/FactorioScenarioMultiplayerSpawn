@@ -60,7 +60,7 @@ function FindUnusedSpawns(event)
             global.playerSpawns[player.name] = nil
         end
       
-        -- Remove them from the delayer spawn queue if they are in it
+        -- Remove them from the delayed spawn queue if they are in it
         for i=#global.delayedSpawns,1,-1 do
             delayedSpawn = global.delayedSpawns[i]
 
@@ -104,7 +104,7 @@ function FindUnusedSpawns(event)
 				OarcRegrowthMarkForRemoval(spawnPos, 10)
 				global.chunk_regrow.force_removal_flag = game.tick
 			else
-				table.insert(global.unusedSpawns, global.uniqueSpawns[player.name])
+				-- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
                 global.uniqueSpawns[player.name] = nil
 	            SendBroadcastMsg(player.name .. " base was freed up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
 			end
@@ -351,40 +351,70 @@ end
 -- Initializes the globals used to track the special spawn and player
 -- status information
 function InitSpawnGlobalsAndForces()
-    -- Containes an array of all player spawns
-    -- A secondary array tracks whether the character will respawn there.
+    
+    -- This contains each player's spawn point. Literally where they will respawn.
+    -- There is a way in game to change this under one of the little menu features I added.
     if (global.playerSpawns == nil) then
         global.playerSpawns = {}
     end
+
+    -- This is the most important table. It is a list of all the unique spawn points.
+    -- This is what chunk generation checks against.
     if (global.uniqueSpawns == nil) then
         global.uniqueSpawns = {}
     end
+
+    -- This keeps a list of any player that has shared their base.
+    -- Each entry contains information about if it's open, spawn pos, and players in the group.
     if (global.sharedSpawns == nil) then
         global.sharedSpawns = {}
     end
-    if (global.unusedSpawns == nil) then
-        global.unusedSpawns = {}
-    end
+
+    -- This seems to be unused right now, but I had plans to re-use spawn points in the past.
+    -- if (global.unusedSpawns == nil) then
+    --     global.unusedSpawns = {}
+    -- end
+
+    -- Each player has an option to change their respawn which has a cooldown when used.
+    -- Other similar abilities/functions that require cooldowns could be added here.
     if (global.playerCooldowns == nil) then
         global.playerCooldowns = {}
     end
+
+    -- List of players in the "waiting room" for a buddy spawn.
+    -- They show up in the list to select when doing a buddy spawn.
     if (global.waitingBuddies == nil) then
         global.waitingBuddies = {}
     end
+
+    -- Players who have made a spawn choice get put into this list while waiting.
+    -- An on_tick event checks when it expires and then places down the base resources, and teleports the player.
+    -- Go look at DelayedSpawnOnTick() for more info.
     if (global.delayedSpawns == nil) then
         global.delayedSpawns = {}
     end
+
+    -- This is what I use to communicate a buddy spawn request between the buddies.
+    -- This contains information of who is asking, and what options were selected.
     if (global.buddySpawnOptions == nil) then
         global.buddySpawnOptions = {}
     end
 
-    game.create_force(MAIN_FORCE)
-    game.forces[MAIN_FORCE].set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    -- Name a new force to be the default force.
+    -- This is what any new player is assigned to when they join, even before they spawn.
+    local main_force = game.create_force(MAIN_FORCE)
+    main_force.set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     
+    -- Share vision with other forces.
     if ENABLE_SHARED_TEAM_VISION then
         game.forces[MAIN_FORCE].share_chart = true
     end
 
+    if ENABLE_RESEARCH_QUEUE then
+        game.forces[MAIN_FORCE].research_queue_enabled = true
+    end
+
+    -- No PVP. This is where you would change things if you want PVP I guess.
     SetCeaseFireBetweenAllForces()
     SetFriendlyBetweenAllForces()
     if (ENABLE_ANTI_GRIEFING) then
@@ -517,6 +547,9 @@ function CreatePlayerCustomForce(player)
         newForce = game.create_force(player.name)
         if ENABLE_SHARED_TEAM_VISION then
             newForce.share_chart = true
+        end
+        if ENABLE_RESEARCH_QUEUE then
+            newForce.research_queue_enabled = true
         end
         -- Chart silo areas if necessary
         if FRONTIER_ROCKET_SILO_MODE and ENABLE_SILO_VISION then
