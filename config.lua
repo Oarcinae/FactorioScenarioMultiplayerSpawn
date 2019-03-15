@@ -55,7 +55,7 @@ FRONTIER_ROCKET_SILO_MODE = true
 
 -- Enable Undecorator
 -- Removes decorative items to reduce save file size.
-ENABLE_UNDECORATOR = false
+ENABLE_UNDECORATOR = true
 
 -- Enable Tags
 ENABLE_TAGS = true
@@ -84,6 +84,23 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 
 -- Enable the new 0.17 research queue by default.
 ENABLE_RESEARCH_QUEUE = true
+
+--------------------------------------------------------------------------------
+-- MAP CONFIGURATION OPTIONS
+-- In past versions I had a way to config map settings here to be used for cmd
+-- line launching, but now you should just be using --map-gen-settings and 
+-- --map-settings option since it works with --start-server-load-scenario
+-- Read the README.md file for instructions.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Alien Options
+--------------------------------------------------------------------------------
+
+-- Adjust enemy spawning based on distance to spawns. All it does it make things
+-- more balanced based on your distance and makes the game a little easier.
+-- No behemoth worms everywhere just because you spawned far away.
+OARC_MODIFIED_ENEMY_SPAWNING = true
 
 --------------------------------------------------------------------------------
 -- Spawn Options
@@ -141,11 +158,6 @@ FAR_MAX_DIST = 300
 -- Resource & Spawn Circle Options
 ---------------------------------------
 
--- Enable this to have a vanilla style starting spawn for all new spawns.
--- This scenario normally gives you a fixed circle with resources.
--- USE_VANILLA_STARTING_SPAWN = true
--- TODO - Requires pre-allocating spawns...
-
 -- Allow players to choose to spawn with a moat
 SPAWN_MOAT_CHOICE_ENABLED = true
 -- If you change the spawn area size, you might have to adjust this as well
@@ -156,66 +168,129 @@ MOAT_SIZE_MODIFIER = 1
 -- If you make this much bigger than a few chunks, good luck.
 ENFORCE_LAND_AREA_TILE_DIST = CHUNK_SIZE*1.8
 
--- Location of water strip (horizontal)
-WATER_SPAWN_OFFSET_X = -4
-WATER_SPAWN_OFFSET_Y = -38
-WATER_SPAWN_LENGTH = 8
 
--- Start resource amounts (per tile/oil spot)
-START_IRON_AMOUNT = 1500
-START_COPPER_AMOUNT = 1500
-START_STONE_AMOUNT = 1000
-START_COAL_AMOUNT = 1500
-START_URANIUM_AMOUNT = 1000
-START_OIL_AMOUNT = 300000
+-- This is where you can modify what resources spawn, how much, where, etc.
+-- Once you have a config you like, it's a good idea to save it for later use
+-- so you don't lost it if you update the scenario.
+OARC_CFG = {
+    -- Misc spawn related config.
+    gen_settings = {
+        -- Start resource shape. true = circle, false = square.
+        resources_circle_shape = true,
+        -- Force the land area circle at the spawn to be fully grass
+        force_grass = true,
+        -- Spawn a circle/octagon of trees around the base outline.
+        tree_circle = true,
+        tree_octagon = false,
+    },
+    -- Location of water strip (horizontal)
+    water = {
+        x_offset = -4,
+        y_offset = -48,
+        length = 8
+    },
+    -- Handle placement of starting resources -- STILL WIP
+    resource_rand_pos_settings =
+    {
+        -- Autoplace resources (randomly in circle)
+        -- This will ignore the fixed x_offset/y_offset values in resource_tiles.
+        -- Only works for resource_tiles at the moment, not oil patches/water.
+        enabled = false,
+        -- Distance from center of spawn that resources are placed.
+        radius = 48
+    },
+    -- Resource tiles
+    resource_tiles =
+    {
+        ["iron-ore"] = 
+        {
+            amount = 1500,
+            size = 16,
+            x_offset = -29,
+            y_offset = 16
+        },
+        ["copper-ore"] = 
+        {
+            amount = 1500,
+            size = 14,
+            x_offset = -28,
+            y_offset = -3
+        },
+        ["stone"] = 
+        {
+            amount = 1000,
+            size = 12,
+            x_offset = -27,
+            y_offset = -34
+        },
+        ["coal"] = 
+        {
+            amount = 1500,
+            size = 12,
+            x_offset = -27,
+            y_offset = -20
+        }--,
+        -- ["uranium-ore"] = 
+        -- {
+        --     amount = 0,
+        --     size = 0,
+        --     x_offset = 17,
+        --     y_offset = -34
+        -- }
 
--- Start resource shape
--- If this is true, it will be a circle
--- If false, it will be a square
-ENABLE_RESOURCE_SHAPE_CIRCLE = true
+        -- ANGELS example
+        -- ["angels-ore1"] = 
+        -- {
+        --     amount = 1500,
+        --     size = 16,
+        --     x_offset = -29,
+        --     y_offset = 16
+        -- },
+        -- ["angels-ore3"] = 
+        -- {
+        --     amount = 1500,
+        --     size = 14,
+        --     x_offset = -28,
+        --     y_offset = -3
+        -- },
+        -- ["angels-ore5"] = 
+        -- {
+        --     amount = 1000,
+        --     size = 12,
+        --     x_offset = -27,
+        --     y_offset = -34
+        -- },
+        -- ["angels-ore6"] = 
+        -- {
+        --     amount = 1500,
+        --     size = 12,
+        --     x_offset = -27,
+        --     y_offset = -20
+        -- },
+        -- ["coal"] = 
+        -- {
+        --     amount = 0,
+        --     size = 0,
+        --     x_offset = 17,
+        --     y_offset = -34
+        -- }
+    },
+    -- Special resources like oil
+    resource_patches =
+    {
+        ["crude-oil"] = 
+        {
+            num_patches = 2,
+            amount = 300000,
+            x_offset_start = 0,
+            y_offset_start = 48,
+            x_offset_next = 4,
+            y_offset_next = 0
+        }
+    }
+}
 
--- Start resource position and size
--- Position is relative to player starting location
-START_RESOURCE_STONE_POS_X = -27
-START_RESOURCE_STONE_POS_Y = -34
-START_RESOURCE_STONE_SIZE = 12
 
-START_RESOURCE_COAL_POS_X = -27
-START_RESOURCE_COAL_POS_Y = -20
-START_RESOURCE_COAL_SIZE = 12
-
-START_RESOURCE_COPPER_POS_X = -28
-START_RESOURCE_COPPER_POS_Y = -3
-START_RESOURCE_COPPER_SIZE = 14
-
-START_RESOURCE_IRON_POS_X = -29
-START_RESOURCE_IRON_POS_Y = 16
-START_RESOURCE_IRON_SIZE = 16
-
-START_RESOURCE_URANIUM_POS_X = 17
-START_RESOURCE_URANIUM_POS_Y = -34
-START_RESOURCE_URANIUM_SIZE = 0 -- Disabled by default.
-
--- Specify 2 oil spot locations for starting oil.
-START_RESOURCE_OIL_NUM_PATCHES = 2
--- The first patch
-START_RESOURCE_OIL_POS_X = -39
-START_RESOURCE_OIL_POS_Y = -2
--- How far each patch is offset from the others and in which direction
--- Default (x=0, y=-4) means that patches spawn in a vertical row downwards.
-START_RESOURCE_OIL_X_OFFSET = 0
-START_RESOURCE_OIL_Y_OFFSET = -4
-
-
--- Force the land area circle at the spawn to be fully grass
-ENABLE_SPAWN_FORCE_GRASS = true
-
--- Set this to true for the spawn area to be surrounded by a circle of trees
-SPAWN_TREE_CIRCLE_ENABLED = false
-
--- Set this to true for the spawn area to be surrounded by an octagon of trees
--- I don't recommend using this with moatsm
-SPAWN_TREE_OCTAGON_ENABLED = true
 
 ---------------------------------------
 -- Safe Spawn Area Options
@@ -324,55 +399,21 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
 
 --------------------------------------------------------------------------------
--- MAP CONFIGURATION OPTIONS
--- In past versions I had a way to config map settings here to be used for cmd
--- line launching, but now you should just be using --map-gen-settings option
--- since it works with --start-server-load-scenario
--- Read the README.md file for instructions.
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Alien Options
--- I WANTED to use --map-settings but it doesn't seem to work with
--- cmd line --start-server-load-scenario. So we're back to this. Le sigh.
---------------------------------------------------------------------------------
-
--- You must disable this if you want to configure the enemy settings from
--- the game GUI.
-CMD_LINE_GEN = true
-
--- Enable/Disable enemy expansion
-ENEMY_EXPANSION = true
-
--- Divide the alien evolution factors by this number to reduce it (or multiply if < 1)
-ENEMY_TIME_FACTOR_DISABLE = true -- Set this to true to disable time based evolution completely.
-ENEMY_TIME_FACTOR_DIVISOR = 10
-ENEMY_POLLUTION_FACTOR_DISABLE = false -- Set this to true to disable pollution based evolution completely.
-ENEMY_POLLUTION_FACTOR_DIVISOR = 10
-ENEMY_DESTROY_FACTOR_DISABLE = false -- Set this to true to disable spawner destruction based evolution completely.
-ENEMY_DESTROY_FACTOR_DIVISOR = 2
-
--- Adjust biter type spawning based on distance to spawns.
-OARC_MODIFIED_ENEMY_SPAWNING = true
-
---------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
 -- These things were added from other people's requests/changes and are disabled by default.
 --------------------------------------------------------------------------------
 -- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
--- ENABLE_ANTI_GRIEFING = false
+ENABLE_ANTI_GRIEFING = true
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
--- GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 
 -------------------------------------------------------------------------------
 -- DEBUG / Custom stuff
 --------------------------------------------------------------------------------
 
-OARC_DIFFICULTY_CUSTOM = false
-
--- DEBUG prints for me
-global.oarcDebugEnabled = false
+-- DEBUG prints for me in game.
+global.oarcDebugEnabled = true
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
