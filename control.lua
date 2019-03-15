@@ -58,6 +58,23 @@ GAME_SURFACE_NAME="nauvis"
 script.on_init(function(event)
 
 
+    -- local game_settings = game.surfaces[GAME_SURFACE_NAME].map_gen_settings
+    -- game_settings.starting_points = {{x=-3000,   y=-3000},
+    --                                  {x=-3000,   y=3000},
+    --                                  {x=3000,    y=-3000},
+    --                                  {x=3000,    y=3000}}
+    -- game_settings.property_expression_names.elevation = "0_17-island"
+    -- game.surfaces[GAME_SURFACE_NAME].map_gen_settings = game_settings
+
+    -- -- Delete the starting chunks that make it into the game before settings are changed.
+    -- for chunk in game.surfaces[GAME_SURFACE_NAME].get_chunks() do
+    --     -- Don't delete the chunk that might contain players lol.
+    --     -- This is really only a problem for launching AS the host. Not headless
+    --     if ((not chunk.x == 0) and (not chunk.y == 0)) then
+    --         game.surfaces[GAME_SURFACE_NAME].delete_chunk({x=chunk.x, y=chunk.y})
+    --     end
+    -- end
+
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
     end
@@ -91,10 +108,12 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 end)
 
 
+local first_chunk_generated_flag = false
 ----------------------------------------
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
+
     if ENABLE_REGROWTH then
         OarcRegrowthChunkGenerate(event.area.left_top)
     end
@@ -175,7 +194,7 @@ script.on_event(defines.events.on_player_created, function(event)
     
     -- Move the player to the game surface immediately.
     -- May change this to Lobby in the future.
-    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    game.players[event.player_index].teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])

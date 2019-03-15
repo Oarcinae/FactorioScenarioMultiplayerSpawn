@@ -372,6 +372,12 @@ function InitSpawnGlobalsAndForces()
         global.uniqueSpawns = {}
     end
 
+    -- My attempt at trying to support vanilla spawns
+    -- 
+    if (global.vanillaSpawns == nil) then
+        global.vanillaSpawns = {}
+    end
+
     -- This keeps a list of any player that has shared their base.
     -- Each entry contains information about if it's open, spawn pos, and players in the group.
     if (global.sharedSpawns == nil) then
@@ -411,7 +417,7 @@ function InitSpawnGlobalsAndForces()
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = game.create_force(MAIN_FORCE)
-    main_force.set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
     
     -- Share vision with other forces.
     if ENABLE_SHARED_TEAM_VISION then

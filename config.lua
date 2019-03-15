@@ -45,6 +45,11 @@ SERVER_OWNER_IS_OARC = false
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
+-- Enable this to have a vanilla style starting spawn.
+-- This scenario normally gives you a fixed circle with resources.
+-- WORK IN PROGRESS - STILL IN DEV - BUGGY A.F.
+ENABLE_VANILLA_SPAWNS = true
+
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
 ENABLE_BUDDY_SPAWN = true
