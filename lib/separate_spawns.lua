@@ -199,7 +199,7 @@ end
 -- I'm not sure the performance impact of this but I'm hoping it's not bad.
 function ModifyEnemySpawnsNearPlayerStartingAreas(event)
 
-    if (not event.entity or not (event.entity.force.name == "enemy")) then
+    if (not event.entity or not (event.entity.force.name == "enemy") or not event.entity.position) then
         DebugPrint("ModifyBiterSpawns - Unexpected use.")
         return
     end
@@ -212,21 +212,21 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
         if (getDistance(enemy_pos, spawn.pos) < WARNING_AREA_TILE_DIST) then
             if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
                 event.entity.destroy()
-                surface.create_entity{name = "medium-biter", position = pos, force = game.forces.enemy}
+                surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
                 DebugPrint("Downgraded biter close to spawn.")
             elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
                 event.entity.destroy()
-                surface.create_entity{name = "medium-spitter", position = pos, force = game.forces.enemy}
+                surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
                 DebugPrint("Downgraded spitter close to spawn.")
             end
         elseif (getDistance(enemy_pos, spawn.pos) < REDUCED_DANGER_AREA_REDUCTION_RATIO) then
             if (enemy_name == "behemoth-biter") then
                 event.entity.destroy()
-                surface.create_entity{name = "medium-biter", position = pos, force = game.forces.enemy}
+                surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
                 DebugPrint("Downgraded biter further from spawn.")
             elseif (enemy_name == "behemoth-spitter") then
                 event.entity.destroy()
-                surface.create_entity{name = "medium-spitter", position = pos, force = game.forces.enemy}
+                surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
                 DebugPrint("Downgraded spitter further from spawn.")
             end
         end
