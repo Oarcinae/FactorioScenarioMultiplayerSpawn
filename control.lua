@@ -189,7 +189,7 @@ script.on_event(defines.events.on_player_created, function(event)
     if not ENABLE_SEPARATE_SPAWNS then
         PlayerSpawnItems(event)
     else
-        SeparateSpawnsPlayerCreated(event)
+        SeparateSpawnsPlayerCreated(event.player_index)
     end
 end)
 

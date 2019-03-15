@@ -31,8 +31,8 @@
   "enemy_expansion":
   {
     "enabled": true,
-    "min_base_spacing": 3,
-    "max_expansion_distance": 10,
+    "min_base_spacing": 5,
+    "max_expansion_distance": 20,
     "friendly_base_influence_radius": 2,
     "enemy_building_influence_radius": 2,
     "building_coefficient": 0.1,

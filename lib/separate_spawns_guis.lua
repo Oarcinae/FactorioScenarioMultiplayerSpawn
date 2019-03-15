@@ -26,6 +26,10 @@ local SPAWN_GUI_MAX_HEIGHT = 1000
 -- A display gui message
 -- Meant to be display the first time a player joins.
 function DisplayWelcomeTextGui(player)
+    if (TableLength(player.gui.center.children) > 0) then
+        DebugPrint("DisplayWelcomeTextGui called while some other dialog is already displayed!")
+        return
+    end
     player.gui.center.add{name = "welcome_msg",
                             type = "frame",
                             direction = "vertical",

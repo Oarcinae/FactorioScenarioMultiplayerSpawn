@@ -10,9 +10,10 @@ I'm mostly cleaning up my 0.17 work at this point, it seems pretty stable. There
 I removed RSO because it was a pain to implement and support as a soft mod. And the mod author seemed to change his mind later about allowing my use case. Either way, I dropped it since vanilla resource gen is much better now. You have to make usre to follow the next instructions about map gen settings if you want a good experience.
 
 #### Removal of cmd line map gen settings
-0.17 allows you to provide map generation settings using --map-gen-settings when you launch the scenario from the command line. You should be using that to generate your maps. I will include an example/recommended settings with the scenario but it's up to you to make sure your game launches with whatever settings you want.
+0.17 allows you to provide map generation settings using `--map-gen-settings` when you launch the scenario from the command line. You should be using that to generate your maps. I will include an example/recommended settings with the scenario but it's up to you to make sure your game launches with whatever settings you want. Also use `--map-settings`, it seems that works for me now.
 
-It seems that --map-settings does not work. Let me know if you find out otherwise please.
+`--map-gen-settings` is for terrain / resource / map gen
+`--map-settings` is for enemy evo / pollution settings
 
 ## Instructions for starting a server
 
@@ -48,7 +49,7 @@ Example: `./factorio --start-server save_file.zip --server-settings your-server-
 Place the scenario code in the game's scenario folder, typically something like "..\Factorio\scenarios\FactorioScenarioMultiplayerSpawn\\.."
 
 Start a new game (generates a random map based the config in your map-gen-settings.json file) from the command line:
-`./factorio --start-server-load-scenario FactorioScenarioMultiplayerSpawn --map-gen-settings your-map-gen-settings.json --server-settings my-server-settings.json`
+`./factorio --start-server-load-scenario FactorioScenarioMultiplayerSpawn --map-gen-settings your-map-gen-settings.json --map-settings your-map-settings.json --server-settings my-server-settings.json`
 
 If you want to RESUME from this method, use something like this:
 `./factorio --start-server-load-latest --server-settings my-server-settings.json`
@@ -60,10 +61,11 @@ If you want to RESUME from this method, use something like this:
 settings_files="--server-settings oarc-server-settings.json --server-banlist banlist.json"
 admin_list="--server-adminlist server-adminlist.json"
 map_gen_settings="--map-gen-settings map-gen-oarc.json"
+map_settings="--map-settings map-settings-oarc.json"
 log_file="--console-log oarc-server.log"
 start_scenario_cmd="--start-server-load-scenario FactorioScenarioMultiplayerSpawn"
 
-/factorio/bin/x64/factorio $start_scenario_cmd $settings_files $log_file $admin_list $map_gen_settings
+/factorio/bin/x64/factorio $start_scenario_cmd $settings_files $log_file $admin_list $map_gen_settings $map_settings
 ```
 
 ## Configuration

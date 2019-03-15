@@ -14,8 +14,8 @@ require("config")
 -- When a new player is created, present the spawn options
 -- Assign them to the main force so they can communicate with the team
 -- without shouting.
-function SeparateSpawnsPlayerCreated(event)
-    local player = game.players[event.player_index]
+function SeparateSpawnsPlayerCreated(player_index)
+    local player = game.players[player_index]
     player.force = MAIN_FORCE
     DisplayWelcomeTextGui(player)
 end

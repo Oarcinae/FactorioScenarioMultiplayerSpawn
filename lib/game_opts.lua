@@ -5,6 +5,7 @@
 -- Main Configuration File
 require("config")
 require("lib/oarc_utils")
+require("lib/separate_spawns")
 
 function CreateGameOptionsGui(event)
     local player = game.players[event.player_index]
@@ -118,6 +119,10 @@ local function ExpandGameOptionsGui(player)
                             type = "drop-down",
                             items = player_list}
             frame.add{name="ban_player", type="button", caption="Ban Player"}
+            frame.add{name="restart_player", type="button", caption="Restart Player"}
+            
+            AddLabel(frame, "restart_warning_msg", "You might CRASH the scenario by using Restart Player. Not 100% tested yet. Will not work if player has any center gui visible.", my_longer_label_style)
+            frame.restart_warning_msg.style.font_color=my_color_red
         end
     end
 end
@@ -132,13 +137,25 @@ function GameOptionsGuiClick(event)
     end
 
     if (name == "ban_player") then
-        banIndex = event.element.parent.ban_players_dropdown.selected_index
+        local pIndex = event.element.parent.ban_players_dropdown.selected_index
 
-        if (banIndex ~= 0) then
-            banPlayer = event.element.parent.ban_players_dropdown.get_item(banIndex)
+        if (pIndex ~= 0) then
+            local banPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
             if (game.players[banPlayer]) then
-                game.ban_player(banPlayer, "Banned for griefing - Banned from admin panel.")
+                game.ban_player(banPlayer, "Banned from admin panel.")
                 DebugPrint("Banning " .. banPlayer)
+            end
+        end
+    end
+
+    if (name == "restart_player") then
+        local pIndex = event.element.parent.ban_players_dropdown.selected_index
+
+        if (pIndex ~= 0) then
+            local resetPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
+            if (game.players[resetPlayer]) then
+                SeparateSpawnsPlayerCreated(resetPlayer)
+                DebugPrint("Resetting " .. resetPlayer)
             end
         end
     end
