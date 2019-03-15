@@ -189,15 +189,22 @@ OARC_CFG = {
         y_offset = -48,
         length = 8
     },
-    -- Handle placement of starting resources -- STILL WIP
+    -- Handle placement of starting resources
     resource_rand_pos_settings =
     {
         -- Autoplace resources (randomly in circle)
         -- This will ignore the fixed x_offset/y_offset values in resource_tiles.
         -- Only works for resource_tiles at the moment, not oil patches/water.
-        enabled = false,
+        enabled = true,
         -- Distance from center of spawn that resources are placed.
-        radius = 48
+        radius = 44,
+        -- At what angle (in radians) do resources start.
+        -- 0 means starts directly east.
+        -- Resources are placed clockwise from there.
+        angle_offset = 2.32, -- 2.32 is approx SSW.
+        -- At what andle do we place the last resource.
+        -- angle_offset and angle_final determine spacing and placement.
+        angle_final = 4.46 -- 4.46 is approx NNW.
     },
     -- Resource tiles
     resource_tiles =
@@ -298,17 +305,17 @@ OARC_CFG = {
 
 -- Safe area has no aliens
 -- +/- this in x and y direction
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*5
+SAFE_AREA_TILE_DIST = CHUNK_SIZE*10
 
 -- Warning area has significantly reduced aliens
 -- +/- this in x and y direction
-WARNING_AREA_TILE_DIST = CHUNK_SIZE*10
+WARNING_AREA_TILE_DIST = CHUNK_SIZE*20
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
 WARN_AREA_REDUCTION_RATIO = 20
 
 -- Danger area has slightly reduce aliens
-REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*30
+REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*50
 
 -- 1 : X (spawners alive : spawners destroyed) in this area
 REDUCED_DANGER_AREA_REDUCTION_RATIO = 5

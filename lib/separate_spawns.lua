@@ -249,22 +249,29 @@ function GenerateStartingResources(surface, pos)
             GenerateResourcePatch(surface, t_name, t_data.size, pos, t_data.amount)
         end
     else
-        -- This places resources in a semi-circle, with a random rotation.
-        -- They will be in the sequence as defined in config.lua
-        local random_angle_offset = math.random()
+
+        -- Create list of resource tiles
+        local r_list = {}
+        for k,_ in pairs(OARC_CFG.resource_tiles) do
+            table.insert(r_list, k)
+        end
+        local shuffled_list = FYShuffle(r_list)
+
+        -- This places resources in a semi-circle
+        -- Tweak in config.lua
+        local angle_offset = rand_settings.angle_offset
         local num_resources = TableLength(OARC_CFG.resource_tiles)
-        local theta = ((math.pi) / num_resources);
+        local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
         local count = 0
-        for t_name,t_data in pairs (OARC_CFG.resource_tiles) do
-            local angle = (theta * count) + random_angle_offset;
 
-            if (angle > math.pi-0.2) then angle = angle - math.pi end
+        for _,k_name in pairs (shuffled_list) do
+            local angle = (theta * count) + angle_offset;
 
-            local tx = (rand_settings.radius * math.cos(angle+(math.pi/2))) + pos.x
-            local ty = (rand_settings.radius * math.sin(angle+(math.pi/2))) + pos.y
+            local tx = (rand_settings.radius * math.cos(angle)) + pos.x
+            local ty = (rand_settings.radius * math.sin(angle)) + pos.y
 
             local pos = {x=math.floor(tx), y=math.floor(ty)}
-            GenerateResourcePatch(surface, t_name, t_data.size, pos, t_data.amount)
+            GenerateResourcePatch(surface, k_name, OARC_CFG.resource_tiles[k_name].size, pos, OARC_CFG.resource_tiles[k_name].amount)
             count = count+1
         end
     end

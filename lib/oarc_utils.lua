@@ -87,6 +87,18 @@ function TableLength(T)
   return count
 end
 
+-- Fisher-Yares shuffle
+-- https://stackoverflow.com/questions/35572435/how-do-you-do-the-fisher-yates-shuffle-in-lua
+function FYShuffle(tInput)
+    local tReturn = {}
+    for i = #tInput, 1, -1 do
+        local j = math.random(i)
+        tInput[i], tInput[j] = tInput[j], tInput[i]
+        table.insert(tReturn, tInput[i])
+    end
+    return tReturn
+end
+
 -- Simple function to get distance between two positions.
 function getDistance(posA, posB)
     -- Get the length for each of the components x and y
