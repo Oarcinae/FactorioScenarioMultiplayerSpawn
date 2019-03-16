@@ -15,6 +15,8 @@ I removed RSO because it was a pain to implement and support as a soft mod. And 
 `--map-gen-settings` is for terrain / resource / map gen
 `--map-settings` is for enemy evo / pollution settings
 
+NEVER MIND. I'm still struggling to get `--map-settings` to work... https://forums.factorio.com/viewtopic.php?f=7&t=67813&p=413154#p413154 Bug Report Filed I guess?
+
 ## Instructions for starting a server
 
 ### STEP 1
