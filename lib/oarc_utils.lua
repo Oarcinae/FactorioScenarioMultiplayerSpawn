@@ -586,35 +586,38 @@ function DropGravestoneChests(player)
         defines.inventory.player_trash} do
         
         local inv = player.get_inventory(id)
-        
-        if ((#inv > 0) and not inv.is_empty()) then
-            for j = 1, #inv do
-                if inv[j].valid_for_read then
-                    
-                    -- Create a chest when counter is reset
-                    if (count == 0) then
-                        grave = DropEmptySteelChest(player)
-                        if (grave == nil) then
-                            -- player.print("Not able to place a chest nearby! Some items lost!")
-                            return
+
+        -- No idea how inv can be nil sometimes...?        
+        if (inv ~= nil) then
+            if ((#inv > 0) and not inv.is_empty()) then
+                for j = 1, #inv do
+                    if inv[j].valid_for_read then
+                        
+                        -- Create a chest when counter is reset
+                        if (count == 0) then
+                            grave = DropEmptySteelChest(player)
+                            if (grave == nil) then
+                                -- player.print("Not able to place a chest nearby! Some items lost!")
+                                return
+                            end
+                            grave_inv = grave.get_inventory(defines.inventory.chest)
                         end
-                        grave_inv = grave.get_inventory(defines.inventory.chest)
-                    end
-                    count = count + 1
+                        count = count + 1
 
-                    -- Copy the item stack into a chest slot.
-                    grave_inv[count].set_stack(inv[j])
+                        -- Copy the item stack into a chest slot.
+                        grave_inv[count].set_stack(inv[j])
 
-                    -- Reset counter when chest is full
-                    if (count == #grave_inv) then
-                        count = 0
+                        -- Reset counter when chest is full
+                        if (count == #grave_inv) then
+                            count = 0
+                        end
                     end
                 end
             end
-        end
 
-        -- Clear the player inventory so we don't have duplicate items lying around.
-        inv.clear()
+            -- Clear the player inventory so we don't have duplicate items lying around.
+            inv.clear()
+        end
     end
 
     if (grave ~= nil) then

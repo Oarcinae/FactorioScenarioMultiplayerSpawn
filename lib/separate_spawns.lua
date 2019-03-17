@@ -48,12 +48,9 @@ end
 
 
 -- Call this if a player leaves the game
--- Still seems to have a bug.
 function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
     if (player.online_time < MIN_ONLINE_TIME) then
-
-        DropGravestoneChests(player)
 
         -- Clear out global variables for that player
         if (global.playerSpawns[player.name] ~= nil) then
