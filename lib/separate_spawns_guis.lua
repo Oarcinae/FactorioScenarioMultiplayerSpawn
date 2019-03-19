@@ -1052,6 +1052,8 @@ function BuddySpawnRequestMenuClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
+    local requesterName = nil
+    local requesterOptions = {}
 
     if not player then
         DebugPrint("Another gui click happened with no valid player...")
@@ -1062,11 +1064,10 @@ function BuddySpawnRequestMenuClick(event)
         return -- Gui event unrelated to this gui.
     end
 
+
+
     -- Check if it's a button press and lookup the matching buddy info
     if ((elemName == "accept_buddy_request") or (elemName == "decline_buddy_request")) then
-
-        local requesterName = nil
-        local requesterOptions = {}
         for name,opts in pairs(global.buddySpawnOptions) do
             if (opts.buddyChoice == player.name) then
                 requesterName = name
@@ -1085,8 +1086,7 @@ function BuddySpawnRequestMenuClick(event)
         return -- Not a button click
     end
 
-
-    -- Check if player is cancelling the request.
+    -- Handle player accepted
     if (elemName == "accept_buddy_request") then
 
         if (game.players[requesterName].gui.center.buddy_wait_menu ~= nil) then
@@ -1152,7 +1152,7 @@ function BuddySpawnRequestMenuClick(event)
 
     end
 
-
+    -- Check if player is cancelling the request.
     if (elemName == "decline_buddy_request") then
         player.gui.center.buddy_request_menu.destroy() 
         DisplaySpawnOptions(player)
