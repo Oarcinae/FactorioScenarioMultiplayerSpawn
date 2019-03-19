@@ -114,14 +114,15 @@ function DisplaySpawnOptions(player)
                     caption="Vanilla Spawn"}
         local normal_spawn_text = "This is the default spawn behavior of a vanilla game. You join the default team in the center of the map."
         AddLabel(sGui, "normal_spawn_lbl1", normal_spawn_text, my_label_style)
-        AddSpacerLine(sGui, "normal_spawn_spacer")
+        -- AddSpacerLine(sGui, "normal_spawn_spacer")
     end
 
     -- The main spawning options. Solo near and solo far.
     -- If enable, you can also choose to be on your own team.
     local soloSpawnFlow = sGui.add{name = "spawn_solo_flow",
-                                    type = "flow",
-                                    direction="vertical"}
+                                    type = "frame",
+                                    direction="vertical",
+                                    style = "bordered_frame"}
     
     -- Radio buttons to pick your team.
     if (ENABLE_SEPARATE_TEAMS) then
@@ -135,11 +136,21 @@ function DisplaySpawnOptions(player)
                         state=false}
     end
 
+    -- OPTIONS frame
+    AddLabel(soloSpawnFlow, "options_spawn_lbl1",
+        "Additional spawn options can be selected here. Not all are compatible with each other.", my_label_style)
+
     -- Allow players to spawn with a moat around their area.
     if (SPAWN_MOAT_CHOICE_ENABLED) then
         soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
                         type = "checkbox",
                         caption="Surround your spawn with a moat",
+                        state=false}
+    end
+    if (ENABLE_VANILLA_SPAWNS) then
+        soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
+                        type = "checkbox",
+                        caption="Use a pre-set vanilla spawn point",
                         state=false}
     end
 
@@ -159,42 +170,48 @@ function DisplaySpawnOptions(player)
                     style = "confirm_button"}
     AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
         "You are spawned in a new area, with some starting resources.", my_label_style)
-    AddSpacerLine(soloSpawnFlow, "isolated_spawn_spacer")
 
 
     -- Spawn options to join another player's base.
+    local sharedSpawnFrame = sGui.add{name = "spawn_shared_flow",
+                                    type = "frame",
+                                    direction="vertical",
+                                    style = "bordered_frame"}
     if ENABLE_SHARED_SPAWNS then
         local numAvailSpawns = GetNumberOfAvailableSharedSpawns()
         if (numAvailSpawns > 0) then
-            sGui.add{name = "join_other_spawn",
+            sharedSpawnFrame.add{name = "join_other_spawn",
                             type = "button",
                             caption="Join Someone (" .. numAvailSpawns .. " available)"}
             local join_spawn_text = "You are spawned in someone else's base. This requires at least 1 person to have allowed access to their base. This choice is final and you will not be able to create your own spawn later."
-            AddLabel(sGui, "join_other_spawn_lbl1", join_spawn_text, my_label_style)
+            AddLabel(sharedSpawnFrame, "join_other_spawn_lbl1", join_spawn_text, my_label_style)
         else
-            AddLabel(sGui, "join_other_spawn_lbl1", "There are currently no shared bases availble to spawn at.", my_label_style)
-            sGui.add{name = "join_other_spawn_check",
+            AddLabel(sharedSpawnFrame, "join_other_spawn_lbl1", "There are currently no shared bases availble to spawn at.", my_label_style)
+            sharedSpawnFrame.add{name = "join_other_spawn_check",
                             type = "button",
                             caption="Check Again"}
         end
     else
-        AddLabel(soloSpawnFlow, "join_other_spawn_lbl1",
+        AddLabel(sharedSpawnFrame, "join_other_spawn_lbl1",
             "Shared spawns are disabled in this mode.", my_warning_style)
     end
 
-    -- New awesome buddy spawning system
+    -- Awesome buddy spawning system
+    local buddySpawnFrame = sGui.add{name = "spawn_buddy_flow",
+                                    type = "frame",
+                                    direction="vertical",
+                                    style = "bordered_frame"}
+
     if ENABLE_SHARED_SPAWNS and ENABLE_BUDDY_SPAWN then
-        AddSpacerLine(sGui, "buddy_spawn_msg_spacer")
-        sGui.add{name = "buddy_spawn",
+        -- AddSpacerLine(buddySpawnFrame, "buddy_spawn_msg_spacer")
+        buddySpawnFrame.add{name = "buddy_spawn",
                         type = "button",
                         caption="Buddy Spawn"}
-        AddLabel(sGui, "buddy_spawn_lbl1",
+        AddLabel(buddySpawnFrame, "buddy_spawn_lbl1",
             "The buddy system requires 2 players in this menu at the same time, you spawn beside each other, each with your own resources.", my_label_style)
     end
 
     -- Some final notes
-    AddSpacerLine(sGui, "note_spacer1")
-
     if (MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN > 0) then
         AddLabel(sGui, "max_players_lbl2",
                 "If you create your own spawn point you can allow up to " .. MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN-1 .. " other online players to join.",
@@ -207,11 +224,10 @@ function DisplaySpawnOptions(player)
 end
 
 
--- This just updates the radio buttons when players click them.
+-- This just updates the radio buttons/checkboxes when players click them.
 function SpawnOptsRadioSelect(event)
     if not (event and event.element and event.element.valid) then return end
     local elemName = event.element.name
-
 
     if (elemName == "isolated_spawn_main_team_radio") then
         event.element.parent.isolated_spawn_new_team_radio.state=false
@@ -230,6 +246,11 @@ function SpawnOptsRadioSelect(event)
         event.element.parent.buddy_spawn_new_team_radio.state=false
     end
 
+    if (elemName == "isolated_spawn_moat_option_checkbox") then
+        event.element.parent.isolated_spawn_vanilla_option_checkbox.state = false;
+    elseif (elemName == "isolated_spawn_vanilla_option_checkbox") then
+        event.element.parent.isolated_spawn_moat_option_checkbox.state = false;
+    end
 end
 
 
@@ -248,6 +269,8 @@ function SpawnOptsGuiClick(event)
         return -- Gui event unrelated to this gui.
     end
 
+    local pgcs = player.gui.center.spawn_opts
+
     local joinMainTeamRadio, joinOwnTeamRadio, moatChoice = false
 
     -- Check if a valid button on the gui was pressed
@@ -261,18 +284,22 @@ function SpawnOptsGuiClick(event)
 
         if (ENABLE_SEPARATE_TEAMS) then
             joinMainTeamRadio =
-                player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_main_team_radio.state
+                pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
             joinOwnTeamRadio =
-                player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_new_team_radio.state
+                pgcs.spawn_solo_flow.isolated_spawn_new_team_radio.state
         else
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
         end
         if (SPAWN_MOAT_CHOICE_ENABLED) then
             moatChoice = 
-                player.gui.center.spawn_opts.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
+                pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
-        player.gui.center.spawn_opts.destroy()   
+        if (ENABLE_VANILLA_SPAWNS) then
+            vanillaChoice = 
+                pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state 
+        end
+        pgcs.destroy()   
     else       
         return -- Do nothing, no valid element item was clicked.
     end
@@ -295,11 +322,21 @@ function SpawnOptsGuiClick(event)
             local newForce = CreatePlayerCustomForce(player)
         end
 
-        -- Find coordinates of a good place to spawn
-        if (elemName == "isolated_spawn_far") then
-            newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
-        elseif (elemName == "isolated_spawn_near") then
-            newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
+        -- Find an unused vanilla spawn
+        if (vanillaChoice) then
+            rand_index = math.random(#global.vanillaSpawns)
+            newSpawn.x = global.vanillaSpawns[rand_index].x
+            newSpawn.y = global.vanillaSpawns[rand_index].y
+            table.remove(global.vanillaSpawns, rand_index)
+
+        -- Default OARC-type pre-set layout spawn.
+        else
+            -- Find coordinates of a good place to spawn
+            if (elemName == "isolated_spawn_far") then
+                newSpawn = FindUngeneratedCoordinates(FAR_MIN_DIST,FAR_MAX_DIST, player.surface)
+            elseif (elemName == "isolated_spawn_near") then
+                newSpawn = FindUngeneratedCoordinates(NEAR_MIN_DIST,NEAR_MAX_DIST, player.surface)
+            end
         end
 
         -- If that fails, find a random map edge in a rand direction.
@@ -308,11 +345,11 @@ function SpawnOptsGuiClick(event)
             DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
-        -- Create that spawn in the global vars
+        -- Create that player's spawn in the global vars
         ChangePlayerSpawn(player, newSpawn)
         
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice)
+        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, vanillaChoice)
         if (elemName == "isolated_spawn_near") then
             SendBroadcastMsg(player.name .. " is joining the game from a distance!")
         elseif (elemName == "isolated_spawn_far") then
@@ -744,7 +781,7 @@ function DisplayBuddySpawnOptions(player)
     -- Warnings and explanations...
     buddy_info_msg="To use this, make sure you and your buddy are in this menu at the same time. Only one of you must send the request. Select your buddy from the list (refresh if your buddy's name is not visible) and select your spawn options. Click one of the request buttons to send the request. The other buddy can then accept (or deny) the request. This will allow you both to spawn next to each other, each with your own spawn area. Once a buddy accepts a spawn request, it is final!"
     AddLabel(buddyGui, "buddy_info_msg", buddy_info_msg, my_label_style)
-    AddSpacerLine(buddyGui, "buddy_info_spacer")
+    -- AddSpacerLine(buddyGui, "buddy_info_spacer")
 
     buddyList = {}
     for _,buddyName in pairs(global.waitingBuddies) do
@@ -1134,8 +1171,8 @@ function BuddySpawnRequestMenuClick(event)
         ChangePlayerSpawn(game.players[requesterName], buddySpawn)
         
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, newSpawn, requesterOptions.moatChoice)
-        QueuePlayerForDelayedSpawn(requesterName, buddySpawn, requesterOptions.moatChoice)
+        QueuePlayerForDelayedSpawn(player.name, newSpawn, requesterOptions.moatChoice, false)
+        QueuePlayerForDelayedSpawn(requesterName, buddySpawn, requesterOptions.moatChoice, false)
         SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
        
         -- Create the button at the top left for setting respawn point and sharing base.

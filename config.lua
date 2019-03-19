@@ -47,8 +47,11 @@ ENABLE_SEPARATE_SPAWNS = true
 
 -- Enable this to have a vanilla style starting spawn.
 -- This scenario normally gives you a fixed circle with resources.
--- WORK IN PROGRESS - STILL IN DEV - BUGGY A.F.
+-- WORK IN PROGRESS
 ENABLE_VANILLA_SPAWNS = true
+VANILLA_SPAWN_COUNT = 8 -- num total spawns pre-assigned (minimum number)
+VANILLA_SPAWN_SPACING = 2000 -- num tiles between each spawn.
+
 
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
