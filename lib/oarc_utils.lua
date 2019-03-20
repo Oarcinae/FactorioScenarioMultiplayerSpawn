@@ -401,6 +401,11 @@ function GetAreaAroundPos(pos, dist)
                      y=pos.y+dist}}
 end
 
+-- Gets chunk position of a tile.
+function GetChunkPosFromTilePos(tile_pos)
+    return {x=math.floor(tile_pos.x/32), y=math.floor(tile_pos.y/32)}
+end
+
 -- Removes the entity type from the area given
 function RemoveInArea(surface, area, type)
     for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do

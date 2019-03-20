@@ -84,6 +84,7 @@ function FindUnusedSpawns(event)
         if (global.uniqueSpawns[player.name] ~= nil) then
 
             local spawnPos = global.uniqueSpawns[player.name].pos
+            local isVanilla = global.uniqueSpawns[player.name].vanilla
 
             -- Check if it was near someone else's base.
             nearOtherSpawn = false
@@ -100,6 +101,10 @@ function FindUnusedSpawns(event)
 				SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
 				OarcRegrowthMarkForRemoval(spawnPos, 10)
 				global.chunk_regrow.force_removal_flag = game.tick
+
+                if (isVanilla) then
+                    table.insert(global.vanillaSpawns, spawnPos)
+                end
 			else
 				-- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
                 global.uniqueSpawns[player.name] = nil
@@ -457,12 +462,12 @@ end
 function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn)
     
     -- If we get a valid spawn point, setup the area
-    if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
+    if ((spawn.x ~= 0) or (spawn.y ~= 0)) then
         global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled,vanilla=vanillaSpawn}
 
         local delay_spawn_seconds = 5*(math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE))
 
-        game.players[playerName].print("Generating your spawn now, please wait a few for " .. delay_spawn_seconds .. " seconds...")
+        game.players[playerName].print("Generating your spawn now, please wait for at least " .. delay_spawn_seconds .. " seconds...")
         game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
         delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
         table.insert(global.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
@@ -646,3 +651,55 @@ function DeleteAllChunksExceptCenter(surface)
     end
 end
 
+-- Find a vanilla spawn as close as possible to the given target_distance
+function FindUnusedVanillaSpawn(surface, target_distance)
+    local best_key = nil
+    local best_distance = nil
+
+    for k,v in pairs(global.vanillaSpawns) do
+        
+        -- Check if chunks nearby are not generated.
+        local chunk_pos = GetChunkPosFromTilePos(v)
+        if IsChunkAreaUngenerated(chunk_pos, 10, surface) then
+        
+            -- Is this our first valid find?
+            if ((best_key == nil) or (best_distance == nil)) then
+                best_key = k
+                best_distance = math.abs(math.sqrt((v.x^2) + (v.y^2)) - target_distance)
+            
+            -- Check if it is closer to target_distance than previous option.
+            else
+                local new_distance = math.abs(math.sqrt((v.x^2) + (v.y^2)) - target_distance)
+                if (new_distance < best_distance) then
+                    best_key = k
+                    best_distance = math.sqrt((v.x^2) + (v.y^2))
+                end
+            end
+        
+        -- If it's not a valid spawn anymore, let's remove it.
+        else
+            table.remove(global.vanillaSpawns, k)
+        end     
+    end
+
+    local spawn_pos = {x=0,y=0}
+    if ((best_key ~= nil) and (global.vanillaSpawns[best_key] ~= nil)) then
+        spawn_pos.x = global.vanillaSpawns[best_key].x
+        spawn_pos.y = global.vanillaSpawns[best_key].y
+        table.remove(global.vanillaSpawns, best_key)
+    end
+    DebugPrint("Found unused vanilla spawn: x=" .. spawn_pos.x .. ",y=" .. spawn_pos.y)
+    return spawn_pos
+end
+
+
+function ValidateVanillaSpawns(surface)
+    for k,v in pairs(global.vanillaSpawns) do
+        
+        -- Check if chunks nearby are not generated.
+        local chunk_pos = GetChunkPosFromTilePos(v)
+        if not IsChunkAreaUngenerated(chunk_pos, 10, surface) then
+            table.remove(global.vanillaSpawns, k)
+        end     
+    end
+end

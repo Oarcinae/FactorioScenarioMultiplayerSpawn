@@ -49,9 +49,6 @@ ENABLE_SEPARATE_SPAWNS = true
 -- This scenario normally gives you a fixed circle with resources.
 -- WORK IN PROGRESS
 ENABLE_VANILLA_SPAWNS = true
-VANILLA_SPAWN_COUNT = 8 -- num total spawns pre-assigned (minimum number)
-VANILLA_SPAWN_SPACING = 2000 -- num tiles between each spawn.
-
 
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
@@ -161,7 +158,18 @@ NEAR_MAX_DIST = 50
 -- Far Distance in chunks
 FAR_MIN_DIST = 200
 FAR_MAX_DIST = 300
-          
+
+---------------------------------------
+-- Vanilla spawn point options
+-- (only applicable if ENABLE_VANILLA_SPAWNS is enabled.)
+---------------------------------------
+
+-- Num total spawns pre-assigned (minimum number)
+VANILLA_SPAWN_COUNT = 100
+
+-- Num tiles between each spawn. (I recommend at least 1000)
+VANILLA_SPAWN_SPACING = 2000
+
 ---------------------------------------
 -- Resource & Spawn Circle Options
 ---------------------------------------
@@ -396,7 +404,7 @@ SILO_POSITION = {x = 0, y = 100}
 -- Set this to false so that you have to search for the silo's.
 ENABLE_SILO_VISION = true
 
--- Add beacons around the silo (Philip's modm)
+-- Add beacons around the silo (Philip's mod)
 ENABLE_SILO_BEACONS = false
 ENABLE_SILO_RADAR = false
 

@@ -147,10 +147,10 @@ function DisplaySpawnOptions(player)
                         caption="Surround your spawn with a moat",
                         state=false}
     end
-    if (ENABLE_VANILLA_SPAWNS) then
+    if (ENABLE_VANILLA_SPAWNS and (#global.vanillaSpawns > 0)) then
         soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
                         type = "checkbox",
-                        caption="Use a pre-set vanilla spawn point",
+                        caption="Use a pre-set vanilla spawn point. " .. #global.vanillaSpawns .. " available.",
                         state=false}
     end
 
@@ -291,13 +291,13 @@ function SpawnOptsGuiClick(event)
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
         end
-        if (SPAWN_MOAT_CHOICE_ENABLED) then
-            moatChoice = 
-                pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
+        if (SPAWN_MOAT_CHOICE_ENABLED and
+            (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
+            moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
-        if (ENABLE_VANILLA_SPAWNS) then
-            vanillaChoice = 
-                pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state 
+        if (ENABLE_VANILLA_SPAWNS and
+            (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
+            vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state 
         end
         pgcs.destroy()   
     else       
@@ -324,10 +324,13 @@ function SpawnOptsGuiClick(event)
 
         -- Find an unused vanilla spawn
         if (vanillaChoice) then
-            rand_index = math.random(#global.vanillaSpawns)
-            newSpawn.x = global.vanillaSpawns[rand_index].x
-            newSpawn.y = global.vanillaSpawns[rand_index].y
-            table.remove(global.vanillaSpawns, rand_index)
+            if (elemName == "isolated_spawn_far") then
+                newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
+                                                            FAR_MAX_DIST*CHUNK_SIZE)
+            elseif (elemName == "isolated_spawn_near") then
+                newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
+                                                            NEAR_MIN_DIST*CHUNK_SIZE)
+            end
 
         -- Default OARC-type pre-set layout spawn.
         else
@@ -340,7 +343,7 @@ function SpawnOptsGuiClick(event)
         end
 
         -- If that fails, find a random map edge in a rand direction.
-        if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
+        if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
             newSpawn = FindMapEdge(GetRandomVector(), player.surface)
             DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
