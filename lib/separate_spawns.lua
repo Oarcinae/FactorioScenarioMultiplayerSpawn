@@ -62,6 +62,11 @@ function FindUnusedSpawns(event)
             delayedSpawn = global.delayedSpawns[i]
 
             if (player.name == delayedSpawn.playerName) then
+                if (delayedSpawn.vanilla) then
+                    log("Returning a vanilla spawn back to available.")
+                    table.insert(global.vanillaSpawns, {x=delayedSpawn.pos.x,y=delayedSpawn.pos.y})
+                end
+
                 table.remove(global.delayedSpawns, i)
                 DebugPrint("Removing player from delayed spawn queue: " .. player.name)
             end
@@ -84,7 +89,6 @@ function FindUnusedSpawns(event)
         if (global.uniqueSpawns[player.name] ~= nil) then
 
             local spawnPos = global.uniqueSpawns[player.name].pos
-            local isVanilla = global.uniqueSpawns[player.name].vanilla
 
             -- Check if it was near someone else's base.
             nearOtherSpawn = false
@@ -96,20 +100,22 @@ function FindUnusedSpawns(event)
             end
 
             if (ENABLE_ABANDONED_BASE_REMOVAL and not nearOtherSpawn) then
-				global.uniqueSpawns[player.name] = nil
-
-				SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
-				OarcRegrowthMarkForRemoval(spawnPos, 10)
-				global.chunk_regrow.force_removal_flag = game.tick
-
-                if (isVanilla) then
-                    table.insert(global.vanillaSpawns, spawnPos)
+                if (global.uniqueSpawns[player.name].vanilla) then
+                    log("Returning a vanilla spawn back to available.")
+                    table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
                 end
-			else
-				-- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
+
                 global.uniqueSpawns[player.name] = nil
-	            SendBroadcastMsg(player.name .. " base was freed up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
-			end
+
+                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
+                OarcRegrowthMarkForRemoval(spawnPos, 10)
+                global.chunk_regrow.force_removal_flag = game.tick
+
+            else
+                -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
+                global.uniqueSpawns[player.name] = nil
+                SendBroadcastMsg(player.name .. " base was freed up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
+            end
         end
 
         -- remove that player's cooldown setting
@@ -678,6 +684,7 @@ function FindUnusedVanillaSpawn(surface, target_distance)
         
         -- If it's not a valid spawn anymore, let's remove it.
         else
+            log("Removing vanilla spawn due to chunks generated: x=" .. v.x .. ",y=" .. v.y)
             table.remove(global.vanillaSpawns, k)
         end     
     end
@@ -699,7 +706,9 @@ function ValidateVanillaSpawns(surface)
         -- Check if chunks nearby are not generated.
         local chunk_pos = GetChunkPosFromTilePos(v)
         if not IsChunkAreaUngenerated(chunk_pos, 10, surface) then
+            log("Removing vanilla spawn due to chunks generated: x=" .. v.x .. ",y=" .. v.y)
             table.remove(global.vanillaSpawns, k)
         end     
     end
 end
+
