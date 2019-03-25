@@ -137,22 +137,22 @@ function DisplaySpawnOptions(player)
     end
 
     -- OPTIONS frame
-    AddLabel(soloSpawnFlow, "options_spawn_lbl1",
-        "Additional spawn options can be selected here. Not all are compatible with each other.", my_label_style)
+    -- AddLabel(soloSpawnFlow, "options_spawn_lbl1",
+    --     "Additional spawn options can be selected here. Not all are compatible with each other.", my_label_style)
 
     -- Allow players to spawn with a moat around their area.
-    if (SPAWN_MOAT_CHOICE_ENABLED) then
+    if (SPAWN_MOAT_CHOICE_ENABLED and not ENABLE_VANILLA_SPAWNS) then
         soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
                         type = "checkbox",
                         caption="Surround your spawn with a moat",
                         state=false}
     end
-    if (ENABLE_VANILLA_SPAWNS and (#global.vanillaSpawns > 0)) then
-        soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
-                        type = "checkbox",
-                        caption="Use a pre-set vanilla spawn point. " .. #global.vanillaSpawns .. " available.",
-                        state=false}
-    end
+    -- if (ENABLE_VANILLA_SPAWNS and (#global.vanillaSpawns > 0)) then
+    --     soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
+    --                     type = "checkbox",
+    --                     caption="Use a pre-set vanilla spawn point. " .. #global.vanillaSpawns .. " available.",
+    --                     state=false}
+    -- end
 
     -- Isolated spawn options. The core gameplay of this scenario.
     local soloSpawnbuttons = soloSpawnFlow.add{name = "spawn_solo_flow",
@@ -168,9 +168,16 @@ function DisplaySpawnOptions(player)
                     type = "button",
                     caption="Solo Spawn (Far)",
                     style = "confirm_button"}
-    AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
-        "You are spawned in a new area, with some starting resources.", my_label_style)
-
+    
+    if (ENABLE_VANILLA_SPAWNS) then
+        AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
+            "You are spawned in your own starting area (vanilla style).", my_label_style)
+        AddLabel(soloSpawnFlow, "vanilla_spawn_lbl2",
+            "There are " .. #global.vanillaSpawns .. " vanilla spawns available.", my_label_style)
+    else
+        AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
+            "You are spawned in a new area, with pre-set starting resources.", my_label_style)
+    end
 
     -- Spawn options to join another player's base.
     local sharedSpawnFrame = sGui.add{name = "spawn_shared_flow",
@@ -197,18 +204,20 @@ function DisplaySpawnOptions(player)
     end
 
     -- Awesome buddy spawning system
-    local buddySpawnFrame = sGui.add{name = "spawn_buddy_flow",
-                                    type = "frame",
-                                    direction="vertical",
-                                    style = "bordered_frame"}
+    if (not ENABLE_VANILLA_SPAWNS) then
+        if ENABLE_SHARED_SPAWNS and ENABLE_BUDDY_SPAWN then
+            local buddySpawnFrame = sGui.add{name = "spawn_buddy_flow",
+                                            type = "frame",
+                                            direction="vertical",
+                                            style = "bordered_frame"}
 
-    if ENABLE_SHARED_SPAWNS and ENABLE_BUDDY_SPAWN then
-        -- AddSpacerLine(buddySpawnFrame, "buddy_spawn_msg_spacer")
-        buddySpawnFrame.add{name = "buddy_spawn",
-                        type = "button",
-                        caption="Buddy Spawn"}
-        AddLabel(buddySpawnFrame, "buddy_spawn_lbl1",
-            "The buddy system requires 2 players in this menu at the same time, you spawn beside each other, each with your own resources.", my_label_style)
+            -- AddSpacerLine(buddySpawnFrame, "buddy_spawn_msg_spacer")
+            buddySpawnFrame.add{name = "buddy_spawn",
+                            type = "button",
+                            caption="Buddy Spawn"}
+            AddLabel(buddySpawnFrame, "buddy_spawn_lbl1",
+                "The buddy system requires 2 players in this menu at the same time, you spawn beside each other, each with your own resources.", my_label_style)
+        end
     end
 
     -- Some final notes
@@ -246,11 +255,12 @@ function SpawnOptsRadioSelect(event)
         event.element.parent.buddy_spawn_new_team_radio.state=false
     end
 
-    if (elemName == "isolated_spawn_moat_option_checkbox") then
-        event.element.parent.isolated_spawn_vanilla_option_checkbox.state = false;
-    elseif (elemName == "isolated_spawn_vanilla_option_checkbox") then
-        event.element.parent.isolated_spawn_moat_option_checkbox.state = false;
-    end
+    -- ENABLE_VANILLA_SPAWNS
+    -- if (elemName == "isolated_spawn_moat_option_checkbox") then
+    --     event.element.parent.isolated_spawn_vanilla_option_checkbox.state = false;
+    -- elseif (elemName == "isolated_spawn_vanilla_option_checkbox") then
+    --     event.element.parent.isolated_spawn_moat_option_checkbox.state = false;
+    -- end
 end
 
 
@@ -271,7 +281,7 @@ function SpawnOptsGuiClick(event)
 
     local pgcs = player.gui.center.spawn_opts
 
-    local joinMainTeamRadio, joinOwnTeamRadio, moatChoice = false
+    local joinMainTeamRadio, joinOwnTeamRadio, moatChoice, vanillaChoice = false
 
     -- Check if a valid button on the gui was pressed
     -- and delete the GUI
@@ -291,14 +301,14 @@ function SpawnOptsGuiClick(event)
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
         end
-        if (SPAWN_MOAT_CHOICE_ENABLED and
+        if (SPAWN_MOAT_CHOICE_ENABLED and not ENABLE_VANILLA_SPAWNS and 
             (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
             moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
-        if (ENABLE_VANILLA_SPAWNS and
-            (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
-            vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state 
-        end
+        -- if (ENABLE_VANILLA_SPAWNS and
+        --     (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
+        --     vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state 
+        -- end
         pgcs.destroy()   
     else       
         return -- Do nothing, no valid element item was clicked.
@@ -323,7 +333,8 @@ function SpawnOptsGuiClick(event)
         end
 
         -- Find an unused vanilla spawn
-        if (vanillaChoice) then
+        -- if (vanillaChoice) then
+        if (ENABLE_VANILLA_SPAWNS) then
             if (elemName == "isolated_spawn_far") then
                 newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
                                                             FAR_MAX_DIST*CHUNK_SIZE)
@@ -352,7 +363,8 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, newSpawn)
         
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, vanillaChoice)
+        -- QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, vanillaChoice)
+        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, ENABLE_VANILLA_SPAWNS)
         if (elemName == "isolated_spawn_near") then
             SendBroadcastMsg(player.name .. " is joining the game from a distance!")
         elseif (elemName == "isolated_spawn_far") then

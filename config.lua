@@ -46,9 +46,11 @@ SERVER_OWNER_IS_OARC = false
 ENABLE_SEPARATE_SPAWNS = true
 
 -- Enable this to have a vanilla style starting spawn.
--- This scenario normally gives you a fixed circle with resources.
--- WORK IN PROGRESS
-ENABLE_VANILLA_SPAWNS = true
+-- This changes the experience pretty drastically.
+-- If you enable this, you will NOT get the option to spawn using the "pre-fab"
+-- fixed layout spawns. This is because the spawn types just don't balance well with
+-- each other.
+ENABLE_VANILLA_SPAWNS = false
 
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
@@ -105,6 +107,7 @@ ENABLE_RESEARCH_QUEUE = true
 -- Adjust enemy spawning based on distance to spawns. All it does it make things
 -- more balanced based on your distance and makes the game a little easier.
 -- No behemoth worms everywhere just because you spawned far away.
+-- Might want to disable this if you're using ENABLE_VANILLA_SPAWNS
 OARC_MODIFIED_ENEMY_SPAWNING = true
 
 --------------------------------------------------------------------------------
@@ -436,7 +439,7 @@ GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me in game.
-global.oarcDebugEnabled = true
+global.oarcDebugEnabled = false
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.
