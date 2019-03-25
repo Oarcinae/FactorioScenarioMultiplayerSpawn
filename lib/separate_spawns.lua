@@ -43,7 +43,7 @@ function SeparateSpawnsGenerateChunk(event)
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it does a few things like make the area
     -- safe and provide a guaranteed area of land and water tiles.
-    SetupAndClearSpawnAreas(surface, chunkArea, global.uniqueSpawns)
+    SetupAndClearSpawnAreas(surface, chunkArea)
 end
 
 
@@ -62,6 +62,11 @@ function FindUnusedSpawns(event)
             delayedSpawn = global.delayedSpawns[i]
 
             if (player.name == delayedSpawn.playerName) then
+                if (delayedSpawn.vanilla) then
+                    log("Returning a vanilla spawn back to available.")
+                    table.insert(global.vanillaSpawns, {x=delayedSpawn.pos.x,y=delayedSpawn.pos.y})
+                end
+
                 table.remove(global.delayedSpawns, i)
                 DebugPrint("Removing player from delayed spawn queue: " .. player.name)
             end
@@ -95,16 +100,22 @@ function FindUnusedSpawns(event)
             end
 
             if (ENABLE_ABANDONED_BASE_REMOVAL and not nearOtherSpawn) then
-				global.uniqueSpawns[player.name] = nil
+                if (global.uniqueSpawns[player.name].vanilla) then
+                    log("Returning a vanilla spawn back to available.")
+                    table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
+                end
 
-				SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
-				OarcRegrowthMarkForRemoval(spawnPos, 10)
-				global.chunk_regrow.force_removal_flag = game.tick
-			else
-				-- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
                 global.uniqueSpawns[player.name] = nil
-	            SendBroadcastMsg(player.name .. " base was freed up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
-			end
+
+                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
+                OarcRegrowthMarkForRemoval(spawnPos, 10)
+                global.chunk_regrow.force_removal_flag = game.tick
+
+            else
+                -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
+                global.uniqueSpawns[player.name] = nil
+                SendBroadcastMsg(player.name .. " base was freed up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
+            end
         end
 
         -- remove that player's cooldown setting
@@ -136,55 +147,58 @@ end
 -- unique spawn points.
 -- This clears enemies in the immediate area, creates a slightly safe area around it,
 -- It no LONGER generates the resources though as that is now handled in a delayed event!
-function SetupAndClearSpawnAreas(surface, chunkArea, spawnPointTable)
-    for name,spawn in pairs(spawnPointTable) do
+function SetupAndClearSpawnAreas(surface, chunkArea)
+    for name,spawn in pairs(global.uniqueSpawns) do
 
-        -- Create a bunch of useful area and position variables
-        local landArea = GetAreaAroundPos(spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+CHUNK_SIZE)
-        local safeArea = GetAreaAroundPos(spawn.pos, SAFE_AREA_TILE_DIST)
-        local warningArea = GetAreaAroundPos(spawn.pos, WARNING_AREA_TILE_DIST)
-        local reducedArea = GetAreaAroundPos(spawn.pos, REDUCED_DANGER_AREA_TILE_DIST)
-        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                                         y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-        local spawnPosOffset = {x=spawn.pos.x+ENFORCE_LAND_AREA_TILE_DIST,
-                                         y=spawn.pos.y+ENFORCE_LAND_AREA_TILE_DIST}
+        if (not spawn.vanilla) then
 
-        -- Make chunks near a spawn safe by removing enemies
-        if CheckIfInArea(chunkAreaCenter,safeArea) then
-            RemoveAliensInArea(surface, chunkArea)
-        
-        -- Create a warning area with heavily reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,warningArea) then
-            ReduceAliensInArea(surface, chunkArea, WARN_AREA_REDUCTION_RATIO)
-            -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
-            RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
+            -- Create a bunch of useful area and position variables
+            local landArea = GetAreaAroundPos(spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+CHUNK_SIZE)
+            local safeArea = GetAreaAroundPos(spawn.pos, SAFE_AREA_TILE_DIST)
+            local warningArea = GetAreaAroundPos(spawn.pos, WARNING_AREA_TILE_DIST)
+            local reducedArea = GetAreaAroundPos(spawn.pos, REDUCED_DANGER_AREA_TILE_DIST)
+            local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
+                                             y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
+            local spawnPosOffset = {x=spawn.pos.x+ENFORCE_LAND_AREA_TILE_DIST,
+                                             y=spawn.pos.y+ENFORCE_LAND_AREA_TILE_DIST}
 
-        -- Create a third area with moderatly reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,reducedArea) then
-            ReduceAliensInArea(surface, chunkArea, REDUCED_DANGER_AREA_REDUCTION_RATIO)
-            -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
-            RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
-        end
+            -- Make chunks near a spawn safe by removing enemies
+            if CheckIfInArea(chunkAreaCenter,safeArea) then
+                RemoveAliensInArea(surface, chunkArea)
+            
+            -- Create a warning area with heavily reduced enemies
+            elseif CheckIfInArea(chunkAreaCenter,warningArea) then
+                ReduceAliensInArea(surface, chunkArea, WARN_AREA_REDUCTION_RATIO)
+                -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
+                RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
 
-        -- If the chunk is within the main land area, then clear trees/resources
-        -- and create the land spawn areas (guaranteed land with a circle of trees)
-        if CheckIfInArea(chunkAreaCenter,landArea) then
-
-            -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
-            RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
-            -- RemoveDecorationsArea(surface, chunkArea)
-
-            if (OARC_CFG.gen_settings.tree_circle) then
-                CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+            -- Create a third area with moderatly reduced enemies
+            elseif CheckIfInArea(chunkAreaCenter,reducedArea) then
+                ReduceAliensInArea(surface, chunkArea, REDUCED_DANGER_AREA_REDUCTION_RATIO)
+                -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
+                RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
             end
-            if (OARC_CFG.gen_settings.tree_octagon) then
-                CreateCropOctagon(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
-            end
-            if (SPAWN_MOAT_CHOICE_ENABLED) then
-                if (spawn.moat) then
-                    CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+
+            -- If the chunk is within the main land area, then clear trees/resources
+            -- and create the land spawn areas (guaranteed land with a circle of trees)
+            if CheckIfInArea(chunkAreaCenter,landArea) then
+
+                -- Remove trees/resources inside the spawn area
+                RemoveInCircle(surface, chunkArea, "tree", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST)
+                RemoveInCircle(surface, chunkArea, "resource", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+                RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, ENFORCE_LAND_AREA_TILE_DIST+5)
+                -- RemoveDecorationsArea(surface, chunkArea)
+
+                if (OARC_CFG.gen_settings.tree_circle) then
+                    CreateCropCircle(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+                end
+                if (OARC_CFG.gen_settings.tree_octagon) then
+                    CreateCropOctagon(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+                end
+                if (SPAWN_MOAT_CHOICE_ENABLED) then
+                    if (spawn.moat) then
+                        CreateMoat(surface, spawn.pos, chunkArea, ENFORCE_LAND_AREA_TILE_DIST)
+                    end
                 end
             end
         end
@@ -368,8 +382,14 @@ function InitSpawnGlobalsAndForces()
 
     -- This is the most important table. It is a list of all the unique spawn points.
     -- This is what chunk generation checks against.
+    -- Each entry looks like this: {pos={x,y},moat=bool,vanilla=bool}
     if (global.uniqueSpawns == nil) then
         global.uniqueSpawns = {}
+    end
+
+    -- List of available vanilla spawns
+    if (global.vanillaSpawns == nil) then
+        global.vanillaSpawns = {}
     end
 
     -- This keeps a list of any player that has shared their base.
@@ -411,7 +431,7 @@ function InitSpawnGlobalsAndForces()
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = game.create_force(MAIN_FORCE)
-    main_force.set_spawn_position(game.forces["player"].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
     
     -- Share vision with other forces.
     if ENABLE_SHARED_TEAM_VISION then
@@ -445,18 +465,18 @@ function ChangePlayerSpawn(player, pos)
     global.playerCooldowns[player.name] = {setRespawn=game.tick}
 end
 
-function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled)
+function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn)
     
     -- If we get a valid spawn point, setup the area
-    if ((spawn.x ~= 0) and (spawn.y ~= 0)) then
-        global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled}
+    if ((spawn.x ~= 0) or (spawn.y ~= 0)) then
+        global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled,vanilla=vanillaSpawn}
 
         local delay_spawn_seconds = 5*(math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE))
 
-        game.players[playerName].print("Generating your spawn now, please wait a few for " .. delay_spawn_seconds .. " seconds...")
+        game.players[playerName].print("Generating your spawn now, please wait for at least " .. delay_spawn_seconds .. " seconds...")
         game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
         delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
-        table.insert(global.delayedSpawns, {playerName=playerName, spawn=spawn, moatEnabled=moatEnabled, delayedTick=delayedTick})
+        table.insert(global.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
 
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
@@ -479,7 +499,7 @@ function DelayedSpawnOnTick()
                 if (delayedSpawn.delayedTick < game.tick) then
                     -- TODO, add check here for if chunks around spawn are generated surface.is_chunk_generated(chunkPos)
                     if (game.players[delayedSpawn.playerName] ~= nil) then
-                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn.playerName, delayedSpawn.spawn, delayedSpawn.moatEnabled)
+                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                     end
                     table.remove(global.delayedSpawns, i)
                 end
@@ -488,30 +508,35 @@ function DelayedSpawnOnTick()
     end
 end
 
-function SendPlayerToNewSpawnAndCreateIt(playerName, spawn, moatEnabled)
+function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(spawn, SAFE_AREA_TILE_DIST, game.surfaces[GAME_SURFACE_NAME])
+    ClearNearbyEnemies(delayedSpawn.pos, SAFE_AREA_TILE_DIST, game.surfaces[GAME_SURFACE_NAME])
 
-    -- Create the spawn resources here
-    local water_data = OARC_CFG.water
-    CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
-                    {x=spawn.x+water_data.x_offset, y=spawn.y+water_data.y_offset},
-                    water_data.length)
-    CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
-                    {x=spawn.x+water_data.x_offset, y=spawn.y+water_data.y_offset+1},
-                    water_data.length)
-    GenerateStartingResources(game.surfaces[GAME_SURFACE_NAME], spawn)
+    if (not delayedSpawn.vanilla) then
+
+        -- Create the spawn resources here
+        local water_data = OARC_CFG.water
+        CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
+                        {x=delayedSpawn.pos.x+water_data.x_offset, y=delayedSpawn.pos.y+water_data.y_offset},
+                        water_data.length)
+        CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
+                        {x=delayedSpawn.pos.x+water_data.x_offset, y=delayedSpawn.pos.y+water_data.y_offset+1},
+                        water_data.length)
+        GenerateStartingResources(game.surfaces[GAME_SURFACE_NAME], delayedSpawn.pos)
+
+    end
 
     -- Send the player to that position
-    game.players[playerName].teleport(spawn, GAME_SURFACE_NAME)
-    GivePlayerStarterItems(game.players[playerName])
+    local player = game.players[delayedSpawn.playerName]
+    player.teleport(delayedSpawn.pos, GAME_SURFACE_NAME)
+    GivePlayerStarterItems(game.players[delayedSpawn.playerName])
 
     -- Chart the area.
-    ChartArea(game.players[playerName].force, game.players[playerName].position, math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE), game.players[playerName].surface)
+    ChartArea(player.force, delayedSpawn.pos, math.ceil(ENFORCE_LAND_AREA_TILE_DIST/CHUNK_SIZE), player.surface)
 
-    if (game.players[playerName].gui.center.wait_for_spawn_dialog ~= nil) then
-        game.players[playerName].gui.center.wait_for_spawn_dialog.destroy()
+    if (player.gui.center.wait_for_spawn_dialog ~= nil) then
+        player.gui.center.wait_for_spawn_dialog.destroy()
     end
 end
 
@@ -578,3 +603,112 @@ function CreatePlayerCustomForce(player)
 
     return newForce
 end
+
+-- Function to generate some map_gen_settings.starting_points
+-- You should only use this at the start of the game really.
+function CreateVanillaSpawns(count, spacing)
+
+    local points = {}
+
+    -- Get an ODD number from the square of the input count.
+    -- Always rounding up so we don't end up with less points that requested.
+    local sqrt_count = math.ceil(math.sqrt(count))
+    if (sqrt_count % 2 == 0) then
+        sqrt_count = sqrt_count + 1
+    end
+
+    -- Need to know how much to offset the grid.
+    local sqrt_half = math.floor((sqrt_count-1)/2)
+    log("sqrt_half " .. sqrt_half)
+
+    if (sqrt_count < 1) then
+        DebugPrint("CreateVanillaSpawns less than 1!!")
+        return
+    end
+
+    if (global.vanillaSpawns == nil) then
+        global.vanillaSpawns = {}
+    end
+
+    -- This should give me points centered around 0,0 I think.
+    for i=-sqrt_half,sqrt_half,1 do
+        for j=-sqrt_half,sqrt_half,1 do
+            if (i~=0 or j~=0) then -- EXCEPT don't put 0,0
+                table.insert(points, {x=i*spacing,y=j*spacing})
+                table.insert(global.vanillaSpawns, {x=i*spacing,y=j*spacing})
+            end
+        end
+    end
+
+    -- Do something with the return value.
+    return points
+end
+
+-- Useful when combined with something like CreateVanillaSpawns
+-- Where it helps ensure ALL chunks generated use new map_gen_settings.
+function DeleteAllChunksExceptCenter(surface)
+    -- Delete the starting chunks that make it into the game before settings are changed.
+    for chunk in surface.get_chunks() do
+        -- Don't delete the chunk that might contain players lol.
+        -- This is really only a problem for launching AS the host. Not headless
+        if ((chunk.x ~= 0) and (chunk.y ~= 0)) then
+            surface.delete_chunk({chunk.x, chunk.y})
+        end
+    end
+end
+
+-- Find a vanilla spawn as close as possible to the given target_distance
+function FindUnusedVanillaSpawn(surface, target_distance)
+    local best_key = nil
+    local best_distance = nil
+
+    for k,v in pairs(global.vanillaSpawns) do
+        
+        -- Check if chunks nearby are not generated.
+        local chunk_pos = GetChunkPosFromTilePos(v)
+        if IsChunkAreaUngenerated(chunk_pos, 10, surface) then
+        
+            -- Is this our first valid find?
+            if ((best_key == nil) or (best_distance == nil)) then
+                best_key = k
+                best_distance = math.abs(math.sqrt((v.x^2) + (v.y^2)) - target_distance)
+            
+            -- Check if it is closer to target_distance than previous option.
+            else
+                local new_distance = math.abs(math.sqrt((v.x^2) + (v.y^2)) - target_distance)
+                if (new_distance < best_distance) then
+                    best_key = k
+                    best_distance = math.sqrt((v.x^2) + (v.y^2))
+                end
+            end
+        
+        -- If it's not a valid spawn anymore, let's remove it.
+        else
+            log("Removing vanilla spawn due to chunks generated: x=" .. v.x .. ",y=" .. v.y)
+            table.remove(global.vanillaSpawns, k)
+        end     
+    end
+
+    local spawn_pos = {x=0,y=0}
+    if ((best_key ~= nil) and (global.vanillaSpawns[best_key] ~= nil)) then
+        spawn_pos.x = global.vanillaSpawns[best_key].x
+        spawn_pos.y = global.vanillaSpawns[best_key].y
+        table.remove(global.vanillaSpawns, best_key)
+    end
+    DebugPrint("Found unused vanilla spawn: x=" .. spawn_pos.x .. ",y=" .. spawn_pos.y)
+    return spawn_pos
+end
+
+
+function ValidateVanillaSpawns(surface)
+    for k,v in pairs(global.vanillaSpawns) do
+        
+        -- Check if chunks nearby are not generated.
+        local chunk_pos = GetChunkPosFromTilePos(v)
+        if not IsChunkAreaUngenerated(chunk_pos, 10, surface) then
+            log("Removing vanilla spawn due to chunks generated: x=" .. v.x .. ",y=" .. v.y)
+            table.remove(global.vanillaSpawns, k)
+        end     
+    end
+end
+

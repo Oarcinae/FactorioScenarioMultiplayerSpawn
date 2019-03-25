@@ -45,6 +45,13 @@ SERVER_OWNER_IS_OARC = false
 -- This is the core of the mod. Probably not a good idea to disable it.
 ENABLE_SEPARATE_SPAWNS = true
 
+-- Enable this to have a vanilla style starting spawn.
+-- This changes the experience pretty drastically.
+-- If you enable this, you will NOT get the option to spawn using the "pre-fab"
+-- fixed layout spawns. This is because the spawn types just don't balance well with
+-- each other.
+ENABLE_VANILLA_SPAWNS = false
+
 -- This allows 2 players to spawn next to each other in the wilderness,
 -- each with their own starting point. It adds more GUI selection options.
 ENABLE_BUDDY_SPAWN = true
@@ -100,6 +107,7 @@ ENABLE_RESEARCH_QUEUE = true
 -- Adjust enemy spawning based on distance to spawns. All it does it make things
 -- more balanced based on your distance and makes the game a little easier.
 -- No behemoth worms everywhere just because you spawned far away.
+-- Might want to disable this if you're using ENABLE_VANILLA_SPAWNS
 OARC_MODIFIED_ENEMY_SPAWNING = true
 
 --------------------------------------------------------------------------------
@@ -153,7 +161,18 @@ NEAR_MAX_DIST = 50
 -- Far Distance in chunks
 FAR_MIN_DIST = 200
 FAR_MAX_DIST = 300
-          
+
+---------------------------------------
+-- Vanilla spawn point options
+-- (only applicable if ENABLE_VANILLA_SPAWNS is enabled.)
+---------------------------------------
+
+-- Num total spawns pre-assigned (minimum number)
+VANILLA_SPAWN_COUNT = 100
+
+-- Num tiles between each spawn. (I recommend at least 1000)
+VANILLA_SPAWN_SPACING = 2000
+
 ---------------------------------------
 -- Resource & Spawn Circle Options
 ---------------------------------------
@@ -388,7 +407,7 @@ SILO_POSITION = {x = 0, y = 100}
 -- Set this to false so that you have to search for the silo's.
 ENABLE_SILO_VISION = true
 
--- Add beacons around the silo (Philip's modm)
+-- Add beacons around the silo (Philip's mod)
 ENABLE_SILO_BEACONS = false
 ENABLE_SILO_RADAR = false
 
@@ -420,7 +439,7 @@ GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
 --------------------------------------------------------------------------------
 
 -- DEBUG prints for me in game.
-global.oarcDebugEnabled = true
+global.oarcDebugEnabled = false
 
 -- These are my specific welcome messages that get used only if I am the user
 -- that creates the game.

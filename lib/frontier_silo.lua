@@ -77,6 +77,11 @@ local function CreateRocketSilo(surface, siloPosition, force)
     silo.destructible = false
     silo.minable = false
 
+    -- TAG it on the main force at least.
+    game.forces[MAIN_FORCE].add_chart_tag(game.surfaces[GAME_SURFACE_NAME],
+                                            {position=siloPosition, text="Rocket Silo",
+                                                icon={type="item",name="rocket-silo"}})
+
     -- Make silo safe from being removed by regrowth
     if ENABLE_REGROWTH then
         OarcRegrowthOffLimits(siloPosition, 5)
@@ -84,10 +89,10 @@ local function CreateRocketSilo(surface, siloPosition, force)
 
 
     if ENABLE_SILO_BEACONS then
-        PhilipsBeaconsAndShit(surface, siloPosition, game.forces[MAIN_FORCE])
+        PhilipsBeacons(surface, siloPosition, game.forces[MAIN_FORCE])
     end
     if ENABLE_SILO_RADAR then
-        PhilipsRadarAndShit(surface, siloPosition, game.forces[MAIN_FORCE])
+        PhilipsRadar(surface, siloPosition, game.forces[MAIN_FORCE])
     end
         
 end
@@ -174,145 +179,145 @@ function DelayedSiloCreationOnTick(surface)
 end 
 
 
-function PhilipsBeaconsAndShit(surface, siloPos, force)
+function PhilipsBeacons(surface, siloPos, force)
 
     -- Add Beacons
     -- x = right, left; y = up, down
     -- top 1 left 1
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-9}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- top 2
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-5, siloPos.y-9}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-5, siloPos.y-8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- top 3
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-2, siloPos.y-9}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-2, siloPos.y-8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- top 4
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+2, siloPos.y-9}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+2, siloPos.y-8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- top 5
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+5, siloPos.y-9}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+5, siloPos.y-8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- top 6 right 1
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-9}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- left 2
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-6, siloPos.y-6}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-5}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- left 3
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-6, siloPos.y-3}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y-2}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- left 4
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-6, siloPos.y}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+2}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- left 5
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-6, siloPos.y+3}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+5}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- left 6 bottom 1
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+6}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-8, siloPos.y+8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- left 7 bottom 2
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-5, siloPos.y+6}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x-5, siloPos.y+8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- right 2
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+6, siloPos.y-6}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-5}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- right 3
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+6, siloPos.y-3}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y-2}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- right 4
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+6, siloPos.y}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+2}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- right 5
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+6, siloPos.y+3}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+5}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- right 6 bottom 3
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+5, siloPos.y+6}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+5, siloPos.y+8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- right 7 bottom 4
-    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+6}, force = force}
+    local beacon = surface.create_entity{name = "beacon", position = {siloPos.x+8, siloPos.y+8}, force = force}
     beacon.destructible = false
     beacon.minable = false
     -- substations
     -- top left
-    local substation = surface.create_entity{name = "substation", position = {siloPos.x-8, siloPos.y-6}, force = force}
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x-5, siloPos.y-5}, force = force}
     substation.destructible = false
     substation.minable = false
     -- top right
-    local substation = surface.create_entity{name = "substation", position = {siloPos.x+9, siloPos.y-6}, force = force}
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x+6, siloPos.y-5}, force = force}
     substation.destructible = false
     substation.minable = false
     -- bottom left
-    local substation = surface.create_entity{name = "substation", position = {siloPos.x-8, siloPos.y+4}, force = force}
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x-5, siloPos.y+6}, force = force}
     substation.destructible = false
     substation.minable = false
     -- bottom right
-    local substation = surface.create_entity{name = "substation", position = {siloPos.x+9, siloPos.y+4}, force = force}
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x+6, siloPos.y+6}, force = force}
     substation.destructible = false
     substation.minable = false
 
     -- end adding beacons
 end
 
-function PhilipsRadarAndShit(surface, siloPos, force)
+function PhilipsRadar(surface, siloPos, force)
     
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-33, siloPos.y+3}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y+3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-33, siloPos.y-3}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y-3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-30, siloPos.y-6}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-40, siloPos.y-6}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-27, siloPos.y-6}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-37, siloPos.y-6}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-24, siloPos.y-6}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y-6}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-24, siloPos.y-3}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y-3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-24, siloPos.y}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-24, siloPos.y+3}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-34, siloPos.y+3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-33, siloPos.y-6}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y-6}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-30, siloPos.y+3}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-40, siloPos.y+3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-27, siloPos.y+3}, force = force}
+    local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-37, siloPos.y+3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "radar", position = {siloPos.x-33, siloPos.y}, force = force}
+    local radar = surface.create_entity{name = "radar", position = {siloPos.x-43, siloPos.y}, force = force}
     radar.destructible = false
-    local substation = surface.create_entity{name = "substation", position = {siloPos.x-28, siloPos.y-1}, force = force}
+    local substation = surface.create_entity{name = "substation", position = {siloPos.x-38, siloPos.y-1}, force = force}
     substation.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-30, siloPos.y-1}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-40, siloPos.y-1}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-30, siloPos.y-3}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-40, siloPos.y-3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-30, siloPos.y+1}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-40, siloPos.y+1}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-28, siloPos.y-3}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-38, siloPos.y-3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-28, siloPos.y+1}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-38, siloPos.y+1}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-26, siloPos.y-1}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-36, siloPos.y-1}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-26, siloPos.y-3}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-36, siloPos.y-3}, force = force}
     radar.destructible = false
-    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-26, siloPos.y+1}, force = force}
+    local radar = surface.create_entity{name = "accumulator", position = {siloPos.x-36, siloPos.y+1}, force = force}
     radar.destructible = false
 end

@@ -401,6 +401,11 @@ function GetAreaAroundPos(pos, dist)
                      y=pos.y+dist}}
 end
 
+-- Gets chunk position of a tile.
+function GetChunkPosFromTilePos(tile_pos)
+    return {x=math.floor(tile_pos.x/32), y=math.floor(tile_pos.y/32)}
+end
+
 -- Removes the entity type from the area given
 function RemoveInArea(surface, area, type)
     for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do
@@ -421,6 +426,29 @@ function RemoveInCircle(surface, area, type, pos, dist)
         end
     end
 end
+
+-- Create another surface so that we can modify map settings and not have a screwy nauvis map.
+function CreateGameSurface()
+    
+    -- Get starting surface settings.
+    local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
+
+    if ENABLE_VANILLA_SPAWNS then
+        nauvis_settings.starting_points = CreateVanillaSpawns(VANILLA_SPAWN_COUNT, VANILLA_SPAWN_SPACING)
+        -- DeleteAllChunksExceptCenter(game.surfaces[GAME_SURFACE_NAME])
+
+        -- ISLAND MAP GEN -- WARNING
+        -- nauvis_settings.property_expression_names.elevation = "0_17-island"
+        -- ISLAND MAP GEN -- WARNING
+    end
+
+    -- Create new game surface
+    game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
+end
+
+--------------------------------------------------------------------------------
+-- Functions for removing/modifying enemies
+--------------------------------------------------------------------------------
 
 -- Convenient way to remove aliens, just provide an area
 function RemoveAliensInArea(surface, area)

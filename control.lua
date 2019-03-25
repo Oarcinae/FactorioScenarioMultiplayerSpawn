@@ -44,8 +44,8 @@ require("config")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 
--- In this case, we are using the default surface.
-GAME_SURFACE_NAME="nauvis"
+-- Create a new surface so we can modify map settings at the start.
+GAME_SURFACE_NAME="oarc"
 
 --------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
@@ -57,7 +57,10 @@ GAME_SURFACE_NAME="nauvis"
 ----------------------------------------
 script.on_init(function(event)
 
+    -- Create new game surface
+    CreateGameSurface()
 
+    -- MUST be before other stuff, but after surface creation.
     if ENABLE_SEPARATE_SPAWNS then
         InitSpawnGlobalsAndForces()
     end
@@ -91,10 +94,12 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 end)
 
 
+local first_chunk_generated_flag = false
 ----------------------------------------
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
+
     if ENABLE_REGROWTH then
         OarcRegrowthChunkGenerate(event.area.left_top)
     end
@@ -175,7 +180,7 @@ script.on_event(defines.events.on_player_created, function(event)
     
     -- Move the player to the game surface immediately.
     -- May change this to Lobby in the future.
-    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    game.players[event.player_index].teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
     if ENABLE_LONGREACH then
         GivePlayerLongReach(game.players[event.player_index])
