@@ -27,7 +27,7 @@ local SPAWN_GUI_MAX_HEIGHT = 1000
 -- Meant to be display the first time a player joins.
 function DisplayWelcomeTextGui(player)
     if (TableLength(player.gui.center.children) > 0) then
-        DebugPrint("DisplayWelcomeTextGui called while some other dialog is already displayed!")
+        log("DisplayWelcomeTextGui called while some other dialog is already displayed!")
         return
     end
     player.gui.center.add{name = "welcome_msg",
@@ -68,7 +68,7 @@ function WelcomeTextGuiClick(event)
     local buttonClicked = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -84,12 +84,12 @@ end
 -- Display the spawn options and explanation
 function DisplaySpawnOptions(player)
     if (player == nil) then
-        DebugPrint("DisplaySpawnOptions with no valid player...")
+        log("DisplaySpawnOptions with no valid player...")
         return
     end
 
     if (player.gui.center.spawn_opts ~= nil) then
-        DebugPrint("Tried to display spawn options when it was already displayed!")
+        log("Tried to display spawn options when it was already displayed!")
         return
     end
     player.gui.center.add{name = "spawn_opts",
@@ -268,7 +268,7 @@ function SpawnOptsGuiClick(event)
     local elemName = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -353,7 +353,7 @@ function SpawnOptsGuiClick(event)
         -- If that fails, find a random map edge in a rand direction.
         if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
             newSpawn = FindMapEdge(GetRandomVector(), player.surface)
-            DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+            log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
         -- Create that player's spawn in the global vars
@@ -439,7 +439,7 @@ function SharedSpwnOptsGuiClick(event)
     local buttonClicked = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -512,7 +512,7 @@ function SharedSpawnJoinWaitMenuClick(event)
     local elemName = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -538,7 +538,7 @@ function SharedSpawnJoinWaitMenuClick(event)
             end
         end
 
-        DebugPrint("ERROR! Failed to remove player from joinQueue!")
+        log("ERROR! Failed to remove player from joinQueue!")
     end
 end
 
@@ -647,7 +647,7 @@ function SpawnCtrlGuiOptionsSelect(event)
     local name = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -679,7 +679,7 @@ function SpawnCtrlGuiClick(event)
     local elemName = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -876,7 +876,7 @@ function BuddySpawnOptsGuiClick(event)
     local elemName = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -1013,7 +1013,7 @@ function BuddySpawnWaitMenuClick(event)
     local elemName = event.element.name
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -1043,7 +1043,7 @@ end
 function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -1103,7 +1103,7 @@ function BuddySpawnRequestMenuClick(event)
     local requesterOptions = {}
 
     if not player then
-        DebugPrint("Another gui click happened with no valid player...")
+        log("Another gui click happened with no valid player...")
         return
     end
 
@@ -1124,7 +1124,7 @@ function BuddySpawnRequestMenuClick(event)
 
         if (requesterName == nil) then
             player.print("Error! Invalid buddy info...")
-            DebugPrint("Error! Invalid buddy info...")
+            log("Error! Invalid buddy info...")
 
             player.gui.center.buddy_request_menu.destroy()
             DisplaySpawnOptions(player)
@@ -1167,7 +1167,7 @@ function BuddySpawnRequestMenuClick(event)
         -- If that fails, find a random map edge in a rand direction.
         if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
             newSpawn = FindMapEdge(GetRandomVector(), player.surface)
-            DebugPrint("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+            log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
         -- Create that spawn in the global vars

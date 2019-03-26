@@ -263,7 +263,7 @@ function GetRandomVector()
         randVec.x = math.random(-3,3)
         randVec.y = math.random(-3,3)
     end
-    DebugPrint("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
+    log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
     return randVec
 end
 
@@ -329,7 +329,7 @@ function FindMapEdge(directionVec, surface)
         end
     end
 
-    -- DebugPrint("spawn: x=" .. position.x .. ", y=" .. position.y)
+    -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
     return position
 end
 
@@ -354,7 +354,7 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
         -- Enforce a max number of tries
         tryCounter = tryCounter + 1
         if (tryCounter > maxTries) then
-            DebugPrint("FindUngeneratedCoordinates - Max Tries Hit!")
+            log("FindUngeneratedCoordinates - Max Tries Hit!")
             break
  
         -- Check that the distance is within the min,max specified
@@ -369,7 +369,7 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
         end       
     end
 
-    DebugPrint("spawn: x=" .. position.x .. ", y=" .. position.y)
+    log("spawn: x=" .. position.x .. ", y=" .. position.y)
     return position
 end
 
@@ -543,7 +543,7 @@ function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
                 entity.destroy()
         end
     else
-        DebugPrint("RemoveWormsInArea had empty worm_types list!")
+        log("RemoveWormsInArea had empty worm_types list!")
     end
 end
 

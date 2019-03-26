@@ -68,7 +68,7 @@ function FindUnusedSpawns(event)
                 end
 
                 table.remove(global.delayedSpawns, i)
-                DebugPrint("Removing player from delayed spawn queue: " .. player.name)
+                log("Removing player from delayed spawn queue: " .. player.name)
             end
         end
 
@@ -94,7 +94,7 @@ function FindUnusedSpawns(event)
             nearOtherSpawn = false
             for spawnPlayerName,otherSpawnPos in pairs(global.uniqueSpawns) do
                 if ((spawnPlayerName ~= player.name) and (getDistance(spawnPos, otherSpawnPos.pos) < (ENFORCE_LAND_AREA_TILE_DIST*3))) then
-                    DebugPrint("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
+                    log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
                     nearOtherSpawn = true
                 end
             end
@@ -211,7 +211,7 @@ end
 function ModifyEnemySpawnsNearPlayerStartingAreas(event)
 
     if (not event.entity or not (event.entity.force.name == "enemy") or not event.entity.position) then
-        DebugPrint("ModifyBiterSpawns - Unexpected use.")
+        log("ModifyBiterSpawns - Unexpected use.")
         return
     end
 
@@ -224,21 +224,21 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
             if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
                 event.entity.destroy()
                 surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
-                DebugPrint("Downgraded biter close to spawn.")
+                log("Downgraded biter close to spawn.")
             elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
                 event.entity.destroy()
                 surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
-                DebugPrint("Downgraded spitter close to spawn.")
+                log("Downgraded spitter close to spawn.")
             end
         elseif (getDistance(enemy_pos, spawn.pos) < REDUCED_DANGER_AREA_REDUCTION_RATIO) then
             if (enemy_name == "behemoth-biter") then
                 event.entity.destroy()
                 surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
-                DebugPrint("Downgraded biter further from spawn.")
+                log("Downgraded biter further from spawn.")
             elseif (enemy_name == "behemoth-spitter") then
                 event.entity.destroy()
                 surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
-                DebugPrint("Downgraded spitter further from spawn.")
+                log("Downgraded spitter further from spawn.")
             end
         end
     end
@@ -481,7 +481,7 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
     else      
-        DebugPrint("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
+        log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
         SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
     end
 end
@@ -572,7 +572,7 @@ function CreatePlayerCustomForce(player)
     
     -- Check if force already exists
     if (game.forces[player.name] ~= nil) then
-        DebugPrint("Force already exists!")
+        log("Force already exists!")
         player.force = game.forces[player.name]
         return game.forces[player.name]
 
@@ -622,7 +622,7 @@ function CreateVanillaSpawns(count, spacing)
     log("sqrt_half " .. sqrt_half)
 
     if (sqrt_count < 1) then
-        DebugPrint("CreateVanillaSpawns less than 1!!")
+        log("CreateVanillaSpawns less than 1!!")
         return
     end
 
@@ -695,7 +695,7 @@ function FindUnusedVanillaSpawn(surface, target_distance)
         spawn_pos.y = global.vanillaSpawns[best_key].y
         table.remove(global.vanillaSpawns, best_key)
     end
-    DebugPrint("Found unused vanilla spawn: x=" .. spawn_pos.x .. ",y=" .. spawn_pos.y)
+    log("Found unused vanilla spawn: x=" .. spawn_pos.x .. ",y=" .. spawn_pos.y)
     return spawn_pos
 end
 

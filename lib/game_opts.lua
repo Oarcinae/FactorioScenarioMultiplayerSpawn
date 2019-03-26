@@ -143,7 +143,7 @@ function GameOptionsGuiClick(event)
             local banPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
             if (game.players[banPlayer]) then
                 game.ban_player(banPlayer, "Banned from admin panel.")
-                DebugPrint("Banning " .. banPlayer)
+                log("Banning " .. banPlayer)
             end
         end
     end
@@ -155,7 +155,7 @@ function GameOptionsGuiClick(event)
             local resetPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
             if (game.players[resetPlayer]) then
                 SeparateSpawnsPlayerCreated(resetPlayer)
-                DebugPrint("Resetting " .. resetPlayer)
+                log("Resetting " .. resetPlayer)
             end
         end
     end

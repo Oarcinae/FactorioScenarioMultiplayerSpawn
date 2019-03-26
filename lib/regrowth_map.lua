@@ -98,7 +98,7 @@ end
 function OarcRegrowthCheckChunkEmpty(event)
     if ((event.entity.force ~= nil) and (event.entity.force ~= "neutral") and (event.entity.force ~= "enemy")) then
         if CheckChunkEmpty(event.entity.position) then
-            DebugPrint("Resetting chunk timer."..event.entity.position.x.." "..event.entity.position.y)
+            log("Resetting chunk timer."..event.entity.position.x.." "..event.entity.position.y)
             OarcRegrowthForceRefreshChunk(event.entity.position, 0)
         end
     end
@@ -249,7 +249,7 @@ function OarcRegrowthCheckArray()
         -- Increment Y
         if (global.chunk_regrow.y_index > global.chunk_regrow.max_y) then
             global.chunk_regrow.y_index = global.chunk_regrow.min_y
-            DebugPrint("Finished checking regrowth array."..global.chunk_regrow.min_x.." "..global.chunk_regrow.max_x.." "..global.chunk_regrow.min_y.." "..global.chunk_regrow.max_y)
+            log("Finished checking regrowth array."..global.chunk_regrow.min_x.." "..global.chunk_regrow.max_x.." "..global.chunk_regrow.min_y.." "..global.chunk_regrow.max_y)
         else
             global.chunk_regrow.y_index = global.chunk_regrow.y_index + 1
         end
@@ -296,7 +296,7 @@ function OarcRegrowthRemoveAllChunks()
             end
         else
 
-            -- DebugPrint("Chunk no longer expired?")
+            -- log("Chunk no longer expired?")
         end
     end
 end
