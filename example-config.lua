@@ -27,8 +27,6 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
 
-SPAWN_WARN_MSG = "Due to the way this scenario works, it may take some time for the land around your new spawn area to generate... Please wait for 10-20 seconds when you select your first spawn."
-
 CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | discord.gg/TPYxRrS"
 
 -- This should be false for you, it's just a convenience for me.
