@@ -375,17 +375,6 @@ MIN_ONLINE_TIME_IN_MINUTES = 15
 MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 --------------------------------------------------------------------------------
--- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
--- These things were added from other people's requests/changes.
--- It is very very basic only, nothing fancy.
---------------------------------------------------------------------------------
--- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
-ENABLE_ANTI_GRIEFING = true
-
--- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 15 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
-
---------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options
 --------------------------------------------------------------------------------
 

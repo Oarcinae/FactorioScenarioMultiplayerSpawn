@@ -619,7 +619,6 @@ function CreateVanillaSpawns(count, spacing)
 
     -- Need to know how much to offset the grid.
     local sqrt_half = math.floor((sqrt_count-1)/2)
-    log("sqrt_half " .. sqrt_half)
 
     if (sqrt_count < 1) then
         log("CreateVanillaSpawns less than 1!!")
@@ -678,7 +677,7 @@ function FindUnusedVanillaSpawn(surface, target_distance)
                 local new_distance = math.abs(math.sqrt((v.x^2) + (v.y^2)) - target_distance)
                 if (new_distance < best_distance) then
                     best_key = k
-                    best_distance = math.sqrt((v.x^2) + (v.y^2))
+                    best_distance = new_distance
                 end
             end
         
