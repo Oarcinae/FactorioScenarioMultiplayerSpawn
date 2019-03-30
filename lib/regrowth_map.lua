@@ -148,7 +148,7 @@ function OarcRegrowthMarkForRemoval(pos, chunk_radius)
                 global.chunk_regrow.map[x] = {}
             end
             global.chunk_regrow.map[x][y] = nil
-            table.insert(global.chunk_regrow.removal_list, {x=x,y=y})
+            table.insert(global.chunk_regrow.removal_list, {pos={x=x,y=y},force=true})
         end
     end
 end
@@ -269,8 +269,9 @@ function OarcRegrowthCheckArray()
         -- Check chunk actually exists
         if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=(global.chunk_regrow.x_index),
                                                                 y=(global.chunk_regrow.y_index)})) then
-            table.insert(global.chunk_regrow.removal_list, {x=global.chunk_regrow.x_index,
-                                                            y=global.chunk_regrow.y_index})
+            table.insert(global.chunk_regrow.removal_list, {pos={x=global.chunk_regrow.x_index,
+                                                            y=global.chunk_regrow.y_index},
+                                                            force=false})
             global.chunk_regrow.map[global.chunk_regrow.x_index][global.chunk_regrow.y_index] = nil
         end
     end
@@ -279,14 +280,20 @@ end
 -- Remove all chunks at same time to reduce impact to FPS/UPS
 function OarcRegrowthRemoveAllChunks()
     while (#global.chunk_regrow.removal_list > 0) do
-        local c_pos = table.remove(global.chunk_regrow.removal_list)
+        local c_remove = table.remove(global.chunk_regrow.removal_list)
+        local c_pos = c_remove.pos
         local c_timer = global.chunk_regrow.map[c_pos.x][c_pos.y]
 
         -- Confirm chunk is still expired
         if (c_timer == nil) then
 
-            -- Check for pollution
-            if (game.surfaces[GAME_SURFACE_NAME].get_pollution({c_pos.x*32,c_pos.y*32}) > 0) then
+            -- If it is FORCE removal, then remove it regardless of pollution.
+            if (c_remove.force) then
+                game.surfaces[GAME_SURFACE_NAME].delete_chunk(c_pos)
+                global.chunk_regrow.map[c_pos.x][c_pos.y] = nil
+
+            -- If it is a normal timeout removal, don't do it if there is pollution in the chunk.
+            elseif (game.surfaces[GAME_SURFACE_NAME].get_pollution({c_pos.x*32,c_pos.y*32}) > 0) then
                 global.chunk_regrow.map[c_pos.x][c_pos.y] = game.tick
 
             -- Else delete the chunk

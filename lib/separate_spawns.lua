@@ -107,6 +107,7 @@ function FindUnusedSpawns(event)
 
                 global.uniqueSpawns[player.name] = nil
 
+                log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
                 SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..MIN_ONLINE_TIME_IN_MINUTES.." minutes of joining.")
                 OarcRegrowthMarkForRemoval(spawnPos, 10)
                 global.chunk_regrow.force_removal_flag = game.tick
