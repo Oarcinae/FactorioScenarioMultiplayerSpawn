@@ -11,15 +11,11 @@
 -- Make sure SERVER_OWNER_IS_OARC = false
 --------------------------------------------------------------------------------
 
--- This stuff is printed in the console. It's probably ignored most of the time.
-WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE!]"
-GAME_MODE_MSG = "In the current game mode, a satellite must be launched from an existing far away rocket silo to win!"
-MODULES_ENABLED = "Soft Mods Enabled: Separate Spawns, Long-Reach, Autofill, Player List"
-
--- This stuff is shown in the welcome GUI. Make sure it's valid.
-WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE!]"
+-- This stuff is shown in the welcome GUI and Info panel. Make sure it's valid.
+WELCOME_MSG_TITLE = "[INSERT SERVER OWNER MSG HERE test title!]"
+WELCOME_MSG = "[INSERT SERVER OWNER MSG HERE test msg!]" -- Printed to player on join as well.
 SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
-"This server is running a custom scenario that changes spawn locations."
+"This server is running a custom scenario that allows individual starting areas on the map."
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "0.17 experimental release. New vanilla spawns!\n"..
@@ -28,10 +24,6 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
 
 CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | discord.gg/TPYxRrS"
-
--- This should be false for you, it's just a convenience for me.
-SERVER_OWNER_IS_OARC = false
-
 
 --------------------------------------------------------------------------------
 -- Module Enables
@@ -154,10 +146,12 @@ PLAYER_RESPAWN_START_ITEMS = {
 CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 5
 
 -- Near Distance in chunks
+-- When a player selects "near" spawn, they will be in or as close to this range as possible.
 NEAR_MIN_DIST = 0
 NEAR_MAX_DIST = 50
 
 -- Far Distance in chunks
+-- When a player selects "far" spawn, they will be at least this distance away.
 FAR_MIN_DIST = 200
 FAR_MAX_DIST = 300
 
@@ -167,7 +161,11 @@ FAR_MAX_DIST = 300
 ---------------------------------------
 
 -- Num total spawns pre-assigned (minimum number)
-VANILLA_SPAWN_COUNT = 100
+-- There is currently a bug in factorio that can cause desyncs if this number is much higher.
+-- https://forums.factorio.com/viewtopic.php?f=7&t=68657
+-- Not sure you need that much anyways....
+-- Points are in an even grid layout.
+VANILLA_SPAWN_COUNT = 900
 
 -- Num tiles between each spawn. (I recommend at least 1000)
 VANILLA_SPAWN_SPACING = 2000
@@ -225,6 +223,7 @@ OARC_CFG = {
         angle_final = 4.46 -- 4.46 is approx NNW.
     },
     -- Resource tiles
+    -- If you are running with mods like bobs/angels, you'll want to customize this.
     resource_tiles =
     {
         ["iron-ore"] = 
@@ -319,6 +318,7 @@ OARC_CFG = {
 
 ---------------------------------------
 -- Safe Spawn Area Options
+-- The default settings here are balanced for my recommended map gen settings (close to train world).
 ---------------------------------------
 
 -- Safe area has no aliens
@@ -351,7 +351,7 @@ ENABLE_SEPARATE_TEAMS = true
 MAIN_FORCE = "Main Force"
 
 -- Enable if people can spawn at the main base
--- THIS CURRENTLY IS BROKEN! YOU WILL NOT GET ANY RESOURCES IF YOU USE RSO!
+-- THIS CURRENTLY IS BROKEN and not supported. I will likely remove this in the future.
 ENABLE_DEFAULT_SPAWN = false -- DON'T USE THIS
 
 -- Enable if people can allow others to join their base
@@ -360,7 +360,7 @@ MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 0
 
 -- Share local team chat with all teams
 -- This makes it so you don't have to use /s
--- but it means you can't talk privately with your own team.
+-- But it also means you can't talk privately with your own team.
 ENABLE_SHARED_TEAM_CHAT = true
 
 ---------------------------------------
@@ -411,7 +411,6 @@ RESOURCE_DIST_BONUS = 2
 --------------------------------------------------------------------------------
 AUTOFILL_TURRET_AMMO_QUANTITY = 10
 
-
 --------------------------------------------------------------------------------
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
 -- These things were added from other people's requests/changes and are disabled by default.
@@ -421,15 +420,3 @@ ENABLE_ANTI_GRIEFING = true
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
 GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
-
--------------------------------------------------------------------------------
--- DEBUG / Custom stuff
---------------------------------------------------------------------------------
-
--- DEBUG prints for me in game.
-global.oarcDebugEnabled = false
-
--- These are my specific welcome messages that get used only if I am the user
--- that creates the game.
-WELCOME_MSG_OARC = "Welcome to Oarc's official server! Join the discord here: discord.gg/TPYxRrS"
-WELCOME_MSG_TITLE_OARC = "Welcome to Oarc's Server!"

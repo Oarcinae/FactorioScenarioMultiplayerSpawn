@@ -75,8 +75,6 @@ script.on_init(function(event)
         GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
     end
 
-    SetServerWelcomeMessages()
-
     if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
         OarcRegrowthInit()
     end

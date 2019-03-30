@@ -20,13 +20,6 @@ TICKS_PER_HOUR = TICKS_PER_MINUTE * 60
 -- General Helper Functions
 --------------------------------------------------------------------------------
 
--- Print debug only to me while testing.
-function DebugPrint(msg)
-    if ((game.players["Oarc"] ~= nil) and (global.oarcDebugEnabled)) then
-        game.players["Oarc"].print("DEBUG: " .. msg)
-    end
-end
-
 -- Prints flying text.
 -- Color is optional
 function FlyingText(msg, pos, color, surface)
@@ -48,18 +41,6 @@ end
 function SendMsg(playerName, msg)
     if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
         game.players[playerName].print(msg)
-    end
-end
-
--- Special case for ensuring that if I create the server, my messages are
--- used instead of the generic insert msg warning.
-function SetServerWelcomeMessages()
-    if (SERVER_OWNER_IS_OARC) then
-        global.welcome_msg = WELCOME_MSG_OARC
-        global.welcome_msg_title = WELCOME_MSG_TITLE_OARC
-    else
-        global.welcome_msg = WELCOME_MSG
-        global.welcome_msg_title = WELCOME_MSG_TITLE
     end
 end
 
@@ -923,9 +904,7 @@ end
 -- Display messages to a user everytime they join
 function PlayerJoinedMessages(event)
     local player = game.players[event.player_index]
-    player.print(global.welcome_msg)
-    player.print(GAME_MODE_MSG)
-    player.print(MODULES_ENABLED)
+    player.print(WELCOME_MSG)
 end
 
 -- Remove decor to save on file size

@@ -25,7 +25,7 @@ local function ExpandGameOptionsGui(player)
                                             direction="vertical"}
 
         -- General Server Info:
-        AddLabel(frame, "info_1", global.welcome_msg, my_longer_label_style)
+        AddLabel(frame, "info_1", WELCOME_MSG, my_longer_label_style)
         AddLabel(frame, "info_2", SERVER_MSG, my_longer_label_style)
         AddSpacer(frame, "info_spacer1")
 
