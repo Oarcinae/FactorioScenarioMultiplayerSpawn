@@ -102,3 +102,8 @@ Praise be to Mylon
 Feel free to submit bugs/fixes/requests/pulls/forks whatever you want.
 
 I do not plan on supporting PvP, but I will help anyone who wants to make it a configurable option.
+
+## Contact
+
+discord.gg/trnpcen
+oarcinae@gmail.com
