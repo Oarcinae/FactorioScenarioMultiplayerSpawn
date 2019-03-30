@@ -753,7 +753,7 @@ function SpawnCtrlGuiClick(event)
             -- If player exists, then do stuff.
             if (game.players[joinQueuePlayerChoice]) then
                 -- Send an announcement
-                SendBroadcastMsg({"oarc-reject-joiner", joinQueuePlayerChoice, player.name})
+                SendBroadcastMsg({"oarc-player-joining-base", joinQueuePlayerChoice, player.name})
 
                 -- Close the waiting players menu
                 if (game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu) then
