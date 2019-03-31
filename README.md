@@ -1,9 +1,9 @@
 # FactorioScenarioMultiplayerSpawn
 A custom scenario for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
-0.16 is now stable and well supported!
+0.17 is in a dev branch "dev_0.17". At this point it's basically stable. I will merge to master once 0.17 factorio is made stable.
 
-0.17 IS IN WORK! I will release a dev branch once it's ready for testing!
+0.16 is stable but will not receive any further updates.
 
 ## Instructions
 
