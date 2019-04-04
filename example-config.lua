@@ -262,44 +262,27 @@ OARC_CFG = {
         --     y_offset = -34
         -- }
 
-        -- ANGELS example
-        -- ["angels-ore1"] = 
-        -- {
-        --     amount = 1500,
-        --     size = 16,
-        --     x_offset = -29,
-        --     y_offset = 16
-        -- },
-        -- ["angels-ore3"] = 
-        -- {
-        --     amount = 1500,
-        --     size = 14,
-        --     x_offset = -28,
-        --     y_offset = -3
-        -- },
-        -- ["angels-ore5"] = 
-        -- {
-        --     amount = 1000,
-        --     size = 12,
-        --     x_offset = -27,
-        --     y_offset = -34
-        -- },
-        -- ["angels-ore6"] = 
-        -- {
-        --     amount = 1500,
-        --     size = 12,
-        --     x_offset = -27,
-        --     y_offset = -20
-        -- },
-        -- ["coal"] = 
-        -- {
-        --     amount = 0,
-        --     size = 0,
-        --     x_offset = 17,
-        --     y_offset = -34
-        -- }
+        -- ####### Bobs + Angels #######
+        -- DISABLE STARTING OIL PATCHES!
+        -- Coal                = coal
+        -- Saphirite           = angels-ore1
+        -- Stiratite           = angels-ore3
+        -- Rubyte              = angels-ore5
+        -- Bobmonium           = angels-ore6
+
+        -- ########## Bobs Ore ##########
+        -- Iron                = iron-ore
+        -- Copper              = copper-ore
+        -- Coal                = coal
+        -- Stone               = stone
+        -- Tin                 = tin-ore
+        -- Lead (Galena)       = lead-ore
+
+        -- See https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn/issues/11#issuecomment-479724909
+        -- for full examples.
     },
-    -- Special resources like oil
+    
+    -- Special resource patches like oil
     resource_patches =
     {
         ["crude-oil"] = 
