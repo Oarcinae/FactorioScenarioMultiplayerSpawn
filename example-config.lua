@@ -1,4 +1,4 @@
--- config.lua (Rename this file to config.lua to use it)
+-- example-config.lua (Rename this file to config.lua to use it)
 -- Feb 2019
 -- Configuration Options
 -- 
@@ -174,37 +174,66 @@ VANILLA_SPAWN_SPACING = 2000
 -- Resource & Spawn Circle Options
 ---------------------------------------
 
--- Allow players to choose to spawn with a moat
-SPAWN_MOAT_CHOICE_ENABLED = true
--- If you change the spawn area size, you might have to adjust this as well
-MOAT_SIZE_MODIFIER = 1
-
--- THIS IS WHAT SETS THE SPAWN CIRCLE SIZE!
--- Create a circle of land area for the spawn
--- If you make this much bigger than a few chunks, good luck.
-ENFORCE_LAND_AREA_TILE_DIST = CHUNK_SIZE*1.8
-
-
 -- This is where you can modify what resources spawn, how much, where, etc.
 -- Once you have a config you like, it's a good idea to save it for later use
 -- so you don't lost it if you update the scenario.
 OARC_CFG = {
+
     -- Misc spawn related config.
     gen_settings = {
+        
+        -- THIS IS WHAT SETS THE SPAWN CIRCLE SIZE!
+        -- Create a circle of land area for the spawn
+        -- If you make this much bigger than a few chunks, good luck.
+        land_area_tiles = CHUNK_SIZE*1.8,
+
+        -- Allow players to choose to spawn with a moat
+        moat_choice_enabled = true,
+
+        -- If you change the spawn area size, you might have to adjust this as well
+        moat_size_modifier = 1,
+
         -- Start resource shape. true = circle, false = square.
         resources_circle_shape = true,
+
         -- Force the land area circle at the spawn to be fully grass
         force_grass = true,
+
         -- Spawn a circle/octagon of trees around the base outline.
         tree_circle = true,
         tree_octagon = false,
     },
+
+    -- Safe Spawn Area Options
+    -- The default settings here are balanced for my recommended map gen settings (close to train world).
+    safe_area =
+    {
+        -- Safe area has no aliens
+        -- This is the radius in tiles of safe area.
+        safe_radius = CHUNK_SIZE*10,
+
+        -- Warning area has significantly reduced aliens
+        -- This is the radius in tiles of warning area.
+        warn_radius = CHUNK_SIZE*20,
+
+        -- 1 : X (spawners alive : spawners destroyed) in this area
+        warn_reduction = 20,
+
+        -- Danger area has slightly reduce aliens
+        -- This is the radius in tiles of danger area.
+        danger_radius = CHUNK_SIZE*50,
+
+        -- 1 : X (spawners alive : spawners destroyed) in this area
+        danger_reduction = 5,
+    },
+
     -- Location of water strip (horizontal)
     water = {
         x_offset = -4,
         y_offset = -48,
         length = 8
     },
+
     -- Handle placement of starting resources
     resource_rand_pos_settings =
     {
@@ -222,6 +251,7 @@ OARC_CFG = {
         -- angle_offset and angle_final determine spacing and placement.
         angle_final = 4.46 -- 4.46 is approx NNW.
     },
+
     -- Resource tiles
     -- If you are running with mods like bobs/angels, you'll want to customize this.
     resource_tiles =
@@ -294,32 +324,8 @@ OARC_CFG = {
             x_offset_next = 4,
             y_offset_next = 0
         }
-    }
+    },
 }
-
-
-
----------------------------------------
--- Safe Spawn Area Options
--- The default settings here are balanced for my recommended map gen settings (close to train world).
----------------------------------------
-
--- Safe area has no aliens
--- +/- this in x and y direction
-SAFE_AREA_TILE_DIST = CHUNK_SIZE*10
-
--- Warning area has significantly reduced aliens
--- +/- this in x and y direction
-WARNING_AREA_TILE_DIST = CHUNK_SIZE*20
-
--- 1 : X (spawners alive : spawners destroyed) in this area
-WARN_AREA_REDUCTION_RATIO = 20
-
--- Danger area has slightly reduce aliens
-REDUCED_DANGER_AREA_TILE_DIST = CHUNK_SIZE*50
-
--- 1 : X (spawners alive : spawners destroyed) in this area
-REDUCED_DANGER_AREA_REDUCTION_RATIO = 5
 
 ---------------------------------------
 -- Other Forces/Teams Options
@@ -332,10 +338,6 @@ ENABLE_SEPARATE_TEAMS = true
 
 -- Main force is what default players join
 MAIN_FORCE = "Main Force"
-
--- Enable if people can spawn at the main base
--- THIS CURRENTLY IS BROKEN and not supported. I will likely remove this in the future.
-ENABLE_DEFAULT_SPAWN = false -- DON'T USE THIS
 
 -- Enable if people can allow others to join their base
 ENABLE_SHARED_SPAWNS = true
@@ -355,7 +357,6 @@ RESPAWN_COOLDOWN_TICKS = TICKS_PER_MINUTE * RESPAWN_COOLDOWN_IN_MINUTES
 -- Require playes to be online for at least X minutes
 -- Else their character is removed and their spawn point is freed up for use
 MIN_ONLINE_TIME_IN_MINUTES = 15
-MIN_ONLINE_TIME = TICKS_PER_MINUTE * MIN_ONLINE_TIME_IN_MINUTES
 
 --------------------------------------------------------------------------------
 -- Frontier Rocket Silo Options

@@ -42,7 +42,6 @@ function OarcRegrowthInit()
     global.chunk_regrow = {}
     global.chunk_regrow.map = {}
     global.chunk_regrow.removal_list = {}
-    global.chunk_regrow.rso_region_roll_counter = 0
     global.chunk_regrow.player_refresh_index = 1
     global.chunk_regrow.min_x = 0
     global.chunk_regrow.max_x = 0
@@ -329,8 +328,8 @@ function OarcRegrowthOnTick()
     -- Send a broadcast warning before it happens.
     if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-601) then
         if (#global.chunk_regrow.removal_list > 100) then
-            if (ENABLE_REGROWTH) then
-                SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
+            if (global.ocfg["enable-regrowth"]) then
+                SendBroadcastMsg("Map cleanup in 10 seconds... Unused and old map chunks will be deleted!")
             else
                 SendBroadcastMsg("Map cleanup in 10 seconds. Cleaning up an abadoned base!")
             end
@@ -352,8 +351,8 @@ end
 function OarcRegrowthForceRemovalOnTick()
     -- Catch force remove flag
     if (game.tick == global.chunk_regrow.force_removal_flag+60) then
-        if (ENABLE_REGROWTH) then
-            SendBroadcastMsg("Map cleanup in 10 seconds, if you don't want to lose what you found drop a powered radar on it!")
+        if (global.ocfg["enable-regrowth"]) then
+            SendBroadcastMsg("Map cleanup in 10 seconds... Unused and old map chunks will be deleted!")
         else
             SendBroadcastMsg("Map cleanup in 10 seconds. Cleaning up an abadoned base!")
         end
@@ -361,7 +360,7 @@ function OarcRegrowthForceRemovalOnTick()
     if (game.tick == global.chunk_regrow.force_removal_flag+660) then
         OarcRegrowthRemoveAllChunks()
         
-        if (ENABLE_REGROWTH) then
+        if (global.ocfg["enable-regrowth"]) then
             SendBroadcastMsg("Map cleanup done, sorry for your loss.")
         else
             SendBroadcastMsg("Abandoned base cleanup complete.")

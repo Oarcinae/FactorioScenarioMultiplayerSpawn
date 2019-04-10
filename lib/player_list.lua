@@ -34,7 +34,7 @@ local function ExpandPlayerListGui(player)
         end
 
         -- List offline players
-        if (PLAYER_LIST_OFFLINE_PLAYERS) then
+        if (global.ocfg["list-offline-players"]) then
             AddLabel(scrollFrame, "offline_title_msg", "Offline Players:", my_label_style)
             for _,player in pairs(game.players) do
                 if (not player.connected) then

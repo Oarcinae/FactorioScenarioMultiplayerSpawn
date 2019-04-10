@@ -25,8 +25,8 @@ local function ExpandGameOptionsGui(player)
                                             direction="vertical"}
 
         -- General Server Info:
-        AddLabel(frame, "info_1", WELCOME_MSG, my_longer_label_style)
-        AddLabel(frame, "info_2", SERVER_MSG, my_longer_label_style)
+        AddLabel(frame, "info_1", global.ocfg["welcome-msg"], my_longer_label_style)
+        AddLabel(frame, "info_2", global.ocfg["server-rules"], my_longer_label_style)
         AddSpacer(frame, "info_spacer1")
 
         -- Enemy Settings:
@@ -55,44 +55,41 @@ local function ExpandGameOptionsGui(player)
         if (not ENABLE_SEPARATE_SPAWNS) then
             soft_mods_string = "Oarc Core [DISABLED!]"
         end
-        -- if (ENABLE_RSO) then
-        --     soft_mods_string = soft_mods_string .. ", RSO"
-        -- end
-        if (ENABLE_UNDECORATOR) then
+        if (global.ocfg["enable-undecorator"]) then
             soft_mods_string = soft_mods_string .. ", Undecorator"
         end
-        if (ENABLE_TAGS) then
+        if (global.ocfg["enable-tags"]) then
             soft_mods_string = soft_mods_string .. ", Tags"
         end
-        if (ENABLE_LONGREACH) then
+        if (global.ocfg["enable-long-reach"]) then
             soft_mods_string = soft_mods_string .. ", Long Reach"
         end
-        if (ENABLE_AUTOFILL) then
+        if (global.ocfg["enable-autofill"]) then
             soft_mods_string = soft_mods_string .. ", Auto Fill"
         end
-        if (ENABLE_PLAYER_LIST) then
+        if (global.ocfg["enable-player-list"]) then
             soft_mods_string = soft_mods_string .. ", Player List"
         end
 
         local game_info_str = "Soft Mods Enabled: " .. soft_mods_string
 
         -- Spawn options:
-        if (ENABLE_SEPARATE_TEAMS) then
+        if (global.ocfg["enable-separate-teams"]) then
             game_info_str = game_info_str.."\n".."You are allowed to spawn on your own team (have your own research tree). All teams are friendly!"
         end
-        if (ENABLE_BUDDY_SPAWN) then
+        if (global.ocfg["enable-buddy-spawn"]) then
             game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
         end
-        if (ENABLE_SHARED_SPAWNS) then
+        if (global.ocfg["enable-shared-spawns"]) then
             game_info_str = game_info_str.."\n".."Spawn hosts may choose to share their spawn and allow other players to join them."
         end
-        if (ENABLE_SEPARATE_TEAMS and ENABLE_SHARED_TEAM_VISION) then
+        if (global.ocfg["enable-separate-teams"] and global.ocfg["enable-shared-team-vision"]) then
             game_info_str = game_info_str.."\n".."Everyone (all teams) have shared vision."
         end
-        if (FRONTIER_ROCKET_SILO_MODE) then
+        if (global.ocfg["frontier-rocket-silo"]) then
             game_info_str = game_info_str.."\n".."Silos are NOT craftable. There is at least one already located on the map."
         end
-        if (ENABLE_REGROWTH) then
+        if (global.ocfg["enable-regrowth"]) then
             game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
         end
         if (ENABLE_POWER_ARMOR_QUICK_START) then
@@ -101,8 +98,8 @@ local function ExpandGameOptionsGui(player)
 
         AddLabel(frame, "game_info_label", game_info_str, my_longer_label_style)
 
-        if (ENABLE_ABANDONED_BASE_REMOVAL) then
-            AddLabel(frame, "leave_warning_msg", "If you leave within " .. MIN_ONLINE_TIME_IN_MINUTES .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
+        if (global.ocfg["enable-abandoned-base-removal"]) then
+            AddLabel(frame, "leave_warning_msg", "If you leave within " .. global.ocfg["minimum-online-time"] .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
             frame.leave_warning_msg.style.font_color=my_color_red
         end
 
@@ -121,8 +118,8 @@ local function ExpandGameOptionsGui(player)
             frame.add{name="ban_player", type="button", caption="Ban Player"}
             frame.add{name="restart_player", type="button", caption="Restart Player"}
             
-            AddLabel(frame, "restart_warning_msg", "You might CRASH the scenario by using Restart Player. Not 100% tested yet. Will not work if player has any center gui visible.", my_longer_label_style)
-            frame.restart_warning_msg.style.font_color=my_color_red
+            -- AddLabel(frame, "restart_warning_msg", "You might CRASH the scenario by using Restart Player. Not 100% tested yet. Will not work if player has any center gui visible.", my_longer_label_style)
+            -- frame.restart_warning_msg.style.font_color=my_color_red
         end
     end
 end
