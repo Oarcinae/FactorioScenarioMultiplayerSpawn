@@ -429,31 +429,15 @@ function InitSpawnGlobalsAndForces()
         global.buddySpawnOptions = {}
     end
 
-    -- Name a new force to be the default force.
-    -- This is what any new player is assigned to when they join, even before they spawn.
-    local main_force = game.create_force(global.ocfg.main_force)
-    main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
-    
-    -- Share vision with other forces.
-    if global.ocfg.enable_shared_team_vision then
-        game.forces[global.ocfg.main_force].share_chart = true
-    end
-
-    if global.ocfg.enable_research_queue then
-        game.forces[global.ocfg.main_force].research_queue_enabled = true
-    end
-
     -- Silo info
     if (global.siloPosition == nil) then
         global.siloPosition = {}
     end
 
-    -- No PVP. This is where you would change things if you want PVP I guess.
-    SetCeaseFireBetweenAllForces()
-    SetFriendlyBetweenAllForces()
-    if (ENABLE_ANTI_GRIEFING) then
-        AntiGriefing(game.forces[global.ocfg.main_force])
-    end
+    -- Name a new force to be the default force.
+    -- This is what any new player is assigned to when they join, even before they spawn.
+    local main_force = CreateForce(global.ocfg.main_force)
+    main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
 end
 
 
@@ -573,18 +557,17 @@ function SendPlayerToRandomSpawn(player)
     end
 end
 
-function CreatePlayerCustomForce(player)
+function CreateForce(force_name)
     local newForce = nil
     
     -- Check if force already exists
-    if (game.forces[player.name] ~= nil) then
+    if (game.forces[force_name] ~= nil) then
         log("Force already exists!")
-        player.force = game.forces[player.name]
-        return game.forces[player.name]
+        return game.forces[global.ocfg.main_force]
 
-    -- Create a new force using the player's name
+    -- Create a new force
     elseif (TableLength(game.forces) < MAX_FORCES) then
-        newForce = game.create_force(player.name)
+        newForce = game.create_force(force_name)
         if global.ocfg.enable_shared_team_vision then
             newForce.share_chart = true
         end
@@ -595,15 +578,26 @@ function CreatePlayerCustomForce(player)
         if global.ocfg.frontier_rocket_silo and global.ocfg.frontier_silo_vision then
             ChartRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME], newForce)
         end
-        player.force = newForce
         SetCeaseFireBetweenAllForces()
         SetFriendlyBetweenAllForces()
         if (ENABLE_ANTI_GRIEFING) then
             AntiGriefing(newForce)
-        end
-        SendBroadcastMsg(player.name.." has started their own team!")     
+        end   
     else
-        player.force = global.ocfg.main_force
+        log("TOO MANY FORCES!!! - CreateForce()")
+    end
+
+    return newForce
+end
+
+function CreatePlayerCustomForce(player)
+
+    local newForce = CreateForce(player.name)
+    player.force = newForce
+
+    if (newForce.name == player.name) then
+        SendBroadcastMsg(player.name.." has started their own team!")
+    else
         player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
     end
 
