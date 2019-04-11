@@ -27,6 +27,7 @@ local function ExpandGameOptionsGui(player)
         -- General Server Info:
         AddLabel(frame, "info_1", global.ocfg.welcome_msg, my_longer_label_style)
         AddLabel(frame, "info_2", global.ocfg.server_rules, my_longer_label_style)
+        AddLabel(frame, "info_3", global.ocfg.server_contact, my_longer_label_style)
         AddSpacer(frame, "info_spacer1")
 
         -- Enemy Settings:
@@ -70,8 +71,13 @@ local function ExpandGameOptionsGui(player)
         if (global.ocfg.enable_separate_teams) then
             game_info_str = game_info_str.."\n".."You are allowed to spawn on your own team (have your own research tree). All teams are friendly!"
         end
-        if (global.ocfg.enable_buddy_spawn) then
-            game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
+        if (global.ocfg.enable_vanilla_spawns) then
+            game_info_str = game_info_str.."\n".."You are spawned in a default style starting area."
+        else
+            game_info_str = game_info_str.."\n".."You are spawned with a fix set of starting resources."
+            if (global.ocfg.enable_buddy_spawn) then
+                game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
+            end
         end
         if (global.ocfg.enable_shared_spawns) then
             game_info_str = game_info_str.."\n".."Spawn hosts may choose to share their spawn and allow other players to join them."
