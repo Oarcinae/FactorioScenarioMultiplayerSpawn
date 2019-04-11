@@ -68,9 +68,7 @@ script.on_init(function(event)
     CreateGameSurface()
 
     -- MUST be before other stuff, but after surface creation.
-    if ENABLE_SEPARATE_SPAWNS then
-        InitSpawnGlobalsAndForces()
-    end
+    InitSpawnGlobalsAndForces()
 
     if SILO_FIXED_POSITION then
         SetFixedSiloPosition(SILO_POSITION)
@@ -116,9 +114,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
         GenerateRocketSiloChunk(event)
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        SeparateSpawnsGenerateChunk(event)
-    end
+    SeparateSpawnsGenerateChunk(event)
 
     CreateHoldingPen(event.surface, event.area, 16, false)
 end)
@@ -136,26 +132,22 @@ script.on_event(defines.events.on_gui_click, function(event)
         PlayerListGuiClick(event)
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        WelcomeTextGuiClick(event)
-        SpawnOptsGuiClick(event)
-        SpawnCtrlGuiClick(event)
-        SharedSpwnOptsGuiClick(event)
-        BuddySpawnOptsGuiClick(event)
-        BuddySpawnWaitMenuClick(event)
-        BuddySpawnRequestMenuClick(event)
-        SharedSpawnJoinWaitMenuClick(event)
-    end
+    WelcomeTextGuiClick(event)
+    SpawnOptsGuiClick(event)
+    SpawnCtrlGuiClick(event)
+    SharedSpwnOptsGuiClick(event)
+    BuddySpawnOptsGuiClick(event)
+    BuddySpawnWaitMenuClick(event)
+    BuddySpawnRequestMenuClick(event)
+    SharedSpawnJoinWaitMenuClick(event)
 
     GameOptionsGuiClick(event)
 
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
-    if ENABLE_SEPARATE_SPAWNS then
-        SpawnOptsRadioSelect(event)
-        SpawnCtrlGuiOptionsSelect(event)
-    end
+    SpawnOptsRadioSelect(event)
+    SpawnCtrlGuiOptionsSelect(event)
 end)
 
 
@@ -188,17 +180,11 @@ script.on_event(defines.events.on_player_created, function(event)
         GivePlayerLongReach(game.players[event.player_index])
     end
 
-    if not ENABLE_SEPARATE_SPAWNS then
-        PlayerSpawnItems(event)
-    else
-        SeparateSpawnsPlayerCreated(event.player_index)
-    end
+    SeparateSpawnsPlayerCreated(event.player_index)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
-    if ENABLE_SEPARATE_SPAWNS then
-        SeparateSpawnsPlayerRespawned(event)        
-    end
+    SeparateSpawnsPlayerRespawned(event)
    
     PlayerRespawnItems(event)
 
@@ -208,9 +194,7 @@ script.on_event(defines.events.on_player_respawned, function(event)
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
-    if ENABLE_SEPARATE_SPAWNS then
-        FindUnusedSpawns(event)
-    end
+    FindUnusedSpawns(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
@@ -240,9 +224,7 @@ script.on_event(defines.events.on_tick, function(event)
         OarcRegrowthForceRemovalOnTick()
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        DelayedSpawnOnTick()
-    end
+    DelayedSpawnOnTick()
 
     if global.ocfg.frontier_rocket_silo then
         DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])

@@ -27,13 +27,7 @@ CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | discord.gg/trnpcen"
 
 --------------------------------------------------------------------------------
 -- Module Enables
--- These enables are not fully tested! For example, disabling separate spawns
--- will probably break the frontier rocket silo mode
 --------------------------------------------------------------------------------
-
--- Separate spawns
--- This is the core of the mod. Probably not a good idea to disable it.
-ENABLE_SEPARATE_SPAWNS = true
 
 -- Enable this to have a vanilla style starting spawn.
 -- This changes the experience pretty drastically.

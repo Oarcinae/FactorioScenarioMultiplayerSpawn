@@ -45,16 +45,9 @@ local function ExpandGameOptionsGui(player)
 
         -- Game Mode:
         AddLabel(frame, "core_mod_en", "Core game mode (separate spawns) is enabled.", my_longer_label_style)
-        if (not ENABLE_SEPARATE_SPAWNS) then
-            frame.core_mod_en.caption="Core game mode (separate spawns) is DISABLED."
-            frame.core_mod_en.style.font_color=my_color_red
-        end
 
         -- Soft Mods:
         local soft_mods_string = "Oarc Core"
-        if (not ENABLE_SEPARATE_SPAWNS) then
-            soft_mods_string = "Oarc Core [DISABLED!]"
-        end
         if (global.ocfg.enable_undecorator) then
             soft_mods_string = soft_mods_string .. ", Undecorator"
         end
