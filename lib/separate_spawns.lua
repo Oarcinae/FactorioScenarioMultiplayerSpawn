@@ -16,7 +16,7 @@ require("config")
 -- without shouting.
 function SeparateSpawnsPlayerCreated(player_index)
     local player = game.players[player_index]
-    player.force = global.ocfg["main-force"]
+    player.force = global.ocfg.main_force
     DisplayWelcomeTextGui(player)
 end
 
@@ -36,7 +36,7 @@ function SeparateSpawnsGenerateChunk(event)
     local chunkArea = event.area
     
     -- Modify enemies first.
-    if global.ocfg["modified-enemy-spawning"] then
+    if global.ocfg.modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
     end
 
@@ -50,7 +50,7 @@ end
 -- Call this if a player leaves the game
 function FindUnusedSpawns(event)
     local player = game.players[event.player_index]
-    if (player.online_time < (global.ocfg["minimum-online-time"] * TICKS_PER_MINUTE)) then
+    if (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) then
 
         -- Clear out global variables for that player
         if (global.playerSpawns[player.name] ~= nil) then
@@ -99,7 +99,7 @@ function FindUnusedSpawns(event)
                 end
             end
 
-            if (global.ocfg["enable-abandoned-base-removal"] and not nearOtherSpawn) then
+            if (global.ocfg.enable_abandoned_base_removal and not nearOtherSpawn) then
                 if (global.uniqueSpawns[player.name].vanilla) then
                     log("Returning a vanilla spawn back to available.")
                     table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
@@ -109,13 +109,13 @@ function FindUnusedSpawns(event)
 
                 log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
                 OarcRegrowthMarkForRemoval(spawnPos, 10)
-                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg["minimum-online-time"].." minutes of joining.")
+                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
                 global.chunk_regrow.force_removal_flag = game.tick
 
             else
                 -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
                 global.uniqueSpawns[player.name] = nil
-                SendBroadcastMsg(player.name .. " base was freed up because they left within "..global.ocfg["minimum-online-time"].." minutes of joining.")
+                SendBroadcastMsg(player.name .. " base was freed up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
             end
         end
 
@@ -134,8 +134,8 @@ function FindUnusedSpawns(event)
         end
 
         -- Remove a force if this player created it and they are the only one on it
-        if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg["main-force"])) then
-            game.merge_forces(player.force, global.ocfg["main-force"])
+        if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg.main_force)) then
+            game.merge_forces(player.force, global.ocfg.main_force)
         end
 
         -- Remove the character completely
@@ -361,8 +361,8 @@ function GetNumberOfAvailableSharedSpawns()
         if (sharedSpawn.openAccess and
             (game.players[ownerName] ~= nil) and
             game.players[ownerName].connected) then
-            if ((global.ocfg["max-players-shared-spawn"] == 0) or
-                (GetOnlinePlayersAtSharedSpawn(ownerName) < global.ocfg["max-players-shared-spawn"])) then
+            if ((global.ocfg.max_players_shared_spawn == 0) or
+                (GetOnlinePlayersAtSharedSpawn(ownerName) < global.ocfg.max_players_shared_spawn)) then
                 count = count+1
             end
         end
@@ -431,16 +431,16 @@ function InitSpawnGlobalsAndForces()
 
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
-    local main_force = game.create_force(global.ocfg["main-force"])
+    local main_force = game.create_force(global.ocfg.main_force)
     main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
     
     -- Share vision with other forces.
-    if global.ocfg["enable-shared-team-vision"] then
-        game.forces[global.ocfg["main-force"]].share_chart = true
+    if global.ocfg.enable_shared_team_vision then
+        game.forces[global.ocfg.main_force].share_chart = true
     end
 
-    if global.ocfg["enable-research-queue"] then
-        game.forces[global.ocfg["main-force"]].research_queue_enabled = true
+    if global.ocfg.enable_research_queue then
+        game.forces[global.ocfg.main_force].research_queue_enabled = true
     end
 
     -- Silo info
@@ -452,7 +452,7 @@ function InitSpawnGlobalsAndForces()
     SetCeaseFireBetweenAllForces()
     SetFriendlyBetweenAllForces()
     if (ENABLE_ANTI_GRIEFING) then
-        AntiGriefing(game.forces[global.ocfg["main-force"]])
+        AntiGriefing(game.forces[global.ocfg.main_force])
     end
 end
 
@@ -550,7 +550,7 @@ function SendPlayerToSpawn(player)
     if (DoesPlayerHaveCustomSpawn(player)) then
         player.teleport(global.playerSpawns[player.name], GAME_SURFACE_NAME)
     else
-        player.teleport(game.forces[global.ocfg["main-force"]].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+        player.teleport(game.forces[global.ocfg.main_force].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     end
 end
 
@@ -560,7 +560,7 @@ function SendPlayerToRandomSpawn(player)
     local counter = 0
 
     if (rndSpawn == 0) then
-        player.teleport(game.forces[global.ocfg["main-force"]].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+        player.teleport(game.forces[global.ocfg.main_force].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     else
         counter = counter + 1
         for name,spawn in pairs(global.uniqueSpawns) do
@@ -585,14 +585,14 @@ function CreatePlayerCustomForce(player)
     -- Create a new force using the player's name
     elseif (TableLength(game.forces) < MAX_FORCES) then
         newForce = game.create_force(player.name)
-        if global.ocfg["enable-shared-team-vision"] then
+        if global.ocfg.enable_shared_team_vision then
             newForce.share_chart = true
         end
-        if global.ocfg["enable-research-queue"] then
+        if global.ocfg.enable_research_queue then
             newForce.research_queue_enabled = true
         end
         -- Chart silo areas if necessary
-        if global.ocfg["frontier-rocket-silo"] and global.ocfg["frontier-silo-vision"] then
+        if global.ocfg.frontier_rocket_silo and global.ocfg.frontier_silo_vision then
             ChartRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME], newForce)
         end
         player.force = newForce
@@ -603,7 +603,7 @@ function CreatePlayerCustomForce(player)
         end
         SendBroadcastMsg(player.name.." has started their own team!")     
     else
-        player.force = global.ocfg["main-force"]
+        player.force = global.ocfg.main_force
         player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
     end
 

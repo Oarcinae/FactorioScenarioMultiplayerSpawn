@@ -25,8 +25,8 @@ local function ExpandGameOptionsGui(player)
                                             direction="vertical"}
 
         -- General Server Info:
-        AddLabel(frame, "info_1", global.ocfg["welcome-msg"], my_longer_label_style)
-        AddLabel(frame, "info_2", global.ocfg["server-rules"], my_longer_label_style)
+        AddLabel(frame, "info_1", global.ocfg.welcome_msg, my_longer_label_style)
+        AddLabel(frame, "info_2", global.ocfg.server_rules, my_longer_label_style)
         AddSpacer(frame, "info_spacer1")
 
         -- Enemy Settings:
@@ -55,41 +55,41 @@ local function ExpandGameOptionsGui(player)
         if (not ENABLE_SEPARATE_SPAWNS) then
             soft_mods_string = "Oarc Core [DISABLED!]"
         end
-        if (global.ocfg["enable-undecorator"]) then
+        if (global.ocfg.enable_undecorator) then
             soft_mods_string = soft_mods_string .. ", Undecorator"
         end
-        if (global.ocfg["enable-tags"]) then
+        if (global.ocfg.enable_tags) then
             soft_mods_string = soft_mods_string .. ", Tags"
         end
-        if (global.ocfg["enable-long-reach"]) then
+        if (global.ocfg.enable_long_reach) then
             soft_mods_string = soft_mods_string .. ", Long Reach"
         end
-        if (global.ocfg["enable-autofill"]) then
+        if (global.ocfg.enable_autofill) then
             soft_mods_string = soft_mods_string .. ", Auto Fill"
         end
-        if (global.ocfg["enable-player-list"]) then
+        if (global.ocfg.enable_player_list) then
             soft_mods_string = soft_mods_string .. ", Player List"
         end
 
         local game_info_str = "Soft Mods Enabled: " .. soft_mods_string
 
         -- Spawn options:
-        if (global.ocfg["enable-separate-teams"]) then
+        if (global.ocfg.enable_separate_teams) then
             game_info_str = game_info_str.."\n".."You are allowed to spawn on your own team (have your own research tree). All teams are friendly!"
         end
-        if (global.ocfg["enable-buddy-spawn"]) then
+        if (global.ocfg.enable_buddy_spawn) then
             game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
         end
-        if (global.ocfg["enable-shared-spawns"]) then
+        if (global.ocfg.enable_shared_spawns) then
             game_info_str = game_info_str.."\n".."Spawn hosts may choose to share their spawn and allow other players to join them."
         end
-        if (global.ocfg["enable-separate-teams"] and global.ocfg["enable-shared-team-vision"]) then
+        if (global.ocfg.enable_separate_teams and global.ocfg.enable_shared_team_vision) then
             game_info_str = game_info_str.."\n".."Everyone (all teams) have shared vision."
         end
-        if (global.ocfg["frontier-rocket-silo"]) then
+        if (global.ocfg.frontier_rocket_silo) then
             game_info_str = game_info_str.."\n".."Silos are NOT craftable. There is at least one already located on the map."
         end
-        if (global.ocfg["enable-regrowth"]) then
+        if (global.ocfg.enable_regrowth) then
             game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
         end
         if (ENABLE_POWER_ARMOR_QUICK_START) then
@@ -98,8 +98,8 @@ local function ExpandGameOptionsGui(player)
 
         AddLabel(frame, "game_info_label", game_info_str, my_longer_label_style)
 
-        if (global.ocfg["enable-abandoned-base-removal"]) then
-            AddLabel(frame, "leave_warning_msg", "If you leave within " .. global.ocfg["minimum-online-time"] .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
+        if (global.ocfg.enable_abandoned_base_removal) then
+            AddLabel(frame, "leave_warning_msg", "If you leave within " .. global.ocfg.minimum_online_time .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
             frame.leave_warning_msg.style.font_color=my_color_red
         end
 

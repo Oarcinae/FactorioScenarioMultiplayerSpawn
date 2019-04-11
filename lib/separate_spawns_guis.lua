@@ -33,15 +33,15 @@ function DisplayWelcomeTextGui(player)
     player.gui.center.add{name = "welcome_msg",
                             type = "frame",
                             direction = "vertical",
-                            caption=global.ocfg["welcome-title"]}
+                            caption=global.ocfg.welcome_title}
     local wGui = player.gui.center.welcome_msg
 
     wGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     wGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
     -- Start with server message.
-    AddLabel(wGui, "server_msg_lbl1", global.ocfg["server-rules"], my_label_style)
-    AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg["server-contact"], my_label_style)
+    AddLabel(wGui, "server_msg_lbl1", global.ocfg.server_rules, my_label_style)
+    AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
     AddSpacer(wGui, "server_msg_spacer1")
 
     -- Informational message about the scenario
@@ -124,7 +124,7 @@ function DisplaySpawnOptions(player)
                                     style = "bordered_frame"}
 
     -- Radio buttons to pick your team.
-    if (global.ocfg["enable-separate-teams"]) then
+    if (global.ocfg.enable_separate_teams) then
         soloSpawnFlow.add{name = "isolated_spawn_main_team_radio",
                         type = "radiobutton",
                         caption={"oarc-join-main-team-radio"},
@@ -140,13 +140,13 @@ function DisplaySpawnOptions(player)
     --     "Additional spawn options can be selected here. Not all are compatible with each other.", my_label_style)
 
     -- Allow players to spawn with a moat around their area.
-    if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled and not global.ocfg["enable-vanilla-spawns"]) then
+    if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled and not global.ocfg.enable_vanilla_spawns) then
         soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
                         type = "checkbox",
                         caption={"oarc-moat-option"},
                         state=false}
     end
-    -- if (global.ocfg["enable-vanilla-spawns"] and (#global.vanillaSpawns > 0)) then
+    -- if (global.ocfg.enable_vanilla_spawns and (#global.vanillaSpawns > 0)) then
     --     soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
     --                     type = "checkbox",
     --                     caption="Use a pre-set vanilla spawn point. " .. #global.vanillaSpawns .. " available.",
@@ -168,7 +168,7 @@ function DisplaySpawnOptions(player)
                     caption={"oarc-solo-spawn-far"},
                     style = "confirm_button"}
 
-    if (global.ocfg["enable-vanilla-spawns"]) then
+    if (global.ocfg.enable_vanilla_spawns) then
         AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
             {"oarc-starting-area-vanilla"}, my_label_style)
         AddLabel(soloSpawnFlow, "vanilla_spawn_lbl2",
@@ -183,7 +183,7 @@ function DisplaySpawnOptions(player)
                                     type = "frame",
                                     direction="vertical",
                                     style = "bordered_frame"}
-    if global.ocfg["enable-shared-spawns"] then
+    if global.ocfg.enable_shared_spawns then
         local numAvailSpawns = GetNumberOfAvailableSharedSpawns()
         if (numAvailSpawns > 0) then
             sharedSpawnFrame.add{name = "join_other_spawn",
@@ -203,8 +203,8 @@ function DisplaySpawnOptions(player)
     end
 
     -- Awesome buddy spawning system
-    if (not global.ocfg["enable-vanilla-spawns"]) then
-        if global.ocfg["enable-shared-spawns"] and global.ocfg["enable-buddy-spawn"] then
+    if (not global.ocfg.enable_vanilla_spawns) then
+        if global.ocfg.enable_shared_spawns and global.ocfg.enable_buddy_spawn then
             local buddySpawnFrame = sGui.add{name = "spawn_buddy_flow",
                                             type = "frame",
                                             direction="vertical",
@@ -220,12 +220,12 @@ function DisplaySpawnOptions(player)
     end
 
     -- Some final notes
-    if (global.ocfg["max-players-shared-spawn"] > 0) then
+    if (global.ocfg.max_players_shared_spawn > 0) then
         AddLabel(sGui, "max_players_lbl2",
-                {"oarc-max-players-shared-spawn", global.ocfg["max-players-shared-spawn"]-1},
+                {"oarc-max-players-shared-spawn", global.ocfg.max_players_shared_spawn-1},
                 my_note_style)
     end
-    local spawn_distance_notes={"oarc-spawn-dist-notes", global.ocfg["near-dist-start"], global.ocfg["near-dist-end"], global.ocfg["far-dist-start"], global.ocfg["far-dist-end"]}
+    local spawn_distance_notes={"oarc-spawn-dist-notes", global.ocfg.near_dist_start, global.ocfg.near_dist_end, global.ocfg.far_dist_start, global.ocfg.far_dist_end}
     AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
@@ -282,7 +282,7 @@ function SpawnOptsGuiClick(event)
         (elemName == "buddy_spawn") or
         (elemName == "join_other_spawn_check")) then
 
-        if (global.ocfg["enable-separate-teams"]) then
+        if (global.ocfg.enable_separate_teams) then
             joinMainTeamRadio =
                 pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
             joinOwnTeamRadio =
@@ -291,11 +291,11 @@ function SpawnOptsGuiClick(event)
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
         end
-        if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled and not global.ocfg["enable-vanilla-spawns"] and
+        if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled and not global.ocfg.enable_vanilla_spawns and
             (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
             moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
-        -- if (global.ocfg["enable-vanilla-spawns"] and
+        -- if (global.ocfg.enable_vanilla_spawns and
         --     (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
         --     vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state
         -- end
@@ -308,7 +308,7 @@ function SpawnOptsGuiClick(event)
         GivePlayerStarterItems(player)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg({"oarc-player-is-joining-main-force", player.name})
-        ChartArea(player.force, player.position, math.ceil(global.ocfg["spawn_config"].gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
+        ChartArea(player.force, player.position, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
         -- Create the button at the top left for setting respawn point and sharing base.
         CreateSpawnCtrlGui(player)
 
@@ -318,28 +318,28 @@ function SpawnOptsGuiClick(event)
         local newSpawn = {x=0,y=0}
 
         -- Create a new force for player if they choose that radio button
-        if global.ocfg["enable-separate-teams"] and joinOwnTeamRadio then
+        if global.ocfg.enable_separate_teams and joinOwnTeamRadio then
             local newForce = CreatePlayerCustomForce(player)
         end
 
         -- Find an unused vanilla spawn
         -- if (vanillaChoice) then
-        if (global.ocfg["enable-vanilla-spawns"]) then
+        if (global.ocfg.enable_vanilla_spawns) then
             if (elemName == "isolated_spawn_far") then
                 newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
-                                                            global.ocfg["far-dist-end"]*CHUNK_SIZE)
+                                                            global.ocfg.far_dist_end*CHUNK_SIZE)
             elseif (elemName == "isolated_spawn_near") then
                 newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
-                                                            global.ocfg["near-dist-start"]*CHUNK_SIZE)
+                                                            global.ocfg.near_dist_start*CHUNK_SIZE)
             end
 
         -- Default OARC-type pre-set layout spawn.
         else
             -- Find coordinates of a good place to spawn
             if (elemName == "isolated_spawn_far") then
-                newSpawn = FindUngeneratedCoordinates(global.ocfg["far-dist-start"],global.ocfg["far-dist-end"], player.surface)
+                newSpawn = FindUngeneratedCoordinates(global.ocfg.far_dist_start,global.ocfg.far_dist_end, player.surface)
             elseif (elemName == "isolated_spawn_near") then
-                newSpawn = FindUngeneratedCoordinates(global.ocfg["near-dist-start"],global.ocfg["near-dist-end"], player.surface)
+                newSpawn = FindUngeneratedCoordinates(global.ocfg.near_dist_start,global.ocfg.near_dist_end, player.surface)
             end
         end
 
@@ -354,7 +354,7 @@ function SpawnOptsGuiClick(event)
 
         -- Send the player there
         -- QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, vanillaChoice)
-        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, global.ocfg["enable-vanilla-spawns"])
+        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, global.ocfg.enable_vanilla_spawns)
         if (elemName == "isolated_spawn_near") then
             SendBroadcastMsg({"oarc-player-is-joining-near", player.name})
         elseif (elemName == "isolated_spawn_far") then
@@ -405,8 +405,8 @@ function DisplaySharedSpawnOptions(player)
         if (sharedSpawn.openAccess and
             (game.players[spawnName] ~= nil) and
             game.players[spawnName].connected) then
-            local spotsRemaining = global.ocfg["max-players-shared-spawn"] - GetOnlinePlayersAtSharedSpawn(spawnName)
-            if (global.ocfg["max-players-shared-spawn"] == 0) then
+            local spotsRemaining = global.ocfg.max_players_shared_spawn - GetOnlinePlayersAtSharedSpawn(spawnName)
+            if (global.ocfg.max_players_shared_spawn == 0) then
                 shGui.add{type="button", caption=spawnName, name=spawnName}
             elseif (spotsRemaining > 0) then
                 shGui.add{type="button", caption={oarc-spawn-spots-remaining, spawnName, spotsRemaining}, name=spawnName}
@@ -585,7 +585,7 @@ function ExpandSpawnCtrlGui(player, tick)
         spwnCtrls.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
         spwnCtrls.horizontal_scroll_policy = "never"
 
-        if global.ocfg["enable-shared-spawns"] then
+        if global.ocfg.enable_shared_spawns then
             if (global.uniqueSpawns[player.name] ~= nil) then
                 -- This checkbox allows people to join your base when they first
                 -- start the game.
@@ -608,7 +608,7 @@ function ExpandSpawnCtrlGui(player, tick)
         AddLabel(spwnCtrls, "respawn_cooldown_note2", {"oarc-set-respawn-note"}, my_note_style)
 
         -- Display a list of people in the join queue for your base.
-        if (global.ocfg["enable-shared-spawns"] and IsSharedSpawnActive(player)) then
+        if (global.ocfg.enable_shared_spawns and IsSharedSpawnActive(player)) then
             if ((global.sharedSpawns[player.name].joinQueue ~= nil) and
                 (#global.sharedSpawns[player.name].joinQueue > 0)) then
 
@@ -809,7 +809,7 @@ function DisplayBuddySpawnOptions(player)
 
 
     -- Allow picking of teams
-    if (global.ocfg["enable-separate-teams"]) then
+    if (global.ocfg.enable_separate_teams) then
         buddySpawnFlow.add{name = "buddy_spawn_main_team_radio",
                         type = "radiobutton",
                         caption={"oarc-join-main-team-radio"},
@@ -851,12 +851,12 @@ function DisplayBuddySpawnOptions(player)
     -- Some final notes
     AddSpacerLine(buddyGui, "note_spacer1")
 
-    if (global.ocfg["max-players-shared-spawn"] > 0) then
+    if (global.ocfg.max_players_shared_spawn > 0) then
         AddLabel(buddyGui, "buddy_max_players_lbl1",
-                {"oarc-max-players-shared-spawn", global.ocfg["max-players-shared-spawn"]-1},
+                {"oarc-max-players-shared-spawn", global.ocfg.max_players_shared_spawn-1},
                 my_note_style)
     end
-    local spawn_distance_notes={"oarc-spawn-dist-notes", global.ocfg["near-dist-start"], global.ocfg["near-dist-end"], global.ocfg["far-dist-start"], global.ocfg["far-dist-end"]}
+    local spawn_distance_notes={"oarc-spawn-dist-notes", global.ocfg.near_dist_start, global.ocfg.near_dist_end, global.ocfg.far_dist_start, global.ocfg.far_dist_end}
     AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
@@ -936,7 +936,7 @@ function BuddySpawnOptsGuiClick(event)
             return
         end
 
-        if (global.ocfg["enable-separate-teams"]) then
+        if (global.ocfg.enable_separate_teams) then
             joinMainTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_main_team_radio.state
             joinOwnTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_new_team_radio.state
             joinBuddyTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_buddy_team_radio.state
@@ -1152,9 +1152,9 @@ function BuddySpawnRequestMenuClick(event)
 
         -- Find coordinates of a good place to spawn
         if (requesterOptions.distChoice == "buddy_spawn_request_far") then
-            newSpawn = FindUngeneratedCoordinates(global.ocfg["far-dist-start"],global.ocfg["far-dist-end"], player.surface)
+            newSpawn = FindUngeneratedCoordinates(global.ocfg.far_dist_start,global.ocfg.far_dist_end, player.surface)
         elseif (requesterOptions.distChoice == "buddy_spawn_request_near") then
-            newSpawn = FindUngeneratedCoordinates(global.ocfg["near-dist-start"],global.ocfg["near-dist-end"], player.surface)
+            newSpawn = FindUngeneratedCoordinates(global.ocfg.near_dist_start,global.ocfg.near_dist_end, player.surface)
         end
 
         -- If that fails, find a random map edge in a rand direction.
@@ -1166,9 +1166,9 @@ function BuddySpawnRequestMenuClick(event)
         -- Create that spawn in the global vars
         local buddySpawn = {x=0,y=0}
         if (requesterOptions.moatChoice) then
-            buddySpawn = {x=newSpawn.x+(global.ocfg["spawn_config"].gen_settings.land_area_tiles*2)+10, y=newSpawn.y}
+            buddySpawn = {x=newSpawn.x+(global.ocfg.spawn_config.gen_settings.land_area_tiles*2)+10, y=newSpawn.y}
         else
-            buddySpawn = {x=newSpawn.x+(global.ocfg["spawn_config"].gen_settings.land_area_tiles*2), y=newSpawn.y}
+            buddySpawn = {x=newSpawn.x+(global.ocfg.spawn_config.gen_settings.land_area_tiles*2), y=newSpawn.y}
         end
         ChangePlayerSpawn(player, newSpawn)
         ChangePlayerSpawn(game.players[requesterName], buddySpawn)

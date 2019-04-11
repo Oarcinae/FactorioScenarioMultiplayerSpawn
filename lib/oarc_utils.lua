@@ -414,8 +414,8 @@ function CreateGameSurface()
     -- Get starting surface settings.
     local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
 
-    if global.ocfg["enable-vanilla-spawns"] then
-        nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg["vanilla-spawn-count"], global.ocfg["vanilla-spawn-spacing"])
+    if global.ocfg.enable_vanilla_spawns then
+        nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
         -- DeleteAllChunksExceptCenter(game.surfaces[GAME_SURFACE_NAME])
 
         -- ISLAND MAP GEN -- WARNING
@@ -489,11 +489,11 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
 end
 
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
-    if (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg["near-dist-end"]*CHUNK_SIZE)) then
+    if (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.near_dist_end*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg["far-dist-start"]*CHUNK_SIZE)) then
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_start*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg["far-dist-end"]*CHUNK_SIZE)) then
+    elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_end*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
         DowngradeWormsInArea(event.surface, event.area, 0, 20, 85)
@@ -730,7 +730,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius)
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadSqr) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or global.ocfg["spawn_config"].gen_settings.force_grass) then
+                if (surface.get_tile(i,j).collides_with("water-tile") or global.ocfg.spawn_config.gen_settings.force_grass) then
                     table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
@@ -761,7 +761,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius)
 
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadius+2) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or global.ocfg["spawn_config"].gen_settings.force_grass) then
+                if (surface.get_tile(i,j).collides_with("water-tile") or global.ocfg.spawn_config.gen_settings.force_grass) then
                     table.insert(dirtTiles, {name = "grass-1", position ={i,j}})
                 end
             end
@@ -824,7 +824,7 @@ function GenerateResourcePatch(surface, resourceName, diameter, pos, amount)
     end
     for y=-midPoint, midPoint do
         for x=-midPoint, midPoint do
-            if (not global.ocfg["spawn_config"].gen_settings.resources_circle_shape or ((x)^2 + (y)^2 < midPoint^2)) then
+            if (not global.ocfg.spawn_config.gen_settings.resources_circle_shape or ((x)^2 + (y)^2 < midPoint^2)) then
                 surface.create_entity({name=resourceName, amount=amount,
                     position={pos.x+x, pos.y+y}})
             end
@@ -904,7 +904,7 @@ end
 -- Display messages to a user everytime they join
 function PlayerJoinedMessages(event)
     local player = game.players[event.player_index]
-    player.print(global.ocfg["welcome-msg"])
+    player.print(global.ocfg.welcome_msg)
 end
 
 -- Remove decor to save on file size

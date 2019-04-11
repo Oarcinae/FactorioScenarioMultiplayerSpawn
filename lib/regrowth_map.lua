@@ -328,7 +328,7 @@ function OarcRegrowthOnTick()
     -- Send a broadcast warning before it happens.
     if ((game.tick % REGROWTH_CLEANING_INTERVAL_TICKS) == REGROWTH_CLEANING_INTERVAL_TICKS-601) then
         if (#global.chunk_regrow.removal_list > 100) then
-            if (global.ocfg["enable-regrowth"]) then
+            if (global.ocfg.enable_regrowth) then
                 SendBroadcastMsg("Map cleanup in 10 seconds... Unused and old map chunks will be deleted!")
             else
                 SendBroadcastMsg("Map cleanup in 10 seconds. Cleaning up an abadoned base!")
@@ -351,7 +351,7 @@ end
 function OarcRegrowthForceRemovalOnTick()
     -- Catch force remove flag
     if (game.tick == global.chunk_regrow.force_removal_flag+60) then
-        if (global.ocfg["enable-regrowth"]) then
+        if (global.ocfg.enable_regrowth) then
             SendBroadcastMsg("Map cleanup in 10 seconds... Unused and old map chunks will be deleted!")
         else
             SendBroadcastMsg("Map cleanup in 10 seconds. Cleaning up an abadoned base!")
@@ -360,7 +360,7 @@ function OarcRegrowthForceRemovalOnTick()
     if (game.tick == global.chunk_regrow.force_removal_flag+660) then
         OarcRegrowthRemoveAllChunks()
         
-        if (global.ocfg["enable-regrowth"]) then
+        if (global.ocfg.enable_regrowth) then
             SendBroadcastMsg("Map cleanup done, sorry for your loss.")
         else
             SendBroadcastMsg("Abandoned base cleanup complete.")
