@@ -846,9 +846,9 @@ function CreateWall(surface, pos)
     end
 end
 
-function CreateHoldingPen(surface, chunkArea, sizeTiles, walls)
-    if (((chunkArea.left_top.x == -32) or (chunkArea.left_top.x == 0)) and
-        ((chunkArea.left_top.y == -32) or (chunkArea.left_top.y == 0))) then
+function CreateHoldingPen(surface, chunkArea, sizeTiles, sizeMoat)
+    if (((chunkArea.left_top.x >= -(sizeTiles+sizeMoat+CHUNK_SIZE)) and (chunkArea.left_top.x <= (sizeTiles+sizeMoat+CHUNK_SIZE))) and
+        ((chunkArea.left_top.y >= -(sizeTiles+sizeMoat+CHUNK_SIZE)) and (chunkArea.left_top.y <= (sizeTiles+sizeMoat+CHUNK_SIZE)))) then
 
         -- Remove stuff
         RemoveAliensInArea(surface, chunkArea)
@@ -862,38 +862,24 @@ function CreateHoldingPen(surface, chunkArea, sizeTiles, walls)
         for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
             for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
-                if ((i>-sizeTiles) and (i<(sizeTiles-1)) and (j>-sizeTiles) and (j<(sizeTiles-1))) then
+                -- Are we within the moat area?
+                if ((i>-(sizeTiles+sizeMoat)) and (i<((sizeTiles+sizeMoat)-1)) and
+                    (j>-(sizeTiles+sizeMoat)) and (j<((sizeTiles+sizeMoat)-1))) then
 
-                    -- Fill all area with grass only
-                    table.insert(grassTiles, {name = "grass-1", position ={i,j}})
+                    -- Are we within the land area? Place land.
+                    if ((i>-(sizeTiles)) and (i<((sizeTiles)-1)) and
+                        (j>-(sizeTiles)) and (j<((sizeTiles)-1))) then
+                        table.insert(grassTiles, {name = "grass-1", position ={i,j}})
 
-                    -- Create the spawn box walls
-                    if (j<(sizeTiles-1) and j>-sizeTiles) then
-
-                        -- Create horizontal sides of center spawn box
-                        if (((j>-sizeTiles and j<-(sizeTiles-4)) or (j<(sizeTiles-1) and j>(sizeTiles-5))) and (i<(sizeTiles-1) and i>-sizeTiles)) then
-                            if walls then
-                                CreateWall(surface, {i,j})
-                            else
-                                table.insert(waterTiles, {name = "water", position ={i,j}})
-                            end
-                        end
-
-                        -- Create vertical sides of center spawn box
-                        if ((i>-sizeTiles and i<-(sizeTiles-4)) or (i<(sizeTiles-1) and i>(sizeTiles-5))) then
-                            if walls then
-                                CreateWall(surface, {i,j})
-                            else
-                                table.insert(waterTiles, {name = "water", position ={i,j}})
-                            end
-                        end
-
+                    -- Else, surround with water.
+                    else
+                        table.insert(waterTiles, {name = "water", position ={i,j}})
                     end
                 end
             end
         end
-        surface.set_tiles(grassTiles)
         surface.set_tiles(waterTiles)
+        surface.set_tiles(grassTiles)
     end
 end
 

@@ -116,7 +116,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
 
     SeparateSpawnsGenerateChunk(event)
 
-    CreateHoldingPen(event.surface, event.area, 16, false)
+    CreateHoldingPen(event.surface, event.area, 16, 32)
 end)
 
 
