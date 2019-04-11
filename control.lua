@@ -312,6 +312,11 @@ function RocketLaunchEvent(event)
 
     if not global.satellite_sent then
         global.satellite_sent = {}
+        for _,f in pairs(game.forces) do
+            EnableTech(f, "atomic-bomb")
+            EnableTech(f, "power-armor-2")
+            EnableTech(f, "artillery")
+        end
     end
 
     if global.satellite_sent[force.name] then

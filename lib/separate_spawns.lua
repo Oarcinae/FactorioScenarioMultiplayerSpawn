@@ -582,7 +582,13 @@ function CreateForce(force_name)
         SetFriendlyBetweenAllForces()
         if (ENABLE_ANTI_GRIEFING) then
             AntiGriefing(newForce)
-        end   
+        end
+
+        if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and not global.satellite_sent then
+            DisableTech(newForce, "atomic-bomb")
+            DisableTech(newForce, "power-armor-2")
+            DisableTech(newForce, "artillery")
+        end
     else
         log("TOO MANY FORCES!!! - CreateForce()")
     end

@@ -77,6 +77,9 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 -- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
 
+-- Lock power armor mk2, atomic bombs and artillery until you launch a rocket.
+LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = true
+
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
 -- In past versions I had a way to config map settings here to be used for cmd

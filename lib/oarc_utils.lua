@@ -370,6 +370,21 @@ function AddRecipe(force, recipeName)
     end
 end
 
+-- General command for disabling a tech.
+function DisableTech(force, techName)
+    if force.technologies[techName] then
+        force.technologies[techName].enabled = false
+    end
+end
+
+-- General command for enabling a tech.
+function EnableTech(force, techName)
+    if force.technologies[techName] then
+        force.technologies[techName].enabled = true
+    end
+end
+
+
 -- Get an area given a position and distance.
 -- Square length = 2x distance
 function GetAreaAroundPos(pos, dist)
