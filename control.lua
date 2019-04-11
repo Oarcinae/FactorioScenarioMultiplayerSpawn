@@ -303,6 +303,10 @@ end)
 function RocketLaunchEvent(event)
     local force = event.rocket.force
     
+    -- EnableTech(force, "atomic-bomb")
+    -- EnableTech(force, "power-armor-2")
+    -- EnableTech(force, "artillery")
+    
     if event.rocket.get_item_count("satellite") == 0 then
         for index, player in pairs(force.players) do
             player.print("You launched the rocket, but you didn't put a satellite inside.")
