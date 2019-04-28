@@ -32,6 +32,7 @@ require("lib/tag")
 require("lib/game_opts")
 require("lib/regrowth_map")
 require("lib/player_list")
+require("lib/rocket_launch")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -86,8 +87,8 @@ end)
 
 
 ----------------------------------------
--- Freeplay rocket launch info
--- Slightly modified for my purposes
+-- Rocket launch event
+-- Used for end game win conditions / unlocking late game stuff
 ----------------------------------------
 script.on_event(defines.events.on_rocket_launched, function(event)
     if global.ocfg.frontier_rocket_silo then
@@ -142,7 +143,7 @@ script.on_event(defines.events.on_gui_click, function(event)
     SharedSpawnJoinWaitMenuClick(event)
 
     GameOptionsGuiClick(event)
-
+    RocketGuiClick(event)
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
@@ -168,6 +169,9 @@ script.on_event(defines.events.on_player_joined_game, function(event)
         CreateTagGui(event)
     end
 
+    if global.satellite_sent then
+        CreateRocketGui(game.players[event.player_index])
+    end
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -261,9 +265,6 @@ script.on_event(defines.events.on_robot_mined_entity, function(event)
 end)
 
 
-
-
-
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
 ----------------------------------------
@@ -280,8 +281,16 @@ end)
 -- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
+    
+    -- Never allows players to build rocket-silos in "frontier" mode.
     if global.ocfg.frontier_rocket_silo then
         RemoveRecipe(event.research.force, "rocket-silo")
+    end
+
+    if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and 
+        (not global.satellite_sent or not global.satellite_sent[event.research.force]) then
+        RemoveRecipe(event.research.force, "productivity-module-3")
+        RemoveRecipe(event.research.force, "speed-module-3")
     end
 end)
 
@@ -294,49 +303,5 @@ script.on_event(defines.events.on_entity_spawned, function(event)
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 end)
+
 -- on_biter_base_built -- Worth considering for later.
-
---------------------------------------------------------------------------------
--- Rocket Launch Event Code
--- Controls the "win condition"
---------------------------------------------------------------------------------
-function RocketLaunchEvent(event)
-    local force = event.rocket.force
-    
-    -- EnableTech(force, "atomic-bomb")
-    -- EnableTech(force, "power-armor-2")
-    -- EnableTech(force, "artillery")
-    
-    if event.rocket.get_item_count("satellite") == 0 then
-        for index, player in pairs(force.players) do
-            player.print("You launched the rocket, but you didn't put a satellite inside.")
-        end
-        return
-    end
-
-    if not global.satellite_sent then
-        global.satellite_sent = {}
-        for _,f in pairs(game.forces) do
-            EnableTech(f, "atomic-bomb")
-            EnableTech(f, "power-armor-2")
-            EnableTech(f, "artillery")
-        end
-    end
-
-    if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
-    else
-        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
-        global.satellite_sent[force.name] = 1
-    end
-    
-    for index, player in pairs(force.players) do
-        if player.gui.left.rocket_score then
-            player.gui.left.rocket_score.rocket_count.caption = tostring(global.satellite_sent[force.name])
-        else
-            local frame = player.gui.left.add{name = "rocket_score", type = "frame", direction = "horizontal", caption="Score"}
-            frame.add{name="rocket_count_label", type = "label", caption={"", "Satellites launched", ":"}}
-            frame.add{name="rocket_count", type = "label", caption=tostring(global.satellite_sent[force.name])}
-        end
-    end
-end

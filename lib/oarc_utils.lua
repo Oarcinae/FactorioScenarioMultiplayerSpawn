@@ -89,6 +89,24 @@ function getDistance(posA, posB)
     return math.sqrt( (xDist ^ 2) + (yDist ^ 2) ) 
 end
 
+-- Given a table of positions, returns key for closest to given pos.
+function GetClosestPosFromTable(pos, pos_table)
+
+    local closest_dist = nil
+    local closest_key = nil
+
+    for k,p in pairs(pos_table) do
+        local new_dist = getDistance(pos, p)
+        if (closest_dist == nil) then
+            closest_dist = new_dist
+            closest_key = k
+        elseif (closest_dist > new_dist) then
+            closest_dist = new_dist
+            closest_key = k
+        end
+    end
+end
+
 -- Chart area for a force
 function ChartArea(force, position, chunkDist, surface)
     force.chart(surface,
