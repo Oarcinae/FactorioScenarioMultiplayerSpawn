@@ -71,18 +71,18 @@ script.on_init(function(event)
     -- MUST be before other stuff, but after surface creation.
     InitSpawnGlobalsAndForces()
 
-    if SILO_FIXED_POSITION then
-        SetFixedSiloPosition(SILO_POSITION)
-    else
-        SetRandomSiloPosition(SILO_NUM_SPAWNS)
-    end
-
-    if FRONTIER_ROCKET_SILO_MODE then
-        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
-    end
-
     -- Regardless of whether it's enabled or not, it's good to have this init.
     OarcRegrowthInit()
+
+    if global.ocfg.frontier_fixed_pos then
+        SetFixedSiloPosition(global.ocfg.frontier_pos_table)
+    else
+        SetRandomSiloPosition(global.ocfg.frontier_silo_count)
+    end
+
+    if global.ocfg.frontier_rocket_silo then
+        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
+    end
 end)
 
 
@@ -198,7 +198,7 @@ script.on_event(defines.events.on_player_respawned, function(event)
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
-    FindUnusedSpawns(event)
+    FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
@@ -207,7 +207,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
+        OarcRegrowthOffLimits(event.created_entity.position, 1)
     end
 
     if ENABLE_ANTI_GRIEFING then
@@ -250,7 +250,7 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
+        OarcRegrowthOffLimits(event.created_entity.position, 1)
     end
 end)
 script.on_event(defines.events.on_player_mined_entity, function(event)

@@ -16,6 +16,11 @@ require("config")
 -- without shouting.
 function SeparateSpawnsPlayerCreated(player_index)
     local player = game.players[player_index]
+
+    if (player.force.name ~= "player") then
+        FindUnusedSpawns(player, false)
+    end
+    
     player.force = global.ocfg.main_force
     DisplayWelcomeTextGui(player)
 end
@@ -47,9 +52,13 @@ function SeparateSpawnsGenerateChunk(event)
 end
 
 
--- Call this if a player leaves the game
-function FindUnusedSpawns(event)
-    local player = game.players[event.player_index]
+-- Call this if a player leaves the game or is reset
+function FindUnusedSpawns(player, remove_player)
+    if not player then
+        log("ERROR - FindUnusedSpawns on NIL Player!")
+        return
+    end
+
     if (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) then
 
         -- Clear out global variables for that player
@@ -139,7 +148,9 @@ function FindUnusedSpawns(event)
         end
 
         -- Remove the character completely
-        game.remove_offline_players({player})
+        if (remove_player) then
+            game.remove_offline_players({player})
+        end
     end
 end
 
@@ -205,6 +216,31 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     end
 end
 
+-- Same as GetClosestPosFromTable but specific to global.uniqueSpawns
+function GetClosestUniqueSpawn(pos)
+
+    local closest_dist = nil
+    local closest_key = nil
+
+    for k,s in pairs(global.uniqueSpawns) do
+        local new_dist = getDistance(pos, s.pos)
+        if (closest_dist == nil) then
+            closest_dist = new_dist
+            closest_key = k
+        elseif (closest_dist > new_dist) then
+            closest_dist = new_dist
+            closest_key = k
+        end
+    end
+
+    if (closest_key == nil) then
+        log("GetClosestUniqueSpawn ERROR - None found?")
+        return nil
+    end
+
+    return global.uniqueSpawns[closest_key]
+end
+
 -- I wrote this to ensure everyone gets safer spawns regardless of evolution level.
 -- This is intended to downgrade any biters/spitters spawning near player bases.
 -- I'm not sure the performance impact of this but I'm hoping it's not bad.
@@ -219,27 +255,47 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
     local surface = event.entity.surface
     local enemy_name = event.entity.name
 
-    for name,spawn in pairs(global.uniqueSpawns) do
-        if (getDistance(enemy_pos, spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then
-            if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
-                event.entity.destroy()
-                surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
-                log("Downgraded biter close to spawn.")
-            elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
-                event.entity.destroy()
-                surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
-                log("Downgraded spitter close to spawn.")
-            end
-        elseif (getDistance(enemy_pos, spawn.pos) < global.ocfg.spawn_config.safe_area.danger_radius) then
-            if (enemy_name == "behemoth-biter") then
-                event.entity.destroy()
-                surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
-                log("Downgraded biter further from spawn.")
-            elseif (enemy_name == "behemoth-spitter") then
-                event.entity.destroy()
-                surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
-                log("Downgraded spitter further from spawn.")
-            end
+    local closest_spawn = GetClosestUniqueSpawn(enemy_pos)
+
+    if (closest_spawn == nil) then
+        log("GetClosestUniqueSpawn ERROR - None found?")
+        return
+    end
+
+    -- No enemies inside safe radius!
+    if (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.safe_radius) then
+        event.entity.destroy()
+
+    -- Warn distance is all SMALL only.
+    if (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then
+        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "small-biter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded biter close to spawn.")
+        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter") or (enemy_name == "medium-spitter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "small-spitter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded spitter close to spawn.")
+        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret") or (enemy_name == "medium-worm-turret")) then
+            event.entity.destroy()
+            surface.create_entity{name = "small-worm-turret", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded worm close to spawn.")
+        end
+
+    -- Danger distance is MEDIUM max.
+    elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.danger_radius) then
+        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded biter further from spawn.")
+        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded spitter further from spawn
+        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret")) then
+            event.entity.destroy()
+            surface.create_entity{name = "medium-worm-turret", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded worm further from spawn.")
         end
     end
 end
