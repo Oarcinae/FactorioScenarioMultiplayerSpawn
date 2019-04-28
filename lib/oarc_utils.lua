@@ -495,21 +495,21 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
         local worm_pos = entity.position
         local worm_name = entity.name
 
-        -- If number is more than small percent, change to small
+        -- If number is less than small percent, change to small
         if (rand_percent <= small_percent) then
             if (not (worm_name == "small-worm-turret")) then
                 entity.destroy()
                 surface.create_entity{name = "small-worm-turret", position = worm_pos, force = game.forces.enemy}
             end            
 
-        -- ELSE If number is more than medium percent, change to small
+        -- ELSE If number is less than medium percent, change to small
         elseif (rand_percent <= medium_percent) then
             if (not (worm_name == "medium-worm-turret")) then
                 entity.destroy()
                 surface.create_entity{name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy}
             end
 
-        -- ELSE If number is more than big percent, change to small
+        -- ELSE If number is less than big percent, change to small
         elseif (rand_percent <= big_percent) then
             if (not (worm_name == "big-worm-turret")) then
                 entity.destroy()
@@ -529,7 +529,7 @@ function DowngradeWormsDistanceBasedOnChunkGenerate(event)
     elseif (getDistance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_end*CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
-        DowngradeWormsInArea(event.surface, event.area, 0, 20, 85)
+        DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)
     end
 end
 
