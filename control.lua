@@ -74,14 +74,9 @@ script.on_init(function(event)
     -- Regardless of whether it's enabled or not, it's good to have this init.
     OarcRegrowthInit()
 
-    if global.ocfg.frontier_fixed_pos then
-        SetFixedSiloPosition(global.ocfg.frontier_pos_table)
-    else
-        SetRandomSiloPosition(global.ocfg.frontier_silo_count)
-    end
-
-    if global.ocfg.frontier_rocket_silo then
-        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
+    -- Frontier Silo Area Generation
+    if (global.ocfg.frontier_rocket_silo) then
+        SpawnSilosAndGenerateSiloAreas()
     end
 end)
 

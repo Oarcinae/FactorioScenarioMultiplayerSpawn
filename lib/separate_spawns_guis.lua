@@ -598,12 +598,14 @@ function ExpandSpawnCtrlGui(player, tick)
 
 
         -- Sets the player's custom spawn point to their current location
-        if ((tick - global.playerCooldowns[player.name].setRespawn) > RESPAWN_COOLDOWN_TICKS) then
+        if ((tick - global.playerCooldowns[player.name].setRespawn) > 
+                (global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)) then
             spwnCtrls.add{type="button", name="setRespawnLocation", caption={"oarc-set-respawn-loc"}}
             spwnCtrls["setRespawnLocation"].style.font = "default-small-semibold"
 
         else
-            AddLabel(spwnCtrls, "respawn_cooldown_note1", {"oarc-set-respawn-loc-cooldown", formattime(RESPAWN_COOLDOWN_TICKS-(tick - global.playerCooldowns[player.name].setRespawn))}, my_note_style)
+            AddLabel(spwnCtrls,"respawn_cooldown_note1",
+                {"oarc-set-respawn-loc-cooldown", formattime((global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)-(tick - global.playerCooldowns[player.name].setRespawn))}, my_note_style)
         end
         AddLabel(spwnCtrls, "respawn_cooldown_note2", {"oarc-set-respawn-note"}, my_note_style)
 

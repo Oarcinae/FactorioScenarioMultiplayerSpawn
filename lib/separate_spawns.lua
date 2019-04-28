@@ -267,7 +267,7 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
         event.entity.destroy()
 
     -- Warn distance is all SMALL only.
-    if (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then
+    elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then
         if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
             event.entity.destroy()
             surface.create_entity{name = "small-biter", position = enemy_pos, force = game.forces.enemy}

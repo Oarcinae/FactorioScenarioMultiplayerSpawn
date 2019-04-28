@@ -9,6 +9,31 @@ require("lib/oarc_utils")
 -- Frontier style rocket silo stuff
 --------------------------------------------------------------------------------
 
+
+function SpawnSilosAndGenerateSiloAreas()
+    if (global.ocfg.silo_islands) then
+        local num_spawns = #global.vanillaSpawns
+        for k,v in pairs(global.vanillaSpawns) do       
+            if ((k <= num_spawns/2) and (k%2==1)) then
+                SetFixedSiloPosition({x=v.x,y=v.y})
+                global.vanillaSpawns[k] = nil
+            elseif ((k > num_spawns/2) and (k%2==0)) then
+                SetFixedSiloPosition({x=v.x,y=v.y})
+                global.vanillaSpawns[k] = nil
+            end
+        end
+
+    elseif (global.ocfg.frontier_fixed_pos) then
+        SetFixedSiloPosition(global.ocfg.frontier_pos_table)
+
+    else
+        SetRandomSiloPosition(global.ocfg.frontier_silo_count)
+
+    end
+
+    GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
+end
+
 -- This creates a random silo position, stored to global.siloPosition
 -- It uses the config setting global.ocfg.frontier_silo_distance and spawns the
 -- silo somewhere on a circle edge with radius using that distance.
