@@ -170,10 +170,10 @@ end
 -- Generate chunks where we plan to place the rocket silos.
 function GenerateRocketSiloAreas(surface)
     for idx,siloPos in pairs(global.siloPosition) do
-        if (global.ocfg.frontier_silo_vision) then
-            ChartRocketSiloAreas(surface, game.forces[global.ocfg.main_force])
-        end
         surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 3)
+    end
+    if (global.ocfg.frontier_silo_vision) then
+        ChartRocketSiloAreas(surface, game.forces[global.ocfg.main_force])
     end
 end
 
@@ -193,6 +193,7 @@ function DelayedSiloCreationOnTick(surface)
     -- Delay the creation of the silos so we place them on already generated lands.
     if (not global.oarc_silos_generated and (game.tick >= #global.siloPosition*10*TICKS_PER_SECOND)) then
         log("Frontier silos generated!")
+        SendBroadcastMsg("Rocket silos are now available!")
         global.oarc_silos_generated = true
         GenerateAllSilos(surface)
     end
