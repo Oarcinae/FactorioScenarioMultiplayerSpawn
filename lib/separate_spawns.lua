@@ -117,7 +117,7 @@ function FindUnusedSpawns(player, remove_player)
                 global.uniqueSpawns[player.name] = nil
 
                 log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-                OarcRegrowthMarkForRemoval(spawnPos, 10)
+                OarcRegrowthMarkForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+5)
                 SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
                 global.chunk_regrow.force_removal_flag = game.tick
 
@@ -727,8 +727,8 @@ function FindUnusedVanillaSpawn(surface, target_distance)
         
         -- Check if chunks nearby are not generated.
         local chunk_pos = GetChunkPosFromTilePos(v)
-        if IsChunkAreaUngenerated(chunk_pos, 10, surface) then
-        
+        if IsChunkAreaUngenerated(chunk_pos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+15, surface) then
+
             -- Is this our first valid find?
             if ((best_key == nil) or (best_distance == nil)) then
                 best_key = k
@@ -766,7 +766,7 @@ function ValidateVanillaSpawns(surface)
         
         -- Check if chunks nearby are not generated.
         local chunk_pos = GetChunkPosFromTilePos(v)
-        if not IsChunkAreaUngenerated(chunk_pos, 10, surface) then
+        if not IsChunkAreaUngenerated(chunk_pos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+15, surface) then
             log("Removing vanilla spawn due to chunks generated: x=" .. v.x .. ",y=" .. v.y)
             table.remove(global.vanillaSpawns, k)
         end     

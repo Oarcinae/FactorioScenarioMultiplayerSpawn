@@ -132,7 +132,7 @@ end
 function GenerateRocketSiloChunk(event)
 
     -- Silo generation can take awhile depending on the number of silos.
-    if (game.tick < global.ocfg.frontier_silo_count*10*TICKS_PER_SECOND) then
+    if (game.tick < #global.siloPosition*10*TICKS_PER_SECOND) then
         local surface = event.surface
         local chunkArea = event.area
 
@@ -191,7 +191,7 @@ global.oarc_silos_generated = false
 function DelayedSiloCreationOnTick(surface)
 
     -- Delay the creation of the silos so we place them on already generated lands.
-    if (not global.oarc_silos_generated and (game.tick >= global.ocfg.frontier_silo_count*10*TICKS_PER_SECOND)) then
+    if (not global.oarc_silos_generated and (game.tick >= #global.siloPosition*10*TICKS_PER_SECOND)) then
         log("Frontier silos generated!")
         global.oarc_silos_generated = true
         GenerateAllSilos(surface)
