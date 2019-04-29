@@ -449,11 +449,11 @@ function CreateGameSurface()
 
     if global.ocfg.enable_vanilla_spawns then
         nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
-        -- DeleteAllChunksExceptCenter(game.surfaces[GAME_SURFACE_NAME])
 
-        -- ISLAND MAP GEN -- WARNING
-        -- nauvis_settings.property_expression_names.elevation = "0_17-island"
-        -- ISLAND MAP GEN -- WARNING
+        -- ENFORCE ISLAND MAP GEN
+        if (global.ocfg.silo_islands) then
+            nauvis_settings.property_expression_names.elevation = "0_17-island"
+        end
     end
 
     -- Create new game surface
