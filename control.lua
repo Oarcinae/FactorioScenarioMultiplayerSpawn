@@ -202,7 +202,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.created_entity.position, 1)
+        OarcRegrowthOffLimits(event.created_entity.position, 2)
     end
 
     if ENABLE_ANTI_GRIEFING then
@@ -245,23 +245,25 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.created_entity.position, 1)
+        OarcRegrowthOffLimits(event.created_entity.position, 2)
     end
 end)
-script.on_event(defines.events.on_player_mined_entity, function(event)
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthCheckChunkEmpty(event)
-    end
-end)
-script.on_event(defines.events.on_robot_mined_entity, function(event)
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthCheckChunkEmpty(event)
-    end
-end)
+-- I disabled this because it's too much overhead for too little gain!
+-- script.on_event(defines.events.on_player_mined_entity, function(event)
+--     if global.ocfg.enable_regrowth then
+--         OarcRegrowthCheckChunkEmpty(event)
+--     end
+-- end)
+-- script.on_event(defines.events.on_robot_mined_entity, function(event)
+--     if global.ocfg.enable_regrowth then
+--         OarcRegrowthCheckChunkEmpty(event)
+--     end
+-- end)
 
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
+-- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
     if (global.ocfg.enable_shared_chat) then
