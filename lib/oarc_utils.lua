@@ -575,7 +575,6 @@ end
 --------------------------------------------------------------------------------
 function AntiGriefing(force)
     force.zoom_to_world_deconstruction_planner_enabled=false
-    force.friendly_fire=false
     SetForceGhostTimeToLive(force)
 end
 

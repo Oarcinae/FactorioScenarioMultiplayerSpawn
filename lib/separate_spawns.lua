@@ -636,6 +636,7 @@ function CreateForce(force_name)
         end
         SetCeaseFireBetweenAllForces()
         SetFriendlyBetweenAllForces()
+        newForce.friendly_fire=false
         if (ENABLE_ANTI_GRIEFING) then
             AntiGriefing(newForce)
         end
