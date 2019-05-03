@@ -643,7 +643,7 @@ function CreateForce(force_name)
 
         if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and not global.satellite_sent then
             DisableTech(newForce, "atomic-bomb")
-            DisableTech(newForce, "power-armor-2")
+            DisableTech(newForce, "power-armor-mk2")
             DisableTech(newForce, "artillery")
         end
     else

@@ -43,7 +43,7 @@ function RocketLaunchEvent(event)
         if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH then
             for _,f in pairs(game.forces) do
                 EnableTech(f, "atomic-bomb")
-                EnableTech(f, "power-armor-2")
+                EnableTech(f, "power-armor-mk2")
                 EnableTech(f, "artillery")
             end
 

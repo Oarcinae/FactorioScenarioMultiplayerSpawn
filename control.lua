@@ -301,4 +301,13 @@ script.on_event(defines.events.on_entity_spawned, function(event)
     end
 end)
 
+
+----------------------------------------
+-- On Corpse Timed Out
+-- Save player's stuff so they don't lose it if they can't get to the corpse fast enough.
+----------------------------------------
+script.on_event(defines.events.on_character_corpse_expired, function(event)
+    DropGravestoneChestFromCorpse(event.corpse)
+end)
+
 -- on_biter_base_built -- Worth considering for later.
