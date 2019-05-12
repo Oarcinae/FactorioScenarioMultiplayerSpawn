@@ -275,6 +275,11 @@ function OarcRegrowthRemoveAllChunks()
         local c_pos = c_remove.pos
         local c_timer = global.chunk_regrow.map[c_pos.x][c_pos.y]
 
+        if (game.surfaces[GAME_SURFACE_NAME] == nil) then
+            log("Error! game.surfaces[name] is nil?? WTF?")
+            return
+        end
+
         -- Confirm chunk is still expired
         if (c_timer == nil) then
 
