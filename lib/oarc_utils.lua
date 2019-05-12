@@ -392,6 +392,7 @@ end
 function DisableTech(force, techName)
     if force.technologies[techName] then
         force.technologies[techName].enabled = false
+        force.technologies[techName].visible_when_disabled = true
     end
 end
 
@@ -1000,5 +1001,20 @@ function Autofill(event)
 
     if ((eventEntity.name == "car") or (eventEntity.name == "tank") or (eventEntity.name == "locomotive")) then
         AutoFillVehicle(player, eventEntity)
+    end
+end
+
+-- Map loaders to logistics tech for unlocks.
+local loaders_technology_map = {
+    ['logistics'] = 'loader',
+    ['logistics-2'] = 'fast-loader',
+    ['logistics-3'] = 'express-loader'
+}
+
+function EnableLoaders(event)
+    local research = event.research
+    local recipe = loaders_technology_map[research.name]
+    if recipe then
+        research.force.recipes[recipe].enabled = true
     end
 end

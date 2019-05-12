@@ -197,6 +197,9 @@ script.on_event(defines.events.on_player_left_game, function(event)
     FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
+----------------------------------------
+-- On BUILD entity. Don't forget on_robot_built_entity too!
+----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
     if global.ocfg.enable_autofill then
         Autofill(event)
@@ -209,7 +212,12 @@ script.on_event(defines.events.on_built_entity, function(event)
     if ENABLE_ANTI_GRIEFING then
         SetItemBlueprintTimeToLive(event)
     end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
 end)
+
 
 
 ----------------------------------------
@@ -248,7 +256,12 @@ script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
         OarcRegrowthOffLimits(event.created_entity.position, 2)
     end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
 end)
+
 -- I disabled this because it's too much overhead for too little gain!
 -- script.on_event(defines.events.on_player_mined_entity, function(event)
 --     if global.ocfg.enable_regrowth then
@@ -281,14 +294,18 @@ end)
 script.on_event(defines.events.on_research_finished, function(event)
     
     -- Never allows players to build rocket-silos in "frontier" mode.
-    if global.ocfg.frontier_rocket_silo then
-        RemoveRecipe(event.research.force, "rocket-silo")
-    end
+    -- if global.ocfg.frontier_rocket_silo then
+    --     RemoveRecipe(event.research.force, "rocket-silo")
+    -- end
 
     if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and 
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
         RemoveRecipe(event.research.force, "productivity-module-3")
         RemoveRecipe(event.research.force, "speed-module-3")
+    end
+
+    if ENABLE_LOADERS then
+        EnableLoaders(event)
     end
 end)
 

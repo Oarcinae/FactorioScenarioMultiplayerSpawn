@@ -85,18 +85,22 @@ local function CreateRocketSilo(surface, siloPosition, force)
     -- Set tiles below the silo
     tiles = {}
     i = 1
-    for dx = -5,5 do
-        for dy = -5,5 do
-            tiles[i] = {name = "concrete", position = {siloPosition.x+dx, siloPosition.y+dy}}
+    for dx = -6,6 do
+        for dy = -6,6 do
+            if ((dx % 2 == 0) or (dx % 2 == 0)) then
+                tiles[i] = {name = "concrete", position = {siloPosition.x+dx, siloPosition.y+dy}}
+            else
+                tiles[i] = {name = "hazard-concrete-left", position = {siloPosition.x+dx, siloPosition.y+dy}}
+            end
             i=i+1
         end
     end
     surface.set_tiles(tiles, true)
 
     -- Create indestructible silo and assign to a force
-    local silo = surface.create_entity{name = "rocket-silo", position = {siloPosition.x+0.5, siloPosition.y}, force = force}
-    silo.destructible = false
-    silo.minable = false
+    -- local silo = surface.create_entity{name = "rocket-silo", position = {siloPosition.x+0.5, siloPosition.y}, force = force}
+    -- silo.destructible = false
+    -- silo.minable = false
 
     -- TAG it on the main force at least.
     game.forces[global.ocfg.main_force].add_chart_tag(game.surfaces[GAME_SURFACE_NAME],
@@ -125,6 +129,33 @@ function GenerateAllSilos(surface)
     -- Create each silo in the list
     for idx,siloPos in pairs(global.siloPosition) do
         CreateRocketSilo(surface, siloPos, global.ocfg.main_force)
+    end
+end
+
+-- Validates any attempt to build a silo.
+-- Should be call in on_built_entity and on_robot_built_entity
+function BuildSiloAttempt(event)
+
+    -- Validation
+    if (event.created_entity == nil) then return end
+    if (event.created_entity.name ~= "rocket-silo") then return end
+
+    -- Check if it's in the right area.
+    local epos = event.created_entity.position
+
+    for k,v in pairs(global.siloPosition) do
+        if (getDistance(epos, v) < 5) then
+            SendBroadcastMsg("Rocket silo has been built!")
+            return
+        end
+    end
+
+    -- If we get here, means it wasn't in a valid position. Need to remove it.
+    if (event.created_entity.last_user ~= nil) then
+        FlyingText("Can't build silo here! Check the map!", epos, my_color_red, event.created_entity.surface)
+        event.created_entity.last_user.mine_entity(event.created_entity, true)
+    else
+        log("ERROR! Rocket-silo had no valid last user?!?!")
     end
 end
 
@@ -198,7 +229,7 @@ function DelayedSiloCreationOnTick(surface)
         GenerateAllSilos(surface)
     end
 
-end 
+end
 
 
 function PhilipsBeacons(surface, siloPos, force)
