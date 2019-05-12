@@ -33,6 +33,7 @@ require("lib/game_opts")
 require("lib/regrowth_map")
 require("lib/player_list")
 require("lib/rocket_launch")
+require("lib/admin_commands")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
