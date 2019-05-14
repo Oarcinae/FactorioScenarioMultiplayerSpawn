@@ -17,6 +17,8 @@ require("config")
 function SeparateSpawnsPlayerCreated(player_index)
     local player = game.players[player_index]
 
+    -- This checks if they have just joined the server.
+    -- No assigned force yet.
     if (player.force.name ~= "player") then
         FindUnusedSpawns(player, false)
     end
@@ -60,6 +62,10 @@ function FindUnusedSpawns(player, remove_player)
     end
 
     if (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) then
+
+        -- If this player is staying in the game, lets make sure we don't delete them
+        -- along with the map chunks being cleared.
+        player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
         -- Clear out global variables for that player
         if (global.playerSpawns[player.name] ~= nil) then
