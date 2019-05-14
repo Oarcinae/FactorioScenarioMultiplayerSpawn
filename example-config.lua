@@ -372,11 +372,15 @@ SILO_NUM_SPAWNS = 3
 -- How many chunks away from the center of the map should the silo be spawned
 SILO_CHUNK_DISTANCE = 200
 
--- If this is enabled, you get ONE silo at the location specified below.
+-- If this is enabled, you get silos at the positions specified below.
+-- (The other settings above are ignored in this case.)
 SILO_FIXED_POSITION = false
 
--- If you want to set a fixed spawn location for a single silo
-SILO_POSITION = {x = 0, y = 100}
+-- If you want to set fixed spawn locations for some silos.
+SILO_POSITIONS = {{x = -1000, y = -1000},
+                  {x = -1000, y = 1000},
+                  {x = 1000,  y = -1000},
+                  {x = 1000,  y = 1000}}
 
 -- Set this to false so that you have to search for the silo's.
 ENABLE_SILO_VISION = true

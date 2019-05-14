@@ -11,26 +11,38 @@ require("lib/oarc_utils")
 
 
 function SpawnSilosAndGenerateSiloAreas()
+    
+    -- Special silo islands mode "boogaloo"
     if (global.ocfg.silo_islands) then
+
         local num_spawns = #global.vanillaSpawns
-        for k,v in pairs(global.vanillaSpawns) do       
+        local new_spawn_list = {}
+        
+        -- Pick out every OTHER vanilla spawn for the rocket silos.
+        for k,v in pairs(global.vanillaSpawns) do
             if ((k <= num_spawns/2) and (k%2==1)) then
                 SetFixedSiloPosition({x=v.x,y=v.y})
-                global.vanillaSpawns[k] = nil
             elseif ((k > num_spawns/2) and (k%2==0)) then
                 SetFixedSiloPosition({x=v.x,y=v.y})
-                global.vanillaSpawns[k] = nil
+            else
+                table.insert(new_spawn_list, v)
             end
         end
+        global.vanillaSpawns = new_spawn_list
 
+    -- A set of fixed silo positions
     elseif (global.ocfg.frontier_fixed_pos) then
-        SetFixedSiloPosition(global.ocfg.frontier_pos_table)
+        for k,v in pairs(global.ocfg.frontier_pos_table) do
+            SetFixedSiloPosition(v)
+        end
 
+    -- Random locations on a circle.
     else
         SetRandomSiloPosition(global.ocfg.frontier_silo_count)
 
     end
 
+    -- Freezes the game at the start to generate all the chunks.
     GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
 end
 
