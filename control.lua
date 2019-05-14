@@ -79,6 +79,11 @@ script.on_init(function(event)
     if (global.ocfg.frontier_rocket_silo) then
         SpawnSilosAndGenerateSiloAreas()
     end
+
+    -- Everyone do the shuffle. Helps avoid always starting at the same location.
+    global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
+    log("Vanilla spawns:")
+    log(serpent.block(global.vanillaSpawns))
 end)
 
 
