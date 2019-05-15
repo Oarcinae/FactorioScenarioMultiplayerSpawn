@@ -389,6 +389,13 @@ ENABLE_SILO_VISION = true
 ENABLE_SILO_BEACONS = false
 ENABLE_SILO_RADAR = false
 
+-- Allow silos to be built by the player, but forces them to build in
+-- the fixed locations. If this is false, silos are built and assigned
+-- only to the main force. This can cause a problem for non main forces
+-- when playing with LOCK_GOODIES_UNTIL_ROCKET_LAUNCH enabled.
+ENABLE_SILO_PLAYER_BUILD = true
+
+
 --------------------------------------------------------------------------------
 -- Long Reach Options
 --------------------------------------------------------------------------------

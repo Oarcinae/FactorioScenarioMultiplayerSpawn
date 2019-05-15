@@ -110,9 +110,11 @@ local function CreateRocketSilo(surface, siloPosition, force)
     surface.set_tiles(tiles, true)
 
     -- Create indestructible silo and assign to a force
-    -- local silo = surface.create_entity{name = "rocket-silo", position = {siloPosition.x+0.5, siloPosition.y}, force = force}
-    -- silo.destructible = false
-    -- silo.minable = false
+    if not global.ocfg.frontier_allow_build then
+        local silo = surface.create_entity{name = "rocket-silo", position = {siloPosition.x+0.5, siloPosition.y}, force = force}
+        silo.destructible = false
+        silo.minable = false
+    end
 
     -- TAG it on the main force at least.
     game.forces[global.ocfg.main_force].add_chart_tag(game.surfaces[GAME_SURFACE_NAME],

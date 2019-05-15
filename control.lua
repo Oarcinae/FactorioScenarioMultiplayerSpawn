@@ -299,9 +299,9 @@ end)
 script.on_event(defines.events.on_research_finished, function(event)
     
     -- Never allows players to build rocket-silos in "frontier" mode.
-    -- if global.ocfg.frontier_rocket_silo then
-    --     RemoveRecipe(event.research.force, "rocket-silo")
-    -- end
+    if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
+        RemoveRecipe(event.research.force, "rocket-silo")
+    end
 
     if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and 
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then

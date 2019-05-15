@@ -65,6 +65,7 @@ function InitOarcConfig()
         global.ocfg.frontier_fixed_pos = SILO_FIXED_POSITION
         global.ocfg.frontier_pos_table = SILO_POSITIONS
         global.ocfg.frontier_silo_vision = ENABLE_SILO_VISION
+        global.ocfg.frontier_allow_build = ENABLE_SILO_PLAYER_BUILD
     
     -- MOD VERSION
     else
@@ -187,6 +188,7 @@ function InitOarcConfig()
         global.ocfg.frontier_fixed_pos = false
         global.ocfg.frontier_pos_table = {{x = 0, y = 100}}
         global.ocfg.frontier_silo_vision = settings.global["oarc-frontier-silo-vision"].value
+        global.ocfg.frontier_allow_build = true
     end
 
 
