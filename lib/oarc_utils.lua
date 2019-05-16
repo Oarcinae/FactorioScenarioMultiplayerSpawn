@@ -754,7 +754,8 @@ end
 
 -- Autofills a turret with ammo
 function AutofillTurret(player, turret)
-    local mainInv = player.get_inventory(defines.inventory.character_main)
+    local mainInv = player.get_main_inventory()
+    if (mainInv == nil) then return end
 
     -- Attempt to transfer some ammo
     local ret = TransferItemMultipleTypes(mainInv, turret, {"uranium-rounds-magazine", "piercing-rounds-magazine", "firearm-magazine"}, AUTOFILL_TURRET_AMMO_QUANTITY)
@@ -772,8 +773,9 @@ end
 
 -- Autofills a vehicle with fuel, bullets and shells where applicable
 function AutoFillVehicle(player, vehicle)
-    local mainInv = player.get_inventory(defines.inventory.character_main)
-
+    local mainInv = player.get_main_inventory()
+    if (mainInv == nil) then return end
+    
     -- Attempt to transfer some fuel
     if ((vehicle.name == "car") or (vehicle.name == "tank") or (vehicle.name == "locomotive")) then
         TransferItemMultipleTypes(mainInv, vehicle, {"nuclear-fuel", "rocket-fuel", "solid-fuel", "coal", "wood"}, 50)
@@ -994,6 +996,9 @@ end
 function Autofill(event)
     local player = game.players[event.player_index]
     local eventEntity = event.created_entity
+
+    -- Make sure player isn't dead?
+    if (player.character == nil) then return end
 
     if (eventEntity.name == "gun-turret") then
         AutofillTurret(player, eventEntity)
