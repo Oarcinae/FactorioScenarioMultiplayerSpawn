@@ -62,6 +62,9 @@ ENABLE_LONGREACH = true
 -- Enable Autofill
 ENABLE_AUTOFILL = true
 
+-- Enable vanilla loaders
+ENABLE_LOADERS = true
+
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
@@ -321,10 +324,10 @@ OARC_CFG = {
         ["crude-oil"] = 
         {
             num_patches = 2,
-            amount = 300000,
-            x_offset_start = 0,
+            amount = 3000000,
+            x_offset_start = -3,
             y_offset_start = 48,
-            x_offset_next = 4,
+            x_offset_next = 6,
             y_offset_next = 0
         }
     },

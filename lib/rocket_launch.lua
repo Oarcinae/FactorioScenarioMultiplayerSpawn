@@ -36,16 +36,14 @@ function RocketLaunchEvent(event)
     
     -- First sat launch for this force.
     else
-        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
+        -- game.set_game_state{game_finished=true, player_won=true, can_continue=true}
         global.satellite_sent[force.name] = 1
 
         -- Unlock research
         if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH then
-            for _,f in pairs(game.forces) do
-                EnableTech(f, "atomic-bomb")
-                EnableTech(f, "power-armor-mk2")
-                EnableTech(f, "artillery")
-            end
+            EnableTech(force, "atomic-bomb")
+            EnableTech(force, "power-armor-mk2")
+            EnableTech(force, "artillery")
 
             if (force.technologies["speed-module-3"].researched) then
 		    	AddRecipe(force, "speed-module-3")
@@ -59,8 +57,8 @@ end
 
 
 function CreateRocketGui(player)
-    if player.gui.top["rocket-score"] == nil then
-        player.gui.top.add{name="rocket-score", type="button", caption="Rockets"}
+    if mod_gui.get_button_flow(player)["rocket-score"] == nil then
+        mod_gui.get_button_flow(player).add{name="rocket-score", type="button", caption="Rockets", style=mod_gui.button_style}
     end   
 end
 

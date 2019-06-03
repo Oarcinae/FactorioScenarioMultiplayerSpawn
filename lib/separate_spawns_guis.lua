@@ -537,8 +537,8 @@ end
 
 
 function CreateSpawnCtrlGui(player)
-  if player and (player.gui.top.spwn_ctrls == nil) then
-      player.gui.top.add{name="spwn_ctrls", type="button", caption={"oarc-spawn-ctrl"}}
+  if player and (mod_gui.get_button_flow(player).spwn_ctrls == nil) then
+      mod_gui.get_button_flow(player).add{name="spwn_ctrls", type="button", caption={"oarc-spawn-ctrl"}, style=mod_gui.button_style}
   end
 end
 
@@ -573,11 +573,11 @@ end
 
 -- This is a toggle function, it either shows or hides the spawn controls
 function ExpandSpawnCtrlGui(player, tick)
-    local spwnCtrlPanel = player.gui.left["spwn_ctrl_panel"]
+    local spwnCtrlPanel = mod_gui.get_frame_flow(player)["spwn_ctrl_panel"]
     if (spwnCtrlPanel) then
         spwnCtrlPanel.destroy()
     else
-        local spwnCtrlPanel = player.gui.left.add{type="frame",
+        local spwnCtrlPanel = mod_gui.get_frame_flow(player).add{type="frame",
                             name="spwn_ctrl_panel", caption={"oarc-spawn-controls"}}
         local spwnCtrls = spwnCtrlPanel.add{type="scroll-pane",
                             name="spwn_ctrl_panel", caption=""}

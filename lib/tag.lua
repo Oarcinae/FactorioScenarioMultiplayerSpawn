@@ -4,8 +4,8 @@
 
 function CreateTagGui(event)
     local player = game.players[event.player_index]
-    if player.gui.top.tag == nil then
-        player.gui.top.add{name="tag", type="button", caption="Tag"}
+    if mod_gui.get_button_flow(player).tag == nil then
+        mod_gui.get_button_flow(player).add{name="tag", type="button", caption="Tag", style=mod_gui.button_style}
     end   
 end
 
@@ -27,11 +27,11 @@ local roles = {
     {display_name = "[AFK]"}}
 
 local function ExpandTagGui(player)
-    local frame = player.gui.left["tag-panel"]
+    local frame = mod_gui.get_frame_flow(player)["tag-panel"]
     if (frame) then
         frame.destroy()
     else
-        local frame = player.gui.left.add{type="frame", name="tag-panel", caption="What are you doing:", direction = "vertical"}
+        local frame = mod_gui.get_frame_flow(player).add{type="frame", name="tag-panel", caption="What are you doing:", direction = "vertical"}
         for _, role in pairs(roles) do
             frame.add{type="button", caption=role.display_name, name=role.display_name}
         end

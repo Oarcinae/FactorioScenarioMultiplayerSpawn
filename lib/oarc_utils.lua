@@ -5,6 +5,7 @@
 -- Also contains some constants and gui styles
 
 require("lib/oarc_gui_utils")
+require("mod-gui")
 
 --------------------------------------------------------------------------------
 -- Useful constants

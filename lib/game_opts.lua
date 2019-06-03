@@ -9,17 +9,17 @@ require("lib/separate_spawns")
 
 function CreateGameOptionsGui(event)
     local player = game.players[event.player_index]
-    if player.gui.top.game_options == nil then
-        player.gui.top.add{name="game_options", type="button", caption="Info"}
+    if mod_gui.get_button_flow(player).game_options == nil then
+        mod_gui.get_button_flow(player).add{name="game_options", type="button", caption="Info", style=mod_gui.button_style}
     end   
 end
 
 local function ExpandGameOptionsGui(player)
-    local frame = player.gui.left["game_options_panel"]
+    local frame = mod_gui.get_frame_flow(player)["game_options_panel"]
     if (frame) then
         frame.destroy()
     else
-        local frame = player.gui.left.add{type="frame",
+        local frame = mod_gui.get_frame_flow(player).add{type="frame",
                                             name="game_options_panel", 
                                             caption="Server Info:",
                                             direction="vertical"}

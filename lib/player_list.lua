@@ -6,17 +6,17 @@
 --------------------------------------------------------------------------------
 function CreatePlayerListGui(event)
   local player = game.players[event.player_index]
-  if player.gui.top.playerList == nil then
-      player.gui.top.add{name="playerList", type="button", caption="Player List"}
+  if mod_gui.get_button_flow(player).playerList == nil then
+      mod_gui.get_button_flow(player).add{name="playerList", type="button", caption="Player List", style=mod_gui.button_style}
   end   
 end
 
 local function ExpandPlayerListGui(player)
-    local frame = player.gui.left["playerList-panel"]
+    local frame = mod_gui.get_frame_flow(player)["playerList-panel"]
     if (frame) then
         frame.destroy()
     else
-        local frame = player.gui.left.add{type="frame",
+        local frame = mod_gui.get_frame_flow(player).add{type="frame",
                                             name="playerList-panel",
                                             caption="Online:"}
         local scrollFrame = frame.add{type="scroll-pane",

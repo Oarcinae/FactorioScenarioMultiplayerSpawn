@@ -309,7 +309,7 @@ script.on_event(defines.events.on_research_finished, function(event)
         RemoveRecipe(event.research.force, "speed-module-3")
     end
 
-    if ENABLE_LOADERS then
+    if global.ocfg.enable_loaders then
         EnableLoaders(event)
     end
 end)

@@ -38,6 +38,7 @@ function InitOarcConfig()
         global.ocfg.enable_tags = ENABLE_TAGS
         global.ocfg.enable_long_reach = ENABLE_LONGREACH
         global.ocfg.enable_autofill = ENABLE_AUTOFILL
+        global.ocfg.enable_loaders = ENABLE_LOADERS
         global.ocfg.enable_player_list = ENABLE_PLAYER_LIST
         global.ocfg.list_offline_players = PLAYER_LIST_OFFLINE_PLAYERS
         global.ocfg.enable_shared_team_vision = ENABLE_SHARED_TEAM_VISION
@@ -81,6 +82,7 @@ function InitOarcConfig()
         global.ocfg.enable_tags = settings.global["oarc-enable-tags"].value
         global.ocfg.enable_long_reach = settings.global["oarc-enable-long-reach"].value
         global.ocfg.enable_autofill = settings.global["oarc-enable-autofill"].value
+        global.ocfg.enable_loaders = false
         global.ocfg.enable_player_list = settings.global["oarc-enable-player-list"].value
         global.ocfg.list_offline_players = settings.global["oarc-list-offline-players"].value
         global.ocfg.enable_shared_team_vision = settings.global["oarc-enable-shared-team-vision"].value
