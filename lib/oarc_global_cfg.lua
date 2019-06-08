@@ -45,6 +45,7 @@ function InitOarcConfig()
         global.ocfg.enable_regrowth = ENABLE_REGROWTH
         global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
         global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
+        global.ocfg.lock_goodies_rocket_launch = LOCK_GOODIES_UNTIL_ROCKET_LAUNCH
         global.ocfg.modified_enemy_spawning = OARC_MODIFIED_ENEMY_SPAWNING
         global.ocfg.near_dist_start = NEAR_MIN_DIST
         global.ocfg.near_dist_end = NEAR_MAX_DIST
@@ -89,6 +90,7 @@ function InitOarcConfig()
         global.ocfg.enable_regrowth = settings.global["oarc-enable-regrowth"].value
         global.ocfg.enable_abandoned_base_removal = settings.global["oarc-enable-abandoned-base-removal"].value
         global.ocfg.enable_research_queue = settings.global["oarc-enable-research-queue"].value
+        global.ocfg.lock_goodies_rocket_launch = false
         global.ocfg.modified_enemy_spawning = settings.global["oarc-modified-enemy-spawning"].value
         global.ocfg.near_dist_start = settings.global["oarc-near-dist-start"].value
         global.ocfg.near_dist_end = settings.global["oarc-near-dist-end"].value

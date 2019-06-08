@@ -309,7 +309,7 @@ script.on_event(defines.events.on_research_finished, function(event)
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 
-    if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and 
+    if global.ocfg.lock_goodies_rocket_launch and 
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
         RemoveRecipe(event.research.force, "productivity-module-3")
         RemoveRecipe(event.research.force, "speed-module-3")

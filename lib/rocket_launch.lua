@@ -44,7 +44,7 @@ function RocketLaunchEvent(event)
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched their first rocket!" .. "\n")
 
         -- Unlock research
-        if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH then
+        if global.ocfg.lock_goodies_rocket_launch then
             EnableTech(force, "atomic-bomb")
             EnableTech(force, "power-armor-mk2")
             EnableTech(force, "artillery")

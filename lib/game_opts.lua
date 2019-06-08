@@ -94,6 +94,11 @@ local function ExpandGameOptionsGui(player)
         if (ENABLE_POWER_ARMOR_QUICK_START) then
             game_info_str = game_info_str.."\n".."Power armor quick start enabled."
         end
+        if (global.ocfg.lock_goodies_rocket_launch) then
+            game_info_str = game_info_str.."\n".."Artillery/Nukes/ArmorMK2 tech and Prod/Speed 3 module recipes are locked until you launch a rocket!"
+        end
+
+
 
         AddLabel(frame, "game_info_label", game_info_str, my_longer_label_style)
 

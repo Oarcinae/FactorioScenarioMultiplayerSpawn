@@ -647,7 +647,7 @@ function CreateForce(force_name)
             AntiGriefing(newForce)
         end
 
-        if LOCK_GOODIES_UNTIL_ROCKET_LAUNCH and not global.satellite_sent then
+        if global.ocfg.lock_goodies_rocket_launch and not global.satellite_sent then
             DisableTech(newForce, "atomic-bomb")
             DisableTech(newForce, "power-armor-mk2")
             DisableTech(newForce, "artillery")
