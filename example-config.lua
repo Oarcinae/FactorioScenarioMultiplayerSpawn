@@ -345,7 +345,8 @@ ENABLE_SEPARATE_TEAMS = true
 -- Main force is what default players join
 MAIN_FORCE = "Main Force"
 
--- Enable if people can allow others to join their base
+-- Enable if players can allow others to join their base.
+-- And specify how many including the host are allowed.
 ENABLE_SHARED_SPAWNS = true
 MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 0
 

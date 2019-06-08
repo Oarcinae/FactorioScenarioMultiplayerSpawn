@@ -173,6 +173,8 @@ script.on_event(defines.events.on_player_joined_game, function(event)
     if global.satellite_sent then
         CreateRocketGui(game.players[event.player_index])
     end
+
+    ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
@@ -199,6 +201,7 @@ script.on_event(defines.events.on_player_respawned, function(event)
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
+    ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
@@ -285,6 +288,9 @@ end)
 -- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
+    if (event.player_index) then
+        ServerWriteFile("server_chat", game.players[event.player_index].name .. ": " .. event.message .. "\n")
+    end
     if (global.ocfg.enable_shared_chat) then
         if (event.player_index ~= nil) then
             ShareChatBetweenForces(game.players[event.player_index], event.message)

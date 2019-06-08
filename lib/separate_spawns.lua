@@ -424,7 +424,7 @@ function GetNumberOfAvailableSharedSpawns()
             (game.players[ownerName] ~= nil) and
             game.players[ownerName].connected) then
             if ((global.ocfg.max_players_shared_spawn == 0) or
-                (GetOnlinePlayersAtSharedSpawn(ownerName) < global.ocfg.max_players_shared_spawn)) then
+                (#global.sharedSpawns[ownerName].players < global.ocfg.max_players_shared_spawn)) then
                 count = count+1
             end
         end

@@ -45,6 +45,14 @@ function SendMsg(playerName, msg)
     end
 end
 
+-- Simple way to write to a file. Always appends. Only server.
+-- Has a global setting for enable/disable
+function ServerWriteFile(filename, msg)
+    if (global.ocfg.enable_server_write_files) then
+        game.write_file(filename, msg, true, 0)
+    end
+end
+
 -- Useful for displaying game time in mins:secs format
 function formattime(ticks)
   local seconds = ticks / 60

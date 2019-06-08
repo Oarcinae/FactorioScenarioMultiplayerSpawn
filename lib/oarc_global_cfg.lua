@@ -58,7 +58,7 @@ function InitOarcConfig()
         global.ocfg.enable_separate_teams = ENABLE_SEPARATE_TEAMS
         global.ocfg.main_force = MAIN_FORCE
         global.ocfg.enable_shared_spawns = ENABLE_SHARED_SPAWNS
-        global.ocfg.max_players_shared_spawn = MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN
+        global.ocfg.max_players_shared_spawn = MAX_PLAYERS_AT_SHARED_SPAWN
         global.ocfg.enable_shared_chat = ENABLE_SHARED_TEAM_CHAT
         global.ocfg.respawn_cooldown_min = RESPAWN_COOLDOWN_IN_MINUTES
         global.ocfg.frontier_silo_count = SILO_NUM_SPAWNS

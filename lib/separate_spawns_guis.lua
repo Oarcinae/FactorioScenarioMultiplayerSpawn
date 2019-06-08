@@ -405,7 +405,7 @@ function DisplaySharedSpawnOptions(player)
         if (sharedSpawn.openAccess and
             (game.players[spawnName] ~= nil) and
             game.players[spawnName].connected) then
-            local spotsRemaining = global.ocfg.max_players_shared_spawn - GetOnlinePlayersAtSharedSpawn(spawnName)
+            local spotsRemaining = global.ocfg.max_players_shared_spawn - #global.sharedSpawns[spawnName].players
             if (global.ocfg.max_players_shared_spawn == 0) then
                 shGui.add{type="button", caption=spawnName, name=spawnName}
             elseif (spotsRemaining > 0) then
