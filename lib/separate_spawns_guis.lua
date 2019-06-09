@@ -409,7 +409,7 @@ function DisplaySharedSpawnOptions(player)
             if (global.ocfg.max_players_shared_spawn == 0) then
                 shGui.add{type="button", caption=spawnName, name=spawnName}
             elseif (spotsRemaining > 0) then
-                shGui.add{type="button", caption={oarc-spawn-spots-remaining, spawnName, spotsRemaining}, name=spawnName}
+                shGui.add{type="button", caption={"oarc-spawn-spots-remaining", spawnName, spotsRemaining}, name=spawnName}
             end
             if (shGui.spawnName ~= nil) then
                 -- AddSpacer(buddyGui, spawnName .. "spacer_lbl")
