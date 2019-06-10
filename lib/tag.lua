@@ -38,8 +38,8 @@ local function ExpandTagGui(player)
         if (player.admin) then
             frame.add{type="button", caption="[Admin]", name="admin"}
             frame.add{type="button", caption="[Moderator]", name="moderator"}
-            frame.add{type="button", caption="Clear", name="clear_btn"}
         end
+        frame.add{type="button", caption="Clear", name="clear_btn"}
     end
 end
 
