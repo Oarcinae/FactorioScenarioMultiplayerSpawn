@@ -227,6 +227,18 @@ script.on_event(defines.events.on_built_entity, function(event)
 end)
 
 
+----------------------------------------
+-- On script_raised_built. This should help catch mods that
+-- place items that don't count as player_built and robot_built.
+-- Specifically FARL.
+----------------------------------------
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.enable_regrowth then
+        OarcRegrowthOffLimits(event.entity.position, 2)
+    end
+end)
+
+
 
 ----------------------------------------
 -- Shared vision, charts a small area around other players
