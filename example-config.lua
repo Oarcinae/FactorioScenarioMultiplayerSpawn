@@ -348,7 +348,7 @@ MAIN_FORCE = "Main Force"
 -- Enable if players can allow others to join their base.
 -- And specify how many including the host are allowed.
 ENABLE_SHARED_SPAWNS = true
-MAX_ONLINE_PLAYERS_AT_SHARED_SPAWN = 0
+MAX_PLAYERS_AT_SHARED_SPAWN = 0
 
 -- Share local team chat with all teams
 -- This makes it so you don't have to use /s
