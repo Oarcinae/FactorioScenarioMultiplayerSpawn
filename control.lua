@@ -98,7 +98,6 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 end)
 
 
-local first_chunk_generated_flag = false
 ----------------------------------------
 -- Chunk Generation
 ----------------------------------------
@@ -239,9 +238,9 @@ script.on_event(defines.events.script_raised_built, function(event)
 end)
 
 
-
 ----------------------------------------
--- Shared vision, charts a small area around other players
+-- On tick events. Stuff that needs to happen at regular intervals.
+-- Delayed events, delayed spawns, regrowth logic...
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
     if global.ocfg.enable_regrowth then
@@ -333,7 +332,7 @@ script.on_event(defines.events.on_research_finished, function(event)
 end)
 
 ----------------------------------------
--- On Entity Spawned
+-- On Entity Spawned and On Biter Base Built
 -- This is where I modify biter spawning based on location and other factors.
 ----------------------------------------
 script.on_event(defines.events.on_entity_spawned, function(event)
@@ -341,7 +340,11 @@ script.on_event(defines.events.on_entity_spawned, function(event)
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 end)
-
+script.on_event(defines.events.on_biter_base_built, function(event)
+    if (global.ocfg.modified_enemy_spawning) then
+        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
 
 ----------------------------------------
 -- On Corpse Timed Out
@@ -351,4 +354,3 @@ script.on_event(defines.events.on_character_corpse_expired, function(event)
     DropGravestoneChestFromCorpse(event.corpse)
 end)
 
--- on_biter_base_built -- Worth considering for later.
