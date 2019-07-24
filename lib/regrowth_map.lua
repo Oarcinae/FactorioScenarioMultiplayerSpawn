@@ -5,7 +5,7 @@
 -- Relies on some changes to RSO to provide random resource locations the next
 -- time the land is regenerated. -- (THIS IS CURRENTLY NOT WORKING IN 0.16,
 -- resources always how up in the same spot!)
--- 
+--
 -- Basic rules of regrowth:
 -- 1. Area around player is safe for quite a large distance.
 -- 2. Rocket silo won't be deleted. - PERMANENT
@@ -54,17 +54,9 @@ function OarcRegrowthInit()
     OarcRegrowthOffLimits({x=0,y=0}, 10)
 end
 
-function GetChunkTopLeft(pos)
-    return {x=pos.x-(pos.x % 32), y=pos.y-(pos.y % 32)}
-end
-
-function GetChunkCoordsFromPos(pos)
-    return {x=math.floor(pos.x/32), y=math.floor(pos.y/32)}
-end
-
 -- This complicated function checks that if a chunk
 function CheckChunkEmpty(pos)
-    chunkPos = GetChunkCoordsFromPos(pos)
+    chunkPos = GetChunkPosFromTilePos(pos)
     search_top_left = {x=chunkPos.x*32, y=chunkPos.y*32}
     search_area = {search_top_left, {x=search_top_left.x+32,y=search_top_left.y+32}}
     total = 0
@@ -73,7 +65,7 @@ function CheckChunkEmpty(pos)
             entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area = search_area, force=f}
             total = total + #entities
             if (#entities > 0) then
-                
+
                 for _,e in pairs(entities) do
                     if ((e.type == "player") or
                          (e.type == "car") or
@@ -108,7 +100,7 @@ end
 -- (Compared to other RSO & Oarc related functions...)
 function OarcRegrowthChunkGenerate(pos)
 
-    c_pos = GetChunkCoordsFromPos(pos)
+    c_pos = GetChunkPosFromTilePos(pos)
 
     -- If this is the first chunk in that row:
     if (global.chunk_regrow.map[c_pos.x] == nil) then
@@ -137,7 +129,7 @@ end
 
 -- Mark an area for immediate forced removal
 function OarcRegrowthMarkForRemoval(pos, chunk_radius)
-    local c_pos = GetChunkCoordsFromPos(pos)
+    local c_pos = GetChunkPosFromTilePos(pos)
     for i=-chunk_radius,chunk_radius do
         for k=-chunk_radius,chunk_radius do
             local x = c_pos.x+i
@@ -162,7 +154,7 @@ end
 
 -- Marks a safe area around a position that won't ever be deleted.
 function OarcRegrowthOffLimits(pos, chunk_radius)
-    local c_pos = GetChunkCoordsFromPos(pos)
+    local c_pos = GetChunkPosFromTilePos(pos)
 
     for i=-chunk_radius,chunk_radius do
         for j=-chunk_radius,chunk_radius do
@@ -173,7 +165,7 @@ end
 
 -- Refreshes timers on a chunk containing position
 function OarcRegrowthRefreshChunk(pos, bonus_time)
-    local c_pos = GetChunkCoordsFromPos(pos)
+    local c_pos = GetChunkPosFromTilePos(pos)
 
     if (global.chunk_regrow.map[c_pos.x] == nil) then
         global.chunk_regrow.map[c_pos.x] = {}
@@ -186,7 +178,7 @@ end
 -- Forcefully refreshes timers on a chunk containing position
 -- Will overwrite -1 flag.
 function OarcRegrowthForceRefreshChunk(pos, bonus_time)
-    local c_pos = GetChunkCoordsFromPos(pos)
+    local c_pos = GetChunkPosFromTilePos(pos)
 
     if (global.chunk_regrow.map[c_pos.x] == nil) then
         global.chunk_regrow.map[c_pos.x] = {}
@@ -196,7 +188,7 @@ end
 
  -- Refreshes timers on all chunks around a certain area
 function OarcRegrowthRefreshArea(pos, chunk_radius, bonus_time)
-    local c_pos = GetChunkCoordsFromPos(pos)
+    local c_pos = GetChunkPosFromTilePos(pos)
 
     for i=-chunk_radius,chunk_radius do
         for k=-chunk_radius,chunk_radius do
@@ -256,7 +248,7 @@ function OarcRegrowthCheckArray()
     -- If the chunk has timed out, add it to the removal list
     local c_timer = global.chunk_regrow.map[global.chunk_regrow.x_index][global.chunk_regrow.y_index]
     if ((c_timer ~= nil) and (c_timer ~= -1) and ((c_timer+REGROWTH_TIMEOUT_TICKS) < game.tick)) then
-        
+
         -- Check chunk actually exists
         if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=(global.chunk_regrow.x_index),
                                                                 y=(global.chunk_regrow.y_index)})) then
@@ -356,7 +348,7 @@ function OarcRegrowthForceRemovalOnTick()
     end
     if (game.tick == global.chunk_regrow.force_removal_flag+660) then
         OarcRegrowthRemoveAllChunks()
-        
+
         if (global.ocfg.enable_regrowth) then
             SendBroadcastMsg("Map cleanup done, sorry for your loss.")
         else

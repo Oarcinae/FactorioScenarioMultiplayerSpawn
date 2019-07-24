@@ -2,12 +2,12 @@
 -- Mar 2019
 
 -- Oarc's Separated Spawn Scenario
--- 
+--
 -- I wanted to create a scenario that allows you to spawn in separate locations
 -- From there, I ended up adding a bunch of other minor/major features
--- 
+--
 -- Credit:
---  Tags - Taken from WOGs scenario 
+--  Tags - Taken from WOGs scenario
 --  Rocket Silo - Taken from Frontier as an idea
 --
 -- Feel free to re-use anything you want. It would be nice to give me credit
@@ -58,7 +58,7 @@ GAME_SURFACE_NAME="oarc"
 --------------------------------------------------------------------------------
 
 ----------------------------------------
--- On Init - only runs once the first 
+-- On Init - only runs once the first
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
@@ -177,7 +177,7 @@ script.on_event(defines.events.on_player_joined_game, function(event)
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
-    
+
     -- Move the player to the game surface immediately.
     -- May change this to Lobby in the future.
     game.players[event.player_index].teleport({x=0,y=0}, GAME_SURFACE_NAME)
@@ -191,7 +191,7 @@ end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
     SeparateSpawnsPlayerRespawned(event)
-   
+
     PlayerRespawnItems(event)
 
     if global.ocfg.enable_long_reach then
@@ -223,6 +223,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
     end
+
 end)
 
 
@@ -314,13 +315,13 @@ end)
 -- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
-    
+
     -- Never allows players to build rocket-silos in "frontier" mode.
     if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
         RemoveRecipe(event.research.force, "rocket-silo")
     end
 
-    if global.ocfg.lock_goodies_rocket_launch and 
+    if global.ocfg.lock_goodies_rocket_launch and
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
         RemoveRecipe(event.research.force, "productivity-module-3")
         RemoveRecipe(event.research.force, "speed-module-3")

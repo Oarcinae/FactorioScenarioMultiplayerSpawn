@@ -14,12 +14,19 @@ function InitOarcConfig()
     -- Short and sweet.
     global.ocfg = {}
 
+    local clean_tile_mod = false
 
     local is_mod = false
     for name, version in pairs(game.active_mods) do
         if (name == "oarc-mod") then
              is_mod = true
              log("Oarc MOD! Version: " .. version)
+        end
+        if (name == "clean-tutorial-grid") then
+            clean_tile_mod = true
+        end
+        if (name == "oarc-restricted-build") then
+            global.ocfg.locked_build_areas = true
         end
     end
 
@@ -46,6 +53,7 @@ function InitOarcConfig()
         global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
         global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
         global.ocfg.lock_goodies_rocket_launch = LOCK_GOODIES_UNTIL_ROCKET_LAUNCH
+
         global.ocfg.modified_enemy_spawning = OARC_MODIFIED_ENEMY_SPAWNING
         global.ocfg.near_dist_start = NEAR_MIN_DIST
         global.ocfg.near_dist_end = NEAR_MAX_DIST
@@ -68,7 +76,7 @@ function InitOarcConfig()
         global.ocfg.frontier_pos_table = SILO_POSITIONS
         global.ocfg.frontier_silo_vision = ENABLE_SILO_VISION
         global.ocfg.frontier_allow_build = ENABLE_SILO_PLAYER_BUILD
-    
+
     -- MOD VERSION
     else
         global.ocfg.welcome_title = settings.global["oarc-welcome-title"].value
@@ -131,35 +139,35 @@ function InitOarcConfig()
             },
             resource_tiles =
             {
-                [settings.global["oarc-resource-1-name"].value] = 
+                [settings.global["oarc-resource-1-name"].value] =
                 {
                     amount = settings.global["oarc-resource-1-amount"].value,
                     size = settings.global["oarc-resource-1-size"].value,
                     x_offset = -29,
                     y_offset = 16
                 },
-                [settings.global["oarc-resource-2-name"].value] = 
+                [settings.global["oarc-resource-2-name"].value] =
                 {
                     amount = settings.global["oarc-resource-2-amount"].value,
                     size = settings.global["oarc-resource-2-size"].value,
                     x_offset = -28,
                     y_offset = -3
                 },
-                [settings.global["oarc-resource-3-name"].value] = 
+                [settings.global["oarc-resource-3-name"].value] =
                 {
                     amount = settings.global["oarc-resource-3-amount"].value,
                     size = settings.global["oarc-resource-3-size"].value,
                     x_offset = -27,
                     y_offset = -34
                 },
-                [settings.global["oarc-resource-4-name"].value] = 
+                [settings.global["oarc-resource-4-name"].value] =
                 {
                     amount = settings.global["oarc-resource-4-amount"].value,
                     size = settings.global["oarc-resource-4-size"].value,
                     x_offset = -27,
                     y_offset = -20
                 }
-                -- [settings.global["oarc-resource-5-name"].value] = 
+                -- [settings.global["oarc-resource-5-name"].value] =
                 -- {
                 --     amount = settings.global["oarc-resource-5-amount"].value,
                 --     size = settings.global["oarc-resource-5-size"].value,
@@ -169,7 +177,7 @@ function InitOarcConfig()
             },
             resource_patches =
             {
-                [settings.global["oarc-resource-patch-1-name"].value] = 
+                [settings.global["oarc-resource-patch-1-name"].value] =
                 {
                     num_patches = settings.global["oarc-resource-patch-1-count"].value,
                     amount = settings.global["oarc-resource-patch-1-amount"].value,
@@ -206,6 +214,15 @@ function InitOarcConfig()
 
     if (global.ocfg.enable_vanilla_spawns) then
         global.ocfg.enable_buddy_spawn = false
+    end
+
+    -----------------------
+    -- SPECIAL           --
+    -----------------------
+    if (clean_tile_mod) then
+        global.ocfg.locked_build_area_tile = "clean-tutorial-grid"
+    else
+        global.ocfg.locked_build_area_tile = "tutorial-grid"
     end
 
 end
