@@ -132,7 +132,7 @@ function FindUnusedSpawns(player, remove_player)
 
                 remote.call("oarc_regrowth",
                         "area_removal_tilepos",
-                        GAME_SURFACE_NAME,
+                        game.surfaces[GAME_SURFACE_NAME].index,
                         spawnPos,
                         CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+5)
                 remote.call("oarc_regrowth",
