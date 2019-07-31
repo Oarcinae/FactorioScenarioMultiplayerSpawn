@@ -30,7 +30,6 @@ require("lib/oarc_utils")
 require("lib/frontier_silo")
 require("lib/tag")
 require("lib/game_opts")
-require("lib/regrowth_map")
 require("lib/player_list")
 require("lib/rocket_launch")
 require("lib/admin_commands")
@@ -72,9 +71,6 @@ script.on_init(function(event)
     -- MUST be before other stuff, but after surface creation.
     InitSpawnGlobalsAndForces()
 
-    -- Regardless of whether it's enabled or not, it's good to have this init.
-    OarcRegrowthInit()
-
     -- Frontier Silo Area Generation
     if (global.ocfg.frontier_rocket_silo) then
         SpawnSilosAndGenerateSiloAreas()
@@ -103,10 +99,6 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
 
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthChunkGenerate(event.area.left_top)
-    end
-
     if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
     end
@@ -125,6 +117,10 @@ end)
 -- Gui Click
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
+
+    -- Don't interfere with other mod related stuff.
+    if (event.element.get_mod() ~= nil) then return end
+
     if global.ocfg.enable_tags then
         TagGuiClick(event)
     end
@@ -142,8 +138,9 @@ script.on_event(defines.events.on_gui_click, function(event)
     BuddySpawnRequestMenuClick(event)
     SharedSpawnJoinWaitMenuClick(event)
 
+    ClickOarcGuiButton(event)
+
     GameOptionsGuiClick(event)
-    RocketGuiClick(event)
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
@@ -151,42 +148,42 @@ script.on_event(defines.events.on_gui_checked_state_changed, function (event)
     SpawnCtrlGuiOptionsSelect(event)
 end)
 
+script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
+    TabChangeOarcGui(event)
+end)
 
 ----------------------------------------
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-
-    CreateGameOptionsGui(event)
-
     PlayerJoinedMessages(event)
-
-    if global.ocfg.enable_player_list then
-        CreatePlayerListGui(event)
-    end
-
-    if global.ocfg.enable_tags then
-        CreateTagGui(event)
-    end
-
-    if global.satellite_sent then
-        CreateRocketGui(game.players[event.player_index])
-    end
-
     ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
+    local player = game.players[event.player_index]
 
     -- Move the player to the game surface immediately.
-    -- May change this to Lobby in the future.
-    game.players[event.player_index].teleport({x=0,y=0}, GAME_SURFACE_NAME)
+    player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
     if global.ocfg.enable_long_reach then
-        GivePlayerLongReach(game.players[event.player_index])
+        GivePlayerLongReach(player)
     end
 
     SeparateSpawnsPlayerCreated(event.player_index)
+
+    -- GUI w/ Tabs
+    CreateOarcGuiButton(player)
+    AddOarcGuiTab(player, "Server Info", CreateGameOptionsTab)
+    if global.ocfg.enable_tags then
+        AddOarcGuiTab(player, "Name Tags", CreateTagGuiTab)
+    end
+    if global.ocfg.enable_player_list then
+        AddOarcGuiTab(player, "Players", CreatePlayerListGuiTab)
+    end
+    if global.satellite_sent then
+        AddOarcGuiTab(player, "Rockets", CreateRocketGuiTab)
+    end
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -212,10 +209,6 @@ script.on_event(defines.events.on_built_entity, function(event)
         Autofill(event)
     end
 
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.created_entity.position, 2)
-    end
-
     if ENABLE_ANTI_GRIEFING then
         SetItemBlueprintTimeToLive(event)
     end
@@ -232,25 +225,16 @@ end)
 -- place items that don't count as player_built and robot_built.
 -- Specifically FARL.
 ----------------------------------------
-script.on_event(defines.events.script_raised_built, function(event)
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.entity.position, 2)
-    end
-end)
+-- script.on_event(defines.events.script_raised_built, function(event)
+
+-- end)
 
 
 ----------------------------------------
 -- On tick events. Stuff that needs to happen at regular intervals.
--- Delayed events, delayed spawns, regrowth logic...
+-- Delayed events, delayed spawns, ...
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthOnTick()
-    end
-
-    if global.ocfg.enable_abandoned_base_removal then
-        OarcRegrowthForceRemovalOnTick()
-    end
 
     DelayedSpawnOnTick()
 
@@ -261,38 +245,18 @@ script.on_event(defines.events.on_tick, function(event)
 end)
 
 
-script.on_event(defines.events.on_sector_scanned, function (event)
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthSectorScan(event)
-    end
-end)
+-- script.on_event(defines.events.on_sector_scanned, function (event)
+
+-- end)
 
 ----------------------------------------
--- Refreshes regrowth timers around an active timer
--- Refresh areas where stuff is built, and mark any chunks with player
--- built stuff as permanent.
+--
 ----------------------------------------
 script.on_event(defines.events.on_robot_built_entity, function (event)
-    if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(event.created_entity.position, 2)
-    end
-
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
     end
 end)
-
--- I disabled this because it's too much overhead for too little gain!
--- script.on_event(defines.events.on_player_mined_entity, function(event)
---     if global.ocfg.enable_regrowth then
---         OarcRegrowthCheckChunkEmpty(event)
---     end
--- end)
--- script.on_event(defines.events.on_robot_mined_entity, function(event)
---     if global.ocfg.enable_regrowth then
---         OarcRegrowthCheckChunkEmpty(event)
---     end
--- end)
 
 
 ----------------------------------------

@@ -245,7 +245,7 @@ end
 
 -- Undecorator
 function RemoveDecorationsArea(surface, area)
-    surface.destroy_decoratives(area)
+    surface.destroy_decoratives{area=area}
 end
 
 -- Remove fish
@@ -435,9 +435,15 @@ function GetChunkTopLeft(pos)
     return {x=pos.x-(pos.x % 32), y=pos.y-(pos.y % 32)}
 end
 
+-- Get area given chunk
+function GetAreaFromChunkPos(chunk_pos)
+    return {left_top={x=chunk_pos.x*32, y=chunk_pos.y*32},
+            right_bottom={x=chunk_pos.x*32+31, y=chunk_pos.y*32+31}}
+end
+
 -- Removes the entity type from the area given
 function RemoveInArea(surface, area, type)
-    for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do
+    for key, entity in pairs(surface.find_entities_filtered{area=area, type= type}) do
         if entity.valid and entity and entity.position then
             entity.destroy()
         end
@@ -447,7 +453,7 @@ end
 -- Removes the entity type from the area given
 -- Only if it is within given distance from given position.
 function RemoveInCircle(surface, area, type, pos, dist)
-    for key, entity in pairs(surface.find_entities_filtered({area=area, type= type})) do
+    for key, entity in pairs(surface.find_entities_filtered{area=area, type= type}) do
         if entity.valid and entity and entity.position then
             if ((pos.x - entity.position.x)^2 + (pos.y - entity.position.y)^2 < dist^2) then
                 entity.destroy()
@@ -472,7 +478,11 @@ function CreateGameSurface()
     end
 
     -- Create new game surface
-    game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
+    local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
+
+    if (game.active_mods["unused-chunk-removal"]) then
+        remote.call("oarc_regrowth", "add_surface", s.index)
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -836,7 +846,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile)
             if (distVar < tileRadSqr) then
                 if (surface.get_tile(i,j).collides_with("water-tile") or
                     global.ocfg.spawn_config.gen_settings.force_grass or
-                    global.ocfg.locked_build_areas) then
+                    (game.active_mods["oarc-restricted-build"])) then
                     table.insert(dirtTiles, {name = fillTile, position ={i,j}})
                 end
             end
@@ -869,7 +879,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile)
             if (distVar < tileRadius+2) then
                 if (surface.get_tile(i,j).collides_with("water-tile") or
                     global.ocfg.spawn_config.gen_settings.force_grass or
-                    global.ocfg.locked_build_areas) then
+                    (game.active_mods["oarc-restricted-build"])) then
                     table.insert(dirtTiles, {name = fillTile, position ={i,j}})
                 end
             end

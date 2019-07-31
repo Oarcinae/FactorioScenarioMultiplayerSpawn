@@ -17,6 +17,8 @@ require("config")
 function SeparateSpawnsPlayerCreated(player_index)
     local player = game.players[player_index]
 
+    RemoveOarcGuiTab(player, "Spawn Controls")
+
     -- This checks if they have just joined the server.
     -- No assigned force yet.
     if (player.force.name ~= "player") then
@@ -114,7 +116,11 @@ function FindUnusedSpawns(player, remove_player)
                 end
             end
 
-            if (global.ocfg.enable_abandoned_base_removal and not nearOtherSpawn) then
+            -- Unused Chunk Removal mod (aka regrowth)
+            if (global.ocfg.enable_abandoned_base_removal and
+                (not nearOtherSpawn) and
+                game.active_mods["unused-chunk-removal"]) then
+
                 if (global.uniqueSpawns[player.name].vanilla) then
                     log("Returning a vanilla spawn back to available.")
                     table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
@@ -123,9 +129,15 @@ function FindUnusedSpawns(player, remove_player)
                 global.uniqueSpawns[player.name] = nil
 
                 log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-                OarcRegrowthMarkForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+5)
+
+                remote.call("oarc_regrowth",
+                        "area_removal_tilepos",
+                        GAME_SURFACE_NAME,
+                        spawnPos,
+                        CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+5)
+                remote.call("oarc_regrowth",
+                        "trigger_immediate_cleanup")
                 SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-                global.chunk_regrow.force_removal_flag = game.tick
 
             else
                 -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
@@ -207,7 +219,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 RemoveDecorationsArea(surface, chunkArea)
 
                 local fill_tile = "grass-1"
-                if (global.ocfg.locked_build_areas) then
+                if (game.active_mods["oarc-restricted-build"]) then
                     fill_tile = global.ocfg.locked_build_area_tile
                 end
 
@@ -245,7 +257,7 @@ function GetClosestUniqueSpawn(pos)
     end
 
     if (closest_key == nil) then
-        log("GetClosestUniqueSpawn ERROR - None found?")
+        -- log("GetClosestUniqueSpawn ERROR - None found?")
         return nil
     end
 
@@ -269,7 +281,7 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
     local closest_spawn = GetClosestUniqueSpawn(enemy_pos)
 
     if (closest_spawn == nil) then
-        log("GetClosestUniqueSpawn ERROR - None found?")
+        -- log("GetClosestUniqueSpawn ERROR - None found?")
         return
     end
 
@@ -507,7 +519,6 @@ function InitSpawnGlobalsAndForces()
     main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
 end
 
-
 function DoesPlayerHaveCustomSpawn(player)
     for name,spawnPos in pairs(global.playerSpawns) do
         if (player.name == name) then
@@ -592,8 +603,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     -- Chart the area.
     ChartArea(player.force, delayedSpawn.pos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
 
-    if (player.gui.center.wait_for_spawn_dialog ~= nil) then
-        player.gui.center.wait_for_spawn_dialog.destroy()
+    if (player.gui.screen.wait_for_spawn_dialog ~= nil) then
+        player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 end
 

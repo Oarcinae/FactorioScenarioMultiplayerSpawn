@@ -96,15 +96,20 @@ local function CreateRocketSilo(surface, siloPosition, force)
 
     -- Set tiles below the silo
     tiles = {}
-    i = 1
-    for dx = -6,6 do
-        for dy = -6,6 do
-            if ((dx % 2 == 0) or (dx % 2 == 0)) then
-                tiles[i] = {name = "concrete", position = {siloPosition.x+dx, siloPosition.y+dy}}
+    for dx = -10,10 do
+        for dy = -10,10 do
+            if (game.active_mods["oarc-restricted-build"]) then
+                table.insert(tiles, {name = global.ocfg.locked_build_area_tile,
+                                    position = {siloPosition.x+dx, siloPosition.y+dy}})
             else
-                tiles[i] = {name = "hazard-concrete-left", position = {siloPosition.x+dx, siloPosition.y+dy}}
+                if ((dx % 2 == 0) or (dx % 2 == 0)) then
+                    table.insert(tiles, {name = "concrete",
+                                        position = {siloPosition.x+dx, siloPosition.y+dy}})
+                else
+                    table.insert(tiles, {name = "hazard-concrete-left",
+                                        position = {siloPosition.x+dx, siloPosition.y+dy}})
+                end
             end
-            i=i+1
         end
     end
     surface.set_tiles(tiles, true)
@@ -121,11 +126,14 @@ local function CreateRocketSilo(surface, siloPosition, force)
                                             {position=siloPosition, text="Rocket Silo",
                                                 icon={type="item",name="rocket-silo"}})
 
-    -- Make silo safe from being removed by regrowth
-    -- if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(siloPosition, 5)
-    -- end
-
+    -- Make silo safe from being removed.
+    if (game.active_mods["unused-chunk-removal"]) then
+        remote.call("oarc_regrowth",
+                        "area_offlimits_tilepos",
+                        surface.index,
+                        siloPosition,
+                        5)
+    end
 
     if ENABLE_SILO_BEACONS then
         PhilipsBeacons(surface, siloPosition, game.forces[global.ocfg.main_force])

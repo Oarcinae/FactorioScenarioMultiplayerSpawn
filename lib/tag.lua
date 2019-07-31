@@ -2,13 +2,6 @@
 -- Apr 2017
 -- Allows adding play tags
 
-function CreateTagGui(event)
-    local player = game.players[event.player_index]
-    if mod_gui.get_button_flow(player).tag == nil then
-        mod_gui.get_button_flow(player).add{name="tag", type="button", caption="Tag", style=mod_gui.button_style}
-    end   
-end
-
 -- Tag list
 local roles = {
     {display_name = "[Solo]"},
@@ -26,37 +19,27 @@ local roles = {
     {display_name = "[Rocket]"},
     {display_name = "[AFK]"}}
 
-local function ExpandTagGui(player)
-    local frame = mod_gui.get_frame_flow(player)["tag-panel"]
-    if (frame) then
-        frame.destroy()
-    else
-        local frame = mod_gui.get_frame_flow(player).add{type="frame", name="tag-panel", caption="What are you doing:", direction = "vertical"}
-        for _, role in pairs(roles) do
-            frame.add{type="button", caption=role.display_name, name=role.display_name}
-        end
-        if (player.admin) then
-            frame.add{type="button", caption="[Admin]", name="admin"}
-            frame.add{type="button", caption="[Moderator]", name="moderator"}
-        end
-        frame.add{type="button", caption="Clear", name="clear_btn"}
+function CreateTagGuiTab(tab_container, player)
+    for _, role in pairs(roles) do
+        tab_container.add{type="button", caption=role.display_name, name=role.display_name}
     end
+    if (player.admin) then
+        tab_container.add{type="button", caption="[Admin]", name="admin"}
+        tab_container.add{type="button", caption="[Moderator]", name="moderator"}
+    end
+    tab_container.add{type="button", caption="Clear", name="clear_btn"}
 end
 
-function TagGuiClick(event) 
+function TagGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.element.player_index]
     local name = event.element.name
 
-    if (name == "tag") then
-        ExpandTagGui(player)        
-    end
-    
-    if (name == "clear_btn") then 
+    if (name == "clear_btn") then
         player.tag = ""
         return
     end
-    
+
     for _, role in pairs(roles) do
         if (name == role.display_name) then
             player.tag = role.display_name
