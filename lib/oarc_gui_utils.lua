@@ -197,13 +197,13 @@ function TabChangeOarcGui(event)
     local player = game.players[event.player_index]
     local otabs = GetOarcGuiTabsPane(player)
     local selected_tab_name = otabs.tabs[otabs.selected_tab_index].tab.name
-    local container = global.oarc_gui_tabs[selected_tab_name].container
-    local gui_function = global.oarc_gui_tabs[selected_tab_name].gui_tab_function
+    local container = global.oarc_gui_tabs[player.name][selected_tab_name].container
+    local gui_function = global.oarc_gui_tabs[player.name][selected_tab_name].gui_tab_function
 
     for i,t in pairs(otabs.tabs) do
         if (i ~= otabs.selected_tab_index) then
             local tname = otabs.tabs[i].tab.name
-            global.oarc_gui_tabs[tname].container.clear()
+            global.oarc_gui_tabs[player.name][tname].container.clear()
         end
     end
 
@@ -256,6 +256,9 @@ function CreateOarcGuiTabsPane(player)
     if (global.oarc_gui_tabs == nil) then
         global.oarc_gui_tabs = {}
     end
+    if (global.oarc_gui_tabs[player.name] == nil) then
+        global.oarc_gui_tabs[player.name] = {}
+    end
 end
 
 -- Function creates a new tab.
@@ -303,8 +306,8 @@ function AddOarcGuiTab(player, tab_name, gui_tab_function)
 
     -- Add this tab and it's content creation function to a global table
     -- So that we can recall that function to refresh the table content.
-    if (global.oarc_gui_tabs ~= nil) then
-        global.oarc_gui_tabs[tab_name] = {
+    if (global.oarc_gui_tabs[player.name] ~= nil) then
+        global.oarc_gui_tabs[player.name][tab_name] = {
             container=tab_inside_frame,
             tab=new_tab,
             gui_tab_function=gui_tab_function}
@@ -321,10 +324,10 @@ function RemoveOarcGuiTab(player, tab_name)
 
     -- Destroy content and remove tab
     if (otabs[tab_name] ~= nil) then
-        global.oarc_gui_tabs[tab_name].container.destroy()
-        otabs.remove_tab(global.oarc_gui_tabs[tab_name].tab)
-        global.oarc_gui_tabs[tab_name].tab.destroy()
-        global.oarc_gui_tabs[tab_name] = nil
+        global.oarc_gui_tabs[player.name][tab_name].container.destroy()
+        otabs.remove_tab(global.oarc_gui_tabs[player.name][tab_name].tab)
+        global.oarc_gui_tabs[player.name][tab_name].tab.destroy()
+        global.oarc_gui_tabs[player.name][tab_name] = nil
 
         -- Hopefully we have a starting tab we can reset to.
         otabs.selected_tab_index = 1
