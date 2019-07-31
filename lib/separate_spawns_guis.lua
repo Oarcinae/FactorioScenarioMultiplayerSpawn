@@ -869,13 +869,15 @@ function BuddySpawnOptsGuiClick(event)
         return -- Gui event unrelated to this gui.
     end
 
+    local waiting_buddies_dropdown = player.gui.screen.buddy_spawn_opts.spawn_buddy_flow.waiting_buddies_dropdown
+
     -- Just refresh the buddy list dropdown values only.
     if (elemName == "refresh_buddy_list") then
-        player.gui.screen.buddy_spawn_opts.waiting_buddies_dropdown.clear_items()
+        waiting_buddies_dropdown.clear_items()
 
         for _,buddyName in pairs(global.waitingBuddies) do
             if (player.name ~= buddyName) then
-                player.gui.screen.buddy_spawn_opts.waiting_buddies_dropdown.add_item(buddyName)
+                waiting_buddies_dropdown.add_item(buddyName)
             end
         end
         return
@@ -902,7 +904,7 @@ function BuddySpawnOptsGuiClick(event)
     if ((elemName == "buddy_spawn_request_near") or
         (elemName == "buddy_spawn_request_far")) then
 
-        local buddySpawnGui = player.gui.screen.buddy_spawn_opts
+        local buddySpawnGui = player.gui.screen.buddy_spawn_opts.spawn_buddy_flow
 
         local dropDownIndex = buddySpawnGui.waiting_buddies_dropdown.selected_index
         if (dropDownIndex > 0) then
@@ -929,16 +931,16 @@ function BuddySpawnOptsGuiClick(event)
         end
 
         if (global.ocfg.enable_separate_teams) then
-            joinMainTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_main_team_radio.state
-            joinOwnTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_new_team_radio.state
-            joinBuddyTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_buddy_team_radio.state
+            joinMainTeamRadio = buddySpawnGui.buddy_spawn_main_team_radio.state
+            joinOwnTeamRadio = buddySpawnGui.buddy_spawn_new_team_radio.state
+            joinBuddyTeamRadio = buddySpawnGui.buddy_spawn_buddy_team_radio.state
         else
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
             joinBuddyTeamRadio = false
         end
         if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
-            moatChoice =  buddySpawnGui.spawn_buddy_flow.buddy_spawn_moat_option_checkbox.state
+            moatChoice =  buddySpawnGui.buddy_spawn_moat_option_checkbox.state
         end
 
         -- Save the chosen spawn options somewhere for later use.
