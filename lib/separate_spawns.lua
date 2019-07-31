@@ -134,7 +134,7 @@ function FindUnusedSpawns(player, remove_player)
                         "area_removal_tilepos",
                         game.surfaces[GAME_SURFACE_NAME].index,
                         spawnPos,
-                        CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+5)
+                        CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
                 remote.call("oarc_regrowth",
                         "trigger_immediate_cleanup")
                 SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
