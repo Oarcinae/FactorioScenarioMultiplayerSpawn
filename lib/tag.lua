@@ -20,7 +20,7 @@ local roles = {
     {display_name = "[AFK]"}}
 
 function CreateTagGuiTab(tab_container, player)
-    for _, role in pairs(roles) do
+    for i,role in ipairs(roles) do
         tab_container.add{type="button", caption=role.display_name, name=role.display_name}
     end
     if (player.admin) then
@@ -40,7 +40,7 @@ function TagGuiClick(event)
         return
     end
 
-    for _, role in pairs(roles) do
+    for i,role in ipairs(roles) do
         if (name == role.display_name) then
             player.tag = role.display_name
         elseif (name == "admin") then

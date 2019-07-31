@@ -201,13 +201,13 @@ function TabChangeOarcGui(event)
     local gui_function = global.oarc_gui_tabs[player.name][selected_tab_name].gui_tab_function
 
     for i,t in pairs(otabs.tabs) do
-        if (i ~= otabs.selected_tab_index) then
+        -- if (i ~= otabs.selected_tab_index) then
             local tname = otabs.tabs[i].tab.name
             global.oarc_gui_tabs[player.name][tname].container.clear()
-        end
+        -- end
     end
 
-    container.clear()
+    -- container.clear()
     gui_function(container, player)
 end
 
