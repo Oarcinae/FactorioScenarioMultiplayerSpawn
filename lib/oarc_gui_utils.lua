@@ -143,6 +143,13 @@ end
 -- NAME of the top level element (outer frame)
 local OARC_GUI = "oarc_gui"
 
+-- LIST of all implemented tabs and their content Functions
+OARC_GAME_OPTS_GUI_TAB_NAME = "Server Info"
+OARC_SPAWN_CTRL_GUI_NAME = "Spawn Controls"
+OARC_TAGS_GUI_TAB_NAME = "Name Tags"
+OARC_PLAYER_LIST_GUI_TAB_NAME = "Players"
+OARC_ROCKETS_GUI_TAB_NAME = "Rockets"
+
 function CreateOarcGuiButton(player)
     if (mod_gui.get_button_flow(player).oarc_button == nil) then
         local b = mod_gui.get_button_flow(player).add{name="oarc_button",
@@ -151,10 +158,6 @@ function CreateOarcGuiButton(player)
                                                         style=mod_gui.button_style}
         b.style.padding=2
         b.style.width=20
-    end
-
-    if (global.oarc_gui_tabs == nil) then
-        global.oarc_gui_tabs = {}
     end
 end
 
@@ -195,26 +198,20 @@ function TabChangeOarcGui(event)
     if (event.element.name ~= "oarc_tabs") then return end
 
     local player = game.players[event.player_index]
-    local otabs = GetOarcGuiTabsPane(player)
+    local otabs = event.element
     local selected_tab_name = otabs.tabs[otabs.selected_tab_index].tab.name
-    local container = global.oarc_gui_tabs[player.name][selected_tab_name].container
-    local gui_function = global.oarc_gui_tabs[player.name][selected_tab_name].gui_tab_function
 
+    -- Clear all tab contents
     for i,t in pairs(otabs.tabs) do
-        -- if (i ~= otabs.selected_tab_index) then
-            local tname = otabs.tabs[i].tab.name
-            global.oarc_gui_tabs[player.name][tname].container.clear()
-        -- end
+        t.content.clear()
     end
 
-    -- container.clear()
-    gui_function(container, player)
+    SetOarGuiTabContent(player, selected_tab_name)
 end
 
 function FakeTabChangeEventOarcGui(player)
     local event = {}
-    event.element = {}
-    event.element.name = "oarc_tabs"
+    event.element = GetOarcGuiTabsPane(player)
     event.player_index = player.index
     TabChangeOarcGui(event)
 end
@@ -252,38 +249,30 @@ function CreateOarcGuiTabsPane(player)
             style="tabbed_pane"}
         oarc_tabs.style.top_padding = 8
     end
-
-    if (global.oarc_gui_tabs == nil) then
-        global.oarc_gui_tabs = {}
-    end
-    if (global.oarc_gui_tabs[player.name] == nil) then
-        global.oarc_gui_tabs[player.name] = {}
-    end
 end
 
 -- Function creates a new tab.
--- gui_tab_function is a function that takes (gui_element, player)
 -- It adds whatever it wants to the provided scroll-pane.
-function AddOarcGuiTab(player, tab_name, gui_tab_function)
+-- content_function takes a content holder GUI and player
+function AddOarcGuiTab(player, tab_name, content_function)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
         ToggleOarcGuiVisible(player)
     end
 
-    -- Destroy if it exists?
-    RemoveOarcGuiTab(player, tab_name)
-
     -- Get the tabbed pane
     local otabs = GetOarcGuiTabsPane(player)
 
+    -- Create new tab
     local new_tab = otabs.add{
         type="tab",
         name=tab_name,
         caption=tab_name}
 
-    -- Create inside frame to hold content
+    -- Create inside frame for content
     local tab_inside_frame = otabs.add{
         type="frame",
+        name=tab_name.."_if",
         style = "inside_deep_frame",
         direction="vertical"}
     tab_inside_frame.style.left_margin = 10
@@ -299,38 +288,59 @@ function AddOarcGuiTab(player, tab_name, gui_tab_function)
     -- Add the whole thing to the tab now.
     otabs.add_tab(new_tab, tab_inside_frame)
 
+    -- Disable all new tabs by default
+    new_tab.enabled = false
+
     -- If no other tabs are selected, select the first one.
     if (otabs.selected_tab_index == nil) then
         otabs.selected_tab_index = 1
     end
 
-    -- Add this tab and it's content creation function to a global table
-    -- So that we can recall that function to refresh the table content.
-    if (global.oarc_gui_tabs[player.name] ~= nil) then
-        global.oarc_gui_tabs[player.name][tab_name] = {
-            container=tab_inside_frame,
-            tab=new_tab,
-            gui_tab_function=gui_tab_function}
+    if (global.oarc_gui_tab_funcs == nil) then
+        global.oarc_gui_tab_funcs = {}
     end
 
-    -- FakeTabChangeEventOarcGui(player)
+    global.oarc_gui_tab_funcs[tab_name] = content_function
 end
 
-function RemoveOarcGuiTab(player, tab_name)
+
+function SetOarGuiTabContent(player, tab_name)
     if (not DoesOarcGuiExist(player)) then return end
 
-    -- Get the tabbed pane
     local otabs = GetOarcGuiTabsPane(player)
 
-    -- Destroy content and remove tab
-    if (otabs[tab_name] ~= nil) then
-        global.oarc_gui_tabs[player.name][tab_name].container.destroy()
-        otabs.remove_tab(global.oarc_gui_tabs[player.name][tab_name].tab)
-        global.oarc_gui_tabs[player.name][tab_name].tab.destroy()
-        global.oarc_gui_tabs[player.name][tab_name] = nil
+    for _,t in ipairs(otabs.tabs) do
+        if (t.tab.name == tab_name) then
+            t.content.clear()
+            global.oarc_gui_tab_funcs[tab_name](t.content, player)
+            return
+        end
+    end
+end
 
-        -- Hopefully we have a starting tab we can reset to.
-        otabs.selected_tab_index = 1
-        FakeTabChangeEventOarcGui(player)
+function SetOarcGuiTabEnabled(player, tab_name, enable)
+    if (not DoesOarcGuiExist(player)) then return end
+
+    local otabs = GetOarcGuiTabsPane(player)
+
+    for _,t in ipairs(otabs.tabs) do
+        if (t.tab.name == tab_name) then
+            t.tab.enabled = enable
+            return
+        end
+    end
+end
+
+function SwitchOarcGuiTab(player, tab_name)
+    if (not DoesOarcGuiExist(player)) then return end
+
+    local otabs = GetOarcGuiTabsPane(player)
+
+    for i,t in pairs(otabs.tabs) do
+        if (t.tab.name == tab_name) then
+            otabs.selected_tab_index = i
+            FakeTabChangeEventOarcGui(player)
+            return
+        end
     end
 end

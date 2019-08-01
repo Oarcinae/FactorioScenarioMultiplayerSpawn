@@ -321,8 +321,8 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg({"oarc-player-is-joining-main-force", player.name})
         ChartArea(player.force, player.position, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
-        -- Create the button at the top left for setting respawn point and sharing base.
-        AddOarcGuiTab(player, "Spawn Controls", CreateSpawnCtrlGuiTab)
+        -- Unlock spawn control gui tab
+        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
 
     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
 
@@ -373,8 +373,8 @@ function SpawnOptsGuiClick(event)
             SendBroadcastMsg({"oarc-player-is-joining-far", player.name})
         end
 
-        -- Create the button at the top left for setting respawn point and sharing base.
-        AddOarcGuiTab(player, "Spawn Controls", CreateSpawnCtrlGuiTab)
+        -- Unlock spawn control gui tab
+        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
 
         player.print({"oarc-please-wait"})
         player.print({"", {"oarc-please-wait"}, "!"})
@@ -757,8 +757,8 @@ function SpawnCtrlGuiClick(event)
                 table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
                 joiningPlayer.force = game.players[player.name].force
 
-                -- Create the button at the top left for setting respawn point and sharing base.
-                AddOarcGuiTab(joiningPlayer, "Spawn Controls", CreateSpawnCtrlGuiTab)
+                -- Unlock spawn control gui tab
+                SetOarcGuiTabEnabled(joiningPlayer, OARC_SPAWN_CTRL_GUI_NAME, true)
             else
                 SendBroadcastMsg({"oarc-player-left-while-joining", joinQueuePlayerChoice})
             end
@@ -1172,9 +1172,9 @@ function BuddySpawnRequestMenuClick(event)
         QueuePlayerForDelayedSpawn(requesterName, buddySpawn, requesterOptions.moatChoice, false)
         SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
 
-        -- Create the button at the top left for setting respawn point and sharing base.
-        AddOarcGuiTab(player, "Spawn Controls", CreateSpawnCtrlGuiTab)
-        AddOarcGuiTab(game.players[requesterName], "Spawn Controls", CreateSpawnCtrlGuiTab)
+        -- Unlock spawn control gui tab
+        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
+        SetOarcGuiTabEnabled(game.players[requesterName], OARC_SPAWN_CTRL_GUI_NAME, true)
 
         player.print({"oarc-please-wait"})
         player.print({"", {"oarc-please-wait"}, "!"})

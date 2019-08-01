@@ -17,7 +17,9 @@ require("config")
 function SeparateSpawnsPlayerCreated(player_index)
     local player = game.players[player_index]
 
-    RemoveOarcGuiTab(player, "Spawn Controls")
+    -- Make sure spawn control tab is disabled
+    SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, false)
+    SwitchOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME)
 
     -- This checks if they have just joined the server.
     -- No assigned force yet.

@@ -27,9 +27,9 @@ function RocketLaunchEvent(event)
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
 
-        for name,player in pairs(game.connected_players) do
-            AddOarcGuiTab(player, "Rockets", CreateRocketGuiTab)
-        end
+        -- for name,player in pairs(game.connected_players) do
+        --     AddOarcGuiTab(player, "Rockets", CreateRocketGuiTab)
+        -- end
     end
 
     -- Track additional satellites launched by this force
