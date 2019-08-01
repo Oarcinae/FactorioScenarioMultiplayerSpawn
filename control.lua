@@ -49,21 +49,12 @@ require("lib/oarc_global_cfg.lua")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 
+require("lib/oarc_gui_tabs")
+
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
 
-OARC_GUI_TAB_CONTENT_FUNCTIONS = {}
-OARC_GUI_TAB_CONTENT_FUNCTIONS[OARC_GAME_OPTS_GUI_TAB_NAME] = {CreateGameOptionsTab}
-OARC_GUI_TAB_CONTENT_FUNCTIONS[OARC_SPAWN_CTRL_GUI_NAME] = {CreateSpawnCtrlGuiTab}
-OARC_GUI_TAB_CONTENT_FUNCTIONS[OARC_TAGS_GUI_TAB_NAME] = {CreatePlayerListGuiTab}
-OARC_GUI_TAB_CONTENT_FUNCTIONS[OARC_PLAYER_LIST_GUI_TAB_NAME] = {CreateTagGuiTab}
-OARC_GUI_TAB_CONTENT_FUNCTIONS[OARC_ROCKETS_GUI_TAB_NAME] = {CreateRocketGuiTab}
---     OARC_GAME_OPTS_GUI_TAB_NAME = CreateGameOptionsTab,
---     OARC_SPAWN_CTRL_GUI_NAME = CreateSpawnCtrlGuiTab,
---     OARC_TAGS_GUI_TAB_NAME = CreatePlayerListGuiTab,
---     OARC_PLAYER_LIST_GUI_TAB_NAME = CreateTagGuiTab,
---     OARC_ROCKETS_GUI_TAB_NAME = CreateRocketGuiTab
--- }
+
 --------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
 --------------------------------------------------------------------------------
