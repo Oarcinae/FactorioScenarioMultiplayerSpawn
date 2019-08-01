@@ -10,15 +10,41 @@ local OARC_GUI = "oarc_gui"
 -- LIST of all implemented tabs and their content Functions
 OARC_GAME_OPTS_GUI_TAB_NAME = "Server Info"
 OARC_SPAWN_CTRL_GUI_NAME = "Spawn Controls"
-OARC_TAGS_GUI_TAB_NAME = "Name Tags"
 OARC_PLAYER_LIST_GUI_TAB_NAME = "Players"
+OARC_TAGS_GUI_TAB_NAME = "Name Tags"
 OARC_ROCKETS_GUI_TAB_NAME = "Rockets"
+
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {}
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Server Info"] = CreateGameOptionsTab
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Spawn Controls"] = CreateSpawnCtrlGuiTab
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Name Tags"] = CreatePlayerListGuiTab
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Players"] = CreateTagGuiTab
+OARC_GUI_TAB_CONTENT_FUNCTIONS["Players"] = CreatePlayerListGuiTab
+OARC_GUI_TAB_CONTENT_FUNCTIONS["Name Tags"] = CreateTagGuiTab
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Rockets"] = CreateRocketGuiTab
+
+function InitOarcGuiTabs(player)
+    CreateOarcGuiButton(player)
+
+    -- Add general info tab
+    AddOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_GAME_OPTS_GUI_TAB_NAME, true)
+
+    -- Spawn control tab, disabled by default
+    AddOarcGuiTab(player, OARC_SPAWN_CTRL_GUI_NAME)
+
+    -- If player list is enabled, create that
+    if global.ocfg.enable_player_list then
+        AddOarcGuiTab(player, OARC_PLAYER_LIST_GUI_TAB_NAME)
+        SetOarcGuiTabEnabled(player, OARC_PLAYER_LIST_GUI_TAB_NAME, true)
+    end
+
+    -- Player tags
+    if global.ocfg.enable_tags then
+        AddOarcGuiTab(player, OARC_TAGS_GUI_TAB_NAME)
+        SetOarcGuiTabEnabled(player, OARC_TAGS_GUI_TAB_NAME, true)
+    end
+
+    AddOarcGuiTab(player, OARC_ROCKETS_GUI_TAB_NAME)
+end
 
 function CreateOarcGuiButton(player)
     if (mod_gui.get_button_flow(player).oarc_button == nil) then

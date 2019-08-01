@@ -175,28 +175,7 @@ script.on_event(defines.events.on_player_created, function(event)
 
     SeparateSpawnsPlayerCreated(event.player_index)
 
-    CreateOarcGuiButton(player)
-
-    -- Add general info tab
-    AddOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME, CreateGameOptionsTab)
-    SetOarcGuiTabEnabled(player, OARC_GAME_OPTS_GUI_TAB_NAME, true)
-
-    -- Spawn control tab, disabled by default
-    AddOarcGuiTab(player, OARC_SPAWN_CTRL_GUI_NAME, CreateSpawnCtrlGuiTab)
-
-    -- If player list is enabled, create that
-    if global.ocfg.enable_player_list then
-        AddOarcGuiTab(player, OARC_PLAYER_LIST_GUI_TAB_NAME, CreatePlayerListGuiTab)
-        SetOarcGuiTabEnabled(player, OARC_PLAYER_LIST_GUI_TAB_NAME, true)
-    end
-
-    -- Player tags
-    if global.ocfg.enable_tags then
-        AddOarcGuiTab(player, OARC_TAGS_GUI_TAB_NAME, CreateTagGuiTab)
-        SetOarcGuiTabEnabled(player, OARC_TAGS_GUI_TAB_NAME, true)
-    end
-
-    AddOarcGuiTab(player, OARC_ROCKETS_GUI_TAB_NAME, CreateRocketGuiTab)
+    InitOarcGuiTabs(player)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
