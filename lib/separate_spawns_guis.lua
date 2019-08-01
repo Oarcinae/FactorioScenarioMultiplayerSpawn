@@ -907,7 +907,7 @@ function BuddySpawnOptsGuiClick(event)
         local buddySpawnGui = player.gui.screen.buddy_spawn_opts.spawn_buddy_flow
 
         local dropDownIndex = buddySpawnGui.waiting_buddies_dropdown.selected_index
-        if (dropDownIndex > 0) then
+        if ((dropDownIndex > 0) and (dropDownIndex <= #buddySpawnGui.waiting_buddies_dropdown.items)) then
             buddyChoice = buddySpawnGui.waiting_buddies_dropdown.get_item(dropDownIndex)
         else
             player.print({"oarc-invalid-buddy"})
