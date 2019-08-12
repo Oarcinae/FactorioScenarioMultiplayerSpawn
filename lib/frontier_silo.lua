@@ -11,13 +11,13 @@ require("lib/oarc_utils")
 
 
 function SpawnSilosAndGenerateSiloAreas()
-    
+
     -- Special silo islands mode "boogaloo"
     if (global.ocfg.silo_islands) then
 
         local num_spawns = #global.vanillaSpawns
         local new_spawn_list = {}
-        
+
         -- Pick out every OTHER vanilla spawn for the rocket silos.
         for k,v in pairs(global.vanillaSpawns) do
             if ((k <= num_spawns/2) and (k%2==1)) then
@@ -96,15 +96,20 @@ local function CreateRocketSilo(surface, siloPosition, force)
 
     -- Set tiles below the silo
     tiles = {}
-    i = 1
-    for dx = -6,6 do
-        for dy = -6,6 do
-            if ((dx % 2 == 0) or (dx % 2 == 0)) then
-                tiles[i] = {name = "concrete", position = {siloPosition.x+dx, siloPosition.y+dy}}
+    for dx = -10,10 do
+        for dy = -10,10 do
+            if (game.active_mods["oarc-restricted-build"]) then
+                table.insert(tiles, {name = global.ocfg.locked_build_area_tile,
+                                    position = {siloPosition.x+dx, siloPosition.y+dy}})
             else
-                tiles[i] = {name = "hazard-concrete-left", position = {siloPosition.x+dx, siloPosition.y+dy}}
+                if ((dx % 2 == 0) or (dx % 2 == 0)) then
+                    table.insert(tiles, {name = "concrete",
+                                        position = {siloPosition.x+dx, siloPosition.y+dy}})
+                else
+                    table.insert(tiles, {name = "hazard-concrete-left",
+                                        position = {siloPosition.x+dx, siloPosition.y+dy}})
+                end
             end
-            i=i+1
         end
     end
     surface.set_tiles(tiles, true)
@@ -121,11 +126,14 @@ local function CreateRocketSilo(surface, siloPosition, force)
                                             {position=siloPosition, text="Rocket Silo",
                                                 icon={type="item",name="rocket-silo"}})
 
-    -- Make silo safe from being removed by regrowth
-    -- if global.ocfg.enable_regrowth then
-        OarcRegrowthOffLimits(siloPosition, 5)
-    -- end
-
+    -- Make silo safe from being removed.
+    if (game.active_mods["unused-chunk-removal"]) then
+        remote.call("oarc_regrowth",
+                        "area_offlimits_tilepos",
+                        surface.index,
+                        siloPosition,
+                        5)
+    end
 
     if ENABLE_SILO_BEACONS then
         PhilipsBeacons(surface, siloPosition, game.forces[global.ocfg.main_force])
@@ -133,13 +141,13 @@ local function CreateRocketSilo(surface, siloPosition, force)
     if ENABLE_SILO_RADAR then
         PhilipsRadar(surface, siloPosition, game.forces[global.ocfg.main_force])
     end
-        
+
 end
 
 -- Generates all rocket silos, should be called after the areas are generated
 -- Includes a crop circle
-function GenerateAllSilos(surface)                       
-    
+function GenerateAllSilos(surface)
+
     -- Create each silo in the list
     for idx,siloPos in pairs(global.siloPosition) do
         CreateRocketSilo(surface, siloPos, global.ocfg.main_force)
@@ -152,7 +160,13 @@ function BuildSiloAttempt(event)
 
     -- Validation
     if (event.created_entity == nil) then return end
-    if (event.created_entity.name ~= "rocket-silo") then return end
+
+    local e_name = event.created_entity.name
+    if (event.created_entity.name == "entity-ghost") then
+        e_name =event.created_entity.ghost_name
+    end
+
+    if (e_name ~= "rocket-silo") then return end
 
     -- Check if it's in the right area.
     local epos = event.created_entity.position
@@ -167,7 +181,11 @@ function BuildSiloAttempt(event)
     -- If we get here, means it wasn't in a valid position. Need to remove it.
     if (event.created_entity.last_user ~= nil) then
         FlyingText("Can't build silo here! Check the map!", epos, my_color_red, event.created_entity.surface)
-        event.created_entity.last_user.mine_entity(event.created_entity, true)
+        if (event.created_entity.name == "entity-ghost") then
+            event.created_entity.destroy()
+        else
+            event.created_entity.last_user.mine_entity(event.created_entity, true)
+        end
     else
         log("ERROR! Rocket-silo had no valid last user?!?!")
     end
@@ -183,7 +201,7 @@ function GenerateRocketSiloChunk(event)
 
         local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
                                  y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-        
+
         for idx,siloPos in pairs(global.siloPosition) do
             local safeArea = {left_top=
                                 {x=siloPos.x-(CHUNK_SIZE*4),
@@ -191,7 +209,7 @@ function GenerateRocketSiloChunk(event)
                               right_bottom=
                                 {x=siloPos.x+(CHUNK_SIZE*4),
                                  y=siloPos.y+(CHUNK_SIZE*4)}}
-                                     
+
 
             -- Clear enemies directly next to the rocket
             if CheckIfInArea(chunkAreaCenter,safeArea) then
@@ -206,7 +224,7 @@ function GenerateRocketSiloChunk(event)
                 RemoveDecorationsArea(surface, chunkArea)
 
                 -- Create rocket silo
-                CreateCropOctagon(surface, siloPos, chunkArea, CHUNK_SIZE*2)
+                CreateCropOctagon(surface, siloPos, chunkArea, CHUNK_SIZE*2, "grass-1")
             end
         end
     end
@@ -344,7 +362,7 @@ function PhilipsBeacons(surface, siloPos, force)
 end
 
 function PhilipsRadar(surface, siloPos, force)
-    
+
     local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y+3}, force = force}
     radar.destructible = false
     local radar = surface.create_entity{name = "solar-panel", position = {siloPos.x-43, siloPos.y-3}, force = force}

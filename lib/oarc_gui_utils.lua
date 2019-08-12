@@ -19,6 +19,20 @@ my_label_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+my_label_header_style = {
+    single_line = false,
+    font = "heading-1",
+    font_color = {r=1,g=1,b=1},
+    top_padding = 0,
+    bottom_padding = 0
+}
+my_label_header_grey_style = {
+    single_line = false,
+    font = "heading-1",
+    font_color = {r=0.6,g=0.6,b=0.6},
+    top_padding = 0,
+    bottom_padding = 0
+}
 my_note_style = {
     -- minimal_width = 450,
     single_line = false,
@@ -37,7 +51,6 @@ my_warning_style = {
 }
 my_spacer_style = {
     minimal_height = 10,
-    font_color = {r=0,g=0,b=0},
     top_padding = 0,
     bottom_padding = 0
 }
@@ -100,26 +113,25 @@ my_longer_warning_style = {
 function ApplyStyle (guiIn, styleIn)
     for k,v in pairs(styleIn) do
         guiIn.style[k]=v
-    end 
+    end
 end
 
 -- Shorter way to add a label with a style
 function AddLabel(guiIn, name, message, style)
-    guiIn.add{name = name, type = "label",
+    local g = guiIn.add{name = name, type = "label",
                     caption=message}
-    ApplyStyle(guiIn[name], style)
+    if (type(style) == "table") then
+        ApplyStyle(g, style)
+    else
+        g.style = style
+    end
 end
 
 -- Shorter way to add a spacer
-function AddSpacer(guiIn, name)
-    guiIn.add{name = name, type = "label",
-                    caption=" "}
-    ApplyStyle(guiIn[name], my_spacer_style)
+function AddSpacer(guiIn)
+    ApplyStyle(guiIn.add{type = "label", caption=" "}, my_spacer_style)
 end
 
--- Shorter way to add a spacer with a decorative line
-function AddSpacerLine(guiIn, name)
-    guiIn.add{name = name, type = "label",
-                    caption="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"}
-    ApplyStyle(guiIn[name], my_spacer_style)
+function AddSpacerLine(guiIn)
+    ApplyStyle(guiIn.add{type = "line", direction="horizontal"}, my_spacer_style)
 end

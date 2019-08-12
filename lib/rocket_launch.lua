@@ -12,7 +12,7 @@ require("config")
 --------------------------------------------------------------------------------
 function RocketLaunchEvent(event)
     local force = event.rocket.force
-    
+
     -- Notify players on force if rocket was launched without sat.
     if event.rocket.get_item_count("satellite") == 0 then
         for index, player in pairs(force.players) do
@@ -27,14 +27,14 @@ function RocketLaunchEvent(event)
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
 
-		for name,player in pairs(game.connected_players) do
-	        CreateRocketGui(player)
-	    end
+        -- for name,player in pairs(game.connected_players) do
+        --     AddOarcGuiTab(player, "Rockets", CreateRocketGuiTab)
+        -- end
     end
 
     -- Track additional satellites launched by this force
     if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
+        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
 
@@ -52,43 +52,29 @@ function RocketLaunchEvent(event)
             EnableTech(force, "artillery")
 
             if (force.technologies["speed-module-3"].researched) then
-		    	AddRecipe(force, "speed-module-3")
-		    end
-		    if (force.technologies["productivity-module-3"].researched) then
-		    	AddRecipe(force, "productivity-module-3")
-		    end
+                AddRecipe(force, "speed-module-3")
+            end
+            if (force.technologies["productivity-module-3"].researched) then
+                AddRecipe(force, "productivity-module-3")
+            end
         end
     end
 end
 
+function CreateRocketGuiTab(tab_container, player)
+    -- local frame = tab_container.add{type="frame", name="rocket-panel", caption="Satellites Launched:", direction = "vertical"}
 
-function CreateRocketGui(player)
-    if mod_gui.get_button_flow(player)["rocket-score"] == nil then
-        mod_gui.get_button_flow(player).add{name="rocket-score", type="button", caption="Rockets", style=mod_gui.button_style}
-    end   
-end
+    AddLabel(tab_container, nil, "Satellites Launched:", my_label_header_style)
 
-
-local function ExpandRocketGui(player)
-    local frame = player.gui.left["rocket-panel"]
-    if (frame) then
-        frame.destroy()
+    if (global.satellite_sent == nil) then
+        AddLabel(tab_container, nil, "No launches yet.", my_label_style)
     else
-        local frame = player.gui.left.add{type="frame", name="rocket-panel", caption="Satellites Launched:", direction = "vertical"}
-
         for force_name,sat_count in pairs(global.satellite_sent) do
-        	frame.add{name="rc_"..force_name, type = "label",
-    					caption="Team " .. force_name .. ": " .. tostring(sat_count)}
+            AddLabel(tab_container,
+                    "rc_"..force_name,
+                    "Team " .. force_name .. ": " .. tostring(sat_count),
+                    my_label_style)
         end
     end
 end
 
-function RocketGuiClick(event) 
-    if not (event and event.element and event.element.valid) then return end
-    local player = game.players[event.element.player_index]
-    local name = event.element.name
-
-    if (name == "rocket-score") then
-        ExpandRocketGui(player)        
-    end
-end

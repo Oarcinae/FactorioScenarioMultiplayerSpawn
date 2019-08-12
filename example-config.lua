@@ -1,7 +1,7 @@
 -- example-config.lua (Rename this file to config.lua to use it)
--- Apr 2019
+-- July 24 2019 (updated on)
 -- Configuration Options
--- 
+--
 -- You should be able to leave most of the settings here as defaults.
 -- The only thing you definitely want to change are the welcome messages.
 
@@ -63,7 +63,7 @@ ENABLE_LONGREACH = true
 ENABLE_AUTOFILL = true
 
 -- Enable vanilla loaders
-ENABLE_LOADERS = true
+ENABLE_LOADERS = false
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -72,15 +72,8 @@ PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 -- Enable shared vision between teams (all teams are COOP regardless)
 ENABLE_SHARED_TEAM_VISION = true
 
--- Enable map regrowth, see regrowth_map.lua for more info.
--- Eseentially clears up map area that was explored but not used every hour.
--- Helps reduce save file size.
-ENABLE_REGROWTH = false
-
--- If you have regrowth enabled, this should also be enabled.
--- It removes bases for players that join and leave the game quickly.
--- This can also be used without enabling regrowth.
-ENABLE_ABANDONED_BASE_REMOVAL = true
+-- Only works if you have the Unused Chunk Removal mod installed.
+ENABLE_ABANDONED_BASE_REMOVAL = false
 
 -- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
@@ -92,7 +85,7 @@ LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
 -- In past versions I had a way to config map settings here to be used for cmd
--- line launching, but now you should just be using --map-gen-settings and 
+-- line launching, but now you should just be using --map-gen-settings and
 -- --map-settings option since it works with --start-server-load-scenario
 -- Read the README.md file for instructions.
 --------------------------------------------------------------------------------
@@ -106,10 +99,6 @@ LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
 -- No behemoth worms everywhere just because you spawned far away.
 -- If you're trying out the vanilla spawning, you might want to disable this.
 OARC_MODIFIED_ENEMY_SPAWNING = true
-
---------------------------------------------------------------------------------
--- Spawn Options
---------------------------------------------------------------------------------
 
 ---------------------------------------
 -- Starting Items
@@ -147,7 +136,7 @@ PLAYER_RESPAWN_START_ITEMS = {
 
 -- This is the radius, in chunks, that a spawn area is from any other generated
 -- chunks. It ensures the spawn area isn't too near generated/explored/existing
--- area. The larger you make this, the further away players will spawn from 
+-- area. The larger you make this, the further away players will spawn from
 -- generated map area (even if it is not visible on the map!).
 CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS = 10
 
@@ -187,7 +176,7 @@ OARC_CFG = {
 
     -- Misc spawn related config.
     gen_settings = {
-        
+
         -- THIS IS WHAT SETS THE SPAWN CIRCLE SIZE!
         -- Create a circle of land area for the spawn
         -- If you make this much bigger than a few chunks, good luck.
@@ -262,35 +251,35 @@ OARC_CFG = {
     -- If you are running with mods like bobs/angels, you'll want to customize this.
     resource_tiles =
     {
-        ["iron-ore"] = 
+        ["iron-ore"] =
         {
             amount = 1500,
             size = 16,
             x_offset = -29,
             y_offset = 16
         },
-        ["copper-ore"] = 
+        ["copper-ore"] =
         {
             amount = 1500,
             size = 14,
             x_offset = -28,
             y_offset = -3
         },
-        ["stone"] = 
+        ["stone"] =
         {
             amount = 1000,
             size = 12,
             x_offset = -27,
             y_offset = -34
         },
-        ["coal"] = 
+        ["coal"] =
         {
             amount = 1500,
             size = 12,
             x_offset = -27,
             y_offset = -20
         }--,
-        -- ["uranium-ore"] = 
+        -- ["uranium-ore"] =
         -- {
         --     amount = 0,
         --     size = 0,
@@ -317,14 +306,14 @@ OARC_CFG = {
         -- See https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn/issues/11#issuecomment-479724909
         -- for full examples.
     },
-    
+
     -- Special resource patches like oil
     resource_patches =
     {
-        ["crude-oil"] = 
+        ["crude-oil"] =
         {
             num_patches = 2,
-            amount = 3000000,
+            amount = 900000,
             x_offset_start = -3,
             y_offset_start = 48,
             x_offset_next = 6,
@@ -421,3 +410,10 @@ ENABLE_ANTI_GRIEFING = true
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
 GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+
+--------------------------------------------------------------------------------
+-- This turns on writing chat and certain events to specific files so that I can
+-- use that for discord integration. I suggest you leave this off unless you
+-- know what you are doing.
+--------------------------------------------------------------------------------
+ENABLE_SERVER_WRITE_FILES = false

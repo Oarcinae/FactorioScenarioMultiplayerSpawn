@@ -11,20 +11,16 @@
 -- That's a LOT of settings.
 function InitOarcConfig()
 
-    -- Short and sweet.
     global.ocfg = {}
 
-
-    local is_mod = false
-    for name, version in pairs(game.active_mods) do
-        if (name == "oarc-mod") then
-             is_mod = true
-             log("Oarc MOD! Version: " .. version)
-        end
+    if (game.active_mods["clean-tutorial-grid"]) then
+        global.ocfg.locked_build_area_tile = "clean-tutorial-grid"
+    else
+        global.ocfg.locked_build_area_tile = "tutorial-grid"
     end
 
      -- SCENARIO VERSION
-    if (not is_mod) then
+    if (not game.active_mods["oarc-mod"]) then
         global.ocfg.welcome_title = WELCOME_MSG_TITLE
         global.ocfg.welcome_msg = WELCOME_MSG
         global.ocfg.server_rules = SERVER_MSG
@@ -42,10 +38,10 @@ function InitOarcConfig()
         global.ocfg.enable_player_list = ENABLE_PLAYER_LIST
         global.ocfg.list_offline_players = PLAYER_LIST_OFFLINE_PLAYERS
         global.ocfg.enable_shared_team_vision = ENABLE_SHARED_TEAM_VISION
-        global.ocfg.enable_regrowth = ENABLE_REGROWTH
         global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
         global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
         global.ocfg.lock_goodies_rocket_launch = LOCK_GOODIES_UNTIL_ROCKET_LAUNCH
+
         global.ocfg.modified_enemy_spawning = OARC_MODIFIED_ENEMY_SPAWNING
         global.ocfg.near_dist_start = NEAR_MIN_DIST
         global.ocfg.near_dist_end = NEAR_MAX_DIST
@@ -68,9 +64,13 @@ function InitOarcConfig()
         global.ocfg.frontier_pos_table = SILO_POSITIONS
         global.ocfg.frontier_silo_vision = ENABLE_SILO_VISION
         global.ocfg.frontier_allow_build = ENABLE_SILO_PLAYER_BUILD
-    
+
+        global.ocfg.enable_server_write_files = ENABLE_SERVER_WRITE_FILES
+
     -- MOD VERSION
     else
+        log("Oarc MOD! Version: " .. game.active_mods["oarc-mod"].version)
+
         global.ocfg.welcome_title = settings.global["oarc-welcome-title"].value
         global.ocfg.welcome_msg = settings.global["oarc-welcome-msg"].value
         global.ocfg.server_rules = settings.global["oarc-server-rules"].value
@@ -88,7 +88,6 @@ function InitOarcConfig()
         global.ocfg.list_offline_players = settings.global["oarc-list-offline-players"].value
         global.ocfg.enable_shared_team_vision = settings.global["oarc-enable-shared-team-vision"].value
         global.ocfg.enable_regrowth = settings.global["oarc-enable-regrowth"].value
-        global.ocfg.enable_abandoned_base_removal = settings.global["oarc-enable-abandoned-base-removal"].value
         global.ocfg.enable_research_queue = settings.global["oarc-enable-research-queue"].value
         global.ocfg.lock_goodies_rocket_launch = false
         global.ocfg.modified_enemy_spawning = settings.global["oarc-modified-enemy-spawning"].value
@@ -131,35 +130,35 @@ function InitOarcConfig()
             },
             resource_tiles =
             {
-                [settings.global["oarc-resource-1-name"].value] = 
+                [settings.global["oarc-resource-1-name"].value] =
                 {
                     amount = settings.global["oarc-resource-1-amount"].value,
                     size = settings.global["oarc-resource-1-size"].value,
                     x_offset = -29,
                     y_offset = 16
                 },
-                [settings.global["oarc-resource-2-name"].value] = 
+                [settings.global["oarc-resource-2-name"].value] =
                 {
                     amount = settings.global["oarc-resource-2-amount"].value,
                     size = settings.global["oarc-resource-2-size"].value,
                     x_offset = -28,
                     y_offset = -3
                 },
-                [settings.global["oarc-resource-3-name"].value] = 
+                [settings.global["oarc-resource-3-name"].value] =
                 {
                     amount = settings.global["oarc-resource-3-amount"].value,
                     size = settings.global["oarc-resource-3-size"].value,
                     x_offset = -27,
                     y_offset = -34
                 },
-                [settings.global["oarc-resource-4-name"].value] = 
+                [settings.global["oarc-resource-4-name"].value] =
                 {
                     amount = settings.global["oarc-resource-4-amount"].value,
                     size = settings.global["oarc-resource-4-size"].value,
                     x_offset = -27,
                     y_offset = -20
                 }
-                -- [settings.global["oarc-resource-5-name"].value] = 
+                -- [settings.global["oarc-resource-5-name"].value] =
                 -- {
                 --     amount = settings.global["oarc-resource-5-amount"].value,
                 --     size = settings.global["oarc-resource-5-size"].value,
@@ -169,7 +168,7 @@ function InitOarcConfig()
             },
             resource_patches =
             {
-                [settings.global["oarc-resource-patch-1-name"].value] = 
+                [settings.global["oarc-resource-patch-1-name"].value] =
                 {
                     num_patches = settings.global["oarc-resource-patch-1-count"].value,
                     amount = settings.global["oarc-resource-patch-1-amount"].value,

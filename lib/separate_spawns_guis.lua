@@ -26,15 +26,23 @@ local SPAWN_GUI_MAX_HEIGHT = 1000
 -- A display gui message
 -- Meant to be display the first time a player joins.
 function DisplayWelcomeTextGui(player)
-    if (TableLength(player.gui.center.children) > 0) then
+    if ((player.gui.screen["welcome_msg"] ~= nil) or
+        (player.gui.screen["spawn_opts"] ~= nil) or
+        (player.gui.screen["shared_spawn_opts"] ~= nil) or
+        (player.gui.screen["join_shared_spawn_wait_menu"] ~= nil) or
+        (player.gui.screen["buddy_spawn_opts"] ~= nil) or
+        (player.gui.screen["buddy_wait_menu"] ~= nil) or
+        (player.gui.screen["buddy_request_menu"] ~= nil) or
+        (player.gui.screen["wait_for_spawn_dialog"] ~= nil)) then
         log("DisplayWelcomeTextGui called while some other dialog is already displayed!")
-        return
+        return false
     end
-    player.gui.center.add{name = "welcome_msg",
+
+    local wGui = player.gui.screen.add{name = "welcome_msg",
                             type = "frame",
                             direction = "vertical",
                             caption=global.ocfg.welcome_title}
-    local wGui = player.gui.center.welcome_msg
+    wGui.auto_center=true
 
     wGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     wGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
@@ -42,14 +50,17 @@ function DisplayWelcomeTextGui(player)
     -- Start with server message.
     AddLabel(wGui, "server_msg_lbl1", global.ocfg.server_rules, my_label_style)
     AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
-    AddSpacer(wGui, "server_msg_spacer1")
+    AddSpacer(wGui)
 
     -- Informational message about the scenario
     AddLabel(wGui, "scenario_info_msg_lbl1", SCENARIO_INFO_MSG, my_label_style)
-    AddSpacer(wGui, "scenario_info_msg_spacer1")
+    AddSpacer(wGui)
 
     -- Warning about spawn creation time
     AddLabel(wGui, "spawn_time_msg_lbl1", {"oarc-spawn-time-warning-msg"}, my_warning_style)
+
+    -- Confirm button
+    AddSpacerLine(wGui)
     local button_flow = wGui.add{type = "flow"}
     button_flow.style.horizontal_align = "right"
     button_flow.style.horizontally_stretchable = true
@@ -58,6 +69,7 @@ function DisplayWelcomeTextGui(player)
                     caption={"oarc-i-understand"},
                     style = "confirm_button"}
 
+    return true
 end
 
 
@@ -73,8 +85,8 @@ function WelcomeTextGuiClick(event)
     end
 
     if (buttonClicked == "welcome_okay_btn") then
-        if (player.gui.center.welcome_msg ~= nil) then
-            player.gui.center.welcome_msg.destroy()
+        if (player.gui.screen.welcome_msg ~= nil) then
+            player.gui.screen.welcome_msg.destroy()
         end
         DisplaySpawnOptions(player)
     end
@@ -88,18 +100,18 @@ function DisplaySpawnOptions(player)
         return
     end
 
-    if (player.gui.center.spawn_opts ~= nil) then
+    if (player.gui.screen.spawn_opts ~= nil) then
         log("Tried to display spawn options when it was already displayed!")
         return
     end
-    player.gui.center.add{name = "spawn_opts",
+    player.gui.screen.add{name = "spawn_opts",
                             type = "frame",
                             direction = "vertical",
                             caption={"oarc-spawn-options"}}
-    local sGui = player.gui.center.spawn_opts
+    local sGui = player.gui.screen.spawn_opts
     sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
-
+    sGui.auto_center=true
 
     -- Warnings and explanations...
     local warn_msg = {"oarc-click-info-btn-help"}
@@ -265,11 +277,11 @@ function SpawnOptsGuiClick(event)
         return
     end
 
-    if (player.gui.center.spawn_opts == nil) then
+    if (player.gui.screen.spawn_opts == nil) then
         return -- Gui event unrelated to this gui.
     end
 
-    local pgcs = player.gui.center.spawn_opts
+    local pgcs = player.gui.screen.spawn_opts
 
     local joinMainTeamRadio, joinOwnTeamRadio, moatChoice, vanillaChoice = false
 
@@ -309,8 +321,8 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
         SendBroadcastMsg({"oarc-player-is-joining-main-force", player.name})
         ChartArea(player.force, player.position, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
-        -- Create the button at the top left for setting respawn point and sharing base.
-        CreateSpawnCtrlGui(player)
+        -- Unlock spawn control gui tab
+        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
 
     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
 
@@ -361,8 +373,8 @@ function SpawnOptsGuiClick(event)
             SendBroadcastMsg({"oarc-player-is-joining-far", player.name})
         end
 
-        -- Create the button at the top left for setting respawn point and sharing base.
-        CreateSpawnCtrlGui(player)
+        -- Unlock spawn control gui tab
+        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
 
         player.print({"oarc-please-wait"})
         player.print({"", {"oarc-please-wait"}, "!"})
@@ -388,12 +400,13 @@ end
 
 -- Display the spawn options and explanation
 function DisplaySharedSpawnOptions(player)
-    player.gui.center.add{name = "shared_spawn_opts",
+    player.gui.screen.add{name = "shared_spawn_opts",
                             type = "frame",
                             direction = "vertical",
                             caption={"oarc-avail-bases-join"}}
 
-    local shGuiFrame = player.gui.center.shared_spawn_opts
+    local shGuiFrame = player.gui.screen.shared_spawn_opts
+    shGuiFrame.auto_center = true
     local shGui = shGuiFrame.add{type="scroll-pane", name="spawns_scroll_pane", caption=""}
     ApplyStyle(shGui, my_fixed_width_style)
     shGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
@@ -445,8 +458,8 @@ function SharedSpwnOptsGuiClick(event)
     -- Check for cancel button, return to spawn options
     if (buttonClicked == "shared_spawn_cancel") then
         DisplaySpawnOptions(player)
-        if (player.gui.center.shared_spawn_opts ~= nil) then
-            player.gui.center.shared_spawn_opts.destroy()
+        if (player.gui.screen.shared_spawn_opts ~= nil) then
+            player.gui.screen.shared_spawn_opts.destroy()
         end
 
     -- Else check for which spawn was selected
@@ -464,8 +477,8 @@ function SharedSpwnOptsGuiClick(event)
                 table.insert(global.sharedSpawns[spawnName].joinQueue, player.name)
 
                 -- Clear the shared spawn options gui.
-                if (player.gui.center.shared_spawn_opts ~= nil) then
-                    player.gui.center.shared_spawn_opts.destroy()
+                if (player.gui.screen.shared_spawn_opts ~= nil) then
+                    player.gui.screen.shared_spawn_opts.destroy()
                 end
 
                 -- Display wait menu with cancel button.
@@ -481,11 +494,11 @@ end
 
 function DisplaySharedSpawnJoinWaitMenu(player)
 
-    player.gui.center.add{name = "join_shared_spawn_wait_menu",
+    local sGui = player.gui.screen.add{name = "join_shared_spawn_wait_menu",
                             type = "frame",
                             direction = "vertical",
                             caption={"oarc-waiting-for-spawn-owner"}}
-    local sGui = player.gui.center.join_shared_spawn_wait_menu
+    sGui.auto_center = true
     sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
@@ -509,13 +522,13 @@ function SharedSpawnJoinWaitMenuClick(event)
         return
     end
 
-    if (player.gui.center.join_shared_spawn_wait_menu == nil) then
+    if (player.gui.screen.join_shared_spawn_wait_menu == nil) then
         return -- Gui event unrelated to this gui.
     end
 
     -- Check if player is cancelling the request.
     if (elemName == "cancel_shared_spawn_wait_menu") then
-        player.gui.center.join_shared_spawn_wait_menu.destroy()
+        player.gui.screen.join_shared_spawn_wait_menu.destroy()
         DisplaySpawnOptions(player)
 
         -- Find and remove the player from the joinQueue they were in.
@@ -534,14 +547,6 @@ function SharedSpawnJoinWaitMenuClick(event)
         log("ERROR! Failed to remove player from joinQueue!")
     end
 end
-
-
-function CreateSpawnCtrlGui(player)
-  if player and (mod_gui.get_button_flow(player).spwn_ctrls == nil) then
-      mod_gui.get_button_flow(player).add{name="spwn_ctrls", type="button", caption={"oarc-spawn-ctrl"}, style=mod_gui.button_style}
-  end
-end
-
 
 local function IsSharedSpawnActive(player)
     if ((global.sharedSpawns[player.name] == nil) or
@@ -570,70 +575,62 @@ function GetRandomSpawnPoint()
     return {x=0,y=0}
 end
 
-
 -- This is a toggle function, it either shows or hides the spawn controls
-function ExpandSpawnCtrlGui(player, tick)
-    local spwnCtrlPanel = mod_gui.get_frame_flow(player)["spwn_ctrl_panel"]
-    if (spwnCtrlPanel) then
-        spwnCtrlPanel.destroy()
-    else
-        local spwnCtrlPanel = mod_gui.get_frame_flow(player).add{type="frame",
-                            name="spwn_ctrl_panel", caption={"oarc-spawn-controls"}}
-        local spwnCtrls = spwnCtrlPanel.add{type="scroll-pane",
-                            name="spwn_ctrl_panel", caption=""}
-        ApplyStyle(spwnCtrls, my_fixed_width_style)
-        spwnCtrls.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
-        spwnCtrls.horizontal_scroll_policy = "never"
+function CreateSpawnCtrlGuiTab(tab_container, player)
+    local spwnCtrls = tab_container.add{
+        type="scroll-pane",
+        name="spwn_ctrl_panel",
+        caption=""}
+    ApplyStyle(spwnCtrls, my_fixed_width_style)
+    spwnCtrls.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+    spwnCtrls.horizontal_scroll_policy = "never"
 
-        if global.ocfg.enable_shared_spawns then
-            if (global.uniqueSpawns[player.name] ~= nil) then
-                -- This checkbox allows people to join your base when they first
-                -- start the game.
-                spwnCtrls.add{type="checkbox", name="accessToggle",
-                                caption={"oarc-spawn-allow-joiners"},
-                                state=IsSharedSpawnActive(player)}
-                ApplyStyle(spwnCtrls["accessToggle"], my_fixed_width_style)
-            end
-        end
-
-
-        -- Sets the player's custom spawn point to their current location
-        if ((tick - global.playerCooldowns[player.name].setRespawn) > 
-                (global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)) then
-            spwnCtrls.add{type="button", name="setRespawnLocation", caption={"oarc-set-respawn-loc"}}
-            spwnCtrls["setRespawnLocation"].style.font = "default-small-semibold"
-
-        else
-            AddLabel(spwnCtrls,"respawn_cooldown_note1",
-                {"oarc-set-respawn-loc-cooldown", formattime((global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)-(tick - global.playerCooldowns[player.name].setRespawn))}, my_note_style)
-        end
-        AddLabel(spwnCtrls, "respawn_cooldown_note2", {"oarc-set-respawn-note"}, my_note_style)
-
-        -- Display a list of people in the join queue for your base.
-        if (global.ocfg.enable_shared_spawns and IsSharedSpawnActive(player)) then
-            if ((global.sharedSpawns[player.name].joinQueue ~= nil) and
-                (#global.sharedSpawns[player.name].joinQueue > 0)) then
-
-
-                AddLabel(spwnCtrls, "drop_down_msg_lbl1", {"oarc-select-player-join-queue"}, my_label_style)
-                spwnCtrls.add{name = "join_queue_dropdown",
-                                type = "drop-down",
-                                items = global.sharedSpawns[player.name].joinQueue}
-                spwnCtrls.add{name = "accept_player_request",
-                                type = "button",
-                                caption={"oarc-accept"}}
-                spwnCtrls.add{name = "reject_player_request",
-                                type = "button",
-                                caption={"oarc-reject"}}
-            else
-                AddLabel(spwnCtrls, "empty_join_queue_note1", {"oarc-no-player-join-reqs"}, my_note_style)
-            end
-            spwnCtrls.add{name = "join_queue_spacer", type = "label",
-                            caption=" "}
+    if global.ocfg.enable_shared_spawns then
+        if (global.uniqueSpawns[player.name] ~= nil) then
+            -- This checkbox allows people to join your base when they first
+            -- start the game.
+            spwnCtrls.add{type="checkbox", name="accessToggle",
+                            caption={"oarc-spawn-allow-joiners"},
+                            state=IsSharedSpawnActive(player)}
+            ApplyStyle(spwnCtrls["accessToggle"], my_fixed_width_style)
         end
     end
-end
 
+    -- Sets the player's custom spawn point to their current location
+    if ((game.tick - global.playerCooldowns[player.name].setRespawn) >
+            (global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)) then
+        spwnCtrls.add{type="button", name="setRespawnLocation", caption={"oarc-set-respawn-loc"}}
+        spwnCtrls["setRespawnLocation"].style.font = "default-small-semibold"
+
+    else
+        AddLabel(spwnCtrls,"respawn_cooldown_note1",
+            {"oarc-set-respawn-loc-cooldown", formattime((global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)-(game.tick - global.playerCooldowns[player.name].setRespawn))}, my_note_style)
+    end
+    AddLabel(spwnCtrls, "respawn_cooldown_note2", {"oarc-set-respawn-note"}, my_note_style)
+
+    -- Display a list of people in the join queue for your base.
+    if (global.ocfg.enable_shared_spawns and IsSharedSpawnActive(player)) then
+        if ((global.sharedSpawns[player.name].joinQueue ~= nil) and
+            (#global.sharedSpawns[player.name].joinQueue > 0)) then
+
+
+            AddLabel(spwnCtrls, "drop_down_msg_lbl1", {"oarc-select-player-join-queue"}, my_label_style)
+            spwnCtrls.add{name = "join_queue_dropdown",
+                            type = "drop-down",
+                            items = global.sharedSpawns[player.name].joinQueue}
+            spwnCtrls.add{name = "accept_player_request",
+                            type = "button",
+                            caption={"oarc-accept"}}
+            spwnCtrls.add{name = "reject_player_request",
+                            type = "button",
+                            caption={"oarc-reject"}}
+        else
+            AddLabel(spwnCtrls, "empty_join_queue_note1", {"oarc-no-player-join-reqs"}, my_note_style)
+        end
+        spwnCtrls.add{name = "join_queue_spacer", type = "label",
+                        caption=" "}
+    end
+end
 
 function SpawnCtrlGuiOptionsSelect(event)
     if not (event and event.element and event.element.valid) then return end
@@ -664,6 +661,7 @@ function SpawnCtrlGuiOptionsSelect(event)
                 SendBroadcastMsg({"oarc-stop-shared-base", player.name})
             end
         end
+        FakeTabChangeEventOarcGui(player)
     end
 end
 
@@ -678,10 +676,6 @@ function SpawnCtrlGuiClick(event)
         return
     end
 
-    if (elemName == "spwn_ctrls") then
-        ExpandSpawnCtrlGui(player, event.tick)
-    end
-
     if (event.element.parent) then
         if (event.element.parent.name ~= "spwn_ctrl_panel") then
             return
@@ -692,7 +686,7 @@ function SpawnCtrlGuiClick(event)
     if (elemName == "setRespawnLocation") then
         if DoesPlayerHaveCustomSpawn(player) then
             ChangePlayerSpawn(player, player.position)
-            ExpandSpawnCtrlGui(player, event.tick)
+            FakeTabChangeEventOarcGui(player)
             player.print({"oarc-spawn-point-updated"})
         end
     end
@@ -703,7 +697,7 @@ function SpawnCtrlGuiClick(event)
         if ((event.element.parent.join_queue_dropdown == nil) or
             (event.element.parent.join_queue_dropdown.selected_index == 0)) then
             player.print({"oarc-selected-player-not-wait"})
-            ExpandSpawnCtrlGui(player, event.tick)
+            FakeTabChangeEventOarcGui(player)
             return
         end
 
@@ -713,18 +707,18 @@ function SpawnCtrlGuiClick(event)
         if ((game.players[joinQueuePlayerChoice] == nil) or
             (not game.players[joinQueuePlayerChoice].connected)) then
             player.print({"oarc-selected-player-not-wait"})
-            ExpandSpawnCtrlGui(player, event.tick)
+            FakeTabChangeEventOarcGui(player)
             return
         end
 
         if (elemName == "reject_player_request") then
             player.print({"oarc-reject-joiner", joinQueuePlayerChoice})
             SendMsg(joinQueuePlayerChoice, {"oarc-your-request-rejected"})
-            ExpandSpawnCtrlGui(player, event.tick)
+            FakeTabChangeEventOarcGui(player)
 
             -- Close the waiting players menu
-            if (game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu) then
-                game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy()
+            if (game.players[joinQueuePlayerChoice].gui.screen.join_shared_spawn_wait_menu) then
+                game.players[joinQueuePlayerChoice].gui.screen.join_shared_spawn_wait_menu.destroy()
                 DisplaySpawnOptions(game.players[joinQueuePlayerChoice])
             end
 
@@ -751,8 +745,8 @@ function SpawnCtrlGuiClick(event)
                 SendBroadcastMsg({"oarc-player-joining-base", joinQueuePlayerChoice, player.name})
 
                 -- Close the waiting players menu
-                if (game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu) then
-                    game.players[joinQueuePlayerChoice].gui.center.join_shared_spawn_wait_menu.destroy()
+                if (game.players[joinQueuePlayerChoice].gui.screen.join_shared_spawn_wait_menu) then
+                    game.players[joinQueuePlayerChoice].gui.screen.join_shared_spawn_wait_menu.destroy()
                 end
 
                 -- Spawn the player
@@ -763,9 +757,8 @@ function SpawnCtrlGuiClick(event)
                 table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
                 joiningPlayer.force = game.players[player.name].force
 
-                -- Create the button at the top left for setting respawn point and sharing base.
-                CreateSpawnCtrlGui(joiningPlayer)
-                ExpandSpawnCtrlGui(player, event.tick)
+                -- Unlock spawn control gui tab
+                SetOarcGuiTabEnabled(joiningPlayer, OARC_SPAWN_CTRL_GUI_NAME, true)
             else
                 SendBroadcastMsg({"oarc-player-left-while-joining", joinQueuePlayerChoice})
             end
@@ -775,18 +768,24 @@ end
 
 -- Display the buddy spawn menu
 function DisplayBuddySpawnOptions(player)
-    player.gui.center.add{name = "buddy_spawn_opts",
+    local buddyGui = player.gui.screen.add{name = "buddy_spawn_opts",
                             type = "frame",
                             direction = "vertical",
                             caption={"oarc-buddy-spawn-options"}}
-    local buddyGui = player.gui.center.buddy_spawn_opts
+    buddyGui.auto_center = true
     buddyGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     buddyGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
 
     -- Warnings and explanations...
     AddLabel(buddyGui, "buddy_info_msg", {"oarc-buddy-spawn-instructions"}, my_label_style)
-    -- AddSpacerLine(buddyGui, "buddy_info_spacer")
+    AddSpacer(buddyGui)
+
+    -- The buddy spawning options.
+    local buddySpawnFlow = buddyGui.add{name = "spawn_buddy_flow",
+                                    type = "frame",
+                                    direction="vertical",
+                                    style = "bordered_frame"}
 
     buddyList = {}
     for _,buddyName in pairs(global.waitingBuddies) do
@@ -795,20 +794,14 @@ function DisplayBuddySpawnOptions(player)
         end
     end
 
-    AddLabel(buddyGui, "drop_down_msg_lbl1", {"oarc-buddy-select-info"}, my_label_style)
-    buddyGui.add{name = "waiting_buddies_dropdown",
+    AddLabel(buddySpawnFlow, "drop_down_msg_lbl1", {"oarc-buddy-select-info"}, my_label_style)
+    buddySpawnFlow.add{name = "waiting_buddies_dropdown",
                     type = "drop-down",
                     items = buddyList}
-    buddyGui.add{name = "refresh_buddy_list",
+    buddySpawnFlow.add{name = "refresh_buddy_list",
                     type = "button",
                     caption={"oarc-buddy-refresh"}}
-    -- AddSpacerLine(buddyGui, "waiting_buddies_spacer")
-
-    -- The buddy spawning options.
-    local buddySpawnFlow = buddyGui.add{name = "spawn_buddy_flow",
-                                    type = "flow",
-                                    direction="vertical"}
-
+    -- AddSpacerLine(buddySpawnFlow)
 
     -- Allow picking of teams
     if (global.ocfg.enable_separate_teams) then
@@ -832,7 +825,7 @@ function DisplayBuddySpawnOptions(player)
                         state=false}
     end
 
-    AddSpacer(buddyGui, "buddy_options_spacer")
+    -- AddSpacerLine(buddySpawnFlow)
     buddySpawnFlow.add{name = "buddy_spawn_request_near",
                     type = "button",
                     caption={"oarc-buddy-spawn-near"},
@@ -841,18 +834,15 @@ function DisplayBuddySpawnOptions(player)
                     type = "button",
                     caption={"oarc-buddy-spawn-far"},
                     style = "confirm_button"}
-    AddSpacerLine(buddyGui, "buddy_spawn_spacer")
 
-
-
+    AddSpacer(buddyGui)
     buddyGui.add{name = "buddy_spawn_cancel",
                     type = "button",
                     caption={"oarc-cancel-return-to-previous"},
                     style = "back_button"}
 
     -- Some final notes
-    AddSpacerLine(buddyGui, "note_spacer1")
-
+    AddSpacerLine(buddyGui)
     if (global.ocfg.max_players_shared_spawn > 0) then
         AddLabel(buddyGui, "buddy_max_players_lbl1",
                 {"oarc-max-players-shared-spawn", global.ocfg.max_players_shared_spawn-1},
@@ -875,17 +865,19 @@ function BuddySpawnOptsGuiClick(event)
         return
     end
 
-    if (player.gui.center.buddy_spawn_opts == nil) then
+    if (player.gui.screen.buddy_spawn_opts == nil) then
         return -- Gui event unrelated to this gui.
     end
 
+    local waiting_buddies_dropdown = player.gui.screen.buddy_spawn_opts.spawn_buddy_flow.waiting_buddies_dropdown
+
     -- Just refresh the buddy list dropdown values only.
     if (elemName == "refresh_buddy_list") then
-        player.gui.center.buddy_spawn_opts.waiting_buddies_dropdown.clear_items()
+        waiting_buddies_dropdown.clear_items()
 
         for _,buddyName in pairs(global.waitingBuddies) do
             if (player.name ~= buddyName) then
-                player.gui.center.buddy_spawn_opts.waiting_buddies_dropdown.add_item(buddyName)
+                waiting_buddies_dropdown.add_item(buddyName)
             end
         end
         return
@@ -893,7 +885,7 @@ function BuddySpawnOptsGuiClick(event)
 
     -- Handle the cancel button to exit this menu
     if (elemName == "buddy_spawn_cancel") then
-        player.gui.center.buddy_spawn_opts.destroy()
+        player.gui.screen.buddy_spawn_opts.destroy()
         DisplaySpawnOptions(player)
 
         -- Remove them from the buddy list when they cancel
@@ -912,10 +904,10 @@ function BuddySpawnOptsGuiClick(event)
     if ((elemName == "buddy_spawn_request_near") or
         (elemName == "buddy_spawn_request_far")) then
 
-        local buddySpawnGui = player.gui.center.buddy_spawn_opts
+        local buddySpawnGui = player.gui.screen.buddy_spawn_opts.spawn_buddy_flow
 
         local dropDownIndex = buddySpawnGui.waiting_buddies_dropdown.selected_index
-        if (dropDownIndex > 0) then
+        if ((dropDownIndex > 0) and (dropDownIndex <= #buddySpawnGui.waiting_buddies_dropdown.items)) then
             buddyChoice = buddySpawnGui.waiting_buddies_dropdown.get_item(dropDownIndex)
         else
             player.print({"oarc-invalid-buddy"})
@@ -933,22 +925,22 @@ function BuddySpawnOptsGuiClick(event)
         end
         if (not buddyIsStillWaiting) then
             player.print({"oarc-buddy-not-avail"})
-            player.gui.center.buddy_spawn_opts.destroy()
+            player.gui.screen.buddy_spawn_opts.destroy()
             DisplayBuddySpawnOptions(player)
             return
         end
 
         if (global.ocfg.enable_separate_teams) then
-            joinMainTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_main_team_radio.state
-            joinOwnTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_new_team_radio.state
-            joinBuddyTeamRadio = buddySpawnGui.spawn_buddy_flow.buddy_spawn_buddy_team_radio.state
+            joinMainTeamRadio = buddySpawnGui.buddy_spawn_main_team_radio.state
+            joinOwnTeamRadio = buddySpawnGui.buddy_spawn_new_team_radio.state
+            joinBuddyTeamRadio = buddySpawnGui.buddy_spawn_buddy_team_radio.state
         else
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
             joinBuddyTeamRadio = false
         end
         if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
-            moatChoice =  buddySpawnGui.spawn_buddy_flow.buddy_spawn_moat_option_checkbox.state
+            moatChoice =  buddySpawnGui.buddy_spawn_moat_option_checkbox.state
         end
 
         -- Save the chosen spawn options somewhere for later use.
@@ -959,13 +951,13 @@ function BuddySpawnOptsGuiClick(event)
                                                     buddyChoice=buddyChoice,
                                                     distChoice=elemName}
 
-        player.gui.center.buddy_spawn_opts.destroy()
+        player.gui.screen.buddy_spawn_opts.destroy()
 
         -- Display prompts to the players
         DisplayBuddySpawnWaitMenu(player)
         DisplayBuddySpawnRequestMenu(game.players[buddyChoice], player.name)
-        if (game.players[buddyChoice].gui.center.buddy_spawn_opts ~= nil) then
-            game.players[buddyChoice].gui.center.buddy_spawn_opts.destroy()
+        if (game.players[buddyChoice].gui.screen.buddy_spawn_opts ~= nil) then
+            game.players[buddyChoice].gui.screen.buddy_spawn_opts.destroy()
         end
 
         -- Remove them from the buddy list while they make up their minds.
@@ -984,18 +976,18 @@ end
 
 function DisplayBuddySpawnWaitMenu(player)
 
-    player.gui.center.add{name = "buddy_wait_menu",
+    local sGui = player.gui.screen.add{name = "buddy_wait_menu",
                             type = "frame",
                             direction = "vertical",
                             caption={"oarc-waiting-for-buddy"}}
-    local sGui = player.gui.center.buddy_wait_menu
+    sGui.auto_center = true
     sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
 
     -- Warnings and explanations...
     AddLabel(sGui, "warning_lbl1", {"oarc-wait-buddy-select-yes"}, my_warning_style)
-    AddSpacer(sGui, "warning_spacer")
+    AddSpacer(sGui)
     sGui.add{name = "cancel_buddy_wait_menu",
                     type = "button",
                     caption={"oarc-cancel-return-to-previous"}}
@@ -1012,22 +1004,22 @@ function BuddySpawnWaitMenuClick(event)
         return
     end
 
-    if (player.gui.center.buddy_wait_menu == nil) then
+    if (player.gui.screen.buddy_wait_menu == nil) then
         return -- Gui event unrelated to this gui.
     end
 
     -- Check if player is cancelling the request.
     if (elemName == "cancel_buddy_wait_menu") then
-        player.gui.center.buddy_wait_menu.destroy()
+        player.gui.screen.buddy_wait_menu.destroy()
         DisplaySpawnOptions(player)
 
         local buddy = game.players[global.buddySpawnOptions[player.name].buddyChoice]
 
-        if (buddy.gui.center.buddy_request_menu ~= nil) then
-            buddy.gui.center.buddy_request_menu.destroy()
+        if (buddy.gui.screen.buddy_request_menu ~= nil) then
+            buddy.gui.screen.buddy_request_menu.destroy()
         end
-        if (buddy.gui.center.buddy_spawn ~= nil) then
-            buddy.gui.center.buddy_spawn_opts.destroy()
+        if (buddy.gui.screen.buddy_spawn ~= nil) then
+            buddy.gui.screen.buddy_spawn_opts.destroy()
         end
         DisplaySpawnOptions(buddy)
 
@@ -1042,11 +1034,11 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
         return
     end
 
-    player.gui.center.add{name = "buddy_request_menu",
+    local sGui = player.gui.screen.add{name = "buddy_request_menu",
                             type = "frame",
                             direction = "vertical",
                             caption="Buddy Request!"}
-    local sGui = player.gui.center.buddy_request_menu
+    sGui.auto_center = true
     sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
@@ -1078,7 +1070,7 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
 
     local requestText = {"", requestingBuddyName, {"oarc-buddy-txt-would-like"}, teamText, {"oarc-buddy-txt-next-to-you"}, moatText, distText}
     AddLabel(sGui, "note_lbl1", requestText, my_warning_style)
-    AddSpacer(sGui, "note_spacer1")
+    AddSpacer(sGui)
 
 
     sGui.add{name = "accept_buddy_request",
@@ -1102,7 +1094,7 @@ function BuddySpawnRequestMenuClick(event)
         return
     end
 
-    if (player.gui.center.buddy_request_menu == nil) then
+    if (player.gui.screen.buddy_request_menu == nil) then
         return -- Gui event unrelated to this gui.
     end
 
@@ -1121,7 +1113,7 @@ function BuddySpawnRequestMenuClick(event)
             player.print("Error! Invalid buddy info...")
             log("Error! Invalid buddy info...")
 
-            player.gui.center.buddy_request_menu.destroy()
+            player.gui.screen.buddy_request_menu.destroy()
             DisplaySpawnOptions(player)
         end
     else
@@ -1131,11 +1123,11 @@ function BuddySpawnRequestMenuClick(event)
     -- Handle player accepted
     if (elemName == "accept_buddy_request") then
 
-        if (game.players[requesterName].gui.center.buddy_wait_menu ~= nil) then
-            game.players[requesterName].gui.center.buddy_wait_menu.destroy()
+        if (game.players[requesterName].gui.screen.buddy_wait_menu ~= nil) then
+            game.players[requesterName].gui.screen.buddy_wait_menu.destroy()
         end
-        if (player.gui.center.buddy_request_menu ~= nil) then
-            player.gui.center.buddy_request_menu.destroy()
+        if (player.gui.screen.buddy_request_menu ~= nil) then
+            player.gui.screen.buddy_request_menu.destroy()
         end
 
         -- Create a new spawn point
@@ -1180,9 +1172,9 @@ function BuddySpawnRequestMenuClick(event)
         QueuePlayerForDelayedSpawn(requesterName, buddySpawn, requesterOptions.moatChoice, false)
         SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
 
-        -- Create the button at the top left for setting respawn point and sharing base.
-        CreateSpawnCtrlGui(player)
-        CreateSpawnCtrlGui(game.players[requesterName])
+        -- Unlock spawn control gui tab
+        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
+        SetOarcGuiTabEnabled(game.players[requesterName], OARC_SPAWN_CTRL_GUI_NAME, true)
 
         player.print({"oarc-please-wait"})
         player.print({"", {"oarc-please-wait"}, "!"})
@@ -1196,16 +1188,16 @@ function BuddySpawnRequestMenuClick(event)
 
     -- Check if player is cancelling the request.
     if (elemName == "decline_buddy_request") then
-        player.gui.center.buddy_request_menu.destroy()
+        player.gui.screen.buddy_request_menu.destroy()
         DisplaySpawnOptions(player)
 
         local requesterBuddy = game.players[requesterName]
 
-        if (requesterBuddy.gui.center.buddy_wait_menu ~= nil) then
-            requesterBuddy.gui.center.buddy_wait_menu.destroy()
+        if (requesterBuddy.gui.screen.buddy_wait_menu ~= nil) then
+            requesterBuddy.gui.screen.buddy_wait_menu.destroy()
         end
-        if (requesterBuddy.gui.center.buddy_spawn ~= nil) then
-            requesterBuddy.gui.center.buddy_spawn_opts.destroy()
+        if (requesterBuddy.gui.screen.buddy_spawn ~= nil) then
+            requesterBuddy.gui.screen.buddy_spawn_opts.destroy()
         end
         DisplaySpawnOptions(requesterBuddy)
 
@@ -1216,11 +1208,11 @@ end
 
 function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
 
-    player.gui.center.add{name = "wait_for_spawn_dialog",
+    local pleaseWaitGui = player.gui.screen.add{name = "wait_for_spawn_dialog",
                             type = "frame",
                             direction = "vertical",
                             caption={"oarc-spawn-wait"}}
-    local pleaseWaitGui = player.gui.center.wait_for_spawn_dialog
+    pleaseWaitGui.auto_center = true
     pleaseWaitGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     pleaseWaitGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
