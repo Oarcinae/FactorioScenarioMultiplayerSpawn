@@ -181,9 +181,9 @@ function InitOarcEnemies()
         rand_evo_amnt = 0.15, -- Up to + this amount
         rand_size_amnt = 10, -- Up to + this amount
 
-        seconds_between_attacks_min = 5*6,
-        seconds_between_attacks_max = 30*6,
-        seconds_between_attacks_rand = 4*6,
+        seconds_between_attacks_min = 5*60,
+        seconds_between_attacks_max = 30*60,
+        seconds_between_attacks_rand = 4*60,
 
         radar_scan_attack_chance = 500, -- 1 in X change to trigger an attack due to a radar ping.
     }
