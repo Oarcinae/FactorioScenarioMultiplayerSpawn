@@ -18,6 +18,8 @@ local function ExpandOarcEnemiesGui(player)
     else
         local frame = mod_gui.get_frame_flow(player).add{type="frame", name="oe-panel", caption="Oarc's Enemies:", direction = "vertical"}
 
+        AddLabel(frame, "oe_note", "These buttons and info are for testing/debugging my enemy mod.", my_warning_style)
+
         frame.add{type="button", caption="Player Attack", name="oe_attack_player"}
         frame.add{type="button", caption="General Attack", name="oe_attack_any"}
         frame.add{type="button", caption="Science Labs Attack", name="oe_attack_labs"}
