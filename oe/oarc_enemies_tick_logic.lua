@@ -122,22 +122,22 @@ function ProcessAttackCleanupInvalidGroups(key, attack)
 end
 
 function ProcessPlayerTimersEverySecond()
-    for name,timer_table in pairs(global.oe.player_timers) do
-        if (game.players[name] and game.players[name].connected) then
+    for p_index,timer_table in pairs(global.oe.player_timers) do
+        if (game.players[p_index] and game.players[p_index].connected) then
 
-            for timer_name,timer in pairs(timer_table) do
-                if (timer > 0) then
-                    global.oe.player_timers[name][timer_name] = timer-1
+            for timer_name,timer_val in pairs(timer_table) do
+                if (timer_val > 0) then
+                    global.oe.player_timers[p_index][timer_name] = timer_val-1
                 else
                     if (timer_name == "character") then
-                        OarcEnemiesPlayerAttackCharacter(name)
-                        global.oe.player_timers[name][timer_name] =
-                            GetRandomizedPlayerTimer(game.players[name].online_time/TICKS_PER_SECOND, 0)
+                        OarcEnemiesPlayerAttackCharacter(p_index)
+                        global.oe.player_timers[p_index][timer_name] =
+                            GetRandomizedPlayerTimer(game.players[p_index].online_time/TICKS_PER_SECOND, 0)
 
                     elseif (timer_name == "generic") then
-                        OarcEnemiesBuildingAttack(name, OE_GENERIC_TARGETS)
-                        global.oe.player_timers[name][timer_name] =
-                            GetRandomizedPlayerTimer(game.players[name].online_time/TICKS_PER_SECOND, 0)
+                        OarcEnemiesBuildingAttack(p_index, OE_GENERIC_TARGETS)
+                        global.oe.player_timers[p_index][timer_name] =
+                            GetRandomizedPlayerTimer(game.players[p_index].online_time/TICKS_PER_SECOND, 0)
                     end
                 end
             end
@@ -171,7 +171,7 @@ function ProcessAttackFindTarget(key, attack)
                 global.oe.attacks[key].target_entity = random_building
 
                 local e,s = GetEnemyGroup{player=player,
-                                            force_name=player.force.name,
+                                            force_index=player.force.index,
                                             surface=game.surfaces[GAME_SURFACE_NAME],
                                             target_pos=random_building.position}
 
@@ -190,7 +190,7 @@ function ProcessAttackFindTarget(key, attack)
             global.oe.attacks[key].target_entity = player.character
 
             local e,s = GetEnemyGroup{player=player,
-                                            force_name=player.force.name,
+                                            force_index=player.force.index,
                                             surface=game.surfaces[GAME_SURFACE_NAME],
                                             target_pos=player.character.position}
 

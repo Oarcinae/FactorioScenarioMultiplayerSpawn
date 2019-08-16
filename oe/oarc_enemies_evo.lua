@@ -148,7 +148,7 @@ function GetTechLevelEvoSize(tech_level)
 end
 
 -- Get the evo and size given optional params
--- args = {player, force_name, surface, target_pos, min_evo, max_eevo, min_size, max_size}
+-- args = {player, force_index, surface, target_pos, min_evo, max_eevo, min_size, max_size}
 function GetEnemyGroup(args)
 
     -- Default values
@@ -162,7 +162,7 @@ function GetEnemyGroup(args)
     -- Given a player, use that for time played AND for player force.
     if (args.player and args.player.connected) then
         local ticks_online = args.player.online_time
-        local tech_levels = global.oe.tech_levels[args.player.force.name]
+        local tech_levels = global.oe.tech_levels[args.player.force.index]
 
         e,s = GetPlayerTimeEvoSize(ticks_online)
         evo = evo + e
@@ -173,8 +173,8 @@ function GetEnemyGroup(args)
         size = size + s
 
     -- Support only force given, no player (should be RARE)
-    elseif (args.force_name) then
-        local tech_levels = global.oe.tech_levels[args.force_name]
+    elseif (args.force_index) then
+        local tech_levels = global.oe.tech_levels[args.force_index]
 
         e,s = GetTechLevelEvoSize(tech_levels)
         evo = evo + e

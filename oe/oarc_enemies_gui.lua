@@ -28,12 +28,10 @@ local function ExpandOarcEnemiesGui(player)
         frame.add{type="button", caption="Turret Attack", name="oe_attack_turret"}
 
         local oe_info="General Info:" .. "\n" ..
-                        -- "Units: " .. #global.oe.units .. "\n" ..
                         "Attacks: " .. #global.oe.attacks .. "\n" ..
-                        -- "Labs: " .. #global.oe.science_labs[player.name] .. "\n" ..
-                        "Tech levels: " .. global.oe.tech_levels[player.force.name] .. "\n" ..
-                        "Next Player Attack: " .. global.oe.player_timers[player.name]["character"] .. "\n" ..
-                        "Next Building Attack: " .. global.oe.player_timers[player.name]["generic"] ..
+                        "Tech levels: " .. global.oe.tech_levels[player.force.index] .. "\n" ..
+                        "Next Player Attack: " .. global.oe.player_timers[player.index]["character"] .. "\n" ..
+                        "Next Building Attack: " .. global.oe.player_timers[player.index]["generic"] ..
                         " "
         AddLabel(frame, "oe_info", oe_info, my_longer_label_style)
     end
@@ -49,35 +47,27 @@ function OarcEnemiesGuiClick(event)
     end
 
     if (name == "oe_attack_player") then
-        OarcEnemiesPlayerAttackCharacter(player.name)
+        OarcEnemiesPlayerAttackCharacter(player.index)
     end
 
     if (name == "oe_attack_any") then
-        OarcEnemiesBuildingAttack(player.name, {"ammo-turret",
-                                                "electric-turret",
-                                                "fluid-turret",
-                                                "artillery-turret",
-                                                "mining-drill",
-                                                "furnace",
-                                                "reactor",
-                                                "assembling-machine",
-                                                "generator"})
+        OarcEnemiesBuildingAttack(player.index, OE_GENERIC_TARGETS)
     end
 
     if (name == "oe_attack_labs") then
-        OarcEnemiesScienceLabAttack(player.force.name)
+        OarcEnemiesScienceLabAttack(player.force.index)
     end
 
     if (name == "oe_attack_furnace") then
-        OarcEnemiesBuildingAttack(player.name, "furnace")
+        OarcEnemiesBuildingAttack(player.index, "furnace")
     end
 
     if (name == "oe_attack_mining") then
-        OarcEnemiesBuildingAttack(player.name, "mining-drill")
+        OarcEnemiesBuildingAttack(player.index, "mining-drill")
     end
 
     if (name == "oe_attack_turret") then
-        OarcEnemiesBuildingAttack(player.name, {"ammo-turret",
+        OarcEnemiesBuildingAttack(player.index, {"ammo-turret",
                                                 "electric-turret",
                                                 "fluid-turret",
                                                 "artillery-turret"})

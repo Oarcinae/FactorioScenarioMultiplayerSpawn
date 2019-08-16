@@ -289,7 +289,11 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
 
     -- No enemies inside safe radius!
     if (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.safe_radius) then
-        event.entity.destroy()
+        if (event.entity.type == "unit-spawner") then
+            event.entity.die(game.forces["neutral"])
+        else
+            event.entity.destroy()
+        end
 
     -- Warn distance is all SMALL only.
     elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then

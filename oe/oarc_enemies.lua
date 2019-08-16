@@ -5,7 +5,7 @@
 
 -- This is what an attack request should look like:
 -- attack_request_example = {
---      target_player=player_name,      -- REQUIRED (Player Name)
+--      target_player=player_index,      -- REQUIRED (Player index)
 --      target_type=TYPE,               -- REQUIRED (OE_ATTACK_TYPE)
 --      attempts=3,                     -- REQUIRED (Must be at least 1! Otherwise it won't do anything.)
 --      process_stg=TYPE,               -- REQUIRED (Normally starts with OE_PROCESS_STG_FIND_TARGET)
@@ -81,7 +81,7 @@ function OarcEnemiesSectorScanned(event)
 
     -- 1 in a X chance of triggering an attack on radars?
     if (math.random(1,global.oe_params.radar_scan_attack_chance) == 1) then
-        OarcEnemiesBuildingAttack(player.name, "radar")
+        OarcEnemiesBuildingAttack(player.index, "radar")
     end
 end
 
@@ -100,7 +100,7 @@ function OarcEnemiesRocketLaunched(event)
                                 surface=silo.surface,
                                 target_pos=silo.position}
 
-    local rocket_launch_attack = {target_player = player_name,
+    local rocket_launch_attack = {target_player = player.index,
                                     target_type = OE_TARGET_TYPE_ENTITY,
                                     attempts=1,
                                     process_stg=OE_PROCESS_STG_FIND_SPAWN,
@@ -114,7 +114,7 @@ end
 
 function OarcEnemiesForceCreated(event)
     if (not event.force) then return end
-    global.oe.tech_levels[event.force.name] = 0
+    global.oe.tech_levels[event.force.index] = 0
 end
 
 function CountForceTechCompleted(force)
@@ -210,32 +210,30 @@ end
 function OarcEnemiesResearchFinishedEvent(event)
     if not (event.research and event.research.force) then return end
 
-    local force_name = event.research.force.name
-    if (global.oe.tech_levels[force_name] == nil) then
-        global.oe.tech_levels[force_name] = CountForceTechCompleted(game.forces[force_name])
+    local force = event.research.force
+    if (global.oe.tech_levels[force.index] == nil) then
+        global.oe.tech_levels[force.index] = CountForceTechCompleted(force)
     else
-        global.oe.tech_levels[force_name] = global.oe.tech_levels[force_name] + 1
+        global.oe.tech_levels[force.index] = global.oe.tech_levels[force.index] + 1
     end
 
     -- Trigger an attack on science!
-    OarcEnemiesScienceLabAttack(event.research.force.name)
+    OarcEnemiesScienceLabAttack(force.index)
 end
 
 -- Attack science labs of a given force!
-function OarcEnemiesScienceLabAttack(force_name)
+function OarcEnemiesScienceLabAttack(force_index)
     -- For each player (connected only), find a random science lab,
-    for _,player in pairs(game.connected_players) do
-        if (player.force.name == force_name) then
-            OarcEnemiesBuildingAttack(player.name, "lab")
-        end
+    for _,player in pairs(game.forces[force_index].connected_players) do
+        OarcEnemiesBuildingAttack(player.index, "lab")
     end
 end
 
 -- Request an attack on a given player's building type.
-function OarcEnemiesBuildingAttack(player_name, entity_type)
+function OarcEnemiesBuildingAttack(player_index, entity_type)
     -- Make sure player exists and is connected.
-    if (not game.players[player_name] or
-        not game.players[player_name].connected) then return end
+    if (not game.players[player_index] or
+        not game.players[player_index].connected) then return end
 
     -- Check we don't have too many ongoing attacks.
     if (#global.oe.attacks >= OE_ATTACKS_MAX) then
@@ -243,7 +241,7 @@ function OarcEnemiesBuildingAttack(player_name, entity_type)
         return
     end
 
-    local building_attack = {target_player = player_name,
+    local building_attack = {target_player = player_index,
                             target_type = OE_TARGET_TYPE_BUILDING,
                             attempts=3,
                             process_stg=OE_PROCESS_STG_FIND_TARGET,
@@ -253,13 +251,13 @@ function OarcEnemiesBuildingAttack(player_name, entity_type)
 end
 
 -- Attack a player's character
-function OarcEnemiesPlayerAttackCharacter(player_name)
+function OarcEnemiesPlayerAttackCharacter(player_index)
 
     -- Validation checks.
-    if (not game.players[player_name] or
-        not game.players[player_name].connected or
-        not game.players[player_name].character or
-        not game.players[player_name].character.valid) then
+    if (not game.players[player_index] or
+        not game.players[player_index].connected or
+        not game.players[player_index].character or
+        not game.players[player_index].character.valid) then
         log("OarcEnemiesPlayerAttackCharacter - player not connected or is dead?")
         return
     end
@@ -271,7 +269,7 @@ function OarcEnemiesPlayerAttackCharacter(player_name)
     end
 
     -- Create the attack request
-    local player_attack = {target_player = player_name,
+    local player_attack = {target_player = player_index,
                             target_type = OE_TARGET_TYPE_PLAYER,
                             attempts=3,
                             process_stg=OE_PROCESS_STG_FIND_TARGET}
@@ -282,27 +280,35 @@ end
 -- First time player init stuff
 function OarcEnemiesPlayerCreatedEvent(event)
     if (game.players[event.player_index] == nil) then return end
-    local p_name = game.players[event.player_index].name
 
-    if (global.oe.player_timers[p_name] == nil) then
-        global.oe.player_timers[p_name] = {character=GetRandomizedPlayerTimer(0, 60*10),
+    if (global.oe.player_timers[event.player_index] == nil) then
+        global.oe.player_timers[event.player_index] = {character=GetRandomizedPlayerTimer(0, 60*10),
                                              generic=GetRandomizedPlayerTimer(0, 0)}
     end
 
-    if (global.oe.buildings[p_name] == nil) then
-        global.oe.buildings[p_name] = {}
+    if (global.oe.buildings[event.player_index] == nil) then
+        global.oe.buildings[event.player_index] = {}
     end
 
     local force = game.players[event.player_index].force
-    if (global.oe.tech_levels[force.name] == nil) then
-        global.oe.tech_levels[force.name] = CountForceTechCompleted(force)
+    if (global.oe.tech_levels[force.index] == nil) then
+        global.oe.tech_levels[force.index] = CountForceTechCompleted(force)
     end
 
     -- Setup tracking of first time chat bubble displays
-    if (global.oe.player_sbubbles[p_name] == nil) then
-        global.oe.player_sbubbles[p_name] = {uh_oh=false,
+    if (global.oe.player_sbubbles[event.player_index] == nil) then
+        global.oe.player_sbubbles[event.player_index] = {uh_oh=false,
                                                         rocket=false}
     end
+end
+
+
+function OarcEnemiesPlayerRemovedEvent(event)
+    if (game.players[event.player_index] == nil) then return end
+
+    global.oe.player_timers[event.player_index] = nil
+    global.oe.buildings[event.player_index] = nil
+    global.oe.player_sbubbles[event.player_index] = nil
 end
 
 function OarcEnemiesChunkGenerated(event)
@@ -491,19 +497,25 @@ function OarcEnemiesEntityDiedEvent(event)
 
     -- If there is just a force, then just attack the area.
     if (not event.cause) then
+
+        if (event.force.name == "neutral") then return end -- Catch non-player destruction.
+
         death_attack.process_stg = OE_PROCESS_STG_CREATE_GROUP
         death_attack.spawn_pos = event.entity.position
         death_attack.target_type = OE_TARGET_TYPE_AREA
         death_attack.target_chunk = GetChunkPosFromTilePos(event.entity.position)
 
         death_attack.evo,death_attack.size = GetEnemyGroup{player=nil,
-                                                force_name=event.force.name,
+                                                force_index=event.force.index,
                                                 surface=game.surfaces[GAME_SURFACE_NAME],
                                                 target_pos=event.entity.position,
                                                 min_size=8,min_evo=0.25}
 
     -- If we have a cause, go attack that cause.
     else
+
+        if (event.cause.force.name == "neutral") then return end -- Catch non-player destruction.
+
         local player = nil
         if (event.cause.type == "character") then
             player  = event.cause.player
@@ -515,13 +527,13 @@ function OarcEnemiesEntityDiedEvent(event)
         -- if (not player or not player.connected) then return end
 
         death_attack.process_stg = OE_PROCESS_STG_SPAWN_PATH_REQ
-        death_attack.target_player = player.name
+        death_attack.target_player = player.index
         death_attack.target_type = OE_TARGET_TYPE_ENTITY
         death_attack.target_entity = event.cause
         death_attack.target_chunk = GetChunkPosFromTilePos(player.character.position)
 
         death_attack.evo,death_attack.size = GetEnemyGroup{player=player,
-                                                force_name=event.force.name,
+                                                force_index=event.force.index,
                                                 surface=game.surfaces[GAME_SURFACE_NAME],
                                                 target_pos=event.entity.position,
                                                 min_size=8,min_evo=0.25}
@@ -562,31 +574,31 @@ function OarcEnemiesTrackBuildings(e)
             return
         end
 
-        if (global.oe.buildings[e.last_user.name] == nil) then
-            global.oe.buildings[e.last_user.name] = {}
+        if (global.oe.buildings[e.last_user.index] == nil) then
+            global.oe.buildings[e.last_user.index] = {}
         end
 
-        if (global.oe.buildings[e.last_user.name][e.type] == nil) then
-            global.oe.buildings[e.last_user.name][e.type] = {}
+        if (global.oe.buildings[e.last_user.index][e.type] == nil) then
+            global.oe.buildings[e.last_user.index][e.type] = {}
         end
 
-        table.insert(global.oe.buildings[e.last_user.name][e.type], e)
+        table.insert(global.oe.buildings[e.last_user.index][e.type], e)
 
     end
 end
 
-function GetRandomBuildingAny(player_name, entity_type_or_types)
+function GetRandomBuildingAny(player_index, entity_type_or_types)
     if (type(entity_type_or_types) == "table") then
-        return GetRandomBuildingMultipleTypes(player_name, entity_type_or_types)
+        return GetRandomBuildingMultipleTypes(player_index, entity_type_or_types)
     else
-        return GetRandomBuildingSingleType(player_name, entity_type_or_types)
+        return GetRandomBuildingSingleType(player_index, entity_type_or_types)
     end
 end
 
-function GetRandomBuildingMultipleTypes(player_name, entity_types)
+function GetRandomBuildingMultipleTypes(player_index, entity_types)
     local rand_list = {}
     for _,e_type in pairs(entity_types) do
-        local rand_building = GetRandomBuildingSingleType(player_name, e_type)
+        local rand_building = GetRandomBuildingSingleType(player_index, e_type)
         if (rand_building) then
             table.insert(rand_list, rand_building)
         end
@@ -598,7 +610,7 @@ function GetRandomBuildingMultipleTypes(player_name, entity_types)
     end
 end
 
-function GetRandomBuildingSingleType(player_name, entity_type, count)
+function GetRandomBuildingSingleType(player_index, entity_type, count)
 
     -- We only use this if there are lots of invalid entries, likely from destroyed buildings
     local count_internal = 0
@@ -613,18 +625,18 @@ function GetRandomBuildingSingleType(player_name, entity_type, count)
         return nil
     end
 
-    if (not global.oe.buildings[player_name][entity_type] or
-        (#global.oe.buildings[player_name][entity_type] == 0)) then
+    if (not global.oe.buildings[player_index][entity_type] or
+        (#global.oe.buildings[player_index][entity_type] == 0)) then
         -- log("GetRandomBuildingSingleType - none found " .. entity_type)
         return nil
     end
 
-    local rand_key = GetRandomKeyFromTable(global.oe.buildings[player_name][entity_type])
-    local random_building = global.oe.buildings[player_name][entity_type][rand_key]
+    local rand_key = GetRandomKeyFromTable(global.oe.buildings[player_index][entity_type])
+    local random_building = global.oe.buildings[player_index][entity_type][rand_key]
 
     if (not random_building or not random_building.valid) then
-        table.remove(global.oe.buildings[player_name][entity_type], rand_key)
-        return GetRandomBuildingSingleType(player_name, entity_type, count_internal-1)
+        table.remove(global.oe.buildings[player_index][entity_type], rand_key)
+        return GetRandomBuildingSingleType(player_index, entity_type, count_internal-1)
     else
         return random_building
     end
