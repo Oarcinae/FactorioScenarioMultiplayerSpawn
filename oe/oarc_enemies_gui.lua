@@ -39,7 +39,7 @@ end
 
 function OarcEnemiesGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
-    local player = game.players[event.element.player_index]
+    local player = game.players[event.player_index]
     local name = event.element.name
 
     if (name == "oarc_enemies") then
