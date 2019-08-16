@@ -451,7 +451,7 @@ function OarcEnemiesDoesChunkHaveSpawner(c_pos)
         end
     end
 
-    return true
+    return has_spawners
 end
 
 function OarcEnemiesBiterBaseBuilt(event)
