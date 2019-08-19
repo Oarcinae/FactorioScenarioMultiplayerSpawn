@@ -173,8 +173,10 @@ function BuildSiloAttempt(event)
 
     for k,v in pairs(global.siloPosition) do
         if (getDistance(epos, v) < 5) then
-            SendBroadcastMsg("Rocket silo has been built!")
-            return
+            if (event.created_entity.name ~= "entity-ghost") then
+                SendBroadcastMsg("Rocket silo has been built!")
+            end
+            return -- THIS MEANS WE SUCCESFULLY BUILT THE SILO (ghost or actual building.)
         end
     end
 

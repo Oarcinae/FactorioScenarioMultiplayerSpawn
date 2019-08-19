@@ -340,75 +340,8 @@ function OarcEnemiesChunkGenerated(event)
     end
 
     -- Save chunk info.
-    global.oe.chunk_map[c_pos.x][c_pos.y] = {player_building=false,
-                                                        near_building=false,
-                                                        valid_spawn=enough_land,
-                                                        enemy_spawners=spawners}
-end
-
-function OarcEnemiesChunkIsNearPlayerBuilding(c_pos)
-    if (global.oe.chunk_map[c_pos.x] == nil) then
-        global.oe.chunk_map[c_pos.x] = {}
-    end
-    if (global.oe.chunk_map[c_pos.x][c_pos.y] == nil) then
-        global.oe.chunk_map[c_pos.x][c_pos.y] = {player_building=false,
-                                                            near_building=true,
-                                                            valid_spawn=true,
-                                                            enemy_spawners={}}
-    else
-        global.oe.chunk_map[c_pos.x][c_pos.y].near_building = true
-    end
-end
-
-function OarcEnemiesChunkHasPlayerBuilding(position)
-    local c_pos = GetChunkPosFromTilePos(position)
-
-    for i=-OE_BUILDING_SAFE_AREA_RADIUS,OE_BUILDING_SAFE_AREA_RADIUS do
-        for j=-OE_BUILDING_SAFE_AREA_RADIUS,OE_BUILDING_SAFE_AREA_RADIUS do
-            OarcEnemiesChunkIsNearPlayerBuilding({x=c_pos.x+i,y=c_pos.y+j})
-        end
-    end
-
-end
-
-function OarcEnemiesIsChunkValidSpawn(c_pos)
-
-    -- Chunk should exist.
-    if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated(c_pos) == false) then
-        return false
-    end
-
-    -- Check entry exists.
-    if (global.oe.chunk_map[c_pos.x] == nil) then
-        return false
-    end
-    if (global.oe.chunk_map[c_pos.x][c_pos.y] == nil) then
-        return false
-    end
-
-    -- Get entry
-    local chunk = global.oe.chunk_map[c_pos.x][c_pos.y]
-
-    -- Check basic flags
-    if (chunk.player_building or chunk.near_building or not chunk.valid_spawn) then
-        return false
-    end
-
-    -- Check for spawners
-    if (not chunk.enemy_spawners or (#chunk.enemy_spawners == 0)) then
-        return false
-    end
-
-    -- Check visibility
-    for _,force in pairs(game.forces) do
-        if (force.name ~= "enemy") then
-            if (force.is_chunk_visible(game.surfaces[GAME_SURFACE_NAME], c_pos)) then
-                return false
-            end
-        end
-    end
-
-    return true
+    global.oe.chunk_map[c_pos.x][c_pos.y] = {valid_spawn=enough_land,
+                                                enemy_spawners=spawners}
 end
 
 -- Check if a given chunk has a spawner in it.
@@ -547,13 +480,6 @@ function OarcEnemiesTrackBuildings(e)
 
     -- Don't care about ghosts.
     if (e.name == "entity-ghost") then return end
-
-    if ((e.type ~= "car") and
-        (e.type ~= "logistic-robot") and
-        (e.type ~= "construction-robot") and
-        (e.type ~= "combat-robot")) then
-        OarcEnemiesChunkHasPlayerBuilding(e.position)
-    end
 
     if (e.type == "lab") or
         (e.type == "mining-drill") or

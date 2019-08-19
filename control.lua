@@ -196,7 +196,6 @@ end)
 
 script.on_event(defines.events.on_player_created, function(event)
     OarcEnemiesPlayerCreatedEvent(event)
-    OarcEnemiesCreateGui(event)
 
     local player = game.players[event.player_index]
 
@@ -210,6 +209,7 @@ script.on_event(defines.events.on_player_created, function(event)
     SeparateSpawnsPlayerCreated(event.player_index)
 
     InitOarcGuiTabs(player)
+    OarcEnemiesCreateGui(event)
 end)
 
 script.on_event(defines.events.on_player_removed, function(event)
