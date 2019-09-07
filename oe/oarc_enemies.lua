@@ -166,24 +166,24 @@ function InitOarcEnemies()
         attack_size_min = 1,
         attack_size_max = 150,
 
-        player_time_evo_factor = 0.5,
-        player_time_size_factor = 30,
+        player_time_evo_factor = 0.4,
+        player_time_size_factor = 40,
         player_time_peak_hours = 20,
 
         pollution_evo_factor = 0.3,
         pollution_size_factor = 80,
-        pollution_peak_amnt = 4000,
+        pollution_peak_amnt = 3000,
 
-        tech_evo_factor = 0.85,
-        tech_size_factor = 30,
+        tech_evo_factor = 0.6,
+        tech_size_factor = 40,
         tech_peak_count = 180,
 
         rand_evo_amnt = 0.15, -- Up to + this amount
         rand_size_amnt = 10, -- Up to + this amount
 
-        seconds_between_attacks_min = 5*60,
-        seconds_between_attacks_max = 30*60,
-        seconds_between_attacks_rand = 4*60,
+        seconds_between_attacks_min = 2*60,
+        seconds_between_attacks_max = 20*60,
+        seconds_between_attacks_rand = 1*60,
 
         radar_scan_attack_chance = 500, -- 1 in X change to trigger an attack due to a radar ping.
     }
@@ -340,8 +340,75 @@ function OarcEnemiesChunkGenerated(event)
     end
 
     -- Save chunk info.
-    global.oe.chunk_map[c_pos.x][c_pos.y] = {valid_spawn=enough_land,
+    global.oe.chunk_map[c_pos.x][c_pos.y] = {contains_building=false,
+                                                near_building=false,
+                                                valid_spawn=enough_land,
                                                 enemy_spawners=spawners}
+end
+
+function OarcEnemiesChunkIsNearPlayerBuilding(c_pos)
+    if (global.oe.chunk_map[c_pos.x] == nil) then
+        global.oe.chunk_map[c_pos.x] = {}
+    end
+    if (global.oe.chunk_map[c_pos.x][c_pos.y] == nil) then
+        global.oe.chunk_map[c_pos.x][c_pos.y] = {contains_building=false,
+                                                            near_building=true,
+                                                            valid_spawn=true,
+                                                            enemy_spawners={}}
+    else
+        global.oe.chunk_map[c_pos.x][c_pos.y].near_building = true
+    end
+end
+
+function OarcEnemiesChunkHasPlayerBuilding(position)
+    local c_pos = GetChunkPosFromTilePos(position)
+
+    for i=-OE_BUILDING_SAFE_AREA_RADIUS,OE_BUILDING_SAFE_AREA_RADIUS do
+        for j=-OE_BUILDING_SAFE_AREA_RADIUS,OE_BUILDING_SAFE_AREA_RADIUS do
+            OarcEnemiesChunkIsNearPlayerBuilding({x=c_pos.x+i,y=c_pos.y+j})
+        end
+    end
+
+end
+
+function OarcEnemiesFindFirstHiddenSpawn(c_pos)
+
+    -- Chunk should exist.
+    if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated(c_pos) == false) then
+        return false
+    end
+
+    -- Check entry exists.
+    if (global.oe.chunk_map[c_pos.x] == nil) then
+        return false
+    end
+    if (global.oe.chunk_map[c_pos.x][c_pos.y] == nil) then
+        return false
+    end
+
+    -- Get entry
+    local chunk = global.oe.chunk_map[c_pos.x][c_pos.y]
+
+    -- Check basic flags
+    if (chunk.contains_building or chunk.near_building or not chunk.valid_spawn) then
+        return false
+    end
+
+    -- Check for spawners
+    if (not chunk.enemy_spawners or (#chunk.enemy_spawners == 0)) then
+        return false
+    end
+
+    -- Check visibility
+    for _,force in pairs(game.forces) do
+        if (force.name ~= "enemy") then
+            if (force.is_chunk_visible(game.surfaces[GAME_SURFACE_NAME], c_pos)) then
+                return false
+            end
+        end
+    end
+
+    return true
 end
 
 -- Check if a given chunk has a spawner in it.
@@ -480,6 +547,13 @@ function OarcEnemiesTrackBuildings(e)
 
     -- Don't care about ghosts.
     if (e.name == "entity-ghost") then return end
+
+    if ((e.type ~= "car") and
+        (e.type ~= "logistic-robot") and
+        (e.type ~= "construction-robot") and
+        (e.type ~= "combat-robot")) then
+        OarcEnemiesChunkHasPlayerBuilding(e.position)
+    end
 
     if (e.type == "lab") or
         (e.type == "mining-drill") or
