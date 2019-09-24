@@ -2,7 +2,7 @@
 -- Jan 2018
 -- None of this is my code.
 
-require("locale/oarc_utils")
+require("lib/oarc_utils")
 
 commands.add_command("run", "change player speed bonus", function(command)
     local player = game.players[command.player_index];

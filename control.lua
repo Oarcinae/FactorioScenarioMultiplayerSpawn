@@ -1,14 +1,13 @@
 -- control.lua
--- Apr 2017
+-- Mar 2019
 
 -- Oarc's Separated Spawn Scenario
--- 
+--
 -- I wanted to create a scenario that allows you to spawn in separate locations
 -- From there, I ended up adding a bunch of other minor/major features
--- 
+--
 -- Credit:
---  RSO mod to RSO author - Orzelek - I contacted him via the forum
---  Tags - Taken from WOGs scenario 
+--  Tags - Taken from WOGs scenario
 --  Rocket Silo - Taken from Frontier as an idea
 --
 -- Feel free to re-use anything you want. It would be nice to give me credit
@@ -16,124 +15,99 @@
 
 
 
--- To keep the scenario more manageable I have done the following:
+-- To keep the scenario more manageable (for myself) I have done the following:
 --      1. Keep all event calls in control.lua (here)
---      2. Put all config options in config.lua
---      3. Put mods into their own files where possible (RSO has multiple)
+--      2. Put all config options in config.lua and provided an example-config.lua file too.
+--      3. Put other stuff into their own files where possible.
+--      4. Put all other files into lib folder
+--      5. Provided an examples folder for example/recommended map gen settings
 
 
 -- Generic Utility Includes
-require("locale/oarc_utils")
-require("locale/rso/rso_control")
-require("locale/frontier_silo")
-require("locale/tag")
-require("locale/game_opts")
+require("lib/oarc_utils")
+
+-- Other soft-mod type features.
+require("lib/frontier_silo")
+require("lib/tag")
+require("lib/game_opts")
+require("lib/player_list")
+require("lib/rocket_launch")
+require("lib/admin_commands")
+require("lib/regrowth_map")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
-require("locale/temp/rgcommand")
-require("locale/temp/helper_commands")
+-- require("lib/rgcommand")
+-- require("lib/helper_commands")
 
 -- Main Configuration File
 require("config")
 
+-- Save all config settings to global table.
+require("lib/oarc_global_cfg.lua")
+
 -- Scenario Specific Includes
-require("separate_spawns")
-require("separate_spawns_guis")
-require("regrowth_map")
+require("lib/separate_spawns")
+require("lib/separate_spawns_guis")
 
---------------------------------------------------------------------------------
--- Rocket Launch Event Code
--- Controls the "win condition"
---------------------------------------------------------------------------------
-function RocketLaunchEvent(event)
-    local force = event.rocket.force
-    
-    if event.rocket.get_item_count("satellite") == 0 then
-        for index, player in pairs(force.players) do
-            player.print("You launched the rocket, but you didn't put a satellite inside.")
-        end
-        return
-    end
+require("lib/oarc_gui_tabs")
 
-    if not global.satellite_sent then
-        global.satellite_sent = {}
-    end
+-- Create a new surface so we can modify map settings at the start.
+GAME_SURFACE_NAME="oarc"
 
-    if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1   
-    else
-        game.set_game_state{game_finished=true, player_won=true, can_continue=true}
-        global.satellite_sent[force.name] = 1
-    end
-    
-    for index, player in pairs(force.players) do
-        if player.gui.left.rocket_score then
-            player.gui.left.rocket_score.rocket_count.caption = tostring(global.satellite_sent[force.name])
-        else
-            local frame = player.gui.left.add{name = "rocket_score", type = "frame", direction = "horizontal", caption="Score"}
-            frame.add{name="rocket_count_label", type = "label", caption={"", "Satellites launched", ":"}}
-            frame.add{name="rocket_count", type = "label", caption=tostring(global.satellite_sent[force.name])}
-        end
-    end
-end
 
+-- I'm reverting my decision to turn the regrowth thing into a mod.
+remote.add_interface("oarc_regrowth",
+            {area_offlimits_chunkpos = MarkAreaSafeGivenChunkPos,
+            area_offlimits_tilepos = MarkAreaSafeGivenTilePos,
+            area_removal_tilepos = MarkAreaForRemoval,
+            trigger_immediate_cleanup = TriggerCleanup,
+            add_surface = RegrowthAddSurface})
+
+commands.add_command("trigger-map-cleanup",
+    "Force immediate removal of all expired chunks (unused chunk removal mod)",
+    ForceRemoveChunksCmd)
 
 --------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
 --------------------------------------------------------------------------------
 
-
 ----------------------------------------
--- On Init - only runs once the first 
+-- On Init - only runs once the first
 --   time the game starts
 ----------------------------------------
 script.on_init(function(event)
 
-    -- CreateLobbySurface() -- Currently unused, but have plans for future.
-    
-    -- Configures the map settings for enemies
-    -- This controls evolution growth factors and enemy expansion settings.
-    ConfigureAlienStartingParams()
+    -- FIRST
+    InitOarcConfig()
 
-    -- Here I create the game surface. I do this so that I don't have to worry
-    -- about the game menu settings and I can now generate a map from the command
-    -- line more easily!
-    if ENABLE_RSO then
-        CreateGameSurface(RSO_MODE)
-    else
-        CreateGameSurface(VANILLA_MODE)
+    -- Regrowth (always init so we can enable during play.)
+    RegrowthInit()
+
+    -- Create new game surface
+    CreateGameSurface()
+
+    -- MUST be before other stuff, but after surface creation.
+    InitSpawnGlobalsAndForces()
+
+    -- Frontier Silo Area Generation
+    if (global.ocfg.frontier_rocket_silo) then
+        SpawnSilosAndGenerateSiloAreas()
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        InitSpawnGlobalsAndForces()
-    end
-
-    if SILO_FIXED_POSITION then
-        SetFixedSiloPosition(SILO_POSITION)
-    else
-        SetRandomSiloPosition(SILO_NUM_SPAWNS)
-    end
-
-    if FRONTIER_ROCKET_SILO_MODE then
-        GenerateRocketSiloAreas(game.surfaces[GAME_SURFACE_NAME])
-    end
-
-    SetServerWelcomeMessages()
-
-    if ENABLE_REGROWTH or ENABLE_ABANDONED_BASE_REMOVAL then
-        OarcRegrowthInit()
-    end
-
+    -- Everyone do the shuffle. Helps avoid always starting at the same location.
+    global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
+    log("Vanilla spawns:")
+    log(serpent.block(global.vanillaSpawns))
 end)
 
 
 ----------------------------------------
--- Freeplay rocket launch info
--- Slightly modified for my purposes
+-- Rocket launch event
+-- Used for end game win conditions / unlocking late game stuff
 ----------------------------------------
 script.on_event(defines.events.on_rocket_launched, function(event)
-    if FRONTIER_ROCKET_SILO_MODE then
+    if global.ocfg.frontier_rocket_silo then
         RocketLaunchEvent(event)
     end
 end)
@@ -143,29 +117,21 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
-    if ENABLE_REGROWTH then
-        OarcRegrowthChunkGenerate(event.area.left_top)
-    end
 
-    if ENABLE_UNDECORATOR then
+    if global.ocfg.enable_regrowth then
+        RegrowthChunkGenerate(event)
+    end
+    if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
     end
 
-    if ENABLE_RSO then
-        RSO_ChunkGenerated(event)
-    end
-
-    if FRONTIER_ROCKET_SILO_MODE then
+    if global.ocfg.frontier_rocket_silo then
         GenerateRocketSiloChunk(event)
     end
 
-    if ENABLE_SEPARATE_SPAWNS and not USE_VANILLA_STARTING_SPAWN then
-        SeparateSpawnsGenerateChunk(event)
-    end
+    SeparateSpawnsGenerateChunk(event)
 
-    if not ENABLE_DEFAULT_SPAWN then
-        CreateHoldingPen(event.surface, event.area, 16, false)
-    end
+    CreateHoldingPen(event.surface, event.area, 16, 32)
 end)
 
 
@@ -173,176 +139,176 @@ end)
 -- Gui Click
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
-    if ENABLE_TAGS then
+
+    -- Don't interfere with other mod related stuff.
+    if (event.element.get_mod() ~= nil) then return end
+
+    if global.ocfg.enable_tags then
         TagGuiClick(event)
     end
 
-    if ENABLE_PLAYER_LIST then
+    if global.ocfg.enable_player_list then
         PlayerListGuiClick(event)
     end
 
-    if ENABLE_SEPARATE_SPAWNS then
-        WelcomeTextGuiClick(event)
-        SpawnOptsGuiClick(event)
-        SpawnCtrlGuiClick(event)
-        SharedSpwnOptsGuiClick(event)
-        BuddySpawnOptsGuiClick(event)
-        BuddySpawnWaitMenuClick(event)
-        BuddySpawnRequestMenuClick(event)
-        SharedSpawnJoinWaitMenuClick(event)
-    end
+    WelcomeTextGuiClick(event)
+    SpawnOptsGuiClick(event)
+    SpawnCtrlGuiClick(event)
+    SharedSpwnOptsGuiClick(event)
+    BuddySpawnOptsGuiClick(event)
+    BuddySpawnWaitMenuClick(event)
+    BuddySpawnRequestMenuClick(event)
+    SharedSpawnJoinWaitMenuClick(event)
+
+    ClickOarcGuiButton(event)
 
     GameOptionsGuiClick(event)
-
 end)
 
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
-    if ENABLE_SEPARATE_SPAWNS then
-        SpawnOptsRadioSelect(event)
-        SpawnCtrlGuiOptionsSelect(event)
-    end
+    SpawnOptsRadioSelect(event)
+    SpawnCtrlGuiOptionsSelect(event)
 end)
 
+script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
+    TabChangeOarcGui(event)
+end)
 
 ----------------------------------------
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_joined_game, function(event)
-
-    CreateGameOptionsGui(event)
-
     PlayerJoinedMessages(event)
-
-    if ENABLE_PLAYER_LIST then
-        CreatePlayerListGui(event)
-    end
-
-    if ENABLE_TAGS then
-        CreateTagGui(event)
-    end
-
+    ServerWriteFile("player_events", game.players[event.player_index].name .. " joined the game." .. "\n")
 end)
 
 script.on_event(defines.events.on_player_created, function(event)
-    
+    local player = game.players[event.player_index]
+
     -- Move the player to the game surface immediately.
-    -- May change this to Lobby in the future.
-    game.players[event.player_index].teleport(game.forces[MAIN_FORCE].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+    player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
 
-    if ENABLE_LONGREACH then
-        GivePlayerLongReach(game.players[event.player_index])
+    if global.ocfg.enable_long_reach then
+        GivePlayerLongReach(player)
     end
 
-    if not ENABLE_SEPARATE_SPAWNS then
-        PlayerSpawnItems(event)
-    else
-        SeparateSpawnsPlayerCreated(event)
-    end
+    SeparateSpawnsPlayerCreated(event.player_index)
+
+    InitOarcGuiTabs(player)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
-    if ENABLE_SEPARATE_SPAWNS then
-        SeparateSpawnsPlayerRespawned(event)        
-    end
-   
+    SeparateSpawnsPlayerRespawned(event)
+
     PlayerRespawnItems(event)
 
-    if ENABLE_LONGREACH then
+    if global.ocfg.enable_long_reach then
         GivePlayerLongReach(game.players[event.player_index])
-    end
-end)
-
-script.on_event(defines.events.on_pre_player_died, function(event)
-    if ENABLE_GRAVESTONE_ON_DEATH then
-        DropGravestoneChests(game.players[event.player_index])
     end
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
-    if ENABLE_GRAVESTONE_ON_LEAVING then
-        if (game.players[event.player_index].online_time <
-            ENABLE_GRAVESTONE_ON_LEAVING_TIME_MINS) then
-            DropGravestoneChests(game.players[event.player_index])
-        end
-    end 
-
-    if ENABLE_SEPARATE_SPAWNS then
-        FindUnusedSpawns(event)
-    end
+    ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
+    FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
+----------------------------------------
+-- On BUILD entity. Don't forget on_robot_built_entity too!
+----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
-    if ENABLE_AUTOFILL then
+    if global.ocfg.enable_autofill then
         Autofill(event)
     end
 
-    if ENABLE_REGROWTH then
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
+    if global.ocfg.enable_regrowth then
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.created_entity.position,
+                    2)
     end
 
     if ENABLE_ANTI_GRIEFING then
         SetItemBlueprintTimeToLive(event)
     end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
+
 end)
 
 
 ----------------------------------------
--- Shared vision, charts a small area around other players
+-- On script_raised_built. This should help catch mods that
+-- place items that don't count as player_built and robot_built.
+-- Specifically FARL.
+----------------------------------------
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.enable_regrowth then
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.entity.position,
+                    2)
+    end
+end)
+
+
+----------------------------------------
+-- On tick events. Stuff that needs to happen at regular intervals.
+-- Delayed events, delayed spawns, ...
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
-    if ENABLE_REGROWTH then
-        OarcRegrowthOnTick()
+    if global.ocfg.enable_regrowth then
+        RegrowthOnTick()
+        RegrowthForceRemovalOnTick()
     end
 
-    if ENABLE_ABANDONED_BASE_REMOVAL then
-        OarcRegrowthForceRemovalOnTick()
-    end
+    DelayedSpawnOnTick()
 
-    if ENABLE_SEPARATE_SPAWNS then
-        DelayedSpawnOnTick()
-    end
-
-    if FRONTIER_ROCKET_SILO_MODE then
-        DelayedSiloCreationOnTick()
+    if global.ocfg.frontier_rocket_silo then
+        DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
     end
 
 end)
 
 
 script.on_event(defines.events.on_sector_scanned, function (event)
-    if ENABLE_REGROWTH then
-        OarcRegrowthSectorScan(event)
+    if global.ocfg.enable_regrowth then
+        RegrowthSectorScan(event)
     end
 end)
+-- script.on_event(defines.events.on_sector_scanned, function (event)
+
+-- end)
 
 ----------------------------------------
--- Refreshes regrowth timers around an active timer
--- Refresh areas where stuff is built, and mark any chunks with player
--- built stuff as permanent.
+--
 ----------------------------------------
-if ENABLE_REGROWTH then
-
-    script.on_event(defines.events.on_robot_built_entity, function (event)
-        OarcRegrowthOffLimitsChunk(event.created_entity.position)
-    end)
-
-    script.on_event(defines.events.on_player_mined_entity, function(event)
-        OarcRegrowthCheckChunkEmpty(event)
-    end)
-    
-    script.on_event(defines.events.on_robot_mined_entity, function(event)
-        OarcRegrowthCheckChunkEmpty(event)
-    end)
-
-end
-
+script.on_event(defines.events.on_robot_built_entity, function (event)
+    if global.ocfg.enable_regrowth then
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    GAME_SURFACE_NAME,
+                    event.created_entity.position,
+                    2)
+    end
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
+end)
 
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
+-- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
-    if (ENABLE_SHARED_TEAM_CHAT) then
+    if (event.player_index) then
+        ServerWriteFile("server_chat", game.players[event.player_index].name .. ": " .. event.message .. "\n")
+    end
+    if (global.ocfg.enable_shared_chat) then
         if (event.player_index ~= nil) then
             ShareChatBetweenForces(game.players[event.player_index], event.message)
         end
@@ -354,8 +320,43 @@ end)
 -- This is where you can permanently remove researched techs
 ----------------------------------------
 script.on_event(defines.events.on_research_finished, function(event)
-    if FRONTIER_ROCKET_SILO_MODE then
+
+    -- Never allows players to build rocket-silos in "frontier" mode.
+    if global.ocfg.frontier_rocket_silo and not global.ocfg.frontier_allow_build then
         RemoveRecipe(event.research.force, "rocket-silo")
     end
+
+    if global.ocfg.lock_goodies_rocket_launch and
+        (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
+        RemoveRecipe(event.research.force, "productivity-module-3")
+        RemoveRecipe(event.research.force, "speed-module-3")
+    end
+
+    if global.ocfg.enable_loaders then
+        EnableLoaders(event)
+    end
+end)
+
+----------------------------------------
+-- On Entity Spawned and On Biter Base Built
+-- This is where I modify biter spawning based on location and other factors.
+----------------------------------------
+script.on_event(defines.events.on_entity_spawned, function(event)
+    if (global.ocfg.modified_enemy_spawning) then
+        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+script.on_event(defines.events.on_biter_base_built, function(event)
+    if (global.ocfg.modified_enemy_spawning) then
+        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+
+----------------------------------------
+-- On Corpse Timed Out
+-- Save player's stuff so they don't lose it if they can't get to the corpse fast enough.
+----------------------------------------
+script.on_event(defines.events.on_character_corpse_expired, function(event)
+    DropGravestoneChestFromCorpse(event.corpse)
 end)
 
