@@ -362,7 +362,7 @@ MIN_ONLINE_TIME_IN_MINUTES = 15
 -- Number of silos found in the wild.
 -- These will spawn in a circle at given distance from the center of the map
 -- If you set this number too high, you'll have a lot of delay at the start of the game.
-SILO_NUM_SPAWNS = 3
+SILO_NUM_SPAWNS = 5
 
 -- How many chunks away from the center of the map should the silo be spawned
 SILO_CHUNK_DISTANCE = 200
