@@ -38,6 +38,7 @@ function InitOarcConfig()
         global.ocfg.enable_player_list = ENABLE_PLAYER_LIST
         global.ocfg.list_offline_players = PLAYER_LIST_OFFLINE_PLAYERS
         global.ocfg.enable_shared_team_vision = ENABLE_SHARED_TEAM_VISION
+        global.ocfg.enable_regrowth = ENABLE_REGROWTH
         global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
         global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
         global.ocfg.lock_goodies_rocket_launch = LOCK_GOODIES_UNTIL_ROCKET_LAUNCH

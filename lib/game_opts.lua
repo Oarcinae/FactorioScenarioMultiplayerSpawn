@@ -80,6 +80,9 @@ function CreateGameOptionsTab(tab_container, player)
     if (global.ocfg.enable_player_list) then
         soft_mods_string = soft_mods_string .. ", Player List"
     end
+    if (global.ocfg.enable_regrowth) then
+        soft_mods_string = soft_mods_string .. ", Regrowth"
+    end
 
     local game_info_str = "Soft Mods Enabled: " .. soft_mods_string
 
@@ -104,7 +107,7 @@ function CreateGameOptionsTab(tab_container, player)
     if (global.ocfg.frontier_rocket_silo) then
         game_info_str = game_info_str.."\n".."Silos are only placeable in certain areas on the map!"
     end
-    if (game.active_mods["unused-chunk-removal"]) then
+    if (global.ocfg.enable_regrowth) then
         game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
     end
     if (ENABLE_POWER_ARMOR_QUICK_START) then

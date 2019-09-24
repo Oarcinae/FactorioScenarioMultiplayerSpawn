@@ -481,7 +481,7 @@ function CreateGameSurface()
     local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
 
     -- Add surface and safe areas
-    if (game.active_mods["unused-chunk-removal"]) then
+    if global.ocfg.enable_regrowth then
         remote.call("oarc_regrowth", "add_surface", s.index)
         remote.call("oarc_regrowth", "area_offlimits_chunkpos", s.index, {x=0,y=0}, 10)
     end

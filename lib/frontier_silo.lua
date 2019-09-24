@@ -127,7 +127,7 @@ local function CreateRocketSilo(surface, siloPosition, force)
                                                 icon={type="item",name="rocket-silo"}})
 
     -- Make silo safe from being removed.
-    if (game.active_mods["unused-chunk-removal"]) then
+    if global.ocfg.enable_regrowth then
         remote.call("oarc_regrowth",
                         "area_offlimits_tilepos",
                         surface.index,

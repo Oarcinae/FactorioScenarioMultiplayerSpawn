@@ -1,5 +1,5 @@
 -- example-config.lua (Rename this file to config.lua to use it)
--- July 24 2019 (updated on)
+-- Sep 24 2019 (updated on)
 -- Configuration Options
 --
 -- You should be able to leave most of the settings here as defaults.
@@ -8,7 +8,6 @@
 --------------------------------------------------------------------------------
 -- Messages
 -- You will want to change some of these to be your own.
--- Make sure SERVER_OWNER_IS_OARC = false
 --------------------------------------------------------------------------------
 
 -- This stuff is shown in the welcome GUI and Info panel. Make sure it's valid.
@@ -18,7 +17,7 @@ SERVER_MSG = "Rules: Be polite. Ask before changing other players's stuff. Have 
 "This server is running a custom scenario that allows individual starting areas on the map."
 
 SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
-"0.17 experimental release. New fixes, tweaks and features!\n"..
+"0.17 stable release. Regrowth back to softmod!\n"..
 "This scenario gives you and/or your friends your own starting area.\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
@@ -63,7 +62,7 @@ ENABLE_LONGREACH = true
 ENABLE_AUTOFILL = true
 
 -- Enable vanilla loaders
-ENABLE_LOADERS = false
+ENABLE_LOADERS = true
 
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
@@ -72,8 +71,11 @@ PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.
 -- Enable shared vision between teams (all teams are COOP regardless)
 ENABLE_SHARED_TEAM_VISION = true
 
+-- Cleans up unused chunks periodically. Helps keep map size down.
+ENABLE_REGROWTH = true
+
 -- Only works if you have the Unused Chunk Removal mod installed.
-ENABLE_ABANDONED_BASE_REMOVAL = false
+ENABLE_ABANDONED_BASE_REMOVAL = true
 
 -- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
@@ -205,18 +207,18 @@ OARC_CFG = {
     {
         -- Safe area has no aliens
         -- This is the radius in tiles of safe area.
-        safe_radius = CHUNK_SIZE*20,
+        safe_radius = CHUNK_SIZE*8,
 
         -- Warning area has significantly reduced aliens
         -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*30,
+        warn_radius = CHUNK_SIZE*16,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 20,
 
         -- Danger area has slightly reduce aliens
         -- This is the radius in tiles of danger area.
-        danger_radius = CHUNK_SIZE*50,
+        danger_radius = CHUNK_SIZE*32,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         danger_reduction = 5,
@@ -253,7 +255,7 @@ OARC_CFG = {
     {
         ["iron-ore"] =
         {
-            amount = 1500,
+            amount = 1800,
             size = 16,
             x_offset = -29,
             y_offset = 16
@@ -337,7 +339,7 @@ MAIN_FORCE = "Main Force"
 -- Enable if players can allow others to join their base.
 -- And specify how many including the host are allowed.
 ENABLE_SHARED_SPAWNS = true
-MAX_PLAYERS_AT_SHARED_SPAWN = 0
+MAX_PLAYERS_AT_SHARED_SPAWN = 3
 
 -- Share local team chat with all teams
 -- This makes it so you don't have to use /s
@@ -405,11 +407,13 @@ AUTOFILL_TURRET_AMMO_QUANTITY = 10
 -- ANTI-Griefing stuff ( I don't personally maintain this as I don't care for it.)
 -- These things were added from other people's requests/changes and are disabled by default.
 --------------------------------------------------------------------------------
--- Enable this to disable some basic things like friendly fire, deconstructing from map view, etc.
-ENABLE_ANTI_GRIEFING = true
+-- Enable this to disable deconstructing from map view, and setting a time limit
+-- on ghost placements.
+ENABLE_ANTI_GRIEFING = false
 
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
-GHOST_TIME_TO_LIVE = 0 * TICKS_PER_MINUTE -- set to 0 for infinite ghost life
+-- ONLY has an effect if ENABLE_ANTI_GRIEFING is true!
+GHOST_TIME_TO_LIVE = 10 * TICKS_PER_MINUTE
 
 --------------------------------------------------------------------------------
 -- This turns on writing chat and certain events to specific files so that I can

@@ -121,7 +121,7 @@ function FindUnusedSpawns(player, remove_player)
             -- Unused Chunk Removal mod (aka regrowth)
             if (global.ocfg.enable_abandoned_base_removal and
                 (not nearOtherSpawn) and
-                game.active_mods["unused-chunk-removal"]) then
+                global.ocfg.enable_regrowth) then
 
                 if (global.uniqueSpawns[player.name].vanilla) then
                     log("Returning a vanilla spawn back to available.")
