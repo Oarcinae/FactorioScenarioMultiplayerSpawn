@@ -4,8 +4,8 @@ A custom scenario for allowing separate spawn locations in multiplayer. Designed
 ## Read the WIKI
 The github wiki page will have the most up to date information. If you have questions, go there first, otherwise just ask.
 
-## WARNING! STILL IN DEVELOPMENT!
-I'm mostly cleaning up my 0.17 work at this point, it seems pretty stable. There could still be some game breaking bugs in there based on your config settings, but I'm feeling pretty good about it overall now. My own home server ran for 20+ game hours with a few consistent players so it seems playable now.
+## Stable Version (Factorio v0.17.69)
+At this point master branch is basically stable, I'll help with bug fixes and minor features but I have no large changes planned.
 
 ## Credit
 Several other portions of the code (tags, frontier style rocket silo) have also been adapted from other scenario code.
