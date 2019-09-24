@@ -27,7 +27,7 @@ function RocketLaunchEvent(event)
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
 
-        for name,player in pairs(game.connected_players) do
+        for name,player in pairs(game.players) do
             SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
         end
     end
