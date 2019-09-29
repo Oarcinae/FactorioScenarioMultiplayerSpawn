@@ -483,7 +483,7 @@ function CreateGameSurface()
     -- Add surface and safe areas
     if global.ocfg.enable_regrowth then
         remote.call("oarc_regrowth", "add_surface", s.index)
-        remote.call("oarc_regrowth", "area_offlimits_chunkpos", s.index, {x=0,y=0}, 10)
+        remote.call("oarc_regrowth", "area_offlimits_chunkpos", s.index, {x=0,y=0}, 5)
     end
 end
 

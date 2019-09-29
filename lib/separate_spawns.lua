@@ -550,6 +550,12 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn
 
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    game.surfaces[GAME_SURFACE_NAME].index,
+                    spawn,
+                    math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+
     else
         log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
         SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)

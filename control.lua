@@ -221,9 +221,12 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 
     if global.ocfg.enable_regrowth then
+        local s_index = event.created_entity.surface.index
+        if (global.rg[s_index] == nil) then return end
+
         remote.call("oarc_regrowth",
                     "area_offlimits_tilepos",
-                    GAME_SURFACE_NAME,
+                    s_index,
                     event.created_entity.position,
                     2)
     end
@@ -246,9 +249,12 @@ end)
 ----------------------------------------
 script.on_event(defines.events.script_raised_built, function(event)
     if global.ocfg.enable_regrowth then
+        local s_index = event.entity.surface.index
+        if (global.rg[s_index] == nil) then return end
+
         remote.call("oarc_regrowth",
                     "area_offlimits_tilepos",
-                    GAME_SURFACE_NAME,
+                    s_index,
                     event.entity.position,
                     2)
     end
@@ -288,9 +294,12 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
+        local s_index = event.created_entity.surface.index
+        if (global.rg[s_index] == nil) then return end
+
         remote.call("oarc_regrowth",
                     "area_offlimits_tilepos",
-                    GAME_SURFACE_NAME,
+                    s_index,
                     event.created_entity.position,
                     2)
     end
@@ -298,6 +307,23 @@ script.on_event(defines.events.on_robot_built_entity, function (event)
         BuildSiloAttempt(event)
     end
 end)
+
+script.on_event(defines.events.on_player_built_tile, function (event)
+    if global.ocfg.enable_regrowth then
+        local s_index = event.surface_index
+        if (global.rg[s_index] == nil) then return end
+
+        for k,v in pairs(event.tiles) do
+            remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    s_index,
+                    v.position,
+                    2)
+        end
+    end
+end)
+
+
 
 
 ----------------------------------------
