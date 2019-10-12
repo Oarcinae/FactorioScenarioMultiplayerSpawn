@@ -519,6 +519,8 @@ function InitSpawnGlobalsAndForces()
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreateForce(global.ocfg.main_force)
     main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
+
+    global.oe.tech_levels[global.ocfg.main_force] = 0
 end
 
 function DoesPlayerHaveCustomSpawn(player)
