@@ -113,8 +113,11 @@ function ProcessAttackCleanupInvalidGroups(key, attack)
 
     elseif (attack.group.state == defines.group_state.wander_in_group) then
         log("ProcessAttackCleanupInvalidGroups - Group done (wandering)?")
-        EnemyGroupBuildBaseThenWander(attack.group, attack.group.position)
-        global.oe.attacks[key].process_stg = OE_PROCESS_STG_BUILD_BASE
+        EnemyGroupTurnIntoTrees(attack.group)
+        table.remove(global.oe.attacks, key)
+
+        -- EnemyGroupBuildBaseThenWander(attack.group, attack.group.position)
+        -- global.oe.attacks[key].process_stg = OE_PROCESS_STG_BUILD_BASE
         return true
     end
 

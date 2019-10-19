@@ -712,8 +712,11 @@ function OarcEnemiesUnitRemoveFromGroupEvent(event)
         return
     end
 
+    -- Wololo! You're now a tree
+    EnemyUnitTurnIntoTree(event.unit)
+
     -- Otherwise, ask the unit to build a base.
-    EnemyUnitBuildBaseThenWander(event.unit, event.unit.position)
+    -- EnemyUnitBuildBaseThenWander(event.unit, event.unit.position)
 end
 
 function FindAttackKeyFromGroupIdNumber(id)
@@ -886,4 +889,23 @@ function EnemyUnitBuildBaseThenWander(unit, target_pos)
 
     -- Temporary fix?
     temp_group.set_command(compound_command)
+end
+
+
+function EnemyGroupTurnIntoTrees(group)
+    if (group and group.members) then
+        for _,unit in pairs(group.members) do
+            EnemyUnitTurnIntoTree(unit)
+        end
+    end
+
+end
+
+function EnemyUnitTurnIntoTree(unit)
+    if (unit and unit.position and unit.surface) then
+        local pos = unit.position
+        local s = unit.surface
+        unit.destroy()
+        s.create_entity({name="tree-02", amount=1, position=pos})
+    end
 end

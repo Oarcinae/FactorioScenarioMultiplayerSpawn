@@ -170,7 +170,7 @@ function GetEnemyGroup(args)
 
         e,s = GetTechLevelEvoSize(tech_levels)
         -- Cap evo effect based on play time.
-        time_cap = (ticks_online*TICKS_PER_HOUR)/tech_time_peak_hours
+        time_cap = (ticks_online*TICKS_PER_HOUR)/p.tech_time_peak_hours
         if (time_cap < 1) then
             e = e*time_cap
             s = s*time_cap
