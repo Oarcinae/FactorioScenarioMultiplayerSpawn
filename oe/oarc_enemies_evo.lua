@@ -169,12 +169,21 @@ function GetEnemyGroup(args)
         size = size + s
 
         e,s = GetTechLevelEvoSize(tech_levels)
+        -- Cap evo effect based on play time.
+        time_cap = (ticks_online*TICKS_PER_HOUR)/tech_time_peak_hours
+        if (time_cap < 1) then
+            e = e*time_cap
+            s = s*time_cap
+        end
         evo = evo + e
         size = size + s
+
 
     -- Support only force given, no player (should be RARE)
     elseif (args.force_index) then
         local tech_levels = global.oe.tech_levels[args.force_index]
+
+        log("ERROR - This shouldn't happen. GetEnemyGroup() no player info???")
 
         e,s = GetTechLevelEvoSize(tech_levels)
         evo = evo + e

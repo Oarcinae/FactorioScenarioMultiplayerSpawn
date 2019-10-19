@@ -238,7 +238,7 @@ function ProcessAttackFindSpawn(key, attack)
         elseif (attack.target_chunk) then
             c_pos = attack.target_chunk
         end
-        local spawns = SpiralSearch(c_pos, OE_ATTACK_SEARCH_RADIUS_CHUNKS, 5, OarcEnemiesDoesChunkHaveSpawner)
+        local spawns = SpiralSearch(c_pos, OE_ATTACK_SEARCH_RADIUS_CHUNKS, 10, OarcEnemiesFindFirstHiddenSpawn)
 
         if (spawns ~= nil) then
             global.oe.attacks[key].spawn_chunk = spawns[GetRandomKeyFromTable(spawns)]

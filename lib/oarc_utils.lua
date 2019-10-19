@@ -548,6 +548,11 @@ function CreateGameSurface()
         end
     end
 
+    -- If Oarc Enemies are enabled, make sure to turn off enemy spawning!
+    if (global.oe) then
+        nauvis_settings.autoplace_controls["enemy-base"].frequency = 0
+    end
+
     -- Create new game surface
     local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
 

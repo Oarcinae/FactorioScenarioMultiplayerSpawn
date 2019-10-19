@@ -159,33 +159,34 @@ function InitOarcEnemies()
     global.oe.attacks = {}
 
     -- DEBUG helpers
-    global.oe_render_paths = true
+    global.oe_render_paths = false
 
     -- These control all evo/size scaling and stuff.
     global.oe_params = {
         attack_size_min = 1,
         attack_size_max = 150,
 
-        player_time_evo_factor = 0.4,
+        player_time_evo_factor = 0.3,
         player_time_size_factor = 40,
-        player_time_peak_hours = 20,
+        player_time_peak_hours = 30,
 
         pollution_evo_factor = 0.3,
         pollution_size_factor = 80,
-        pollution_peak_amnt = 3000,
+        pollution_peak_amnt = 4000,
 
         tech_evo_factor = 0.6,
         tech_size_factor = 40,
-        tech_peak_count = 180,
+        tech_peak_count = 300, -- Should be close to the total number of techs probably.
+        tech_time_peak_hours = 20, -- Limit evo based on player play time.
 
-        rand_evo_amnt = 0.15, -- Up to + this amount
+        rand_evo_amnt = 0.10, -- Up to + this amount
         rand_size_amnt = 10, -- Up to + this amount
 
-        seconds_between_attacks_min = 2*60,
-        seconds_between_attacks_max = 20*60,
-        seconds_between_attacks_rand = 1*60,
+        seconds_between_attacks_min = 8*60,
+        seconds_between_attacks_max = 30*60,
+        seconds_between_attacks_rand = 2*60,
 
-        radar_scan_attack_chance = 500, -- 1 in X change to trigger an attack due to a radar ping.
+        radar_scan_attack_chance = 1000, -- 1 in X change to trigger an attack due to a radar ping.
     }
 
     -- Copied from wave defense
@@ -282,8 +283,8 @@ function OarcEnemiesPlayerCreatedEvent(event)
     if (game.players[event.player_index] == nil) then return end
 
     if (global.oe.player_timers[event.player_index] == nil) then
-        global.oe.player_timers[event.player_index] = {character=GetRandomizedPlayerTimer(0, 60*10),
-                                             generic=GetRandomizedPlayerTimer(0, 0)}
+        global.oe.player_timers[event.player_index] = {character=GetRandomizedPlayerTimer(0, 60*45),
+                                                        generic=GetRandomizedPlayerTimer(0, 60*30)}
     end
 
     if (global.oe.buildings[event.player_index] == nil) then
@@ -395,9 +396,9 @@ function OarcEnemiesFindFirstHiddenSpawn(c_pos)
     end
 
     -- Check for spawners
-    if (not chunk.enemy_spawners or (#chunk.enemy_spawners == 0)) then
-        return false
-    end
+    -- if (not chunk.enemy_spawners or (#chunk.enemy_spawners == 0)) then
+    --     return false
+    -- end
 
     -- Check visibility
     for _,force in pairs(game.forces) do
