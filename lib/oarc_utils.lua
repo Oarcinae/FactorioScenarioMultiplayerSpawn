@@ -925,8 +925,8 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile)
             end
 
             -- Create a circle of trees around the spawn point.
-            if ((distVar < tileRadSqr-200) and
-                (distVar > tileRadSqr-400)) then
+            if ((distVar < tileRadSqr-100) and
+                (distVar > tileRadSqr-500)) then
                 surface.create_entity({name="tree-02", amount=1, position={i, j}})
             end
         end
@@ -976,14 +976,19 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, fillTile)
     for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
         for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
-            -- This ( X^2 + Y^2 ) is used to calculate if something
-            -- is inside a circle area.
-            local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
+            if (j == centerPos.y-1) or (j == centerPos.y) or (j == centerPos.y+1) then
 
-            -- Create a circle of water
-            if ((distVar < tileRadSqr+(1500*global.ocfg.spawn_config.gen_settings.moat_size_modifier)) and
-                (distVar > tileRadSqr)) then
-                table.insert(waterTiles, {name = "water", position ={i,j}})
+            else
+
+                -- This ( X^2 + Y^2 ) is used to calculate if something
+                -- is inside a circle area.
+                local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
+
+                -- Create a circle of water
+                if ((distVar < tileRadSqr+(1500*global.ocfg.spawn_config.gen_settings.moat_size_modifier)) and
+                    (distVar > tileRadSqr)) then
+                    table.insert(waterTiles, {name = "water", position ={i,j}})
+                end
             end
 
             -- Enforce land inside the edges of the circle to make sure it's
