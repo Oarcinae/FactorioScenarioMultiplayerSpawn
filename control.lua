@@ -52,6 +52,9 @@ require("lib/separate_spawns_guis")
 
 require("lib/oarc_gui_tabs")
 
+-- compatibility with mods
+require("compat/factoriomaps")
+
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
 
@@ -99,6 +102,12 @@ script.on_init(function(event)
     global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
     log("Vanilla spawns:")
     log(serpent.block(global.vanillaSpawns))
+
+    Compat.handle_factoriomaps()
+end)
+
+script.on_load(function()
+	Compat.handle_factoriomaps()
 end)
 
 
