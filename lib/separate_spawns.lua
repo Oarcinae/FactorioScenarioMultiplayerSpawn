@@ -220,7 +220,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
                 RemoveDecorationsArea(surface, chunkArea)
 
-                local fill_tile = "grass-1"
+                local fill_tile = "landfill"
                 if (game.active_mods["oarc-restricted-build"]) then
                     fill_tile = global.ocfg.locked_build_area_tile
                 end
@@ -591,14 +591,18 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     if (not delayedSpawn.vanilla) then
 
+        -- Generate water strip only if we don't have a moat.
+        if (not delayedSpawn.moat) then
+            local water_data = global.ocfg.spawn_config.water
+            CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
+                            {x=delayedSpawn.pos.x+water_data.x_offset, y=delayedSpawn.pos.y+water_data.y_offset},
+                            water_data.length)
+            CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
+                            {x=delayedSpawn.pos.x+water_data.x_offset, y=delayedSpawn.pos.y+water_data.y_offset+1},
+                            water_data.length)
+        end
+
         -- Create the spawn resources here
-        local water_data = global.ocfg.spawn_config.water
-        CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
-                        {x=delayedSpawn.pos.x+water_data.x_offset, y=delayedSpawn.pos.y+water_data.y_offset},
-                        water_data.length)
-        CreateWaterStrip(game.surfaces[GAME_SURFACE_NAME],
-                        {x=delayedSpawn.pos.x+water_data.x_offset, y=delayedSpawn.pos.y+water_data.y_offset+1},
-                        water_data.length)
         GenerateStartingResources(game.surfaces[GAME_SURFACE_NAME], delayedSpawn.pos)
 
     end
