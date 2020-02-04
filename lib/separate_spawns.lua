@@ -629,14 +629,16 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-4})
         SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-3})
         SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2})
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-4}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-4}, "LEFT")
 
         SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+2})
         SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+3})
         SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+4})
         SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+5})
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+3}, "LEFT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+3}, "RIGHT")
 
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+41, y=delayedSpawn.pos.y-4}, "RIGHT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+41, y=delayedSpawn.pos.y+3}, "LEFT")
     end
 end
 

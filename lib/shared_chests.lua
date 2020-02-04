@@ -283,6 +283,8 @@ function CreateSharedItemsGuiTab(tab_container, player)
     ApplyStyle(scrollFrame, my_shared_item_list_fixed_width_style)
     scrollFrame.horizontal_scroll_policy = "never"
 
+    AddLabel(scrollFrame, "share_items_info", "Place items into the yellow storage chests to share. Request items from the blue requestor chests to pull out items.", my_longer_label_style)
+
     AddLabel(scrollFrame, "share_items_title_msg", "Shared Items:", my_label_header_style)
 
     for itemName,itemCount in pairs(global.shared_items) do
