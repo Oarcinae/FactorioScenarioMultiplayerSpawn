@@ -34,13 +34,3 @@ function CreatePlayerListGuiTab(tab_container, player)
         end
     end
 end
-
-function PlayerListGuiClick(event)
-    if not (event and event.element and event.element.valid) then return end
-    local player = game.players[event.player_index]
-    local name = event.element.name
-
-    if (name == "playerList") then
-        ExpandPlayerListGui(player)
-    end
-end

@@ -62,6 +62,11 @@ my_player_list_fixed_width_style = {
     maximal_width = 400,
     maximal_height = 200
 }
+my_shared_item_list_fixed_width_style = {
+    minimal_width = 200,
+    maximal_width = 600,
+    maximal_height = 600
+}
 my_player_list_admin_style = {
     font = "default-semibold",
     font_color = {r=1,g=0.5,b=0.5},

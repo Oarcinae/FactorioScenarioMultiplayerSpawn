@@ -34,6 +34,7 @@ require("lib/player_list")
 require("lib/rocket_launch")
 require("lib/admin_commands")
 require("lib/regrowth_map")
+require("lib/shared_chests")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -156,10 +157,6 @@ script.on_event(defines.events.on_gui_click, function(event)
         TagGuiClick(event)
     end
 
-    if global.ocfg.enable_player_list then
-        PlayerListGuiClick(event)
-    end
-
     WelcomeTextGuiClick(event)
     SpawnOptsGuiClick(event)
     SpawnCtrlGuiClick(event)
@@ -204,6 +201,16 @@ script.on_event(defines.events.on_player_created, function(event)
     SeparateSpawnsPlayerCreated(event.player_index)
 
     InitOarcGuiTabs(player)
+
+    SharedChestsSpawnInput(player, {x=0, y=0-5})
+    SharedChestsSpawnInput(player, {x=0, y=0-4})
+    SharedChestsSpawnInput(player, {x=0, y=0-3})
+    SharedChestsSpawnInput(player, {x=0, y=0-2})
+
+    SharedChestsSpawnOutput(player, {x=0, y=0+2})
+    SharedChestsSpawnOutput(player, {x=0, y=0+3})
+    SharedChestsSpawnOutput(player, {x=0, y=0+4})
+    SharedChestsSpawnOutput(player, {x=0, y=0+5})
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -286,6 +293,7 @@ script.on_event(defines.events.on_tick, function(event)
         DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
     end
 
+    SharedChestsOnTick()
 end)
 
 

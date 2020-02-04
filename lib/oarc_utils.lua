@@ -563,6 +563,33 @@ function CreateGameSurface()
     end
 end
 
+function CreateTileArrow(surface, pos, type)
+
+    tiles = {}
+
+    if (type == "LEFT") then
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+1, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+2, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+3, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x, pos.y+1}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x+1, pos.y+1}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x+2, pos.y+1}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x+3, pos.y+1}})
+    elseif (type == "RIGHT") then
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x+1, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x+2, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-right", position = {pos.x+3, pos.y}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x, pos.y+1}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+1, pos.y+1}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+2, pos.y+1}})
+        table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+3, pos.y+1}})
+    end
+    
+    surface.set_tiles(tiles, true)
+end
+
 --------------------------------------------------------------------------------
 -- Functions for removing/modifying enemies
 --------------------------------------------------------------------------------
