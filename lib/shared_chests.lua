@@ -143,10 +143,10 @@ function SharedChestsTallyRequests()
         end
     end
 
-    log("PRE-CAP requests:")
-    log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
-    log("SHARED_REQ: " .. serpent.block(global.shared_requests))
-    log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
+    -- log("PRE-CAP requests:")
+    -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
+    -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
+    -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
 
     -- If demand is more than supply, limit each player's total item request to shared amount
     for reqName,reqTally in pairs(global.shared_requests) do
@@ -156,7 +156,7 @@ function SharedChestsTallyRequests()
 
         -- No shared items means nothing to supply.
         if (global.shared_items[reqName] == nil) or (global.shared_items[reqName] == 0) then
-            log("Cap cause no shared items...")
+            -- log("Cap cause no shared items...")
             mustCap = true
             cap = 0
 
@@ -164,8 +164,8 @@ function SharedChestsTallyRequests()
         elseif (global.shared_requests_totals[reqName] > global.shared_items[reqName]) then
             mustCap = true
             cap = math.floor(global.shared_items[reqName] / TableLength(global.shared_requests[reqName]))
-            log("Cap shared " .. global.shared_items[reqName] .. " / " .. TableLength(global.shared_requests[reqName]) .. " = " .. cap)
-            log(serpent.block(global.shared_requests[reqName]))
+            -- log("Cap shared " .. global.shared_items[reqName] .. " / " .. TableLength(global.shared_requests[reqName]) .. " = " .. cap)
+            -- log(serpent.block(global.shared_requests[reqName]))
 
             -- In the case where we are rounding down to 0, let's bump the minimum distribution to 1.
             if (cap == 0) then
@@ -183,10 +183,10 @@ function SharedChestsTallyRequests()
         end
     end
 
-    log("POST-CAP requests:")
-    log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
-    log("SHARED_REQ: " .. serpent.block(global.shared_requests))
-    log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
+    -- log("POST-CAP requests:")
+    -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
+    -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
+    -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
 end
 
 
@@ -225,7 +225,7 @@ function SharedChestsDistributeRequests()
                                 local chestInv = chestEntity.get_inventory(defines.inventory.chest) 
                                 if chestInv.can_insert({name=req.name}) then
 
-                                    log("INSERT: " .. math.min(allowedAmount, global.shared_items[req.name]))
+                                    -- log("INSERT: " .. math.min(allowedAmount, global.shared_items[req.name]))
                                     local amnt = chestInv.insert({name=req.name, count=math.min(allowedAmount, global.shared_items[req.name])})
                                     global.shared_items[req.name] = global.shared_items[req.name] - amnt
                                     global.shared_requests[req.name][chestInfo.player] = global.shared_requests[req.name][chestInfo.player] - amnt
@@ -252,7 +252,7 @@ function SharedChestsOnTick()
     -- Every second, we check the input chests and deposit stuff.
     if ((game.tick % (60)) == 37) then
         SharedChestsDepositAll()
-        log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
+        -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
     end
 
     -- Every second + tick, we check the output chests for requests
@@ -263,10 +263,10 @@ function SharedChestsOnTick()
     -- Every second + 2 ticks, we distribute to the output chests.
     if ((game.tick % (60)) == 39) then
         SharedChestsDistributeRequests()
-        log("POST DISTRIBUTE: ")
-        log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
-        log("SHARED_REQ: " .. serpent.block(global.shared_requests))
-        log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
+        -- log("POST DISTRIBUTE: ")
+        -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
+        -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
+        -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
     end
 
     -- Shuffle chests to avoid having the same chests filled first every time.
