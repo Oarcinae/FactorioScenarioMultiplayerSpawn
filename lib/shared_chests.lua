@@ -268,11 +268,6 @@ function SharedChestsOnTick()
         -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
         -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
     end
-
-    -- Shuffle chests to avoid having the same chests filled first every time.
-    if ((game.tick % (60)) == 40) then
-        global.shared_chests = FYShuffle(global.shared_chests)
-    end
 end
 
 
