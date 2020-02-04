@@ -110,7 +110,7 @@ function CreateGameOptionsTab(tab_container, player)
     if (global.ocfg.enable_regrowth) then
         game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
     end
-    if (ENABLE_POWER_ARMOR_QUICK_START) then
+    if (global.ocfg.enable_power_armor_start) then
         game_info_str = game_info_str.."\n".."Power armor quick start enabled."
     end
     if (global.ocfg.lock_goodies_rocket_launch) then

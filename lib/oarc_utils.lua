@@ -184,7 +184,7 @@ function GivePlayerStarterItems(player)
         player.insert(item)
     end
 
-    if ENABLE_POWER_ARMOR_QUICK_START then
+    if global.ocfg.enable_power_armor_start then
         GiveQuickStartPowerArmor(player)
     end
 end

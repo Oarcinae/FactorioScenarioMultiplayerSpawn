@@ -622,20 +622,22 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 
-    -- Shared chests - WIP
-    -- TODO Add an enable option in the config for this.
-    SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y-5})
-    SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y-4})
-    SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y-3})
-    SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y-2})
+    local x_dist = global.ocfg.spawn_config.resource_rand_pos_settings.radius
+    if global.ocfg.enable_chest_sharing then
 
-    SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y+2})
-    SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y+3})
-    SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y+4})
-    SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+45, y=delayedSpawn.pos.y+5})
+        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-5})
+        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-4})
+        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-3})
+        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2})
 
-    CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+41, y=delayedSpawn.pos.y-4}, "RIGHT")
-    CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+41, y=delayedSpawn.pos.y+3}, "LEFT")
+        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+2})
+        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+3})
+        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+4})
+        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+5})
+
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+41, y=delayedSpawn.pos.y-4}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+41, y=delayedSpawn.pos.y+3}, "LEFT")
+    end
 end
 
 function SendPlayerToSpawn(player)

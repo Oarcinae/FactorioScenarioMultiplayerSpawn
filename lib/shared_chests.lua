@@ -21,6 +21,11 @@
 -- electric-energy-interface for sharing electricity?
 
 
+-- These items won't be sucked up since they can't be removed.
+EXCEPTION_LIST = {['loader'] = true,
+                    ['fast-loader'] = true,
+                    ['express-loader'] = true}
+
 
 -- This function spawns chests at the given location.
 function SharedChestsSpawnInput(player, pos)
@@ -78,15 +83,17 @@ function SharedChestsDepositAll()
                 for itemName,count in pairs(contents)  do
                     -- log("Input chest: " .. itemName .. " " .. count)
 
-                    if (global.shared_items[itemName] == nil) then
-                        global.shared_items[itemName] = count
-                    else
-                        global.shared_items[itemName] = global.shared_items[itemName] + count
+                    if (EXCEPTION_LIST[itemName] == nil) then
+
+                        if (global.shared_items[itemName] == nil) then
+                            global.shared_items[itemName] = count
+                        else
+                            global.shared_items[itemName] = global.shared_items[itemName] + count
+                        end
+
+                        chestInv.remove({name=itemName, count=count})
                     end
-
                 end
-
-                chestInv.clear()
             end
         end
     end
@@ -159,6 +166,11 @@ function SharedChestsTallyRequests()
             cap = math.floor(global.shared_items[reqName] / TableLength(global.shared_requests[reqName]))
             log("Cap shared " .. global.shared_items[reqName] .. " / " .. TableLength(global.shared_requests[reqName]) .. " = " .. cap)
             log(serpent.block(global.shared_requests[reqName]))
+
+            -- In the case where we are rounding down to 0, let's bump the minimum distribution to 1.
+            if (cap == 0) then
+                cap = 1
+            end
         end
 
         -- Limit each request to the cap.
@@ -200,8 +212,7 @@ function SharedChestsDistributeRequests()
                         (global.shared_items[req.name] ~= nil) and 
                         (global.shared_requests[req.name][chestInfo.player] ~= nil) then
                         
-                       
-                        if (global.shared_requests[req.name][chestInfo.player] > 0) then
+                        if (global.shared_requests[req.name][chestInfo.player] > 0)and (global.shared_items[req.name] > 0) then
 
                             -- How much is already in the chest?
                             local existingAmount = chestEntity.get_inventory(defines.inventory.chest).get_item_count(req.name)
@@ -210,7 +221,7 @@ function SharedChestsDistributeRequests()
                             -- How much is allowed based on the player's current request amount?
                             local allowedAmount = math.min(requestAmount, global.shared_requests[req.name][chestInfo.player])
                             
-                            if ((allowedAmount > 0) and (global.shared_items[req.name] > 0)) then
+                            if (allowedAmount > 0) then
                                 local chestInv = chestEntity.get_inventory(defines.inventory.chest) 
                                 if chestInv.can_insert({name=req.name}) then
 
@@ -256,6 +267,11 @@ function SharedChestsOnTick()
         log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
         log("SHARED_REQ: " .. serpent.block(global.shared_requests))
         log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
+    end
+
+    -- Shuffle chests to avoid having the same chests filled first every time.
+    if ((game.tick % (60)) == 40) then
+        global.shared_chests = FYShuffle(global.shared_chests)
     end
 end
 

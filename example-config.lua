@@ -80,9 +80,15 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 -- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
 
+-- Enable chest sharing system. WIP
+ENABLE_CHEST_SHARING = true
+
 -- Lock power armor mk2, atomic bombs and artillery until you launch a rocket.
 -- Also lock speed/prod module-3s
 LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
+
+-- Give cheaty items on start.
+ENABLE_POWER_ARMOR_QUICK_START = false
 
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS

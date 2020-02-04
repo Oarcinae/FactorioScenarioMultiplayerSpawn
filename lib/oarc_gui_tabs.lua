@@ -51,8 +51,10 @@ function InitOarcGuiTabs(player)
         SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
     end
 
-    AddOarcGuiTab(player, OARC_SHARED_ITEMS_GUI_TAB_NAME)
-    SetOarcGuiTabEnabled(player, OARC_SHARED_ITEMS_GUI_TAB_NAME, true)
+    if global.ocfg.enable_chest_sharing then
+        AddOarcGuiTab(player, OARC_SHARED_ITEMS_GUI_TAB_NAME)
+        SetOarcGuiTabEnabled(player, OARC_SHARED_ITEMS_GUI_TAB_NAME, true)
+    end
 end
 
 function CreateOarcGuiButton(player)

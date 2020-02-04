@@ -201,16 +201,6 @@ script.on_event(defines.events.on_player_created, function(event)
     SeparateSpawnsPlayerCreated(event.player_index)
 
     InitOarcGuiTabs(player)
-
-    SharedChestsSpawnInput(player, {x=0, y=0-5})
-    SharedChestsSpawnInput(player, {x=0, y=0-4})
-    SharedChestsSpawnInput(player, {x=0, y=0-3})
-    SharedChestsSpawnInput(player, {x=0, y=0-2})
-
-    SharedChestsSpawnOutput(player, {x=0, y=0+2})
-    SharedChestsSpawnOutput(player, {x=0, y=0+3})
-    SharedChestsSpawnOutput(player, {x=0, y=0+4})
-    SharedChestsSpawnOutput(player, {x=0, y=0+5})
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -293,7 +283,9 @@ script.on_event(defines.events.on_tick, function(event)
         DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
     end
 
-    SharedChestsOnTick()
+    if global.ocfg.enable_chest_sharing then
+        SharedChestsOnTick()
+    end
 end)
 
 
