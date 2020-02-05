@@ -1015,6 +1015,11 @@ function BuddySpawnWaitMenuClick(event)
 
         local buddy = game.players[global.buddySpawnOptions[player.name].buddyChoice]
 
+        -- Catch a case where the buddy has left the game early and no longer exists.
+        if (buddy == nil) then
+            return
+        end
+
         if (buddy.gui.screen.buddy_request_menu ~= nil) then
             buddy.gui.screen.buddy_request_menu.destroy()
         end
