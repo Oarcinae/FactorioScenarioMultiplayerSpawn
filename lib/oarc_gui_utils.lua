@@ -109,6 +109,16 @@ my_longer_warning_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+my_notepad_fixed_width_style = {
+    minimal_width = 600,
+    maximal_width = 600,
+    minimal_height = 300,
+    maximal_height = 300,
+    font = "default-small-semibold",
+    font_color = {r=0.2,g=0.3,b=0.4},
+    top_margin = 5,
+    bottom_margin = 5
+}
 
 --------------------------------------------------------------------------------
 -- GUI Functions
