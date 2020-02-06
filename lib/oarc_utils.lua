@@ -64,6 +64,25 @@ function TimeoutSpeechBubblesOnTick()
     end
 end
 
+-- Every tick, check a global table to see if we have any rendered thing that needs fading out.
+function FadeoutRenderOnTick()
+    if (global.oarc_renders_fadeout and (#global.oarc_renders_fadeout > 0)) then
+        for k,rid in pairs(global.oarc_renders_fadeout) do
+            if (rendering.is_valid(rid)) then
+                local ttl = rendering.get_time_to_live(rid)
+                if (ttl > 0 and ttl < 100) then
+                    local color = rendering.get_color(rid)
+                    if (color.a > 0.01) then
+                        rendering.set_color(rid, {r=color.r, g=color.g, b=color.b, a=color.a-0.01})
+                    end
+                end
+            else
+                global.oarc_renders_fadeout[k] = nil
+            end
+        end
+    end
+end
+
 -- Broadcast messages to all connected players
 function SendBroadcastMsg(msg)
     for name,player in pairs(game.connected_players) do
@@ -1000,7 +1019,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile)
 end
 
 -- Add a circle of water
-function CreateMoat(surface, centerPos, chunkArea, tileRadius, fillTile)
+function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
 
     local tileRadSqr = tileRadius^2
 
@@ -1008,7 +1027,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, fillTile)
     for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
         for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
-            if (j == centerPos.y-1) or (j == centerPos.y) or (j == centerPos.y+1) then
+            if (bridge and ((j == centerPos.y-1) or (j == centerPos.y) or (j == centerPos.y+1))) then
 
             else
 
@@ -1019,7 +1038,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, fillTile)
                 -- Create a circle of water
                 if ((distVar < tileRadSqr+(1500*global.ocfg.spawn_config.gen_settings.moat_size_modifier)) and
                     (distVar > tileRadSqr)) then
-                    table.insert(waterTiles, {name = "water", position ={i,j}})
+                    table.insert(waterTiles, {name = moatTile, position ={i,j}})
                 end
             end
 
@@ -1074,9 +1093,9 @@ function CreateWall(surface, pos)
     end
 end
 
-function CreateHoldingPen(surface, chunkArea, sizeTiles, sizeMoat)
-    if (((chunkArea.left_top.x >= -(sizeTiles+sizeMoat+CHUNK_SIZE)) and (chunkArea.left_top.x <= (sizeTiles+sizeMoat+CHUNK_SIZE))) and
-        ((chunkArea.left_top.y >= -(sizeTiles+sizeMoat+CHUNK_SIZE)) and (chunkArea.left_top.y <= (sizeTiles+sizeMoat+CHUNK_SIZE)))) then
+function CreateHoldingPen(surface, chunkArea, radiusTiles)
+    if (((chunkArea.left_top.x >= -(radiusTiles+2*CHUNK_SIZE)) and (chunkArea.left_top.x <= (radiusTiles+2*CHUNK_SIZE))) and
+        ((chunkArea.left_top.y >= -(radiusTiles+2*CHUNK_SIZE)) and (chunkArea.left_top.y <= (radiusTiles+2*CHUNK_SIZE)))) then
 
         -- Remove stuff
         RemoveAliensInArea(surface, chunkArea)
@@ -1084,30 +1103,9 @@ function CreateHoldingPen(surface, chunkArea, sizeTiles, sizeMoat)
         RemoveInArea(surface, chunkArea, "resource")
         RemoveInArea(surface, chunkArea, "cliff")
 
-        -- This loop runs through each tile
-        local grassTiles = {}
-        local waterTiles = {}
-        for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
-            for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
-
-                -- Are we within the moat area?
-                if ((i>-(sizeTiles+sizeMoat)) and (i<((sizeTiles+sizeMoat)-1)) and
-                    (j>-(sizeTiles+sizeMoat)) and (j<((sizeTiles+sizeMoat)-1))) then
-
-                    -- Are we within the land area? Place land.
-                    if ((i>-(sizeTiles)) and (i<((sizeTiles)-1)) and
-                        (j>-(sizeTiles)) and (j<((sizeTiles)-1))) then
-                        table.insert(grassTiles, {name = "grass-1", position ={i,j}})
-
-                    -- Else, surround with water.
-                    else
-                        table.insert(waterTiles, {name = "water", position ={i,j}})
-                    end
-                end
-            end
-        end
-        surface.set_tiles(waterTiles)
-        surface.set_tiles(grassTiles)
+        CreateCropCircle(surface, {x=0,y=0}, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "landfill")
+        CreateMoat(surface, {x=0,y=0}, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "water", false)
+        CreateMoat(surface, {x=0,y=0}, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles+10, "out-of-map", false)
     end
 end
 

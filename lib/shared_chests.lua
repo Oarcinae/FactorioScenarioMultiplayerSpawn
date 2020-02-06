@@ -27,6 +27,13 @@ EXCEPTION_LIST = {['loader'] = true,
                     ['express-loader'] = true}
 
 
+function SharedChestInitItems()
+    global.shared_items = {}
+    global.shared_items['red-wire'] = 10000
+    global.shared_items['green-wire'] = 10000
+    global.shared_items['raw-fish'] = 10000    
+end
+
 -- This function spawns chests at the given location.
 function SharedChestsSpawnInput(player, pos)
 
@@ -48,12 +55,87 @@ function SharedChestsSpawnOutput(player, pos)
     outputChest.destructible = false
     outputChest.minable = false
 
+    outputChest.set_request_slot({name="raw-fish", count=1}, 1)
+
     if global.shared_chests == nil then
         global.shared_chests = {}
     end
 
     local chestInfoOut = {player=player.name,type="OUTPUT",entity=outputChest}
     table.insert(global.shared_chests, chestInfoOut)
+end
+
+
+function SharedChestsSpawnCombinators(player, posCtrl, posStatus, posPole)
+
+    local combiCtrl = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position=posCtrl, force="neutral"}
+    combiCtrl.destructible = false
+    combiCtrl.minable = false
+
+    -- Fish as an example.
+    combiCtrl.get_or_create_control_behavior().set_signal(1, {signal={type="item", name="raw-fish"}, count=1})
+
+    local combiStat = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position=posStatus, force="neutral"}
+    combiStat.destructible = false
+    combiStat.minable = false
+    combiStat.operable = false
+
+    local pole = game.surfaces[GAME_SURFACE_NAME].create_entity{name="small-electric-pole", position=posPole, force="neutral"}
+    pole.destructible = false
+    pole.minable = false
+
+    -- Wire up dat pole
+    pole.connect_neighbour({wire=defines.wire_type.red,
+                            target_entity=combiStat})
+
+    if global.shared_chests_combinators == nil then
+        global.shared_chests_combinators = {}
+    end
+
+    local combiPair = {player=player.name,ctrl=combiCtrl,status=combiStat}
+    table.insert(global.shared_chests_combinators, combiPair)
+end
+
+function SharedChestsUpdateCombinators()
+
+    if global.shared_chests_combinators == nil then
+        global.shared_chests_combinators = {}
+    end
+
+    for idx,combiPair in pairs(global.shared_chests_combinators) do
+
+        -- Check if combinators still exist
+        if (combiPair.ctrl == nil) or (combiPair.status == nil) or
+            (not combiPair.ctrl.valid) or (not combiPair.status.valid) then
+            global.shared_chests_combinators[idx] = nil
+        else
+
+            local combiCtrlBehav = combiPair.ctrl.get_or_create_control_behavior()
+            local ctrlSignals = {}
+
+            -- Get signals on the ctrl combi:
+            for i=1,combiCtrlBehav.signals_count do
+                local sig = combiCtrlBehav.get_signal(i)
+                if ((sig ~= nil) and (sig.signal ~= nil)) then
+                    table.insert(ctrlSignals, sig.signal.name)
+                end
+            end
+            
+            local combiStatBehav = combiPair.status.get_or_create_control_behavior()
+            
+            -- Set signals on the status combi:
+            for i=1,combiCtrlBehav.signals_count do
+                if (ctrlSignals[i] ~= nil) then
+                    local availAmnt = global.shared_items[ctrlSignals[i]]
+                    if availAmnt == nil then availAmnt = 0 end
+
+                    combiStatBehav.set_signal(i, {signal={type="item", name=ctrlSignals[i]}, count=availAmnt})
+                else
+                    combiStatBehav.set_signal(i, nil)
+                end
+            end
+        end
+    end
 end
 
 -- Pull all items in the deposit chests
@@ -81,7 +163,6 @@ function SharedChestsDepositAll()
                 local contents = chestInv.get_contents()
 
                 for itemName,count in pairs(contents)  do
-                    -- log("Input chest: " .. itemName .. " " .. count)
 
                     if (EXCEPTION_LIST[itemName] == nil) then
 
@@ -143,10 +224,6 @@ function SharedChestsTallyRequests()
         end
     end
 
-    -- log("PRE-CAP requests:")
-    -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
-    -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
-    -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
 
     -- If demand is more than supply, limit each player's total item request to shared amount
     for reqName,reqTally in pairs(global.shared_requests) do
@@ -156,7 +233,6 @@ function SharedChestsTallyRequests()
 
         -- No shared items means nothing to supply.
         if (global.shared_items[reqName] == nil) or (global.shared_items[reqName] == 0) then
-            -- log("Cap cause no shared items...")
             mustCap = true
             cap = 0
 
@@ -164,8 +240,6 @@ function SharedChestsTallyRequests()
         elseif (global.shared_requests_totals[reqName] > global.shared_items[reqName]) then
             mustCap = true
             cap = math.floor(global.shared_items[reqName] / TableLength(global.shared_requests[reqName]))
-            -- log("Cap shared " .. global.shared_items[reqName] .. " / " .. TableLength(global.shared_requests[reqName]) .. " = " .. cap)
-            -- log(serpent.block(global.shared_requests[reqName]))
 
             -- In the case where we are rounding down to 0, let's bump the minimum distribution to 1.
             if (cap == 0) then
@@ -183,10 +257,6 @@ function SharedChestsTallyRequests()
         end
     end
 
-    -- log("POST-CAP requests:")
-    -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
-    -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
-    -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
 end
 
 
@@ -225,7 +295,6 @@ function SharedChestsDistributeRequests()
                                 local chestInv = chestEntity.get_inventory(defines.inventory.chest) 
                                 if chestInv.can_insert({name=req.name}) then
 
-                                    -- log("INSERT: " .. math.min(allowedAmount, global.shared_items[req.name]))
                                     local amnt = chestInv.insert({name=req.name, count=math.min(allowedAmount, global.shared_items[req.name])})
                                     global.shared_items[req.name] = global.shared_items[req.name] - amnt
                                     global.shared_requests[req.name][chestInfo.player] = global.shared_requests[req.name][chestInfo.player] - amnt
@@ -252,7 +321,6 @@ function SharedChestsOnTick()
     -- Every second, we check the input chests and deposit stuff.
     if ((game.tick % (60)) == 37) then
         SharedChestsDepositAll()
-        -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
     end
 
     -- Every second + tick, we check the output chests for requests
@@ -263,10 +331,11 @@ function SharedChestsOnTick()
     -- Every second + 2 ticks, we distribute to the output chests.
     if ((game.tick % (60)) == 39) then
         SharedChestsDistributeRequests()
-        -- log("POST DISTRIBUTE: ")
-        -- log("SHARED_ITEMS: " .. serpent.block(global.shared_items))
-        -- log("SHARED_REQ: " .. serpent.block(global.shared_requests))
-        -- log("SHARED_REQ_TOTAL: " .. serpent.block(global.shared_requests_totals))
+    end
+
+    -- Every second + 3 ticks, we update our combinator status info.
+    if ((game.tick % (60)) == 40) then
+        SharedChestsUpdateCombinators()
     end
 end
 
@@ -278,7 +347,7 @@ function CreateSharedItemsGuiTab(tab_container, player)
     ApplyStyle(scrollFrame, my_shared_item_list_fixed_width_style)
     scrollFrame.horizontal_scroll_policy = "never"
 
-    AddLabel(scrollFrame, "share_items_info", "Place items into the yellow storage chests to share. Request items from the blue requestor chests to pull out items. To refresh this view, click the tab again. Shared items are accessible by EVERYONE across all teams.", my_longer_label_style)
+    AddLabel(scrollFrame, "share_items_info", "Place items into the [color=yellow]yellow storage chests to share[/color].\nRequest items from the [color=blue]blue requestor chests to pull out items[/color].\nTo refresh this view, click the tab again.\nShared items are accessible by [color=red]EVERYONE and all teams[/color].\nThe combinator pair allows you to 'set' item types to watch for. Set items in the top one, and connect the bottom one to a circuit network to view the current available inventory. Items with 0 amount do not generate any signal.", my_longer_label_style)
 
     AddLabel(scrollFrame, "share_items_title_msg", "Shared Items:", my_label_header_style)
 

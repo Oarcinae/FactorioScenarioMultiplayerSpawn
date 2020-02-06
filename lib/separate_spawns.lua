@@ -233,7 +233,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 end
                 if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
                     if (spawn.moat) then
-                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, fill_tile)
+                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "water", true)
                     end
                 end
             end
@@ -613,7 +613,43 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     -- Send the player to that position
     local player = game.players[delayedSpawn.playerName]
     player.teleport(delayedSpawn.pos, GAME_SURFACE_NAME)
-    GivePlayerStarterItems(game.players[delayedSpawn.playerName])
+    GivePlayerStarterItems(player)
+
+    -- Render some welcoming text...
+    local tcolor = {0.9, 0.7, 0.3, 0.8}
+    local ttl = 2000
+    local rid1 = rendering.draw_text{text="Welcome",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x-21, y=delayedSpawn.pos.y-15},
+                        color=tcolor,
+                        scale=20,
+                        font="scenario-message-dialog",
+                        time_to_live=ttl,
+                        players={player},
+                        draw_on_ground=true,
+                        orientation=0,
+                        -- alignment=center,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+    local rid2 = rendering.draw_text{text="Home",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x-14, y=delayedSpawn.pos.y-5},
+                        color=tcolor,
+                        scale=20,
+                        font="scenario-message-dialog",
+                        time_to_live=ttl,
+                        players={player},
+                        draw_on_ground=true,
+                        orientation=0,
+                        -- alignment=center,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+    if (global.oarc_renders_fadeout == nil) then
+        global.oarc_renders_fadeout = {}
+    end
+    table.insert(global.oarc_renders_fadeout, rid1)
+    table.insert(global.oarc_renders_fadeout, rid2)
 
     -- Chart the area.
     ChartArea(player.force, delayedSpawn.pos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
@@ -625,19 +661,70 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     local x_dist = global.ocfg.spawn_config.resource_rand_pos_settings.radius
     if global.ocfg.enable_chest_sharing then
 
-        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-5})
-        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-4})
-        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-3})
-        SharedChestsSpawnInput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2})
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-4}, "RIGHT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-4}, "LEFT")
+        SharedChestsSpawnCombinators(player,
+                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2}, -- Ctrl
+                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y}, -- Status
+                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}) -- Pole
 
-        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+2})
-        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+3})
-        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+4})
-        SharedChestsSpawnOutput(game.players[delayedSpawn.playerName], {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+5})
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+3}, "LEFT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+3}, "RIGHT")
+        rendering.draw_text{text="Place items in to share.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-5, y=delayedSpawn.pos.y-12.5},
+                        color={0.7,0.7,0.1,0.7},
+                        scale=2,
+                        font="scenario-message-dialog",
+                        players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+        rendering.draw_text{text="Set signals here to monitor item counts.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-3},
+                        color={0.6,0.6,0.6,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+        rendering.draw_text{text="Receive signals here to see available items.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+1},
+                        color={0.6,0.6,0.6,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+        rendering.draw_text{text="Set filters to request items.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-6, y=delayedSpawn.pos.y+9.5},
+                        color={0.5,0.5,0.8,0.8},
+                        scale=2,
+                        font="scenario-message-dialog",
+                        players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+        for i=-11,-6 do
+            SharedChestsSpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
+        end
+
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-9}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-9}, "LEFT")
+
+        for i=4,9 do
+            SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
+        end
+
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+6}, "LEFT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+6}, "RIGHT")
+
+
+
+        -- Cutscene?
+        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=1.8},{target=player.character,transition_time=100,time_to_wait=60,zoom=0.8}}, final_transition_time=60}
 
     end
 end

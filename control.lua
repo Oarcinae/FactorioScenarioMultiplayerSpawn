@@ -35,6 +35,7 @@ require("lib/rocket_launch")
 require("lib/admin_commands")
 require("lib/regrowth_map")
 require("lib/shared_chests")
+require("lib/notepad")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -105,6 +106,10 @@ script.on_init(function(event)
     log(serpent.block(global.vanillaSpawns))
 
     Compat.handle_factoriomaps()
+
+    if (global.ocfg.enable_chest_sharing) then
+        SharedChestInitItems()
+    end
 end)
 
 script.on_load(function()
@@ -141,7 +146,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
 
     SeparateSpawnsGenerateChunk(event)
 
-    CreateHoldingPen(event.surface, event.area, 16, 32)
+    CreateHoldingPen(event.surface, event.area, global.ocfg.spawn_config.resource_rand_pos_settings.radius)
 end)
 
 
@@ -193,6 +198,15 @@ script.on_event(defines.events.on_player_created, function(event)
 
     -- Move the player to the game surface immediately.
     player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
+
+    rendering.draw_text{text="OARC",
+                    surface=game.surfaces[GAME_SURFACE_NAME],
+                    target={x=-40,y=-25},
+                    color={0.9, 0.7, 0.3, 0.8},
+                    scale=60,
+                    font="scenario-message-dialog",
+                    players={player},
+                    draw_on_ground=true}
 
     if global.ocfg.enable_long_reach then
         GivePlayerLongReach(player)
@@ -286,6 +300,9 @@ script.on_event(defines.events.on_tick, function(event)
     if global.ocfg.enable_chest_sharing then
         SharedChestsOnTick()
     end
+
+    TimeoutSpeechBubblesOnTick()
+    FadeoutRenderOnTick()
 end)
 
 
@@ -395,3 +412,11 @@ script.on_event(defines.events.on_character_corpse_expired, function(event)
     DropGravestoneChestFromCorpse(event.corpse)
 end)
 
+
+----------------------------------------
+-- On Gui Text Change
+-- For capturing text entry.
+----------------------------------------
+script.on_event(defines.events.on_gui_text_changed, function(event)
+    NotepadOnGuiTextChange(event)
+end)
