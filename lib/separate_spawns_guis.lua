@@ -757,6 +757,9 @@ function SpawnCtrlGuiClick(event)
                 table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
                 joiningPlayer.force = game.players[player.name].force
 
+                -- Render some welcoming text...
+                DisplayWelcomeGroundTextAtSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
+
                 -- Unlock spawn control gui tab
                 SetOarcGuiTabEnabled(joiningPlayer, OARC_SPAWN_CTRL_GUI_NAME, true)
             else

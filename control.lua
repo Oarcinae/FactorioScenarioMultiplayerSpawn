@@ -146,7 +146,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
 
     SeparateSpawnsGenerateChunk(event)
 
-    CreateHoldingPen(event.surface, event.area, global.ocfg.spawn_config.resource_rand_pos_settings.radius)
+    CreateHoldingPen(event.surface, event.area)
 end)
 
 
@@ -419,4 +419,5 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_text_changed, function(event)
     NotepadOnGuiTextChange(event)
+    SharedElectricityPlayerGuiValueChange(event)
 end)
