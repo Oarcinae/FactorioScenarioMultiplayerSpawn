@@ -32,6 +32,8 @@ SHARED_ELEC_INPUT_BUFFER_SIZE = 480000000
 
 DEFAULT_SHARED_ELEC_INPUT_LIMIT = 100000 -- 100kW?
 
+SHARED_ENERGY_STARTING_VALUE = 1000000000 -- 100GJ
+
 -- How often we are executing the electricity distribution.
 SHARED_ELEC_TICK_RATE = 15
 
@@ -50,6 +52,7 @@ function SharedChestInitItems()
     global.shared_items['green-wire'] = 10000
     global.shared_items['raw-fish'] = 10000   
     global.shared_energy_stored = 1000000000
+    global.shared_energy_stored_history = {current=1000000000, last=1000000000}
 end
 
 
@@ -94,6 +97,9 @@ function SharedEnergySpawnIOPair(player, posIn, posOut)
 end
 
 function SharedEnergyStoreInputOnTick()
+    global.shared_energy_stored_history.last = global.shared_energy_stored_history.current
+    global.shared_energy_stored_history.current = global.shared_energy_stored
+
     if global.shared_electricity_io ~= nil then
         for idx,elecPair in pairs(global.shared_electricity_io) do
             if (elecPair.input == nil) or (not elecPair.input.valid) or 
@@ -116,7 +122,7 @@ function SharedEnergyStoreInputOnTick()
     end
 end
 
--- If energy < 50% in the output cap, we take shared amount split by players.
+-- If there is room to distribute energy, we take shared amount split by players.
 function SharedEnergyDistributeOutputOnTick()
     if (global.shared_electricity_io ~= nil) and (global.shared_energy_stored > 0) then
         
@@ -128,7 +134,7 @@ function SharedEnergyDistributeOutputOnTick()
             if (elecPair.input == nil) or (not elecPair.input.valid) or 
                 (elecPair.input == nil) or (not elecPair.input.valid) then
                 global.shared_electricity_io[idx] = nil
-            elseif (elecPair.output.energy < SHARED_ELEC_OUTPUT_BUFFER_SIZE/2) then
+            elseif (elecPair.output.energy < SHARED_ELEC_OUTPUT_BUFFER_SIZE) then
                 local outBufferSpace = (SHARED_ELEC_OUTPUT_BUFFER_SIZE - elecPair.output.energy)
                 
                 -- If we have enough in the bank to fill it up, fill it up.
@@ -151,7 +157,7 @@ function SharedEnergyDistributeOutputOnTick()
         if (combi == nil) or (not combi.valid) then
             global.shared_electricity_combi[idx] = nil
         else
-            combi.get_or_create_control_behavior().set_signal(1, {signal={type="virtual", name="signal-E"}, count=global.shared_energy_stored})
+            combi.get_or_create_control_behavior().set_signal(1, {signal={type="virtual", name="signal-M"}, count=clampInt32(math.floor(global.shared_energy_stored/1000000))})
         end
     end
 end
@@ -238,7 +244,7 @@ function SharedChestsUpdateCombinators()
             -- Get signals on the ctrl combi:
             for i=1,combiCtrlBehav.signals_count do
                 local sig = combiCtrlBehav.get_signal(i)
-                if ((sig ~= nil) and (sig.signal ~= nil)) then
+                if ((sig ~= nil) and (sig.signal ~= nil) and (sig.signal.type == "item")) then
                     table.insert(ctrlSignals, sig.signal.name)
                 end
             end
@@ -251,7 +257,7 @@ function SharedChestsUpdateCombinators()
                     local availAmnt = global.shared_items[ctrlSignals[i]]
                     if availAmnt == nil then availAmnt = 0 end
 
-                    combiStatBehav.set_signal(i, {signal={type="item", name=ctrlSignals[i]}, count=availAmnt})
+                    combiStatBehav.set_signal(i, {signal={type="item", name=ctrlSignals[i]}, count=clampInt32(availAmnt)})
                 else
                     combiStatBehav.set_signal(i, nil)
                 end
@@ -484,7 +490,18 @@ function CreateSharedItemsGuiTab(tab_container, player)
     AddLabel(scrollFrame, "share_items_info", "Place items into the [color=yellow]yellow storage chests to share[/color].\nRequest items from the [color=blue]blue requestor chests to pull out items[/color].\nTo refresh this view, click the tab again.\nShared items are accessible by [color=red]EVERYONE and all teams[/color].\nThe combinator pair allows you to 'set' item types to watch for. Set items in the top one, and connect the bottom one to a circuit network to view the current available inventory. Items with 0 amount do not generate any signal.", my_longer_label_style)
 
     AddSpacerLine(scrollFrame)
-    AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.shared_energy_stored/1000000) .. "MJ[/color]", my_longer_label_style)
+
+    -- MW charging/discharging rate. (delta change * sample rate per second)
+    local energy_change = ((global.shared_energy_stored_history.current - global.shared_energy_stored_history.last)* (60/SHARED_ELEC_TICK_RATE))/(1000000)
+    local energy_change_str = string.format("%.3fMW", energy_change)
+    local rate_color = "green"
+    if (energy_change <= 0) then
+        rate_color = "red"
+    elseif (energy_change < 1) then
+        rate_color = "orange"
+    end
+
+    AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.shared_energy_stored/1000000) .. "MJ[/color] [color=" .. rate_color .. "](Rate: " .. energy_change_str ..")[/color]", my_longer_label_style)
 
     if ((global.shared_electricity_player_limits ~= nil) and 
         (global.shared_electricity_player_limits[player.name] ~= nil)) then

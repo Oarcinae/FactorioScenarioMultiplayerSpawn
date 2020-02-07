@@ -15,7 +15,12 @@ MAX_FORCES = 64
 TICKS_PER_SECOND = 60
 TICKS_PER_MINUTE = TICKS_PER_SECOND * 60
 TICKS_PER_HOUR = TICKS_PER_MINUTE * 60
+
+MAX_INT32_POS = 2147483647
+MAX_INT32_NEG = -2147483648
 --------------------------------------------------------------------------------
+
+
 
 --------------------------------------------------------------------------------
 -- General Helper Functions
@@ -120,6 +125,19 @@ function formattime_hours_mins(ticks)
   local hours   = math.floor((minutes)/60)
   local minutes = math.floor(minutes - 60*hours)
   return string.format("%dh:%02dm", hours, minutes)
+end
+
+-- Simple math clamp
+function clamp(val, min, max)
+    if (val > max) then
+        return max
+    elseif (val < min) then
+        return min
+    end
+    return val
+end
+function clampInt32(val)
+    return clamp(val, MAX_INT32_NEG, MAX_INT32_POS)
 end
 
 -- Simple function to get total number of items in table
