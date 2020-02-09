@@ -402,43 +402,47 @@ function SharedChestsDistributeRequests()
 
             local chestEntity = chestInfo.entity
 
+            -- Delete any chest that is no longer valid.
+            if ((chestEntity == nil) or (not chestEntity.valid)) then
+                global.shared_chests[idx] = nil
+
             -- For each request slot
-            for i = 1, chestEntity.request_slot_count, 1 do
-                local req = chestEntity.get_request_slot(i)
+            else
+                for i = 1, chestEntity.request_slot_count, 1 do
+                    local req = chestEntity.get_request_slot(i)
 
-                -- If there is a request, distribute items
-                if (req ~= nil) then
+                    -- If there is a request, distribute items
+                    if (req ~= nil) then
 
-                    -- Make sure requests have been created.
-                    -- Make sure shared items exist.
-                    if (global.shared_requests_totals[req.name] ~= nil) and 
-                        (global.shared_items[req.name] ~= nil) and 
-                        (global.shared_requests[req.name][chestInfo.player] ~= nil) then
-                        
-                        if (global.shared_requests[req.name][chestInfo.player] > 0)and (global.shared_items[req.name] > 0) then
-
-                            -- How much is already in the chest?
-                            local existingAmount = chestEntity.get_inventory(defines.inventory.chest).get_item_count(req.name)
-                            -- How much is required to fill the remainder request?
-                            local requestAmount = math.max(req.count-existingAmount, 0)
-                            -- How much is allowed based on the player's current request amount?
-                            local allowedAmount = math.min(requestAmount, global.shared_requests[req.name][chestInfo.player])
+                        -- Make sure requests have been created.
+                        -- Make sure shared items exist.
+                        if (global.shared_requests_totals[req.name] ~= nil) and 
+                            (global.shared_items[req.name] ~= nil) and 
+                            (global.shared_requests[req.name][chestInfo.player] ~= nil) then
                             
-                            if (allowedAmount > 0) then
-                                local chestInv = chestEntity.get_inventory(defines.inventory.chest) 
-                                if chestInv.can_insert({name=req.name}) then
+                            if (global.shared_requests[req.name][chestInfo.player] > 0)and (global.shared_items[req.name] > 0) then
 
-                                    local amnt = chestInv.insert({name=req.name, count=math.min(allowedAmount, global.shared_items[req.name])})
-                                    global.shared_items[req.name] = global.shared_items[req.name] - amnt
-                                    global.shared_requests[req.name][chestInfo.player] = global.shared_requests[req.name][chestInfo.player] - amnt
-                                    global.shared_requests_totals[req.name] = global.shared_requests_totals[req.name] - amnt
+                                -- How much is already in the chest?
+                                local existingAmount = chestEntity.get_inventory(defines.inventory.chest).get_item_count(req.name)
+                                -- How much is required to fill the remainder request?
+                                local requestAmount = math.max(req.count-existingAmount, 0)
+                                -- How much is allowed based on the player's current request amount?
+                                local allowedAmount = math.min(requestAmount, global.shared_requests[req.name][chestInfo.player])
+                                
+                                if (allowedAmount > 0) then
+                                    local chestInv = chestEntity.get_inventory(defines.inventory.chest) 
+                                    if chestInv.can_insert({name=req.name}) then
 
+                                        local amnt = chestInv.insert({name=req.name, count=math.min(allowedAmount, global.shared_items[req.name])})
+                                        global.shared_items[req.name] = global.shared_items[req.name] - amnt
+                                        global.shared_requests[req.name][chestInfo.player] = global.shared_requests[req.name][chestInfo.player] - amnt
+                                        global.shared_requests_totals[req.name] = global.shared_requests_totals[req.name] - amnt
+
+                                    end
                                 end
                             end
                         end
-
                     end
-
                 end
             end
         end
