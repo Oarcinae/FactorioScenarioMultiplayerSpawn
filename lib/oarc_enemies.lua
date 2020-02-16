@@ -78,7 +78,7 @@ function OarcModifyEnemyGroup(group)
 
         -- Target could also be a player character (more rare)
         if (target_player == nil) and (target_entity.type == "character") then
-        	target_player = target_entity.associated_player
+        	target_player = target_entity.player
         end
 
         -- I don't think this should happen...
@@ -111,6 +111,7 @@ function OarcModifyEnemyGroup(group)
         if (global.buddyPairs[target_player.name] ~= nil) then
         	SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
         	log("OarcModifyEnemyGroup RELEASING enemy group since someone in the BUDDY PAIR is ONLINE")
+        	return
         end
 
         -- Otherwise, we delete the group.
