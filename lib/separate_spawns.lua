@@ -405,6 +405,28 @@ function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
     game.players[newOwnerName].print("You have been given ownership of this base!")
 end
 
+-- Return the owner of the shared spawn for this player.
+-- May return nil if player has not spawned yet.
+function FindPlayerSharedSpawn(playerName)
+
+    -- If the player IS an owner, he can't be in any other shared base.
+    if (global.sharedSpawns[playerName] ~= nil) then
+        return playerName
+    end
+
+    -- Otherwise, search all shared spawns for this player and return the owner.
+    for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
+        for _,playerName in pairs(sharedSpawn.players) do
+            if (target_player.name == playerName) then
+                return ownerName
+            end
+        end
+    end
+
+    -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
+    return nil
+end
+
 -- Returns the number of players currently online at the shared spawn
 function GetOnlinePlayersAtSharedSpawn(ownerName)
     if (global.sharedSpawns[ownerName] ~= nil) then

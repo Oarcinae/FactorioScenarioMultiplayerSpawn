@@ -51,7 +51,7 @@ require("lib/oarc_global_cfg.lua")
 -- Scenario Specific Includes
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
-
+require("lib/oarc_enemies")
 require("lib/oarc_gui_tabs")
 
 -- compatibility with mods
@@ -402,6 +402,14 @@ script.on_event(defines.events.on_biter_base_built, function(event)
     if (global.ocfg.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
+end)
+
+----------------------------------------
+-- On unit group finished gathering
+-- This is where I remove biter waves on offline players
+----------------------------------------
+script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
+    OarcModifyEnemyGroup(event.group)
 end)
 
 ----------------------------------------

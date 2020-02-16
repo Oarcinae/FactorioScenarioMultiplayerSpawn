@@ -36,6 +36,11 @@ function FlyingText(msg, pos, color, surface)
     end
 end
 
+-- Get a printable GPS string
+function GetGPStext(pos)
+    return "[gps=" .. pos.x .. "," .. pos.y .. "]"
+end
+
 -- Requires having an on_tick handler.
 function DisplaySpeechBubble(player, text, timeout_secs)
 
