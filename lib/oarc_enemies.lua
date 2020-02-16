@@ -73,15 +73,17 @@ function OarcModifyEnemyGroup(group)
         	return
         end
 
+        -- Most common target will be a built entity with a "last_user"
         local target_player = target_entity.last_user
 
-        -- I don't think this should happen often...
-        if (target_player == nil) then
-        	SendBroadcastMsg("ERROR?? target_player == nil " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position))
-        	return
+        -- Target could also be a player character (more rare)
+        if (target_player == nil) and (target_entity.type == "character") then
+        	target_player = target_entity.associated_player
         end
-        if (not target_player.valid) then
-        	SendBroadcastMsg("ERROR?? not target_player.valid " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position))
+
+        -- I don't think this should happen...
+        if ((target_player == nil) or (not target_player.valid)) then
+        	SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position))
         	return
         end
 
