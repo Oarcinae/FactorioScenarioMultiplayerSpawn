@@ -80,10 +80,10 @@ function FadeoutRenderOnTick()
         for k,rid in pairs(global.oarc_renders_fadeout) do
             if (rendering.is_valid(rid)) then
                 local ttl = rendering.get_time_to_live(rid)
-                if (ttl > 0 and ttl < 100) then
+                if ((ttl > 0) and (ttl < 200)) then
                     local color = rendering.get_color(rid)
-                    if (color.a > 0.01) then
-                        rendering.set_color(rid, {r=color.r, g=color.g, b=color.b, a=color.a-0.01})
+                    if (color.a > 0.005) then
+                        rendering.set_color(rid, {r=color.r, g=color.g, b=color.b, a=color.a-0.005})
                     end
                 end
             else
@@ -1046,7 +1046,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
 
     local tileRadSqr = tileRadius^2
 
-    local waterTiles = {}
+    local tiles = {}
     for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
         for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
@@ -1061,7 +1061,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
                 -- Create a circle of water
                 if ((distVar < tileRadSqr+(1500*global.ocfg.spawn_config.gen_settings.moat_size_modifier)) and
                     (distVar > tileRadSqr)) then
-                    table.insert(waterTiles, {name = moatTile, position ={i,j}})
+                    table.insert(tiles, {name = moatTile, position ={i,j}})
                 end
             end
 
@@ -1069,12 +1069,12 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
             -- a clean transition
             -- if ((distVar <= tileRadSqr) and
             --     (distVar > tileRadSqr-10000)) then
-            --     table.insert(waterTiles, {name = fillTile, position ={i,j}})
+            --     table.insert(tiles, {name = fillTile, position ={i,j}})
             -- end
         end
     end
 
-    surface.set_tiles(waterTiles)
+    surface.set_tiles(tiles)
 end
 
 -- Create a horizontal line of water
@@ -1130,6 +1130,7 @@ function CreateHoldingPen(surface, chunkArea)
         CreateCropCircle(surface, {x=0,y=0}, chunkArea, radiusTiles, "landfill")
         CreateMoat(surface, {x=0,y=0}, chunkArea, radiusTiles, "water", false)
         CreateMoat(surface, {x=0,y=0}, chunkArea, radiusTiles+10, "out-of-map", false)
+        CreateMoat(surface, {x=0,y=0}, chunkArea, 2, "out-of-map", false)
     end
 end
 

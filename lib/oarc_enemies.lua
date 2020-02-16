@@ -107,6 +107,12 @@ function OarcModifyEnemyGroup(group)
 	        end
         end
 
+        -- Is there a buddy spawn and is the buddy online?
+        if (global.buddyPairs[target_player.name] ~= nil) then
+        	SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+        	log("OarcModifyEnemyGroup RELEASING enemy group since someone in the BUDDY PAIR is ONLINE")
+        end
+
         -- Otherwise, we delete the group.
         SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
         for _,member in pairs(group.members) do
