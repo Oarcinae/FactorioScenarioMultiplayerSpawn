@@ -59,7 +59,9 @@ function OarcModifyEnemyGroup(group)
         -- No enemies nearby?
         if (target_entity == nil) then
         	if (group.command.type == defines.command.attack_area) then
-        		SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?")
+        		if (global.enable_oe_debug) then
+        			SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?")
+    			end
         		log("OarcModifyEnemyGroup UNEXPECTED find_nearest_enemy did not find anything!")
         	else
         		log("OarcModifyEnemyGroup find_nearest_enemy did not find anything!")
@@ -83,13 +85,18 @@ function OarcModifyEnemyGroup(group)
 
         -- I don't think this should happen...
         if ((target_player == nil) or (not target_player.valid)) then
-        	SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position))
+        	if (global.enable_oe_debug) then
+        		SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position))
+    		end
+    		log("OarcModifyEnemyGroup ERROR?? target_player nil/invalid")
         	return
         end
 
         -- Is the target player online? Then the attack can go through.
         if (target_player.connected) then
-        	SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+        	if (global.enable_oe_debug) then
+        		SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+    		end
         	log("OarcModifyEnemyGroup RELEASING enemy group since player is ONLINE")
         	return
         end
@@ -101,7 +108,9 @@ function OarcModifyEnemyGroup(group)
         -- Is someone in the shared spawn online?
         if (sharedSpawnOwner ~= nil) then
 	        if (GetOnlinePlayersAtSharedSpawn(sharedSpawnOwner) > 0) then
-	        	SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+	        	if (global.enable_oe_debug) then
+	        		SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+        		end
 	        	log("OarcModifyEnemyGroup RELEASING enemy group since someone in the group is ONLINE")
 	        	return
 	        end
@@ -109,13 +118,17 @@ function OarcModifyEnemyGroup(group)
 
         -- Is there a buddy spawn and is the buddy online?
         if (global.buddyPairs[target_player.name] ~= nil) then
-        	SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+        	if (global.enable_oe_debug) then
+        		SendBroadcastMsg("Enemy group released: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+    		end
         	log("OarcModifyEnemyGroup RELEASING enemy group since someone in the BUDDY PAIR is ONLINE")
         	return
         end
 
         -- Otherwise, we delete the group.
-        SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+        if (global.enable_oe_debug) then
+        	SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+    	end
         for _,member in pairs(group.members) do
         	member.destroy()
         end
