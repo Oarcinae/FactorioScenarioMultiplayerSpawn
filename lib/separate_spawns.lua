@@ -423,8 +423,8 @@ function FindPlayerSharedSpawn(playerName)
 
     -- Otherwise, search all shared spawns for this player and return the owner.
     for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
-        for _,playerName in pairs(sharedSpawn.players) do
-            if (target_player.name == playerName) then
+        for _,sharingPlayerName in pairs(sharedSpawn.players) do
+            if (playerName == sharingPlayerName) then
                 return ownerName
             end
         end
