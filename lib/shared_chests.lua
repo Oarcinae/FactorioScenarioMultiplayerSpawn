@@ -397,7 +397,7 @@ end
 function SharedChestsDistributeRequests()
 
     -- For each output chest.
-    for _,chestInfo in pairs(global.shared_chests) do
+    for idx,chestInfo in pairs(global.shared_chests) do
         if (chestInfo.type == "OUTPUT") then
 
             local chestEntity = chestInfo.entity
