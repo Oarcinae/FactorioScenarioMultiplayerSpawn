@@ -53,16 +53,33 @@ function OarcModifyEnemyGroup(group)
             distance = CHUNK_SIZE*7 --game.map_settings.enemy_expansion.max_expansion_distance
         end
 
-        local target_entity = group.surface.find_nearest_enemy{position=destination,
-                                                                max_distance=distance,
-                                                                force="enemy"}
+        -- Find some enemies near the attack point.
+        local target_entities = group.surface.find_entities_filtered{
+                                                position=destination,
+                                                radius=distance,
+                                                force={"enemy", "neutral"},
+                                                limit=50,
+                                                invert=true}
+
+        -- Search through them all to find anything with a last_user.
+        local target_entity = nil                                   
+        for _,target in ipairs(target_entities) do
+            if (target.last_user ~= nil) then
+                target_entity = target
+                break
+            end
+        end                                                                
+
         -- No enemies nearby?
         if (target_entity == nil) then
             if (group.command.type == defines.command.attack_area) then
                 if (global.enable_oe_debug) then
-                    SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?")
+                    SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!? " .. GetGPStext(group.position) .. " Target: " .. GetGPStext(destination))
                 end
                 log("OarcModifyEnemyGroup UNEXPECTED find_nearest_enemy did not find anything!")
+                for _,member in pairs(group.members) do
+                    member.destroy()
+                end
             else
                 log("OarcModifyEnemyGroup find_nearest_enemy did not find anything!")
             end
@@ -72,6 +89,9 @@ function OarcModifyEnemyGroup(group)
         -- Probably don't need this I hope?
         if (target_entity.force == "neutral") then
             log("OarcModifyEnemyGroup UNEXPECTED find_nearest_enemy found neutral target?")
+            for _,member in pairs(group.members) do
+                member.destroy()
+            end
             return
         end
 
@@ -86,16 +106,19 @@ function OarcModifyEnemyGroup(group)
         -- I don't think this should happen...
         if ((target_player == nil) or (not target_player.valid)) then
             if (global.enable_oe_debug) then
-                SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position))
+                SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.position) .. " Target: " .. GetGPStext(target_entity.position))
             end
             log("OarcModifyEnemyGroup ERROR?? target_player nil/invalid")
+            for _,member in pairs(group.members) do
+                member.destroy()
+            end
             return
         end
 
         -- Is the target player online? Then the attack can go through.
         if (target_player.connected) then
             if (global.enable_oe_debug) then
-                SendBroadcastMsg("Enemy group released (player): " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+                SendBroadcastMsg("Enemy group released (player): " .. GetGPStext(group.position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
             end
             log("OarcModifyEnemyGroup RELEASING enemy group since player is ONLINE")
             return
@@ -109,7 +132,7 @@ function OarcModifyEnemyGroup(group)
         if (sharedSpawnOwnerName ~= nil) then
             if (GetOnlinePlayersAtSharedSpawn(sharedSpawnOwnerName) > 0) then
                 if (global.enable_oe_debug) then
-                    SendBroadcastMsg("Enemy group released (shared): " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+                    SendBroadcastMsg("Enemy group released (shared): " .. GetGPStext(group.position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
                 end
                 log("OarcModifyEnemyGroup RELEASING enemy group since someone in the group is ONLINE")
                 return
@@ -121,7 +144,7 @@ function OarcModifyEnemyGroup(group)
         if (buddyName ~= nil) and (game.players[buddyName] ~= nil) then
             if (game.players[buddyName].connected or (GetOnlinePlayersAtSharedSpawn(buddyName) > 0)) then
                 if (global.enable_oe_debug) then
-                    SendBroadcastMsg("Enemy group released (buddy): " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+                    SendBroadcastMsg("Enemy group released (buddy): " .. GetGPStext(group.position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
                 end
                 log("OarcModifyEnemyGroup RELEASING enemy group since someone in the BUDDY PAIR is ONLINE")
                 return
@@ -130,7 +153,7 @@ function OarcModifyEnemyGroup(group)
 
         -- Otherwise, we delete the group.
         if (global.enable_oe_debug) then
-            SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.members[1].position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
+            SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.position) .. " Target: " .. GetGPStext(target_entity.position) .. " " .. target_player.name)
         end
         for _,member in pairs(group.members) do
             member.destroy()
