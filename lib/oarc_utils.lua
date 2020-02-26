@@ -228,6 +228,28 @@ function GivePlayerStarterItems(player)
 
     if global.ocfg.enable_power_armor_start then
         GiveQuickStartPowerArmor(player)
+    elseif global.ocfg.enable_modular_armor_start then
+        GiveQuickStartModularArmor(player)
+    end
+end
+
+-- Modular armor quick start
+function GiveQuickStartModularArmor(player)
+    player.insert{name="modular-armor", count = 1}
+
+    if player and player.get_inventory(defines.inventory.character_armor) ~= nil and player.get_inventory(defines.inventory.character_armor)[1] ~= nil then
+        local p_armor = player.get_inventory(defines.inventory.character_armor)[1].grid
+            if p_armor ~= nil then
+                for i=1,2 do
+                  p_armor.put({name = "personal-roboport-equipment"})
+                  p_armor.put({name = "battery-equipment"})
+                  
+                end
+                for i=1,13 do
+                    p_armor.put({name = "solar-panel-equipment"})
+                end
+            end
+        player.insert{name="construction-robot", count = 40}
     end
 end
 
@@ -238,21 +260,17 @@ function GiveQuickStartPowerArmor(player)
     if player and player.get_inventory(defines.inventory.character_armor) ~= nil and player.get_inventory(defines.inventory.character_armor)[1] ~= nil then
         local p_armor = player.get_inventory(defines.inventory.character_armor)[1].grid
             if p_armor ~= nil then
-                  p_armor.put({name = "fusion-reactor-equipment"})
-                  p_armor.put({name = "exoskeleton-equipment"})
-                  p_armor.put({name = "battery-mk2-equipment"})
-                  p_armor.put({name = "battery-mk2-equipment"})
-                  p_armor.put({name = "personal-roboport-mk2-equipment"})
-                  p_armor.put({name = "personal-roboport-mk2-equipment"})
-                  p_armor.put({name = "personal-roboport-mk2-equipment"})
-                  p_armor.put({name = "battery-mk2-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
-                  p_armor.put({name = "solar-panel-equipment"})
+                p_armor.put({name = "fusion-reactor-equipment"})
+                p_armor.put({name = "exoskeleton-equipment"})
+                p_armor.put({name = "battery-mk2-equipment"})
+                p_armor.put({name = "battery-mk2-equipment"})
+                p_armor.put({name = "personal-roboport-mk2-equipment"})
+                p_armor.put({name = "personal-roboport-mk2-equipment"})
+                p_armor.put({name = "personal-roboport-mk2-equipment"})
+                p_armor.put({name = "battery-mk2-equipment"})
+                for i=1,7 do
+                    p_armor.put({name = "solar-panel-equipment"})
+                end
             end
         player.insert{name="construction-robot", count = 100}
         player.insert{name="belt-immunity-equipment", count = 1}
