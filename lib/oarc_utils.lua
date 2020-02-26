@@ -240,12 +240,10 @@ function GiveQuickStartModularArmor(player)
     if player and player.get_inventory(defines.inventory.character_armor) ~= nil and player.get_inventory(defines.inventory.character_armor)[1] ~= nil then
         local p_armor = player.get_inventory(defines.inventory.character_armor)[1].grid
             if p_armor ~= nil then
-                for i=1,2 do
-                  p_armor.put({name = "personal-roboport-equipment"})
-                  p_armor.put({name = "battery-equipment"})
-                  
-                end
-                for i=1,13 do
+                p_armor.put({name = "personal-roboport-equipment"})
+                p_armor.put({name = "battery-mk2-equipment"})
+                p_armor.put({name = "personal-roboport-equipment"})
+                for i=1,15 do
                     p_armor.put({name = "solar-panel-equipment"})
                 end
             end
