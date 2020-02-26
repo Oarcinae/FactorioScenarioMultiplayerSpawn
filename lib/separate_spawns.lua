@@ -162,6 +162,13 @@ function FindUnusedSpawns(player, remove_player)
             end
         end
 
+        -- Clear the buddy pair IF one exists
+        if (global.buddyPairs[player.name] ~= nil) then
+            local buddyName = global.buddyPairs[player.name]
+            global.buddyPairs[player.name] = nil
+            global.buddyPairs[buddyName] = nil
+        end
+
         -- Remove a force if this player created it and they are the only one on it
         if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg.main_force)) then
             game.merge_forces(player.force, global.ocfg.main_force)
@@ -405,6 +412,28 @@ function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
     game.players[newOwnerName].print("You have been given ownership of this base!")
 end
 
+-- Return the owner of the shared spawn for this player.
+-- May return nil if player has not spawned yet.
+function FindPlayerSharedSpawn(playerName)
+
+    -- If the player IS an owner, he can't be in any other shared base.
+    if (global.sharedSpawns[playerName] ~= nil) then
+        return playerName
+    end
+
+    -- Otherwise, search all shared spawns for this player and return the owner.
+    for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
+        for _,sharingPlayerName in pairs(sharedSpawn.players) do
+            if (playerName == sharingPlayerName) then
+                return ownerName
+            end
+        end
+    end
+
+    -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
+    return nil
+end
+
 -- Returns the number of players currently online at the shared spawn
 function GetOnlinePlayersAtSharedSpawn(ownerName)
     if (global.sharedSpawns[ownerName] ~= nil) then
@@ -515,6 +544,16 @@ function InitSpawnGlobalsAndForces()
         global.siloPosition = {}
     end
 
+    -- Buddy info
+    if (global.buddyPairs == nil) then
+        global.buddyPairs = {}
+    end
+
+    -- Rendering fancy fadeouts.
+    if (global.oarc_renders_fadeout == nil) then
+        global.oarc_renders_fadeout = {}
+    end
+
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreateForce(global.ocfg.main_force)
@@ -597,7 +636,7 @@ function DisplayWelcomeGroundTextAtSpawn(player, pos)
                         scale=20,
                         font="scenario-message-dialog",
                         time_to_live=ttl,
-                        players={player},
+                        -- players={player},
                         draw_on_ground=true,
                         orientation=0,
                         -- alignment=center,
@@ -610,12 +649,15 @@ function DisplayWelcomeGroundTextAtSpawn(player, pos)
                         scale=20,
                         font="scenario-message-dialog",
                         time_to_live=ttl,
-                        players={player},
+                        -- players={player},
                         draw_on_ground=true,
                         orientation=0,
                         -- alignment=center,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
+
+    table.insert(global.oarc_renders_fadeout, rid1)
+    table.insert(global.oarc_renders_fadeout, rid2)
 end
 
 
@@ -650,12 +692,6 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     -- Render some welcoming text...
     DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn.pos)
 
-    if (global.oarc_renders_fadeout == nil) then
-        global.oarc_renders_fadeout = {}
-    end
-    table.insert(global.oarc_renders_fadeout, rid1)
-    table.insert(global.oarc_renders_fadeout, rid2)
-
     -- Chart the area.
     ChartArea(player.force, delayedSpawn.pos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
 
@@ -676,7 +712,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
-                        players={player},
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
                         draw_on_ground=true,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
@@ -686,7 +723,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
-                        players={player},
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
                         draw_on_ground=true,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
@@ -705,7 +743,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         color={0.7,0.7,0.1,0.7},
                         scale=1,
                         font="scenario-message-dialog",
-                        players={player},
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
                         draw_on_ground=true,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
@@ -723,7 +762,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
-                        players={player},
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
                         draw_on_ground=true,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
@@ -733,7 +773,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
-                        players={player},
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
                         draw_on_ground=true,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
@@ -753,13 +794,14 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         color={0.5,0.5,0.8,0.8},
                         scale=1,
                         font="scenario-message-dialog",
-                        players={player},
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
                         draw_on_ground=true,
                         scale_with_zoom=false,
                         only_in_alt_mode=false}
 
         -- Cutscene to force the player to witness my brilliance
-        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=1.2},{target=player.character,transition_time=100,time_to_wait=60,zoom=0.8}}, final_transition_time=60}
+        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=1.2},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
     end
 end
 

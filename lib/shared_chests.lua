@@ -26,16 +26,16 @@ EXCEPTION_LIST = {['loader'] = true,
                     ['fast-loader'] = true,
                     ['express-loader'] = true}
 
--- 480MJ per second = 480MW max output in theory...
-SHARED_ELEC_OUTPUT_BUFFER_SIZE = 480000000 -- Default 10000000000
-SHARED_ELEC_INPUT_BUFFER_SIZE = 480000000
+-- Buffer size is the limit of joules/tick so multiply by 60 to get /sec.
+SHARED_ELEC_OUTPUT_BUFFER_SIZE = 1000000000 -- Default 10000000000
+SHARED_ELEC_INPUT_BUFFER_SIZE = 1000000000 -- 480000000
 
 DEFAULT_SHARED_ELEC_INPUT_LIMIT = 100000 -- 100kW?
 
-SHARED_ENERGY_STARTING_VALUE = 1000000000 -- 100GJ
+SHARED_ENERGY_STARTING_VALUE = 0 -- 100GJ
 
 -- How often we are executing the electricity distribution.
-SHARED_ELEC_TICK_RATE = 15
+SHARED_ELEC_TICK_RATE = 60
 
 function SharedChestInitItems()
 
@@ -51,8 +51,8 @@ function SharedChestInitItems()
     global.shared_items['red-wire'] = 10000
     global.shared_items['green-wire'] = 10000
     global.shared_items['raw-fish'] = 10000   
-    global.shared_energy_stored = 1000000000
-    global.shared_energy_stored_history = {current=1000000000, last=1000000000}
+    global.shared_energy_stored = SHARED_ENERGY_STARTING_VALUE
+    global.shared_energy_stored_history = {start=SHARED_ENERGY_STARTING_VALUE, after_input=SHARED_ENERGY_STARTING_VALUE, after_output=SHARED_ENERGY_STARTING_VALUE}
 end
 
 
@@ -74,18 +74,17 @@ function SharedEnergySpawnIOPair(player, posIn, posOut)
     outputElecCombi.operable = false
     table.insert(global.shared_electricity_combi, outputElecCombi)
 
-    -- This buffer size doesn't really matter since we empty it every second.
     inputElec.electric_buffer_size = SHARED_ELEC_INPUT_BUFFER_SIZE
     inputElec.power_production = 0 -- We disable this and never use it!
-    inputElec.power_usage = 0 -- We disable this and never use it!
-    inputElec.energy = 0 -- We make sure this is initialized to 0
+    inputElec.power_usage = 0
+    inputElec.energy = 0
 
     -- This buffer size matters because the local circuit may charge it up if there is surplus.
     -- So the limit here is something reasonable...
     outputElec.electric_buffer_size = SHARED_ELEC_OUTPUT_BUFFER_SIZE
     outputElec.power_production = 0 -- We disable this and never use it!
-    outputElec.power_usage = 0 -- We disable this and never use it!
-    outputElec.energy = SHARED_ELEC_OUTPUT_BUFFER_SIZE -- Start it full so we don't drain on new spawn.
+    outputElec.power_usage = 0
+    outputElec.energy = 0
 
     if global.shared_electricity_io == nil then
         global.shared_electricity_io = {}
@@ -97,29 +96,28 @@ function SharedEnergySpawnIOPair(player, posIn, posOut)
 end
 
 function SharedEnergyStoreInputOnTick()
-    global.shared_energy_stored_history.last = global.shared_energy_stored_history.current
-    global.shared_energy_stored_history.current = global.shared_energy_stored
+    global.shared_energy_stored_history.start = global.shared_energy_stored
 
     if global.shared_electricity_io ~= nil then
         for idx,elecPair in pairs(global.shared_electricity_io) do
             if (elecPair.input == nil) or (not elecPair.input.valid) or 
                 (elecPair.input == nil) or (not elecPair.input.valid) then
                 global.shared_electricity_io[idx] = nil
+            
+            -- Is input at least half full, then we can start to store energy.
+            elseif (elecPair.input.energy > (SHARED_ELEC_INPUT_BUFFER_SIZE/2)) then
+                    local max_input_allowed = elecPair.input.energy - (SHARED_ELEC_INPUT_BUFFER_SIZE/2) 
+                    elecPair.input.power_usage = math.min(max_input_allowed, global.shared_electricity_player_limits[elecPair.player])
+                    global.shared_energy_stored = global.shared_energy_stored + elecPair.input.power_usage
+
+            -- Switch off contribution if not at least half full.
             else
-
-                -- Div 4 because on tick runs every 1/4 of a second (15/60)
-                local transfer_cap = global.shared_electricity_player_limits[elecPair.player] / (60/SHARED_ELEC_TICK_RATE)
-
-                if (elecPair.input.energy <= transfer_cap) or (transfer_cap == 0) then
-                    global.shared_energy_stored = global.shared_energy_stored + elecPair.input.energy
-                    elecPair.input.energy = 0
-                else
-                    global.shared_energy_stored = global.shared_energy_stored + transfer_cap
-                    elecPair.input.energy = elecPair.input.energy - transfer_cap
-                end
+                elecPair.input.power_usage = 0
             end
         end
     end
+
+    global.shared_energy_stored_history.after_input = global.shared_energy_stored
 end
 
 -- If there is room to distribute energy, we take shared amount split by players.
@@ -131,23 +129,19 @@ function SharedEnergyDistributeOutputOnTick()
 
         -- Iterate through and fill up outputs if they are under 50%
         for idx,elecPair in pairs(global.shared_electricity_io) do
-            if (elecPair.input == nil) or (not elecPair.input.valid) or 
-                (elecPair.input == nil) or (not elecPair.input.valid) then
+            if (elecPair.output == nil) or (not elecPair.output.valid) or 
+                (elecPair.output == nil) or (not elecPair.output.valid) then
                 global.shared_electricity_io[idx] = nil
-            elseif (elecPair.output.energy < SHARED_ELEC_OUTPUT_BUFFER_SIZE) then
-                local outBufferSpace = (SHARED_ELEC_OUTPUT_BUFFER_SIZE - elecPair.output.energy)
-                
-                -- If we have enough in the bank to fill it up, fill it up.
-                if (outBufferSpace <= energyShareCap) then
-                    elecPair.output.energy = SHARED_ELEC_OUTPUT_BUFFER_SIZE
-                    global.shared_energy_stored = global.shared_energy_stored - outBufferSpace
-                
-                -- Else cap it based on number of outputs.
-                else
-                    elecPair.output.energy = elecPair.output.energy + energyShareCap
-                    global.shared_energy_stored = global.shared_energy_stored - energyShareCap
-
-                end
+            
+            -- If it's not full, set production to fill (or as much as is allowed.)
+            elseif (elecPair.output.energy < (SHARED_ELEC_OUTPUT_BUFFER_SIZE/2)) then
+                local outBufferSpace = ((SHARED_ELEC_OUTPUT_BUFFER_SIZE/2) - elecPair.output.energy)
+                elecPair.output.power_production = math.min(outBufferSpace, energyShareCap)
+                global.shared_energy_stored = global.shared_energy_stored - math.min(outBufferSpace, energyShareCap)
+            
+            -- Switch off if we're more than half full.
+            else
+                elecPair.output.power_production = 0
             end
         end
     end
@@ -160,6 +154,8 @@ function SharedEnergyDistributeOutputOnTick()
             combi.get_or_create_control_behavior().set_signal(1, {signal={type="virtual", name="signal-M"}, count=clampInt32(math.floor(global.shared_energy_stored/1000000))})
         end
     end
+
+    global.shared_energy_stored_history.after_output = global.shared_energy_stored
 end
 
 -- This function spawns chests at the given location.
@@ -397,7 +393,7 @@ end
 function SharedChestsDistributeRequests()
 
     -- For each output chest.
-    for _,chestInfo in pairs(global.shared_chests) do
+    for idx,chestInfo in pairs(global.shared_chests) do
         if (chestInfo.type == "OUTPUT") then
 
             local chestEntity = chestInfo.entity
@@ -451,15 +447,9 @@ end
 
 function SharedChestsOnTick()
 
-    -- Every 1/4 sec, we store input energy
-    if ((game.tick % (SHARED_ELEC_TICK_RATE)) == 1) then
-        SharedEnergyStoreInputOnTick()
-    end
-
-    -- Every 1/4 sec, we distribute output energy
-    if ((game.tick % (SHARED_ELEC_TICK_RATE)) == 2) then
-        SharedEnergyDistributeOutputOnTick()
-    end
+    -- Every tick we share power
+    SharedEnergyStoreInputOnTick()
+    SharedEnergyDistributeOutputOnTick()
 
     -- Every second, we check the input chests and deposit stuff.
     if ((game.tick % (60)) == 37) then
@@ -491,34 +481,32 @@ function CreateSharedItemsGuiTab(tab_container, player)
     ApplyStyle(scrollFrame, my_shared_item_list_fixed_width_style)
     scrollFrame.horizontal_scroll_policy = "never"
 
-    AddLabel(scrollFrame, "share_items_info", "Place items into the [color=yellow]yellow storage chests to share[/color].\nRequest items from the [color=blue]blue requestor chests to pull out items[/color].\nTo refresh this view, click the tab again.\nShared items are accessible by [color=red]EVERYONE and all teams[/color].\nThe combinator pair allows you to 'set' item types to watch for. Set items in the top one, and connect the bottom one to a circuit network to view the current available inventory. Items with 0 amount do not generate any signal.", my_longer_label_style)
+    AddLabel(scrollFrame, "share_items_info", "Place items into the [color=yellow]yellow storage chests to share[/color].\nRequest items from the [color=blue]blue requestor chests to pull out items[/color].\nTo refresh this view, click the tab again.\nShared items are accessible by [color=red]EVERYONE and all teams[/color].\nThe combinator pair allows you to 'set' item types to watch for. Set items in the top one, and connect the bottom one to a circuit network to view the current available inventory. Items with 0 amount do not generate any signal.\nThe special accumulators share energy. The top one acts as an input, the bottom is the output.", my_longer_label_style)
 
     AddSpacerLine(scrollFrame)
 
     -- MW charging/discharging rate. (delta change * sample rate per second)
-    local energy_change = ((global.shared_energy_stored_history.current - global.shared_energy_stored_history.last)* (60/SHARED_ELEC_TICK_RATE))/(1000000)
-    local energy_change_str = string.format("%.3fMW", energy_change)
+    local energy_change_add = (global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.start)*60/1000000
+    local energy_change_sub = (global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.after_output)*60/1000000
+    local energy_add_str = string.format("+%.3fMW", energy_change_add)
+    local energy_sub_str = string.format("-%.3fMW", energy_change_sub)
     local rate_color = "green"
-    if (energy_change <= 0) then
+    if (energy_change_add <= energy_change_sub) then
         rate_color = "red"
-    elseif (energy_change < 1) then
+    elseif (energy_change_add < (energy_change_sub+10)) then
         rate_color = "orange"
     end
 
-    AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.shared_energy_stored/1000000) .. "MJ[/color] [color=" .. rate_color .. "](Rate: " .. energy_change_str ..")[/color]", my_longer_label_style)
+    AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.shared_energy_stored/1000000) .. "MJ[/color] [color=" .. rate_color .. "](" .. energy_add_str .. " " .. energy_sub_str ..")[/color]", my_longer_label_style)
 
     if ((global.shared_electricity_player_limits ~= nil) and 
         (global.shared_electricity_player_limits[player.name] ~= nil)) then
         
-        local limit_mw_nice = "Unlimited!"
-        if (global.shared_electricity_player_limits[player.name] ~= 0) then
-            local limit_in_mw = global.shared_electricity_player_limits[player.name] / 1000000
-            limit_mw_nice = string.format("%.3fMW", limit_in_mw)
-        end
+        local limit_mw_nice = string.format("%.3fMW", (global.shared_electricity_player_limits[player.name]*60 / 1000000))
 
         AddLabel(scrollFrame, "elec_limit_info", "Limit sharing amount (".. limit_mw_nice .."): ", my_longer_label_style)
         scrollFrame.add{type="textfield",
-                            tooltip="Limit how much energy you are sharing with others!",
+                            tooltip="Limit how much energy you are sharing with others!\nThis is in Joules/tick so you it is multiplied by 60 to get Watts.",
                             name="energy_share_limit_input",
                             numeric=true,
                             allow_negative=false,
@@ -551,16 +539,15 @@ function SharedElectricityPlayerGuiValueChange(event)
         if (event.element.text == "") then 
             event.element.text = 0
         end
+        if (tonumber(event.element.text) > (SHARED_ELEC_INPUT_BUFFER_SIZE/2)) then
+            event.element.text = SHARED_ELEC_INPUT_BUFFER_SIZE/2
+        end           
+
         global.shared_electricity_player_limits[player.name] = tonumber(event.element.text)
         event.element.text = global.shared_electricity_player_limits[player.name]
 
-        if (global.shared_electricity_player_limits[player.name] == 0) then 
-            event.element.parent.elec_limit_info.caption = "Limit sharing amount (Unlimited!): "
-        else
-            local limit_in_mw = global.shared_electricity_player_limits[player.name] / 1000000
-            local limit_mw_nice = string.format("%.3fMW", limit_in_mw)
-            event.element.parent.elec_limit_info.caption = "Limit sharing amount (".. limit_mw_nice .."): "
-        end
+        local limit_mw_nice = string.format("%.3fMW", (global.shared_electricity_player_limits[player.name]*60 / 1000000))
+        event.element.parent.elec_limit_info.caption = "Limit sharing amount (".. limit_mw_nice .."): "
 
     end
 end

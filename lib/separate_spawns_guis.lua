@@ -1191,7 +1191,8 @@ function BuddySpawnRequestMenuClick(event)
         game.players[requesterName].print({"", {"oarc-please-wait"}, "!"})
         game.players[requesterName].print({"", {"oarc-please-wait"}, "!!"})
 
-
+        global.buddyPairs[player.name] = requesterName
+        global.buddyPairs[requesterName] = player.name
     end
 
     -- Check if player is cancelling the request.
