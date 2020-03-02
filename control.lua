@@ -34,6 +34,8 @@ require("lib/player_list")
 require("lib/rocket_launch")
 require("lib/admin_commands")
 require("lib/regrowth_map")
+require("lib/shared_chests")
+require("lib/notepad")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -49,7 +51,7 @@ require("lib/oarc_global_cfg.lua")
 -- Scenario Specific Includes
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
-
+require("lib/oarc_enemies")
 require("lib/oarc_gui_tabs")
 
 -- compatibility with mods
@@ -104,6 +106,10 @@ script.on_init(function(event)
     log(serpent.block(global.vanillaSpawns))
 
     Compat.handle_factoriomaps()
+
+    if (global.ocfg.enable_chest_sharing) then
+        SharedChestInitItems()
+    end
 end)
 
 script.on_load(function()
@@ -140,7 +146,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
 
     SeparateSpawnsGenerateChunk(event)
 
-    CreateHoldingPen(event.surface, event.area, 16, 32)
+    CreateHoldingPen(event.surface, event.area)
 end)
 
 
@@ -154,10 +160,6 @@ script.on_event(defines.events.on_gui_click, function(event)
 
     if global.ocfg.enable_tags then
         TagGuiClick(event)
-    end
-
-    if global.ocfg.enable_player_list then
-        PlayerListGuiClick(event)
     end
 
     WelcomeTextGuiClick(event)
@@ -196,6 +198,15 @@ script.on_event(defines.events.on_player_created, function(event)
 
     -- Move the player to the game surface immediately.
     player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
+
+    rendering.draw_text{text="OARC",
+                    surface=game.surfaces[GAME_SURFACE_NAME],
+                    target={x=-40,y=-25},
+                    color={0.9, 0.7, 0.3, 0.8},
+                    scale=60,
+                    font="scenario-message-dialog",
+                    players={player},
+                    draw_on_ground=true}
 
     if global.ocfg.enable_long_reach then
         GivePlayerLongReach(player)
@@ -286,6 +297,12 @@ script.on_event(defines.events.on_tick, function(event)
         DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
     end
 
+    if global.ocfg.enable_chest_sharing then
+        SharedChestsOnTick()
+    end
+
+    TimeoutSpeechBubblesOnTick()
+    FadeoutRenderOnTick()
 end)
 
 
@@ -388,6 +405,14 @@ script.on_event(defines.events.on_biter_base_built, function(event)
 end)
 
 ----------------------------------------
+-- On unit group finished gathering
+-- This is where I remove biter waves on offline players
+----------------------------------------
+script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
+    OarcModifyEnemyGroup(event.group)
+end)
+
+----------------------------------------
 -- On Corpse Timed Out
 -- Save player's stuff so they don't lose it if they can't get to the corpse fast enough.
 ----------------------------------------
@@ -395,3 +420,12 @@ script.on_event(defines.events.on_character_corpse_expired, function(event)
     DropGravestoneChestFromCorpse(event.corpse)
 end)
 
+
+----------------------------------------
+-- On Gui Text Change
+-- For capturing text entry.
+----------------------------------------
+script.on_event(defines.events.on_gui_text_changed, function(event)
+    NotepadOnGuiTextChange(event)
+    SharedElectricityPlayerGuiValueChange(event)
+end)

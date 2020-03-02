@@ -62,6 +62,11 @@ my_player_list_fixed_width_style = {
     maximal_width = 400,
     maximal_height = 200
 }
+my_shared_item_list_fixed_width_style = {
+    minimal_width = 200,
+    maximal_width = 600,
+    maximal_height = 600
+}
 my_player_list_admin_style = {
     font = "default-semibold",
     font_color = {r=1,g=0.5,b=0.5},
@@ -103,6 +108,16 @@ my_longer_warning_style = {
     font_color = {r=1,g=0.1,b=0.1},
     top_padding = 0,
     bottom_padding = 0
+}
+my_notepad_fixed_width_style = {
+    minimal_width = 600,
+    maximal_width = 600,
+    minimal_height = 300,
+    maximal_height = 300,
+    font = "default-small-semibold",
+    font_color = {r=0.2,g=0.3,b=0.4},
+    top_margin = 5,
+    bottom_margin = 5
 }
 
 --------------------------------------------------------------------------------

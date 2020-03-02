@@ -162,6 +162,13 @@ function FindUnusedSpawns(player, remove_player)
             end
         end
 
+        -- Clear the buddy pair IF one exists
+        if (global.buddyPairs[player.name] ~= nil) then
+            local buddyName = global.buddyPairs[player.name]
+            global.buddyPairs[player.name] = nil
+            global.buddyPairs[buddyName] = nil
+        end
+
         -- Remove a force if this player created it and they are the only one on it
         if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg.main_force)) then
             game.merge_forces(player.force, global.ocfg.main_force)
@@ -233,7 +240,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 end
                 if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
                     if (spawn.moat) then
-                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, fill_tile)
+                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "water", true)
                     end
                 end
             end
@@ -405,6 +412,28 @@ function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
     game.players[newOwnerName].print("You have been given ownership of this base!")
 end
 
+-- Return the owner of the shared spawn for this player.
+-- May return nil if player has not spawned yet.
+function FindPlayerSharedSpawn(playerName)
+
+    -- If the player IS an owner, he can't be in any other shared base.
+    if (global.sharedSpawns[playerName] ~= nil) then
+        return playerName
+    end
+
+    -- Otherwise, search all shared spawns for this player and return the owner.
+    for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
+        for _,sharingPlayerName in pairs(sharedSpawn.players) do
+            if (playerName == sharingPlayerName) then
+                return ownerName
+            end
+        end
+    end
+
+    -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
+    return nil
+end
+
 -- Returns the number of players currently online at the shared spawn
 function GetOnlinePlayersAtSharedSpawn(ownerName)
     if (global.sharedSpawns[ownerName] ~= nil) then
@@ -515,6 +544,16 @@ function InitSpawnGlobalsAndForces()
         global.siloPosition = {}
     end
 
+    -- Buddy info
+    if (global.buddyPairs == nil) then
+        global.buddyPairs = {}
+    end
+
+    -- Rendering fancy fadeouts.
+    if (global.oarc_renders_fadeout == nil) then
+        global.oarc_renders_fadeout = {}
+    end
+
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreateForce(global.ocfg.main_force)
@@ -584,6 +623,44 @@ function DelayedSpawnOnTick()
     end
 end
 
+
+function DisplayWelcomeGroundTextAtSpawn(player, pos)
+
+    -- Render some welcoming text...
+    local tcolor = {0.9, 0.7, 0.3, 0.8}
+    local ttl = 2000
+    local rid1 = rendering.draw_text{text="Welcome",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=pos.x-21, y=pos.y-15},
+                        color=tcolor,
+                        scale=20,
+                        font="scenario-message-dialog",
+                        time_to_live=ttl,
+                        -- players={player},
+                        draw_on_ground=true,
+                        orientation=0,
+                        -- alignment=center,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+    local rid2 = rendering.draw_text{text="Home",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=pos.x-14, y=pos.y-5},
+                        color=tcolor,
+                        scale=20,
+                        font="scenario-message-dialog",
+                        time_to_live=ttl,
+                        -- players={player},
+                        draw_on_ground=true,
+                        orientation=0,
+                        -- alignment=center,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+    table.insert(global.oarc_renders_fadeout, rid1)
+    table.insert(global.oarc_renders_fadeout, rid2)
+end
+
+
 function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     -- DOUBLE CHECK and make sure the area is super safe.
@@ -610,13 +687,121 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     -- Send the player to that position
     local player = game.players[delayedSpawn.playerName]
     player.teleport(delayedSpawn.pos, GAME_SURFACE_NAME)
-    GivePlayerStarterItems(game.players[delayedSpawn.playerName])
+    GivePlayerStarterItems(player)
+
+    -- Render some welcoming text...
+    DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn.pos)
 
     -- Chart the area.
     ChartArea(player.force, delayedSpawn.pos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
 
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then
         player.gui.screen.wait_for_spawn_dialog.destroy()
+    end
+
+    local x_dist = global.ocfg.spawn_config.resource_rand_pos_settings.radius
+    if global.ocfg.enable_chest_sharing then
+
+        -- Shared electricity IO pair of scripted electric-energy-interfaces
+        SharedEnergySpawnIOPair(player,
+                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-15},
+                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+15})
+        rendering.draw_text{text="Attach to power generation to share.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-18},
+                        color={0.6,0.6,0.6,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+        rendering.draw_text{text="Attach to electric grid to draw power.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+16},
+                        color={0.6,0.6,0.6,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+        -- Input Chests
+        for i=-11,-6 do
+            SharedChestsSpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
+        end
+        -- Tile arrows to help indicate
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-9}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-9}, "LEFT")
+        --Helpful ground text
+        rendering.draw_text{text="Place items in to share.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-12},
+                        color={0.7,0.7,0.1,0.7},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+
+        -- Combinators for monitoring items in the network.
+        SharedChestsSpawnCombinators(player,
+                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2}, -- Ctrl
+                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y}, -- Status
+                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}) -- Pole
+        -- Helpful ground text
+        rendering.draw_text{text="Set signals here to monitor item counts.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-3},
+                        color={0.6,0.6,0.6,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+        rendering.draw_text{text="Receive signals here to see available items.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+1},
+                        color={0.6,0.6,0.6,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+        -- Output Chests
+        for i=4,9 do
+            SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
+        end
+        -- Tile arrows to help indicate
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+6}, "LEFT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+6}, "RIGHT")
+
+        --Helpful ground text
+        rendering.draw_text{text="Set filters to request items.",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+10},
+                        color={0.5,0.5,0.8,0.8},
+                        scale=1,
+                        font="scenario-message-dialog",
+                        time_to_live=TICKS_PER_HOUR*2,
+                        -- players={player},
+                        draw_on_ground=true,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+        -- Cutscene to force the player to witness my brilliance
+        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=1.2},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
     end
 end
 

@@ -3,7 +3,8 @@
   {
      "recipe_difficulty": 0,
      "technology_difficulty": 0,
-     "technology_price_multiplier": 1
+     "technology_price_multiplier": 1,
+     "research_queue_setting": "always"
   },
   "pollution":
   {
@@ -19,18 +20,19 @@
     "pollution_with_max_forest_damage": 10000,
     "pollution_per_tree_damage": 2000,
     "pollution_restored_per_tree_damage": 500,
-    "max_pollution_to_restore_trees": 1000
+    "max_pollution_to_restore_trees": 1000,
+    "enemy_attack_pollution_consumption_modifier": 1
   },
   "enemy_evolution":
   {
     "enabled": true,
-    "time_factor": 0,
-    "destroy_factor": 0.001,
-    "pollution_factor": 0.000010
+    "time_factor": 0.000000,
+    "destroy_factor": 0.003,
+    "pollution_factor": 0.0000003
   },
   "enemy_expansion":
   {
-    "enabled": true,
+    "enabled": false,
     "min_base_spacing": 5,
     "max_expansion_distance": 20,
     "friendly_base_influence_radius": 2,
@@ -40,16 +42,16 @@
     "neighbouring_chunk_coefficient": 0.5,
     "neighbouring_base_chunk_coefficient": 0.4,
     "max_colliding_tiles_coefficient": 0.9,
-    "settler_group_min_size": 2,
-    "settler_group_max_size": 10,
-    "min_expansion_cooldown": 54000,
+    "settler_group_min_size": 5,
+    "settler_group_max_size": 20,
+    "min_expansion_cooldown": 108000,
     "max_expansion_cooldown": 216000
   },
   "unit_group":
   {
     "min_group_gathering_time": 3600,
-    "max_group_gathering_time": 14400,
-    "max_wait_time_for_late_members": 3600,
+    "max_group_gathering_time": 36000,
+    "max_wait_time_for_late_members": 7200,
     "max_group_radius": 30.0,
     "min_group_radius": 5.0,
     "max_member_speedup_when_behind": 1.4,
@@ -59,7 +61,7 @@
     "member_disown_distance": 10,
     "tick_tolerance_when_member_arrives": 60,
     "max_gathering_unit_groups": 30,
-    "max_unit_group_size": 20
+    "max_unit_group_size": 200
   },
   "steering":
   {
@@ -83,6 +85,7 @@
     "fwd2bwd_ratio": 5,
     "goal_pressure_ratio": 2,
     "max_steps_worked_per_tick": 100,
+    "max_work_done_per_tick": 8000,
     "use_path_cache": true,
     "short_cache_size": 5,
     "long_cache_size": 25,
@@ -101,13 +104,16 @@
     "enemy_with_different_destination_collision_penalty": 30,
     "general_entity_collision_penalty": 10,
     "general_entity_subsequent_collision_penalty": 3,
+    "extended_collision_penalty": 3,
     "max_clients_to_accept_any_new_request": 10,
     "max_clients_to_accept_short_new_request": 100,
     "direct_distance_to_consider_short_request": 100,
     "short_request_max_steps": 1000,
     "short_request_ratio": 0.5,
     "min_steps_to_check_path_find_termination": 2000,
-    "start_to_goal_cost_multiplier_to_terminate_path_find": 500.0
+    "start_to_goal_cost_multiplier_to_terminate_path_find": 500.0,
+    "overload_levels": [0, 100, 500],
+    "overload_multipliers": [2, 3, 4]
   },
   "max_failed_behavior_count": 3
 }

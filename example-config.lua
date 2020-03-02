@@ -80,9 +80,16 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 -- Enable the new 0.17 research queue by default for all forces.
 ENABLE_RESEARCH_QUEUE = true
 
+-- Enable chest sharing system. WIP
+ENABLE_CHEST_SHARING = true
+
 -- Lock power armor mk2, atomic bombs and artillery until you launch a rocket.
 -- Also lock speed/prod module-3s
 LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = false
+
+-- Give cheaty items on start.
+ENABLE_POWER_ARMOR_QUICK_START = false
+ENABLE_MODULAR_ARMOR_QUICK_START = true
 
 --------------------------------------------------------------------------------
 -- MAP CONFIGURATION OPTIONS
@@ -112,18 +119,6 @@ PLAYER_SPAWN_START_ITEMS = {
     {name="iron-plate", count=16},
     {name="burner-mining-drill", count = 2},
     {name="stone-furnace", count = 2},
-    -- {name="iron-plate", count=20},
-    -- {name="burner-mining-drill", count = 1},
-    -- {name="stone-furnace", count = 1},
-    -- {name="power-armor", count=1},
-    -- {name="fusion-reactor-equipment", count=1},
-    -- {name="battery-mk2-equipment", count=3},
-    -- {name="exoskeleton-equipment", count=1},
-    -- {name="personal-roboport-mk2-equipment", count=3},
-    -- {name="solar-panel-equipment", count=7},
-    -- {name="construction-robot", count=100},
-    -- {name="repair-pack", count=100},
-    -- {name="steel-axe", count=3},
 }
 
 -- Items provided after EVERY respawn (disabled by default)
@@ -182,7 +177,7 @@ OARC_CFG = {
         -- THIS IS WHAT SETS THE SPAWN CIRCLE SIZE!
         -- Create a circle of land area for the spawn
         -- If you make this much bigger than a few chunks, good luck.
-        land_area_tiles = CHUNK_SIZE*1.8,
+        land_area_tiles = CHUNK_SIZE*2,
 
         -- Allow players to choose to spawn with a moat
         moat_choice_enabled = true,

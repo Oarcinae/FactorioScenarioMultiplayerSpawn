@@ -757,6 +757,9 @@ function SpawnCtrlGuiClick(event)
                 table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
                 joiningPlayer.force = game.players[player.name].force
 
+                -- Render some welcoming text...
+                DisplayWelcomeGroundTextAtSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
+
                 -- Unlock spawn control gui tab
                 SetOarcGuiTabEnabled(joiningPlayer, OARC_SPAWN_CTRL_GUI_NAME, true)
             else
@@ -1188,7 +1191,8 @@ function BuddySpawnRequestMenuClick(event)
         game.players[requesterName].print({"", {"oarc-please-wait"}, "!"})
         game.players[requesterName].print({"", {"oarc-please-wait"}, "!!"})
 
-
+        global.buddyPairs[player.name] = requesterName
+        global.buddyPairs[requesterName] = player.name
     end
 
     -- Check if player is cancelling the request.
