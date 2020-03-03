@@ -277,7 +277,7 @@ function SwitchOarcGuiTab(player, tab_name)
 end
 
 function OarcGuiOnGuiClosedEvent(event)
-    if (event.element.name == "oarc_gui") then
+    if (event.element and (event.element.name == "oarc_gui")) then
         ToggleOarcGuiVisible(game.players[event.player_index])
     end
 end
