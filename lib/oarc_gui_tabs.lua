@@ -79,10 +79,18 @@ function DoesOarcGuiExist(player)
     return (mod_gui.get_frame_flow(player)[OARC_GUI] ~= nil)
 end
 
+function IsOarcGuiVisible(player)
+    local of = mod_gui.get_frame_flow(player)[OARC_GUI]
+    return (of.visible)
+end
+
 function ToggleOarcGuiVisible(player)
     local of = mod_gui.get_frame_flow(player)[OARC_GUI]
     if (of ~= nil) then
         of.visible = not of.visible
+        if (of.visible) then
+            player.opened = of -- This allows us to indicate the player has this GUI open and when they press Esc we'll get an event!
+        end
     end
 end
 
@@ -111,7 +119,9 @@ function ClickOarcGuiButton(event)
         CreateOarcGuiTabsPane(player)
     else
         ToggleOarcGuiVisible(player)
-        FakeTabChangeEventOarcGui(player)
+        if (IsOarcGuiVisible(player)) then
+            FakeTabChangeEventOarcGui(player)
+        end
     end
 end
 
@@ -263,5 +273,11 @@ function SwitchOarcGuiTab(player, tab_name)
             FakeTabChangeEventOarcGui(player)
             return
         end
+    end
+end
+
+function OarcGuiOnGuiClosedEvent(event)
+    if (event.element.name == "oarc_gui") then
+        ToggleOarcGuiVisible(game.players[event.player_index])
     end
 end

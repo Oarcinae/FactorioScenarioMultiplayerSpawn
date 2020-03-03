@@ -426,3 +426,12 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
     NotepadOnGuiTextChange(event)
     SharedElectricityPlayerGuiValueChange(event)
 end)
+
+
+----------------------------------------
+-- On Gui Closed
+-- For capturing player escaping custom GUI so we can close it using ESC key.
+----------------------------------------
+script.on_event(defines.events.on_gui_closed, function(event)
+    OarcGuiOnGuiClosedEvent(event)
+end)
