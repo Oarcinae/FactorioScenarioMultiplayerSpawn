@@ -225,7 +225,6 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 RemoveInCircle(surface, chunkArea, "tree", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles)
                 RemoveInCircle(surface, chunkArea, "resource", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
                 RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
-                RemoveDecorationsArea(surface, chunkArea)
 
                 local fill_tile = "landfill"
                 if (game.active_mods["oarc-restricted-build"]) then
@@ -861,9 +860,9 @@ function CreateForce(force_name)
         end
 
         if global.ocfg.lock_goodies_rocket_launch and not global.satellite_sent then
-            DisableTech(newForce, "atomic-bomb")
-            DisableTech(newForce, "power-armor-mk2")
-            DisableTech(newForce, "artillery")
+            for _,v in ipairs(LOCKED_TECHNOLOGIES) do
+                DisableTech(newForce, v.t)
+            end
         end
     else
         log("TOO MANY FORCES!!! - CreateForce()")

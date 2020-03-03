@@ -110,6 +110,9 @@ script.on_init(function(event)
     if (global.ocfg.enable_chest_sharing) then
         SharedChestInitItems()
     end
+
+    -- Display starting point text as a display of dominance.
+    RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
 end)
 
 script.on_load(function()
@@ -198,15 +201,6 @@ script.on_event(defines.events.on_player_created, function(event)
 
     -- Move the player to the game surface immediately.
     player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
-
-    rendering.draw_text{text="OARC",
-                    surface=game.surfaces[GAME_SURFACE_NAME],
-                    target={x=-40,y=-25},
-                    color={0.9, 0.7, 0.3, 0.8},
-                    scale=60,
-                    font="scenario-message-dialog",
-                    players={player},
-                    draw_on_ground=true}
 
     if global.ocfg.enable_long_reach then
         GivePlayerLongReach(player)
@@ -380,8 +374,9 @@ script.on_event(defines.events.on_research_finished, function(event)
 
     if global.ocfg.lock_goodies_rocket_launch and
         (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
-        RemoveRecipe(event.research.force, "productivity-module-3")
-        RemoveRecipe(event.research.force, "speed-module-3")
+        for _,v in ipairs(LOCKED_RECIPES) do
+            RemoveRecipe(event.research.force, v.r)
+        end
     end
 
     if global.ocfg.enable_loaders then
@@ -409,7 +404,9 @@ end)
 -- This is where I remove biter waves on offline players
 ----------------------------------------
 script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
-    OarcModifyEnemyGroup(event.group)
+    if (global.ocfg.enable_offline_protect) then
+        OarcModifyEnemyGroup(event.group)
+    end
 end)
 
 ----------------------------------------

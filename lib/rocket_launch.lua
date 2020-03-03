@@ -45,17 +45,15 @@ function RocketLaunchEvent(event)
         SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched their first rocket!")
         ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched their first rocket!" .. "\n")
 
-        -- Unlock research
+        -- Unlock research and recipes
         if global.ocfg.lock_goodies_rocket_launch then
-            EnableTech(force, "atomic-bomb")
-            EnableTech(force, "power-armor-mk2")
-            EnableTech(force, "artillery")
-
-            if (force.technologies["speed-module-3"].researched) then
-                AddRecipe(force, "speed-module-3")
+            for _,v in ipairs(LOCKED_TECHNOLOGIES) do
+                EnableTech(force, v.t)
             end
-            if (force.technologies["productivity-module-3"].researched) then
-                AddRecipe(force, "productivity-module-3")
+            for _,v in ipairs(LOCKED_RECIPES) do
+                if (force.technologies[v.r].researched) then
+                    AddRecipe(force, v.r)
+                end
             end
         end
     end
