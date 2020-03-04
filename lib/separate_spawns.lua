@@ -868,6 +868,14 @@ function CreateForce(force_name)
         log("TOO MANY FORCES!!! - CreateForce()")
     end
 
+    -- Add productivity bonus for solo teams.
+    if (ENABLE_FORCE_LAB_PROD_BONUS) then
+        local tech_mult = game.difficulty_settings.technology_price_multiplier
+        if (tech_mult > 1) and (force_name ~= global.ocfg.main_force) then
+            newForce.laboratory_productivity_bonus = (tech_mult-1)
+        end
+    end
+
     return newForce
 end
 

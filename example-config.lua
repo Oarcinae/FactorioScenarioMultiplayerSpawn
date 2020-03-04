@@ -87,6 +87,11 @@ ENABLE_CHEST_SHARING = true
 -- Not 100% guaranteed.
 ENABLE_OFFLINE_PROTECTION = true
 
+-- This allows you to set the tech price multiplier for the game, but 
+-- have it only affect the main force. We just pad all non-main forces lab prod bonus.
+-- This has no effect unless the tech multiplier is more than 1!
+ENABLE_FORCE_LAB_PROD_BONUS = true
+
 -- Lock various recipes and technologies behind a rocket launch.
 -- Each team/force must launch their own rocket to unlock this!
 LOCK_GOODIES_UNTIL_ROCKET_LAUNCH = true
