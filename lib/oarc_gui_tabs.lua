@@ -61,6 +61,7 @@ function InitOarcGuiTabs(player)
     AddOarcGuiTab(player, OARC_NOTEPAD_GUI_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_NOTEPAD_GUI_TAB_NAME, true)
     
+    HideOarcGui(player)
 end
 
 function CreateOarcGuiButton(player)
@@ -84,14 +85,18 @@ function IsOarcGuiVisible(player)
     return (of.visible)
 end
 
-function ToggleOarcGuiVisible(player)
+function ShowOarcGui(player)
     local of = mod_gui.get_frame_flow(player)[OARC_GUI]
-    if (of ~= nil) then
-        of.visible = not of.visible
-        if (of.visible) then
-            player.opened = of -- This allows us to indicate the player has this GUI open and when they press Esc we'll get an event!
-        end
-    end
+    if (of == nil) then return end
+    of.visible = true
+    player.opened = of
+end
+
+function HideOarcGui(player)
+    local of = mod_gui.get_frame_flow(player)[OARC_GUI]
+    if (of == nil) then return end
+    of.visible = false
+    player.opened = nil
 end
 
 function GetOarcGuiTabsPane(player)
@@ -118,8 +123,10 @@ function ClickOarcGuiButton(event)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
     else
-        ToggleOarcGuiVisible(player)
         if (IsOarcGuiVisible(player)) then
+            HideOarcGui(player)
+        else
+            ShowOarcGui(player)
             FakeTabChangeEventOarcGui(player)
         end
     end
@@ -188,7 +195,6 @@ end
 function AddOarcGuiTab(player, tab_name, content_function)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
-        ToggleOarcGuiVisible(player)
     end
 
     -- Get the tabbed pane
@@ -226,12 +232,6 @@ function AddOarcGuiTab(player, tab_name, content_function)
     if (otabs.selected_tab_index == nil) then
         otabs.selected_tab_index = 1
     end
-
-    -- if (global.oarc_gui_tab_funcs == nil) then
-    --     global.oarc_gui_tab_funcs = {}
-    -- end
-
-    -- global.oarc_gui_tab_funcs[tab_name] = content_function
 end
 
 
@@ -278,6 +278,6 @@ end
 
 function OarcGuiOnGuiClosedEvent(event)
     if (event.element and (event.element.name == "oarc_gui")) then
-        ToggleOarcGuiVisible(game.players[event.player_index])
+        HideOarcGui(game.players[event.player_index])
     end
 end
