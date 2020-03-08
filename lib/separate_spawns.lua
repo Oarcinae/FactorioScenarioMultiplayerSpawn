@@ -703,11 +703,11 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
         -- Shared electricity IO pair of scripted electric-energy-interfaces
         SharedEnergySpawnIOPair(player,
-                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-15},
-                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+15})
+                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-28},
+                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+29})
         rendering.draw_text{text="Attach to power generation to share.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-18},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-31},
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
@@ -718,7 +718,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         only_in_alt_mode=false}
         rendering.draw_text{text="Attach to electric grid to draw power.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+16},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+30},
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
@@ -729,16 +729,16 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         only_in_alt_mode=false}
 
         -- Input Chests
-        for i=-11,-6 do
+        for i=-22,-17 do
             SharedChestsSpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
         end
         -- Tile arrows to help indicate
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-9}, "RIGHT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-9}, "LEFT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-20}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-20}, "LEFT")
         --Helpful ground text
         rendering.draw_text{text="Place items in to share.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-12},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-23},
                         color={0.7,0.7,0.1,0.7},
                         scale=1,
                         font="scenario-message-dialog",
@@ -751,9 +751,19 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
         -- Combinators for monitoring items in the network.
         SharedChestsSpawnCombinators(player,
+                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y-2}, -- Ctrl
+                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}, -- Status
+                {x=delayedSpawn.pos.x+x_dist-1-1, y=delayedSpawn.pos.y}) -- Pole
+        SharedChestsSpawnCombinators(player,
                 {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2}, -- Ctrl
                 {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y}, -- Status
                 {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}) -- Pole
+        SharedChestsSpawnCombinators(player,
+                {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-2}, -- Ctrl
+                {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y}, -- Status
+                {x=delayedSpawn.pos.x+x_dist-1+1, y=delayedSpawn.pos.y}) -- Pole
+
+
         -- Helpful ground text
         rendering.draw_text{text="Set signals here to monitor item counts.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
@@ -779,17 +789,18 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         only_in_alt_mode=false}
 
         -- Output Chests
-        for i=4,9 do
-            SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
+        for i=16,21 do
+            SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i}, (i == 16))
         end
+
         -- Tile arrows to help indicate
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+6}, "LEFT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+6}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+18}, "LEFT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+18}, "RIGHT")
 
         --Helpful ground text
         rendering.draw_text{text="Set filters to request items.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+10},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+22},
                         color={0.5,0.5,0.8,0.8},
                         scale=1,
                         font="scenario-message-dialog",
@@ -800,7 +811,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         only_in_alt_mode=false}
 
         -- Cutscene to force the player to witness my brilliance
-        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=1.2},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
+        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=0.8},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
     end
 end
 

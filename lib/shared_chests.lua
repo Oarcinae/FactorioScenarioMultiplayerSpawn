@@ -173,13 +173,15 @@ function SharedChestsSpawnInput(player, pos)
     table.insert(global.shared_chests, chestInfoIn)
 end
 
-function SharedChestsSpawnOutput(player, pos)
+function SharedChestsSpawnOutput(player, pos, enable_example)
 
     local outputChest = game.surfaces[GAME_SURFACE_NAME].create_entity{name="logistic-chest-requester", position={pos.x, pos.y}, force="neutral"}
     outputChest.destructible = false
     outputChest.minable = false
 
-    outputChest.set_request_slot({name="raw-fish", count=1}, 1)
+    if (enable_example) then
+        outputChest.set_request_slot({name="raw-fish", count=1}, 1)
+    end
 
     if global.shared_chests == nil then
         global.shared_chests = {}
@@ -204,13 +206,13 @@ function SharedChestsSpawnCombinators(player, posCtrl, posStatus, posPole)
     combiStat.minable = false
     combiStat.operable = false
 
-    local pole = game.surfaces[GAME_SURFACE_NAME].create_entity{name="small-electric-pole", position=posPole, force="neutral"}
-    pole.destructible = false
-    pole.minable = false
+    -- local pole = game.surfaces[GAME_SURFACE_NAME].create_entity{name="small-electric-pole", position=posPole, force="neutral"}
+    -- pole.destructible = false
+    -- pole.minable = false
 
     -- Wire up dat pole
-    pole.connect_neighbour({wire=defines.wire_type.red,
-                            target_entity=combiStat})
+    -- pole.connect_neighbour({wire=defines.wire_type.red,
+    --                         target_entity=combiStat})
 
     if global.shared_chests_combinators == nil then
         global.shared_chests_combinators = {}
