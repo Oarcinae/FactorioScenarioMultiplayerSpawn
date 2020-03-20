@@ -50,7 +50,7 @@ function OarcModifyEnemyGroup(group)
 
         local distance = CHUNK_SIZE*3
         if (group.command.type == defines.command.build_base) then
-            distance = CHUNK_SIZE*7 --game.map_settings.enemy_expansion.max_expansion_distance
+            distance = CHUNK_SIZE*(game.map_settings.enemy_expansion.max_expansion_distance)
         end
 
         -- Find some enemies near the attack point.

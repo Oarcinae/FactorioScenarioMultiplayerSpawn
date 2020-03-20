@@ -71,8 +71,6 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
     local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*2))^2
     if modifier > 1 then modifier = 1 end
 
-    SendBroadcastMsg("Modifier is " .. modifier)
-
     for key, entity in pairs(surface.find_entities_filtered{area=chunkArea, type="resource"}) do
         if entity.valid and entity and entity.position and entity.amount then
             local new_amount = math.ceil(entity.amount * modifier)
