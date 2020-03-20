@@ -51,12 +51,39 @@ function SeparateSpawnsGenerateChunk(event)
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
     end
 
+    -- Downgrade resources near to spawns
+    DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
+
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it does a few things like make the area
     -- safe and provide a guaranteed area of land and water tiles.
     SetupAndClearSpawnAreas(surface, chunkArea)
 end
 
+-- At twice the danger distance, you get full resources, and it is exponential from the spawn point to that distance.
+function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
+
+    local closestSpawn = GetClosestUniqueSpawn(chunkArea.left_top)
+
+    if (closestSpawn == nil) then return end
+
+    local distance = getDistance(chunkArea.left_top, closestSpawn.pos)
+    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*2))^2
+    if modifier > 1 then modifier = 1 end
+
+    SendBroadcastMsg("Modifier is " .. modifier)
+
+    for key, entity in pairs(surface.find_entities_filtered{area=chunkArea, type="resource"}) do
+        if entity.valid and entity and entity.position and entity.amount then
+            local new_amount = math.ceil(entity.amount * modifier)
+            if (new_amount < 1) then
+                entity.destroy()
+            else 
+                entity.amount = new_amount
+            end            
+        end
+    end
+end
 
 -- Call this if a player leaves the game or is reset
 function FindUnusedSpawns(player, remove_player)

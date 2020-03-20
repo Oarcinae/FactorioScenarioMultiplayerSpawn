@@ -365,7 +365,6 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, newSpawn)
 
         -- Send the player there
-        -- QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, vanillaChoice)
         QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, global.ocfg.enable_vanilla_spawns)
         if (elemName == "isolated_spawn_near") then
             SendBroadcastMsg({"oarc-player-is-joining-near", player.name})
