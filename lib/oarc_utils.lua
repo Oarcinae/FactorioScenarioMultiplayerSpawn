@@ -618,13 +618,13 @@ function CreateGameSurface()
     end
 
     -- For easy local testing of map gen settings. Just set what you want and uncomment.
-    -- nauvis_settings.terrain_segmentation = 0.5
-    -- nauvis_settings.water = 1.2
+    -- nauvis_settings.terrain_segmentation = 2
+    -- nauvis_settings.water = 2.5
     -- nauvis_settings.starting_area = 0
 
-    -- local r_freq = 0.15
-    -- local r_rich = 2.00
-    -- local r_size = 0.08
+    -- local r_freq = 0.20
+    -- local r_rich = 10.00
+    -- local r_size = 0.20
     -- nauvis_settings.autoplace_controls["coal"].frequency = r_freq
     -- nauvis_settings.autoplace_controls["coal"].richness = r_rich
     -- nauvis_settings.autoplace_controls["coal"].size = r_size
@@ -632,7 +632,7 @@ function CreateGameSurface()
     -- nauvis_settings.autoplace_controls["copper-ore"].richness = r_rich
     -- nauvis_settings.autoplace_controls["copper-ore"].size = r_size
     -- nauvis_settings.autoplace_controls["crude-oil"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["crude-oil"].richness = r_rich*1.5
+    -- nauvis_settings.autoplace_controls["crude-oil"].richness = r_rich
     -- nauvis_settings.autoplace_controls["crude-oil"].size = r_size
     -- nauvis_settings.autoplace_controls["iron-ore"].frequency = r_freq
     -- nauvis_settings.autoplace_controls["iron-ore"].richness = r_rich
@@ -640,26 +640,26 @@ function CreateGameSurface()
     -- nauvis_settings.autoplace_controls["stone"].frequency = r_freq
     -- nauvis_settings.autoplace_controls["stone"].richness = r_rich
     -- nauvis_settings.autoplace_controls["stone"].size = r_size
-    -- nauvis_settings.autoplace_controls["uranium-ore"].frequency = 0.10
+    -- nauvis_settings.autoplace_controls["uranium-ore"].frequency = r_freq*0.5
     -- nauvis_settings.autoplace_controls["uranium-ore"].richness = r_rich
     -- nauvis_settings.autoplace_controls["uranium-ore"].size = r_size
 
-    -- nauvis_settings.autoplace_controls["enemy-base"].frequency = 0.15
+    -- nauvis_settings.autoplace_controls["enemy-base"].frequency = 0.40
     -- nauvis_settings.autoplace_controls["enemy-base"].richness = 0.50
     -- nauvis_settings.autoplace_controls["enemy-base"].size = 0.50
 
-    -- nauvis_settings.autoplace_controls["trees"].frequency = 0.50
+    -- nauvis_settings.autoplace_controls["trees"].frequency = 0.30
     -- nauvis_settings.autoplace_controls["trees"].richness = 1.50
     -- nauvis_settings.autoplace_controls["trees"].size = 1.00
 
-    -- nauvis_settings.cliff_settings.cliff_elevation_0 = 15
-    -- nauvis_settings.cliff_settings.cliff_elevation_interval = 35
+    -- nauvis_settings.cliff_settings.cliff_elevation_0 = 10
+    -- nauvis_settings.cliff_settings.cliff_elevation_interval = 50
     -- nauvis_settings.cliff_settings.richness = 10
 
     -- nauvis_settings.property_expression_names["control-setting:aux:bias"] = "0.00"
-    -- nauvis_settings.property_expression_names["control-setting:aux:frequency:multiplier"] = "1.00"
-    -- nauvis_settings.property_expression_names["control-setting:moisture:bias"] = "0.50"
-    -- nauvis_settings.property_expression_names["control-setting:moisture:frequency:multiplier"] = "1.00"
+    -- nauvis_settings.property_expression_names["control-setting:aux:frequency:multiplier"] = "5.00"
+    -- nauvis_settings.property_expression_names["control-setting:moisture:bias"] = "0.20"
+    -- nauvis_settings.property_expression_names["control-setting:moisture:frequency:multiplier"] = "20"
 
     -- Create new game surface
     local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)

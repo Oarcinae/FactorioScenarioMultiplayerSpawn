@@ -114,6 +114,12 @@ ENABLE_MODULAR_ARMOR_QUICK_START = true
 -- Read the README.md file for instructions.
 --------------------------------------------------------------------------------
 
+-- This scales resources so that even if you spawn "far away" from the center
+-- of the map, resources near to your spawn point scale so you aren't
+-- surrounded by 100M patches or something. This is useful depending on what
+-- map gen settings you pick.
+SCALE_RESOURCES_AROUND_SPAWNS = true
+
 --------------------------------------------------------------------------------
 -- Alien Options
 --------------------------------------------------------------------------------
@@ -221,7 +227,7 @@ OARC_CFG = {
 
         -- Warning area has significantly reduced aliens
         -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*16,
+        warn_radius = CHUNK_SIZE*12,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 20,

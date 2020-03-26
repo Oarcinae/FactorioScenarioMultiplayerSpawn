@@ -45,6 +45,7 @@ function InitOarcConfig()
     global.ocfg.enable_power_armor_start = ENABLE_POWER_ARMOR_QUICK_START
     global.ocfg.enable_modular_armor_start = ENABLE_MODULAR_ARMOR_QUICK_START
     global.ocfg.lock_goodies_rocket_launch = LOCK_GOODIES_UNTIL_ROCKET_LAUNCH
+    global.ocfg.scale_resources_around_spawns = SCALE_RESOURCES_AROUND_SPAWNS
 
     global.ocfg.modified_enemy_spawning = OARC_MODIFIED_ENEMY_SPAWNING
     global.ocfg.near_dist_start = NEAR_MIN_DIST

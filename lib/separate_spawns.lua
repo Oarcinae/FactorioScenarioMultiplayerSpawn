@@ -52,7 +52,9 @@ function SeparateSpawnsGenerateChunk(event)
     end
 
     -- Downgrade resources near to spawns
-    DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
+    if global.ocfg.scale_resources_around_spawns then
+        DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
+    end
 
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it does a few things like make the area
@@ -68,7 +70,8 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
     if (closestSpawn == nil) then return end
 
     local distance = getDistance(chunkArea.left_top, closestSpawn.pos)
-    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*2))^2
+    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius))^2
+    if modifier < 0.1 then modifier = 0.1 end
     if modifier > 1 then modifier = 1 end
 
     for key, entity in pairs(surface.find_entities_filtered{area=chunkArea, type="resource"}) do

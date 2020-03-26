@@ -3,7 +3,7 @@
   {
      "recipe_difficulty": 0,
      "technology_difficulty": 0,
-     "technology_price_multiplier": 1,
+     "technology_price_multiplier": 3,
      "research_queue_setting": "always"
   },
   "pollution":
@@ -11,30 +11,30 @@
     "enabled": true,
     "_comment_min_to_diffuse_1": "these are values for 60 ticks (1 simulated second)",
     "_comment_min_to_diffuse_2": "amount that is diffused to neighboring chunk",
-    "diffusion_ratio":0.02,
-    "min_to_diffuse":15,
-    "ageing":1,
-    "expected_max_per_chunk":7000,
-    "min_to_show_per_chunk":700,
-    "min_pollution_to_damage_trees": 3500,
-    "pollution_with_max_forest_damage": 10000,
-    "pollution_per_tree_damage": 2000,
-    "pollution_restored_per_tree_damage": 500,
-    "max_pollution_to_restore_trees": 1000,
-    "enemy_attack_pollution_consumption_modifier": 1
+    "diffusion_ratio": 0.02,
+    "min_to_diffuse": 15,
+    "ageing": 1,
+    "expected_max_per_chunk": 150,
+    "min_to_show_per_chunk": 50,
+    "min_pollution_to_damage_trees": 60,
+    "pollution_with_max_forest_damage": 150,
+    "pollution_per_tree_damage": 50,
+    "pollution_restored_per_tree_damage": 10,
+    "max_pollution_to_restore_trees": 20,
+    "enemy_attack_pollution_consumption_modifier": 0.5
   },
   "enemy_evolution":
   {
     "enabled": true,
     "time_factor": 0.000000,
-    "destroy_factor": 0.003,
-    "pollution_factor": 0.0000003
+    "destroy_factor": 0.002,
+    "pollution_factor": 0.0000002
   },
   "enemy_expansion":
   {
-    "enabled": false,
-    "min_base_spacing": 5,
-    "max_expansion_distance": 20,
+    "enabled": true,
+    "min_base_spacing": 3,
+    "max_expansion_distance": 10,
     "friendly_base_influence_radius": 2,
     "enemy_building_influence_radius": 2,
     "building_coefficient": 0.1,
@@ -44,8 +44,8 @@
     "max_colliding_tiles_coefficient": 0.9,
     "settler_group_min_size": 5,
     "settler_group_max_size": 20,
-    "min_expansion_cooldown": 108000,
-    "max_expansion_cooldown": 216000
+    "min_expansion_cooldown": 14400,
+    "max_expansion_cooldown": 108000
   },
   "unit_group":
   {
