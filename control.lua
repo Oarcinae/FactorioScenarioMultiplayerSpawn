@@ -36,6 +36,7 @@ require("lib/admin_commands")
 require("lib/regrowth_map")
 require("lib/shared_chests")
 require("lib/notepad")
+require("lib/map_features")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -110,6 +111,8 @@ script.on_init(function(event)
     if (global.ocfg.enable_chest_sharing) then
         SharedChestInitItems()
     end
+
+    MagicFurnaceChunkGenerator()
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
@@ -294,6 +297,8 @@ script.on_event(defines.events.on_tick, function(event)
     if global.ocfg.enable_chest_sharing then
         SharedChestsOnTick()
     end
+
+    MagicFurnaceOnTick()
 
     TimeoutSpeechBubblesOnTick()
     FadeoutRenderOnTick()

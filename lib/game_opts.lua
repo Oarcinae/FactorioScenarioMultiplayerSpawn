@@ -40,6 +40,14 @@ end
 -- Used by AddOarcGuiTab
 function CreateGameOptionsTab(tab_container, player)
 
+    if global.oarc_announcements == nil then
+        global.oarc_announcements = "No announcements... Stay tuned."
+    end
+
+    AddLabel(tab_container, "announcement_info_label", "Server announcements:", my_label_header_style)
+    AddLabel(tab_container, "announcement_info_txt", global.oarc_announcements, my_longer_label_style)
+    AddSpacerLine(tab_container)
+
     -- General Server Info:
     AddLabel(tab_container, "info_1", global.ocfg.welcome_msg, my_longer_label_style)
     AddLabel(tab_container, "info_2", global.ocfg.server_rules, my_longer_label_style)

@@ -54,14 +54,14 @@ function SetRandomSiloPosition(num_silos)
         global.siloPosition = {}
     end
 
-    random_angle_offset = math.random(0, math.pi * 2)
+    local random_angle_offset = math.random(0, math.pi * 2)
 
     for i=1,num_silos do
-        theta = ((math.pi * 2) / num_silos);
-        angle = (theta * i) + random_angle_offset;
+        local theta = ((math.pi * 2) / num_silos);
+        local angle = (theta * i) + random_angle_offset;
 
-        tx = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.cos(angle))
-        ty = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.sin(angle))
+        local tx = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.cos(angle))
+        local ty = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.sin(angle))
 
         table.insert(global.siloPosition, {x=math.floor(tx), y=math.floor(ty)})
 
@@ -252,7 +252,6 @@ function ChartRocketSiloAreas(surface, force)
     end
 end
 
-global.oarc_silos_generated = false
 function DelayedSiloCreationOnTick(surface)
 
     -- Delay the creation of the silos so we place them on already generated lands.

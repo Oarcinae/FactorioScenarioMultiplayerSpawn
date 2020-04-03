@@ -1208,6 +1208,9 @@ end
 function PlayerJoinedMessages(event)
     local player = game.players[event.player_index]
     player.print(global.ocfg.welcome_msg)
+    if (global.oarc_announcements) then
+        player.print(global.oarc_announcements)
+    end
 end
 
 -- Remove decor to save on file size

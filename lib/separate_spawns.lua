@@ -70,17 +70,23 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
     if (closestSpawn == nil) then return end
 
     local distance = getDistance(chunkArea.left_top, closestSpawn.pos)
-    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius))^2
+    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*1.2))^3
     if modifier < 0.1 then modifier = 0.1 end
-    if modifier > 1 then modifier = 1 end
+    if modifier > 1 then return end
+
+    local ore_per_tile_cap = math.floor(100000 * modifier)
 
     for key, entity in pairs(surface.find_entities_filtered{area=chunkArea, type="resource"}) do
         if entity.valid and entity and entity.position and entity.amount then
             local new_amount = math.ceil(entity.amount * modifier)
             if (new_amount < 1) then
                 entity.destroy()
-            else 
-                entity.amount = new_amount
+            else
+                if (entity.name ~= "crude-oil") then
+                    entity.amount = math.min(new_amount, ore_per_tile_cap)
+                else
+                    entity.amount = new_amount
+                end
             end            
         end
     end

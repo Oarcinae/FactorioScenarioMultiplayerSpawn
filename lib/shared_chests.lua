@@ -488,8 +488,14 @@ function CreateSharedItemsGuiTab(tab_container, player)
     AddSpacerLine(scrollFrame)
 
     -- MW charging/discharging rate. (delta change * sample rate per second)
+    local smelter_energy_used = 0
+    if (global.magic_smelter_energy_history) then
+        for k,v in pairs(global.magic_smelter_energy_history) do
+            smelter_energy_used = smelter_energy_used + v
+        end
+    end
     local energy_change_add = (global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.start)*60/1000000
-    local energy_change_sub = (global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.after_output)*60/1000000
+    local energy_change_sub = (((global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.after_output)*60)+smelter_energy_used)/1000000
     local energy_add_str = string.format("+%.3fMW", energy_change_add)
     local energy_sub_str = string.format("-%.3fMW", energy_change_sub)
     local rate_color = "green"
