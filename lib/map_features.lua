@@ -5,13 +5,34 @@
 -- Generic Utility Includes
 require("lib/oarc_utils")
 
+
+POWER_USAGE_SCALING_FACTOR = 2
+
 FURNACE_RECIPES = {
-    ["iron-ore"] = {recipe_name = "iron-plate", recipe_energy = 288000},
-    ["copper-ore"] = {recipe_name = "copper-plate", recipe_energy = 288000},
-    ["iron-plate"] = {recipe_name = "steel-plate", recipe_energy = 1440000}, 
-    ["stone"] = {recipe_name = "stone-brick", recipe_energy = 288000},
+    ["iron-ore"] = {recipe_name = "iron-plate", recipe_energy = 288000*POWER_USAGE_SCALING_FACTOR},
+    ["copper-ore"] = {recipe_name = "copper-plate", recipe_energy = 288000*POWER_USAGE_SCALING_FACTOR},
+    ["iron-plate"] = {recipe_name = "steel-plate", recipe_energy = 1440000*POWER_USAGE_SCALING_FACTOR}, 
+    ["stone"] = {recipe_name = "stone-brick", recipe_energy = 288000*POWER_USAGE_SCALING_FACTOR},
 }
 
+ENEMY_WORM_TURRETS =
+{
+    [0] = "small-worm-turret",
+    [1] = "medium-worm-turret",
+    [2] = "big-worm-turret"
+}
+
+function MagicFurnaceInit()
+
+    -- Neutral force requires recipes so that furnaces can smelt steel for example.
+    game.forces["neutral"].enable_all_recipes()
+
+    -- Buff the enemy force a bit?
+    game.forces["enemy"].technologies["physical-projectile-damage-1"].researched = true
+    game.forces["enemy"].technologies["weapon-shooting-speed-1"].researched = true
+
+    MagicFurnaceChunkGenerator()
+end
 
 function MagicFurnaceChunkGenerator()
     global.magic_smelter_positions = {}
@@ -52,10 +73,32 @@ function MagicalFurnaceSpawnAll()
 
         -- Spawn furnace.
         SpawnMagicFurnace(pos)
-        SpawnEnemyTurret({x=pos.x-5,y=pos.y-5})
-        SpawnEnemyTurret({x=pos.x-5,y=pos.y+6})
-        SpawnEnemyTurret({x=pos.x+6,y=pos.y-5})
-        SpawnEnemyTurret({x=pos.x+6,y=pos.y+6})
+
+        -- Put some enemies nearby
+        -- SpawnEnemyTurret({x=pos.x-5,y=pos.y-5})
+        -- SpawnEnemyTurret({x=pos.x-5,y=pos.y+6})
+        -- SpawnEnemyTurret({x=pos.x+6,y=pos.y-5})
+        -- SpawnEnemyTurret({x=pos.x+6,y=pos.y+6})
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x-5,y=pos.y-5}, force = "enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x-5,y=pos.y+6}, force = "enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x+6,y=pos.y-5}, force = "enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x+6,y=pos.y+6}, force = "enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name="biter-spawner", position={x=pos.x-5,y=pos.y}, force="enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name="spitter-spawner", position={x=pos.x+1,y=pos.y-5}, force="enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name="biter-spawner", position={x=pos.x+6,y=pos.y}, force="enemy"}
+        game.surfaces[GAME_SURFACE_NAME].create_entity{name="spitter-spawner", position={x=pos.x+1,y=pos.y+5}, force="enemy"}
+
+        -- Helper text
+        RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
+            {x=pos.x-4,y=pos.y+2},
+            1,
+            "Consumes energy from sharing system.",
+            {0.7,0.4,0.3,0.8})
+        RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
+            {x=pos.x-3.5,y=pos.y+2.5},
+            1,
+            "Supply energy at any player spawn.",
+            {0.7,0.4,0.3,0.8})
 
         -- Make it safe from regrowth
         if global.ocfg.enable_regrowth then
@@ -65,7 +108,6 @@ function MagicalFurnaceSpawnAll()
                             pos,
                             1)
         end
-
     end
 end
 
@@ -87,9 +129,10 @@ function SpawnEnemyTurret(pos)
 
     local turret = game.surfaces[GAME_SURFACE_NAME].create_entity{name="gun-turret", position=pos, force="enemy"}
     local turret_inv = turret.get_inventory(defines.inventory.turret_ammo)
-    turret_inv.insert({name="piercing-rounds-magazine", count=200})
+    turret_inv.insert({name="uranium-rounds-magazine", count=200})
 
 end
+
 
 function SpawnMagicFurnace(pos)
 
@@ -190,4 +233,57 @@ function MagicFurnaceOnTick()
 
     if (not global.magic_smelter_energy_history) then global.magic_smelter_energy_history = {} end
     global.magic_smelter_energy_history[game.tick % 60] = energy_used
+end
+
+
+COIN_GENERATION_CHANCES = {
+    ["small-biter"] = 0.01,
+    ["medium-biter"] = 0.05,
+    ["big-biter"] = 0.15,
+    ["behemoth-biter"] = 0.50,
+
+    ["small-spitter"] = 0.02,
+    ["medium-spitter"] = 0.05,
+    ["big-spitter"] = 0.20,
+    ["behemoth-spitter"] = 0.50,
+
+    ["small-worm-turret"] = 0.10,
+    ["medium-worm-turret"] = 0.20,
+    ["big-worm-turret"] = 0.50,
+    ["behemoth-worm-turret"] = 1.00,
+
+    ["biter-spawner"] = 10,
+    ["spitter-spawner"] = 10,
+}
+
+function CoinsFromEnemiesOnEntityDied(event)
+    if (not event.entity) then return end
+    if (event.entity.force.name ~= "enemy") then return end
+
+    for k,v in pairs(COIN_GENERATION_CHANCES) do
+        if (k == event.entity.name) then
+            DropCoins(event.entity.position, v, event.force)
+            return
+        end
+    end
+end
+
+-- Drop coins, force is optional, decon is applied if force is not nil.
+function DropCoins(pos, count, force)
+
+    local drop_amount = 0
+
+    -- If count is less than 1, it represents a probability to drop a single coin
+    if (count < 1) then
+        if (math.random() < count) then
+            drop_amount = 1
+        end
+
+    -- If count is 1 or more, it represents a probability to drop between 1 and count coins.
+    elseif (count >= 1) then
+        drop_amount = math.random(1,count)
+    end
+
+    if drop_amount == 0 then return end
+    game.surfaces[GAME_SURFACE_NAME].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, force, false)
 end

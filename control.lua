@@ -112,7 +112,7 @@ script.on_init(function(event)
         SharedChestInitItems()
     end
 
-    MagicFurnaceChunkGenerator()
+    MagicFurnaceInit()
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
@@ -439,4 +439,12 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_closed, function(event)
     OarcGuiOnGuiClosedEvent(event)
+end)
+
+----------------------------------------
+-- On enemies killed
+-- For coin generation and stuff
+----------------------------------------
+script.on_event(defines.events.on_entity_died, function(event)
+    CoinsFromEnemiesOnEntityDied(event)
 end)
