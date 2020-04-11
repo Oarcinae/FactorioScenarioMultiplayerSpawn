@@ -739,6 +739,17 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         SharedEnergySpawnIOPair(player,
                                 {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-28},
                                 {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+29})
+
+        -- Colored tiles for emphasis.
+        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
+                                {left_top = {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y-29},
+                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-28}},
+                                "yellow")
+        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
+                                {left_top = {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y+28},
+                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+29}},
+                                "blue")
+
         rendering.draw_text{text="Attach to power generation to share.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
                         target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-31},
@@ -752,7 +763,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
                         only_in_alt_mode=false}
         rendering.draw_text{text="Attach to electric grid to draw power.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+30},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+30.5},
                         color={0.6,0.6,0.6,0.8},
                         scale=1,
                         font="scenario-message-dialog",
@@ -769,10 +780,17 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         -- Tile arrows to help indicate
         CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-20}, "RIGHT")
         CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-20}, "LEFT")
-        --Helpful ground text
+
+        -- Colored tiles for emphasis.
+        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
+                                {left_top = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-22},
+                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-17}},
+                                "yellow")
+
+        -- Helpful ground text
         rendering.draw_text{text="Place items in to share.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-23},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-23.5},
                         color={0.7,0.7,0.1,0.7},
                         scale=1,
                         font="scenario-message-dialog",
@@ -830,11 +848,16 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         -- Tile arrows to help indicate
         CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+18}, "LEFT")
         CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+18}, "RIGHT")
+        -- Colored tiles for emphasis.
+        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
+                                {left_top = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+16},
+                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+21}},
+                                "blue")
 
         --Helpful ground text
         rendering.draw_text{text="Set filters to request items.",
                         surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+22},
+                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+22.5},
                         color={0.5,0.5,0.8,0.8},
                         scale=1,
                         font="scenario-message-dialog",

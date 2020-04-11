@@ -8,12 +8,31 @@ require("lib/oarc_utils")
 
 POWER_USAGE_SCALING_FACTOR = 2
 
+-- This is a table indexed by the single INPUT item!
+FURNACE_ENERGY_PER_CRAFT_SECOND = (180000 / 2) * POWER_USAGE_SCALING_FACTOR
 FURNACE_RECIPES = {
-    ["iron-ore"] = {recipe_name = "iron-plate", recipe_energy = 288000*POWER_USAGE_SCALING_FACTOR},
-    ["copper-ore"] = {recipe_name = "copper-plate", recipe_energy = 288000*POWER_USAGE_SCALING_FACTOR},
-    ["iron-plate"] = {recipe_name = "steel-plate", recipe_energy = 1440000*POWER_USAGE_SCALING_FACTOR}, 
-    ["stone"] = {recipe_name = "stone-brick", recipe_energy = 288000*POWER_USAGE_SCALING_FACTOR},
+    ["iron-ore"] = {recipe_name = "iron-plate", recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND},
+    ["copper-ore"] = {recipe_name = "copper-plate", recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND},
+    ["iron-plate"] = {recipe_name = "steel-plate", recipe_energy = 16*FURNACE_ENERGY_PER_CRAFT_SECOND}, 
+    ["stone"] = {recipe_name = "stone-brick", recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND},
 }
+
+-- This table is indexed by recipe name!
+CHEMPLANT_ENERGY_PER_CRAFT_SECOND = 210000 * POWER_USAGE_SCALING_FACTOR
+-- CHEMPLANT_RECIPES = {
+--     ["sulfuric-acid"] = {recipe_energy = 1*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["heavy-oil-cracking"] = {recipe_energy = 2*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["light-oil-cracking"] = {recipe_energy = 2*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["solid-fuel-from-heavy-oil"] = {recipe_energy = 2*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["solid-fuel-from-light-oil"] = {recipe_energy = 2*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["solid-fuel-from-petroleum-gas"] = {recipe_energy = 2*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["lubricant"] = {recipe_energy = 1*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["plastic-bar"] = {recipe_energy = 1*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["sulfur"] = {recipe_energy = 1*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["battery"] = {recipe_energy = 4*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["explosives"] = {recipe_energy = 4*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+--     ["flamethrower-ammo"] = {recipe_energy = 6*CHEMPLANT_ENERGY_PER_CRAFT_SECOND},
+-- }
 
 ENEMY_WORM_TURRETS =
 {
@@ -28,17 +47,21 @@ function MagicFurnaceInit()
     game.forces["neutral"].enable_all_recipes()
 
     -- Buff the enemy force a bit?
-    game.forces["enemy"].technologies["physical-projectile-damage-1"].researched = true
-    game.forces["enemy"].technologies["weapon-shooting-speed-1"].researched = true
+    -- game.forces["enemy"].technologies["physical-projectile-damage-1"].researched = true
+    -- game.forces["enemy"].technologies["weapon-shooting-speed-1"].researched = true
 
-    MagicFurnaceChunkGenerator()
+    global.magic_factory_total_count = 0
+
+    global.magic_smelter_energy_history = {}
+
+    MagicFactoryChunkGenerator()
 end
 
-function MagicFurnaceChunkGenerator()
-    global.magic_smelter_positions = {}
-    for r=40,350,55 do
+function MagicFactoryChunkGenerator()
+    global.magic_factory_positions = {}
+    for r=40,350,45 do
         local random_angle_offset = math.random(0, math.pi * 2)
-        local num_smelters = math.ceil((r/10))
+        local num_smelters = math.ceil((r/8))
 
         for i=1,num_smelters do
             local theta = ((math.pi * 2) / num_smelters);
@@ -47,15 +70,16 @@ function MagicFurnaceChunkGenerator()
             local tx = (r*CHUNK_SIZE * math.cos(angle)) + math.random(-CHUNK_SIZE*2, CHUNK_SIZE*2)
             local ty = (r*CHUNK_SIZE * math.sin(angle)) + math.random(-CHUNK_SIZE*2, CHUNK_SIZE*2)
 
-            table.insert(global.magic_smelter_positions, {x=math.floor(tx), y=math.floor(ty)})
+            global.magic_factory_total_count = global.magic_factory_total_count + 1
+            table.insert(global.magic_factory_positions, {x=math.floor(tx), y=math.floor(ty)})
             game.surfaces[GAME_SURFACE_NAME].request_to_generate_chunks({x=math.floor(tx), y=math.floor(ty)}, 1)
             log("Magic furnace position: " .. tx .. ", " .. ty .. ", " .. angle)
         end
     end
 end
 
-function MagicalFurnaceSpawnAll()
-    for _,pos in pairs(global.magic_smelter_positions) do
+function MagicalFactorySpawnAll()
+    for _,pos in pairs(global.magic_factory_positions) do
         
         -- Remove any entities in the area.
         for _, entity in pairs(game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{position = pos, radius = 20}) do
@@ -72,7 +96,17 @@ function MagicalFurnaceSpawnAll()
         game.surfaces[GAME_SURFACE_NAME].set_tiles(dirtTiles)
 
         -- Spawn furnace.
-        SpawnMagicFurnace(pos)
+        local rand_choice = math.random(1,2)
+        if (rand_choice == 1) then
+            SpawnMagicFurnace(pos)
+        elseif (rand_choice == 2) then
+            SpawnMagicChemicalPlant(pos)
+        end
+
+        -- Yay colored tiles
+        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME], 
+                                {left_top = {x=pos.x-5, y=pos.y-5}, right_bottom = {x=pos.x+5, y=pos.y+5}},
+                                "black")
 
         -- Put some enemies nearby
         -- SpawnEnemyTurret({x=pos.x-5,y=pos.y-5})
@@ -118,7 +152,7 @@ function MagicFurnaceDelayedSpawner()
         game.surfaces[GAME_SURFACE_NAME].force_generate_chunk_requests() -- Block and generate all to be sure.
         global.oarc_magic_smelters_generated = true
 
-        MagicalFurnaceSpawnAll()
+        MagicalFactorySpawnAll()
 
         log("Magical furnaces generated!")
         SendBroadcastMsg("Magical furnaces are now available!")
@@ -149,12 +183,27 @@ function SpawnMagicFurnace(pos)
     table.insert(global.magic_furnaces, magic_furnace)
 end
 
+function SpawnMagicChemicalPlant(pos)
+
+    local magic_chemplant = game.surfaces[GAME_SURFACE_NAME].create_entity{name="chemical-plant", position=pos, force="neutral"}
+    magic_chemplant.destructible = false
+    magic_chemplant.minable = false
+    magic_chemplant.operable = true
+    magic_chemplant.active = false
+
+    if global.magic_chemplants == nil then
+        global.magic_chemplants = {}
+    end
+
+    table.insert(global.magic_chemplants, magic_chemplant)
+
+end
+
 function MagicFurnaceOnTick()
 
     MagicFurnaceDelayedSpawner()
 
     if not global.magic_furnaces then return end
-    local number_furnaces = table_size(global.magic_furnaces)
     local energy_used = 0
 
     for idx,furnace in pairs(global.magic_furnaces) do
@@ -209,7 +258,7 @@ function MagicFurnaceOnTick()
         -- Use shared energy pool?
         if not global.shared_energy_stored then goto continue end
         local energy_per_recipe = FURNACE_RECIPES[input_item_name].recipe_energy
-        local energy_share = global.shared_energy_stored/number_furnaces
+        local energy_share = global.shared_energy_stored/global.magic_factory_total_count
         local max_recipes_for_energy = math.floor(energy_share/energy_per_recipe)
         local min_max_count = math.min(max_count_ingredients, max_output, max_recipes_for_energy)
 
@@ -232,9 +281,91 @@ function MagicFurnaceOnTick()
     global.shared_energy_stored = global.shared_energy_stored - energy_used
 
     if (not global.magic_smelter_energy_history) then global.magic_smelter_energy_history = {} end
-    global.magic_smelter_energy_history[game.tick % 60] = energy_used
+    global.magic_smelter_energy_history[game.tick % 60] = global.magic_smelter_energy_history[game.tick % 60] + energy_used
 end
 
+function MagicChemplantOnTick()
+
+    if not global.magic_chemplants then return end
+    local energy_used = 0
+
+    for idx,chemplant in pairs(global.magic_chemplants) do
+        
+        if (chemplant == nil) or (not chemplant.valid) then
+            global.magic_chemplants[idx] = nil
+            log("Magic chemplant removed?")
+            goto continue
+        end
+        
+        recipe = chemplant.get_recipe()
+
+        -- No recipe means do nothing.
+        if (not recipe) then
+            goto continue
+        end
+
+        local input_inv = chemplant.get_inventory(defines.inventory.assembling_machine_input)
+        local input_items = input_inv.get_contents()
+        local input_fluids = chemplant.get_fluid_contents()
+
+        for _,v in ipairs(recipe.ingredients) do
+            if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
+                if (not input_fluids[v.name] or (input_fluids[v.name] < v.amount)) then
+                    goto continue -- Not enough ingredients
+                end
+            end
+        end
+
+        local energy_cost = recipe.energy * CHEMPLANT_ENERGY_PER_CRAFT_SECOND
+        
+        local recipe_product = recipe.products[next(recipe.products)] -- Assume only 1 product.
+
+        -- Use shared energy pool?
+        if not global.shared_energy_stored then goto continue end
+        local energy_share = global.shared_energy_stored/global.magic_factory_total_count
+
+        if (energy_share < energy_cost) then goto continue end -- Not enough energy!
+
+        if recipe_product.type == "fluid" then
+
+            if ((chemplant.get_fluid_count(recipe_product.name) + recipe_product.amount) > 100) then
+                goto continue -- Not enough space for ouput
+            end
+
+            chemplant.insert_fluid({name=recipe_product.name, amount=recipe_product.amount})
+
+        else
+
+            local output_inv = chemplant.get_inventory(defines.inventory.assembling_machine_output)
+        
+            -- Can we insert at least 1 of the recipe result?
+            if not output_inv.can_insert({name=recipe_product.name, amount=recipe_product.amount}) then goto continue end
+
+            -- Add recipe count to output
+            output_inv.insert({name=recipe_product.name, count=recipe_product.amount})
+        end
+
+        -- Subtract ingredients from input
+        for _,v in ipairs(recipe.ingredients) do
+            if (input_items[v.name]) then
+                input_inv.remove({name=v.name, count=v.amount})
+            elseif (input_fluids[v.name]) then
+                chemplant.remove_fluid{name=v.name, amount=v.amount}
+            end
+        end
+        
+        -- Track energy usage
+        energy_used = energy_used + energy_cost
+
+        ::continue::
+    end
+
+    -- Subtract energy
+    global.shared_energy_stored = global.shared_energy_stored - energy_used
+
+    if (not global.magic_smelter_energy_history) then global.magic_smelter_energy_history = {} end
+    global.magic_smelter_energy_history[game.tick % 60] = global.magic_smelter_energy_history[game.tick % 60] + energy_used
+end
 
 COIN_GENERATION_CHANCES = {
     ["small-biter"] = 0.01,

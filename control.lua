@@ -298,7 +298,10 @@ script.on_event(defines.events.on_tick, function(event)
         SharedChestsOnTick()
     end
 
+    global.magic_smelter_energy_history[game.tick % 60] = 0
+
     MagicFurnaceOnTick()
+    MagicChemplantOnTick()
 
     TimeoutSpeechBubblesOnTick()
     FadeoutRenderOnTick()
