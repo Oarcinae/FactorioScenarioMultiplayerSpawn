@@ -314,7 +314,7 @@ function SharedChestsTallyRequests()
     global.shared_requests_totals = {}
 
     -- For each output chest.
-    for _,chestInfo in pairs(global.shared_chests) do
+    for idx,chestInfo in pairs(global.shared_chests) do
 
         local chestEntity = chestInfo.entity
 
