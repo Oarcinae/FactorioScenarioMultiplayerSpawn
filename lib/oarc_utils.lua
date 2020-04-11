@@ -698,6 +698,20 @@ function CreateTileArrow(surface, pos, type)
     surface.set_tiles(tiles, true)
 end
 
+-- Allowed colors: red, green, blue, orange, yellow, pink, purple, black, brown, cyan, acid
+function CreateFixedColorTileArea(surface, area, color)
+
+    tiles = {}
+
+    for i=area.left_top.x,area.right_bottom.x do
+        for j=area.left_top.y,area.right_bottom.y do
+            table.insert(tiles, {name = color.."-refined-concrete", position = {i,j}})
+        end
+    end
+
+    surface.set_tiles(tiles, true)
+end
+
 --------------------------------------------------------------------------------
 -- Functions for removing/modifying enemies
 --------------------------------------------------------------------------------
