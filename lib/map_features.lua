@@ -67,12 +67,19 @@ function MagicFactoryChunkGenerator()
             local theta = ((math.pi * 2) / num_smelters);
             local angle = (theta * i) + random_angle_offset;
 
-            local tx = (r*CHUNK_SIZE * math.cos(angle)) + math.random(-CHUNK_SIZE*2, CHUNK_SIZE*2)
-            local ty = (r*CHUNK_SIZE * math.sin(angle)) + math.random(-CHUNK_SIZE*2, CHUNK_SIZE*2)
+            local tx = (r * math.cos(angle)) + math.random(-2, 2)
+            local ty = (r * math.sin(angle)) + math.random(-2, 2)
+
+            -- Ensure these are centered within a chunk!
+            local tx = (tx*CHUNK_SIZE+CHUNK_SIZE/2)
+            local ty = (ty*CHUNK_SIZE+CHUNK_SIZE/2)
+
+            local tx = (tx - (tx % CHUNK_SIZE)) + CHUNK_SIZE/2
+            local ty = (ty - (ty % CHUNK_SIZE)) + CHUNK_SIZE/2
 
             global.magic_factory_total_count = global.magic_factory_total_count + 1
             table.insert(global.magic_factory_positions, {x=math.floor(tx), y=math.floor(ty)})
-            game.surfaces[GAME_SURFACE_NAME].request_to_generate_chunks({x=math.floor(tx), y=math.floor(ty)}, 1)
+            game.surfaces[GAME_SURFACE_NAME].request_to_generate_chunks({x=math.floor(tx), y=math.floor(ty)}, 0)
             log("Magic furnace position: " .. tx .. ", " .. ty .. ", " .. angle)
         end
     end
