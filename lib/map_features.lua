@@ -70,10 +70,10 @@ function MagicFactoryChunkGenerator()
             local tx = (r * math.cos(angle)) + math.random(-2, 2)
             local ty = (r * math.sin(angle)) + math.random(-2, 2)
 
-            -- Ensure these are centered within a chunk!
             local tx = (tx*CHUNK_SIZE+CHUNK_SIZE/2)
             local ty = (ty*CHUNK_SIZE+CHUNK_SIZE/2)
 
+            -- Ensure these are centered within a chunk!
             local tx = (tx - (tx % CHUNK_SIZE)) + CHUNK_SIZE/2
             local ty = (ty - (ty % CHUNK_SIZE)) + CHUNK_SIZE/2
 

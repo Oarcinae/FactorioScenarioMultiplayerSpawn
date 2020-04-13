@@ -63,6 +63,10 @@ function SetRandomSiloPosition(num_silos)
         local tx = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.cos(angle))
         local ty = (global.ocfg.frontier_silo_distance*CHUNK_SIZE * math.sin(angle))
 
+        -- Ensure it's centered around a chunk
+        local tx = (tx - (tx % CHUNK_SIZE)) + CHUNK_SIZE/2
+        local ty = (ty - (ty % CHUNK_SIZE)) + CHUNK_SIZE/2
+
         table.insert(global.siloPosition, {x=math.floor(tx), y=math.floor(ty)})
 
         log("Silo position: " .. tx .. ", " .. ty .. ", " .. angle)
@@ -235,7 +239,7 @@ end
 -- Generate chunks where we plan to place the rocket silos.
 function GenerateRocketSiloAreas(surface)
     for idx,siloPos in pairs(global.siloPosition) do
-        surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 3)
+        surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 2)
     end
     if (global.ocfg.frontier_silo_vision) then
         ChartRocketSiloAreas(surface, game.forces[global.ocfg.main_force])
