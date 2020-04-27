@@ -65,7 +65,7 @@ function RenderPermanentGroundText(surface, position, scale, text, color)
                     target=position,
                     color=color,
                     scale=scale,
-                    font="scenario-message-dialog",
+                    font="default-game",
                     draw_on_ground=true}
 end 
 
