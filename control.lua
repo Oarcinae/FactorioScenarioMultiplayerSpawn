@@ -128,9 +128,7 @@ end)
 -- Used for end game win conditions / unlocking late game stuff
 ----------------------------------------
 script.on_event(defines.events.on_rocket_launched, function(event)
-    if global.ocfg.frontier_rocket_silo then
-        RocketLaunchEvent(event)
-    end
+    RocketLaunchEvent(event)
 end)
 
 
@@ -138,6 +136,8 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
+
+    if (event.surface.name ~= GAME_SURFACE_NAME) then return end
 
     if global.ocfg.enable_regrowth then
         RegrowthChunkGenerate(event)
@@ -289,10 +289,6 @@ script.on_event(defines.events.on_tick, function(event)
     end
 
     DelayedSpawnOnTick()
-
-    if global.ocfg.frontier_rocket_silo then
-        DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
-    end
 
     if global.ocfg.enable_chest_sharing then
         SharedChestsOnTick()

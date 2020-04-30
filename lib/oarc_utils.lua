@@ -65,7 +65,8 @@ function RenderPermanentGroundText(surface, position, scale, text, color)
                     target=position,
                     color=color,
                     scale=scale,
-                    font="default-game",
+                    --Allowed fonts: default-dialog-button default-game compilatron-message-font default-large default-large-semibold default-large-bold heading-1 compi
+                    font="compi",
                     draw_on_ground=true}
 end 
 
@@ -156,6 +157,10 @@ function clampInt32(val)
     return clamp(val, MAX_INT32_NEG, MAX_INT32_POS)
 end
 
+function MathRound(num)
+    return math.floor(num+0.5)
+end
+
 -- Simple function to get total number of items in table
 function TableLength(T)
   local count = 0
@@ -213,6 +218,13 @@ function GetClosestPosFromTable(pos, pos_table)
             closest_key = k
         end
     end
+
+    if (closest_key == nil) then
+        log("GetClosestPosFromTable ERROR - None found?")
+        return nil
+    end
+
+    return pos_table[closest_key]
 end
 
 -- Chart area for a force

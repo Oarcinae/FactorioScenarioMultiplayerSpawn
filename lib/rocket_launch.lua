@@ -24,8 +24,8 @@ function RocketLaunchEvent(event)
     -- First ever sat launch
     if not global.satellite_sent then
         global.satellite_sent = {}
-        SendBroadcastMsg("Team " .. event.rocket.force.name .. " was the first to launch a rocket!")
-        ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " was the first to launch a rocket!" .. "\n")
+        SendBroadcastMsg("Team " .. force.name .. " was the first to launch a rocket!")
+        ServerWriteFile("rocket_events", "Team " .. force.name .. " was the first to launch a rocket!" .. "\n")
 
         for name,player in pairs(game.players) do
             SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
@@ -35,15 +35,15 @@ function RocketLaunchEvent(event)
     -- Track additional satellites launched by this force
     if global.satellite_sent[force.name] then
         global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1
-        SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
-        ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
+        SendBroadcastMsg("Team " .. force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
+        ServerWriteFile("rocket_events", "Team " .. force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
 
     -- First sat launch for this force.
     else
         -- game.set_game_state{game_finished=true, player_won=true, can_continue=true}
         global.satellite_sent[force.name] = 1
-        SendBroadcastMsg("Team " .. event.rocket.force.name .. " launched their first rocket!")
-        ServerWriteFile("rocket_events", "Team " .. event.rocket.force.name .. " launched their first rocket!" .. "\n")
+        SendBroadcastMsg("Team " .. force.name .. " launched their first rocket!")
+        ServerWriteFile("rocket_events", "Team " .. force.name .. " launched their first rocket!" .. "\n")
 
         -- Unlock research and recipes
         if global.ocfg.lock_goodies_rocket_launch then
