@@ -41,6 +41,7 @@ function InitOarcConfig()
     global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
     global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
     global.ocfg.enable_chest_sharing = ENABLE_CHEST_SHARING
+    global.ocfg.enable_magic_factories = ENABLE_MAGIC_FACTORIES
     global.ocfg.enable_offline_protect = ENABLE_OFFLINE_PROTECTION
     global.ocfg.enable_power_armor_start = ENABLE_POWER_ARMOR_QUICK_START
     global.ocfg.enable_modular_armor_start = ENABLE_MODULAR_ARMOR_QUICK_START
@@ -70,6 +71,10 @@ function InitOarcConfig()
     global.ocfg.frontier_silo_vision = ENABLE_SILO_VISION
     global.ocfg.frontier_allow_build = ENABLE_SILO_PLAYER_BUILD
 
+    global.ocfg.enable_anti_grief = ENABLE_ANTI_GRIEFING
+    global.ocfg.ghost_ttl = GHOST_TIME_TO_LIVE
+    global.ocfg.enable_friendly_fire = ENABLE_FRIENDLY_FIRE
+
     global.ocfg.enable_server_write_files = ENABLE_SERVER_WRITE_FILES
 
 
@@ -83,6 +88,10 @@ function InitOarcConfig()
 
     if (global.ocfg.enable_vanilla_spawns) then
         global.ocfg.enable_buddy_spawn = false
+    end
+
+    if (not global.ocfg.enable_chest_sharing) then
+        global.ocfg.enable_magic_factories = false
     end
 
 end

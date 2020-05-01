@@ -150,11 +150,11 @@ end
 
 -- Generates all rocket silos, should be called after the areas are generated
 -- Includes a crop circle
-function GenerateAllSilos(surface)
+function GenerateAllSilos()
 
     -- Create each silo in the list
     for idx,siloPos in pairs(global.siloPosition) do
-        CreateRocketSilo(surface, siloPos, global.ocfg.main_force)
+        CreateRocketSilo(game.surfaces[GAME_SURFACE_NAME], siloPos, global.ocfg.main_force)
     end
 end
 
@@ -197,49 +197,49 @@ function BuildSiloAttempt(event)
     end
 end
 
--- Generate clean land and trees around silo area on chunk generate event
-function GenerateRocketSiloChunk(event)
+-- Generate clean land and trees around silo area
+function GenerateRocketSiloChunks()
 
     -- Silo generation can take awhile depending on the number of silos.
-    if (game.tick < #global.siloPosition*10*TICKS_PER_SECOND) then
-        local surface = event.surface
-        local chunkArea = event.area
+    -- if (game.tick < #global.siloPosition*10*TICKS_PER_SECOND) then
+        local surface = game.surfaces[GAME_SURFACE_NAME]
+        -- local chunkArea = event.area
 
-        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                                 y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
+        -- local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
+        --                          y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
 
-        for idx,siloPos in pairs(global.siloPosition) do
-            local safeArea = {left_top=
-                                {x=siloPos.x-(CHUNK_SIZE*4),
-                                 y=siloPos.y-(CHUNK_SIZE*4)},
+        for _,siloPos in pairs(global.siloPosition) do
+            local siloArea = {left_top=
+                                {x=siloPos.x-(CHUNK_SIZE*2),
+                                 y=siloPos.y-(CHUNK_SIZE*2)},
                               right_bottom=
-                                {x=siloPos.x+(CHUNK_SIZE*4),
-                                 y=siloPos.y+(CHUNK_SIZE*4)}}
+                                {x=siloPos.x+(CHUNK_SIZE*2),
+                                 y=siloPos.y+(CHUNK_SIZE*2)}}
 
 
             -- Clear enemies directly next to the rocket
-            if CheckIfInArea(chunkAreaCenter,safeArea) then
-                for _, entity in pairs(surface.find_entities_filtered{area = chunkArea, force = "enemy"}) do
+            -- if CheckIfInArea(chunkAreaCenter,siloArea) then
+                for _, entity in pairs(surface.find_entities_filtered{area = siloArea, force = "enemy"}) do
                     entity.destroy()
                 end
 
                 -- Remove trees/resources inside the spawn area
-                RemoveInCircle(surface, chunkArea, "tree", siloPos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
-                RemoveInCircle(surface, chunkArea, "resource", siloPos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
-                RemoveInCircle(surface, chunkArea, "cliff", siloPos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
-                RemoveDecorationsArea(surface, chunkArea)
+                RemoveInCircle(surface, siloArea, "tree", siloPos, (CHUNK_SIZE*1.5)+5)
+                RemoveInCircle(surface, siloArea, "resource", siloPos, (CHUNK_SIZE*1.5)+5)
+                RemoveInCircle(surface, siloArea, "cliff", siloPos, (CHUNK_SIZE*1.5)+5)
+                RemoveDecorationsArea(surface, siloArea)
 
                 -- Create rocket silo
-                CreateCropOctagon(surface, siloPos, chunkArea, CHUNK_SIZE*2, "landfill")
-            end
+                CreateCropOctagon(surface, siloPos, siloArea, (CHUNK_SIZE*1.5)+4, "landfill")
+            -- end
         end
-    end
+    -- end
 end
 
 -- Generate chunks where we plan to place the rocket silos.
 function GenerateRocketSiloAreas(surface)
     for idx,siloPos in pairs(global.siloPosition) do
-        surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 2)
+        surface.request_to_generate_chunks({siloPos.x, siloPos.y}, 1)
     end
     if (global.ocfg.frontier_silo_vision) then
         ChartRocketSiloAreas(surface, game.forces[global.ocfg.main_force])
@@ -247,16 +247,17 @@ function GenerateRocketSiloAreas(surface)
 
     game.surfaces[GAME_SURFACE_NAME].force_generate_chunk_requests() -- Block and generate all to be sure.
 
-    GenerateAllSilos(surface)
+    GenerateRocketSiloChunks()
+    GenerateAllSilos()
 end
 
 -- Chart chunks where we plan to place the rocket silos.
 function ChartRocketSiloAreas(surface, force)
     for idx,siloPos in pairs(global.siloPosition) do
-        force.chart(surface, {{siloPos.x-(CHUNK_SIZE*2),
-                                siloPos.y-(CHUNK_SIZE*2)},
-                                {siloPos.x+(CHUNK_SIZE*2),
-                                siloPos.y+(CHUNK_SIZE*2)}})
+        force.chart(surface, {{siloPos.x-(CHUNK_SIZE*1),
+                                siloPos.y-(CHUNK_SIZE*1)},
+                                {siloPos.x+(CHUNK_SIZE*1),
+                                siloPos.y+(CHUNK_SIZE*1)}})
     end
 end
 

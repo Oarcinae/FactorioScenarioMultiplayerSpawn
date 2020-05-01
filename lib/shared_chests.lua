@@ -489,8 +489,8 @@ function CreateSharedItemsGuiTab(tab_container, player)
 
     -- MW charging/discharging rate. (delta change * sample rate per second)
     local smelter_energy_used = 0
-    if (global.magic_smelter_energy_history) then
-        for k,v in pairs(global.magic_smelter_energy_history) do
+    if (global.magic_factory_energy_history) then
+        for k,v in pairs(global.magic_factory_energy_history) do
             smelter_energy_used = smelter_energy_used + v
         end
     end

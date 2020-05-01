@@ -102,17 +102,22 @@ script.on_init(function(event)
     end
 
     -- Everyone do the shuffle. Helps avoid always starting at the same location.
-    global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
-    log("Vanilla spawns:")
-    log(serpent.block(global.vanillaSpawns))
-
+    -- Needs to be done after the silo spawning.
+    if (global.ocfg.enable_vanilla_spawns) then
+        global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
+        log("Vanilla spawns:")
+        log(serpent.block(global.vanillaSpawns))
+    end
+    
     Compat.handle_factoriomaps()
 
     if (global.ocfg.enable_chest_sharing) then
         SharedChestInitItems()
     end
 
-    MagicFurnaceInit()
+    if (global.ocfg.enable_magic_factories) then
+        MagicFactoriesInit()
+    end
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
@@ -144,10 +149,6 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     end
     if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
-    end
-
-    if global.ocfg.frontier_rocket_silo then
-        GenerateRocketSiloChunk(event)
     end
 
     SeparateSpawnsGenerateChunk(event)
@@ -248,7 +249,7 @@ script.on_event(defines.events.on_built_entity, function(event)
                     2)
     end
 
-    if ENABLE_ANTI_GRIEFING then
+    if global.ocfg.enable_anti_grief then
         SetItemBlueprintTimeToLive(event)
     end
 
@@ -294,10 +295,9 @@ script.on_event(defines.events.on_tick, function(event)
         SharedChestsOnTick()
     end
 
-    global.magic_smelter_energy_history[game.tick % 60] = 0
-
-    MagicFurnaceOnTick()
-    MagicChemplantOnTick()
+    if global.ocfg.enable_magic_factories then
+        MagicFactoriesOnTick()
+    end
 
     TimeoutSpeechBubblesOnTick()
     FadeoutRenderOnTick()
@@ -444,6 +444,6 @@ end)
 -- On enemies killed
 -- For coin generation and stuff
 ----------------------------------------
-script.on_event(defines.events.on_entity_died, function(event)
-    CoinsFromEnemiesOnEntityDied(event)
-end)
+-- script.on_event(defines.events.on_entity_died, function(event)
+--     CoinsFromEnemiesOnEntityDied(event)
+-- end)

@@ -81,7 +81,10 @@ ENABLE_ABANDONED_BASE_REMOVAL = true
 ENABLE_RESEARCH_QUEUE = true
 
 -- Enable item & energy sharing system.
-ENABLE_CHEST_SHARING = true
+ENABLE_CHEST_SHARING = false
+
+-- Enable magic factories around the map. (Similar to whistle stop mod)
+ENABLE_MAGIC_FACTORIES = false
 
 -- This inhibits enemy attacks on bases where all players are offline.
 -- Not 100% guaranteed.
@@ -430,6 +433,10 @@ ENABLE_ANTI_GRIEFING = false
 -- Makes blueprint ghosts dissapear if they have been placed longer than this
 -- ONLY has an effect if ENABLE_ANTI_GRIEFING is true!
 GHOST_TIME_TO_LIVE = 10 * TICKS_PER_MINUTE
+
+-- I like keeping this off... set to true if you want to shoot your own chests
+-- and stuff.
+ENABLE_FRIENDLY_FIRE = false
 
 --------------------------------------------------------------------------------
 -- This turns on writing chat and certain events to specific files so that I can

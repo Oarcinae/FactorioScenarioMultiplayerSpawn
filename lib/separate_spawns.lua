@@ -922,8 +922,8 @@ function CreateForce(force_name)
         end
         SetCeaseFireBetweenAllForces()
         SetFriendlyBetweenAllForces()
-        newForce.friendly_fire=false
-        if (ENABLE_ANTI_GRIEFING) then
+        newForce.friendly_fire = global.ocfg.enable_friendly_fire
+        if (global.ocfg.enable_anti_grief) then
             AntiGriefing(newForce)
         end
 
@@ -934,6 +934,7 @@ function CreateForce(force_name)
         end
     else
         log("TOO MANY FORCES!!! - CreateForce()")
+        return game.forces[global.ocfg.main_force]
     end
 
     -- Add productivity bonus for solo teams.
@@ -990,8 +991,14 @@ function CreateVanillaSpawns(count, spacing)
     for i=-sqrt_half,sqrt_half,1 do
         for j=-sqrt_half,sqrt_half,1 do
             if (i~=0 or j~=0) then -- EXCEPT don't put 0,0
-                table.insert(points, {x=i*spacing,y=j*spacing})
-                table.insert(global.vanillaSpawns, {x=i*spacing,y=j*spacing})
+
+                local x_pos = (i*spacing)
+                x_pos = x_pos - (x_pos % CHUNK_SIZE) + (CHUNK_SIZE/2)
+                local y_pos = (j*spacing)
+                y_pos = y_pos - (y_pos % CHUNK_SIZE) + (CHUNK_SIZE/2)
+
+                table.insert(points, {x=x_pos,y=y_pos})
+                table.insert(global.vanillaSpawns, {x=x_pos,y=y_pos})
             end
         end
     end

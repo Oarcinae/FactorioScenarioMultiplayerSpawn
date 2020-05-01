@@ -298,6 +298,20 @@ function GiveQuickStartPowerArmor(player)
     end
 end
 
+TEST_KIT = {
+    {name="infinity-chest", count = 50},
+    {name="infinity-pipe", count = 50},
+    {name="electric-energy-interface", count = 50},
+    {name="express-loader", count = 50},
+    {name="express-transport-belt", count = 50},
+}
+
+function GiveTestKit(player)
+    for _,item in pairs(TEST_KIT) do
+        player.insert(item)
+    end
+end
+
 -- Create area given point and radius-distance
 function GetAreaFromPointAndDistance(point, dist)
     local area = {left_top=
@@ -849,19 +863,20 @@ end
 function AntiGriefing(force)
     force.zoom_to_world_deconstruction_planner_enabled=false
     SetForceGhostTimeToLive(force)
+    -- TODO: Mess with permission groups and shit
 end
 
 function SetForceGhostTimeToLive(force)
-    if GHOST_TIME_TO_LIVE ~= 0 then
-        force.ghost_time_to_live = GHOST_TIME_TO_LIVE+1
+    if global.ocfg.ghost_ttl ~= 0 then
+        force.ghost_time_to_live = global.ocfg.ghost_ttl+1
     end
 end
 
 function SetItemBlueprintTimeToLive(event)
     local type = event.created_entity.type
     if type == "entity-ghost" or type == "tile-ghost" then
-        if GHOST_TIME_TO_LIVE ~= 0 then
-            event.created_entity.time_to_live = GHOST_TIME_TO_LIVE
+        if global.ocfg.ghost_ttl ~= 0 then
+            event.created_entity.time_to_live = global.ocfg.ghost_ttl
         end
     end
 end
