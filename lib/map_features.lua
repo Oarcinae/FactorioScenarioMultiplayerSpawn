@@ -294,10 +294,10 @@ function SpawnFurnaceChunk(chunk_pos)
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
 
     -- 4 Furnaces
-    SpawnMagicFurnace({x=center_pos.x-5,y=center_pos.y-5})
-    SpawnMagicFurnace({x=center_pos.x+5,y=center_pos.y-5})
-    SpawnMagicFurnace({x=center_pos.x-5,y=center_pos.y+5})
-    SpawnMagicFurnace({x=center_pos.x+5,y=center_pos.y+5})
+    SpawnMagicFurnace({x=center_pos.x-8,y=center_pos.y-8})
+    SpawnMagicFurnace({x=center_pos.x+8,y=center_pos.y-8})
+    SpawnMagicFurnace({x=center_pos.x-8,y=center_pos.y+8})
+    SpawnMagicFurnace({x=center_pos.x+8,y=center_pos.y+8})
 
 end
 
@@ -324,10 +324,10 @@ function SpawnAssemblyChunk(chunk_pos)
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
 
     -- 4 Assemblers
-    SpawnMagicAssembler({x=center_pos.x-5,y=center_pos.y-5})
-    SpawnMagicAssembler({x=center_pos.x+5,y=center_pos.y-5})
-    SpawnMagicAssembler({x=center_pos.x-5,y=center_pos.y+5})
-    SpawnMagicAssembler({x=center_pos.x+5,y=center_pos.y+5})
+    SpawnMagicAssembler({x=center_pos.x-8,y=center_pos.y-8})
+    SpawnMagicAssembler({x=center_pos.x+8,y=center_pos.y-8})
+    SpawnMagicAssembler({x=center_pos.x-8,y=center_pos.y+8})
+    SpawnMagicAssembler({x=center_pos.x+8,y=center_pos.y+8})
 end
 
 function SpawnMagicBuilding(entity_name, position)

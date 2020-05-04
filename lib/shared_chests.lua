@@ -21,11 +21,6 @@
 -- electric-energy-interface for sharing electricity?
 
 
--- These items won't be sucked up since they can't be removed.
-EXCEPTION_LIST = {['loader'] = true,
-                    ['fast-loader'] = true,
-                    ['express-loader'] = true}
-
 -- Buffer size is the limit of joules/tick so multiply by 60 to get /sec.
 SHARED_ELEC_OUTPUT_BUFFER_SIZE = 1000000000 -- Default 10000000000
 SHARED_ELEC_INPUT_BUFFER_SIZE = 1000000000 -- 480000000
@@ -264,6 +259,57 @@ function SharedChestsUpdateCombinators()
     end
 end
 
+function SharedChestUploadItem(item_name, count)
+    if (not game.item_prototypes[item_name].has_flag("hidden")) then
+        if (global.shared_items[item_name] == nil) then
+            global.shared_items[item_name] = count
+        else
+            global.shared_items[item_name] = global.shared_items[item_name] + count
+        end
+        return true
+    else
+        return false
+    end
+end
+
+function SharedChestEmptyEquipment(item_stack)
+    if (item_stack == nil) then
+        return 
+    end
+    
+    if (item_stack.grid == nil) then 
+        return 
+    end
+
+    local contents = item_stack.grid.get_contents()
+    for item_name,count in pairs(contents) do
+        SharedChestUploadItem(item_name, count)
+    end
+end
+
+function SharedChestUploadChest(entity)
+
+    local chest_inv = entity.get_inventory(defines.inventory.chest)
+    if (chest_inv == nil) then return end
+    if (chest_inv.is_empty()) then return end
+
+    local contents = chest_inv.get_contents()
+    for item_name,count in pairs(contents) do
+        if (game.item_prototypes[item_name].equipment_grid ~= nil) then
+            local item_stack = chest_inv.find_item_stack(item_name)
+            while (item_stack ~= nil) do
+                SharedChestEmptyEquipment(item_stack)
+                item_stack.clear()
+                item_stack = chest_inv.find_item_stack(item_name)
+            end
+        end
+
+        if (SharedChestUploadItem(item_name, count)) then
+            chest_inv.remove({name=item_name, count=count})
+        end
+    end
+end
+
 -- Pull all items in the deposit chests
 function SharedChestsDepositAll()
     
@@ -271,37 +317,17 @@ function SharedChestsDepositAll()
         global.shared_items = {}
     end
 
-    for idx,chestInfo in pairs(global.shared_chests) do
+    for idx,chest_info in pairs(global.shared_chests) do
 
-        local chestEntity = chestInfo.entity
+        local chest_entity = chest_info.entity
 
         -- Delete any chest that is no longer valid.
-        if ((chestEntity == nil) or (not chestEntity.valid)) then
+        if ((chest_entity == nil) or (not chest_entity.valid)) then
             global.shared_chests[idx] = nil
         
         -- Take inputs and store.
-        elseif (chestInfo.type == "INPUT") then
-
-            local chestInv = chestEntity.get_inventory(defines.inventory.chest)
-            
-            if not chestInv.is_empty() then
-
-                local contents = chestInv.get_contents()
-
-                for itemName,count in pairs(contents)  do
-
-                    if (EXCEPTION_LIST[itemName] == nil) then
-
-                        if (global.shared_items[itemName] == nil) then
-                            global.shared_items[itemName] = count
-                        else
-                            global.shared_items[itemName] = global.shared_items[itemName] + count
-                        end
-
-                        chestInv.remove({name=itemName, count=count})
-                    end
-                end
-            end
+        elseif (chest_info.type == "INPUT") then
+            SharedChestUploadChest(chest_entity)
         end
     end
 end
