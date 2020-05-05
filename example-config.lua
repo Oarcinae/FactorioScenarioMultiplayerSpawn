@@ -22,7 +22,8 @@ SCENARIO_INFO_MSG = "Latest updates in this scenario version:\n"..
 "You can be on the main team or your own. All teams are friendly.\n"..
 "If you leave in the first 15 minutes, your base and character will be deleted!"
 
-CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | discord.gg/trnpcen"
+CONTACT_MSG = "Contact: SteamID:Oarc | oarcinae@gmail.com | Discord:Oarc#8695"
+DISCORD_INV = "discord.gg/trnpcen"
 
 --------------------------------------------------------------------------------
 -- Module Enables

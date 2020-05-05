@@ -191,8 +191,7 @@ end
 
 -- Function creates a new tab.
 -- It adds whatever it wants to the provided scroll-pane.
--- content_function takes a content holder GUI and player
-function AddOarcGuiTab(player, tab_name, content_function)
+function AddOarcGuiTab(player, tab_name)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
     end
