@@ -70,6 +70,19 @@ function RenderPermanentGroundText(surface, position, scale, text, color)
                     draw_on_ground=true}
 end 
 
+-- A standardized helper text that fades out over time
+function TemporaryHelperText(text, position, ttl)
+    local rid = rendering.draw_text{text=text,
+                    surface=game.surfaces[GAME_SURFACE_NAME],
+                    target=position,
+                    color={0.7,0.7,0.7,0.7},
+                    scale=1,
+                    font="compi",
+                    time_to_live=ttl,
+                    draw_on_ground=false}
+    table.insert(global.oarc_renders_fadeout, rid)
+end
+
 -- Every second, check a global table to see if we have any speech bubbles to kill.
 function TimeoutSpeechBubblesOnTick()
     if ((game.tick % (TICKS_PER_SECOND)) == 3) then
@@ -310,6 +323,15 @@ function GiveTestKit(player)
     for _,item in pairs(TEST_KIT) do
         player.insert(item)
     end
+end
+
+-- Safer teleport
+function SafeTeleport(player, surface, target_pos)
+    local safe_pos = surface.find_non_colliding_position("character", target_pos, 15, 1)
+    if (not safe_pos) then
+        player.teleport(target_pos, surface)
+    end
+    player.teleport(safe_pos, surface)
 end
 
 -- Create area given point and radius-distance
@@ -736,6 +758,18 @@ function CreateFixedColorTileArea(surface, area, color)
     end
 
     surface.set_tiles(tiles, true)
+end
+
+-- Find closest player-owned entity
+function FindClosestPlayerOwnedEntity(player, name, radius)
+
+    local entities = player.surface.find_entities_filtered{position=player.position,
+                                            radius=radius,
+                                            name=name,
+                                            force=player.force}
+    if (not entities or (#entities == 0)) then return nil end
+
+    return player.surface.get_closest(player.position, entities)
 end
 
 --------------------------------------------------------------------------------

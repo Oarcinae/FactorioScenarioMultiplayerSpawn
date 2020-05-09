@@ -27,6 +27,14 @@ function SeparateSpawnsPlayerCreated(player_index)
         FindUnusedSpawns(player, false)
     end
 
+    -- Ensure cleared inventory!
+    player.get_inventory(defines.inventory.character_main ).clear()
+    player.get_inventory(defines.inventory.character_guns).clear()
+    player.get_inventory(defines.inventory.character_ammo).clear()
+    player.get_inventory(defines.inventory.character_armor).clear()
+    -- player.get_inventory(defines.inventory.character_vehicle).clear()
+    player.get_inventory(defines.inventory.character_trash).clear()
+
     player.force = global.ocfg.main_force
     DisplayWelcomeTextGui(player)
 end
@@ -719,7 +727,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     -- Send the player to that position
     local player = game.players[delayedSpawn.playerName]
-    player.teleport(delayedSpawn.pos, GAME_SURFACE_NAME)
+    SafeTeleport(player, game.surfaces[GAME_SURFACE_NAME], delayedSpawn.pos)
     GivePlayerStarterItems(player)
 
     -- Render some welcoming text...
@@ -736,147 +744,44 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     if global.ocfg.enable_chest_sharing then
 
         -- Shared electricity IO pair of scripted electric-energy-interfaces
-        SharedEnergySpawnIOPair(player,
-                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-28},
-                                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+29})
-
-        -- Colored tiles for emphasis.
-        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
-                                {left_top = {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y-29},
-                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-28}},
-                                "yellow")
-        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
-                                {left_top = {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y+28},
-                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+29}},
-                                "blue")
-
-        rendering.draw_text{text="Attach to power generation to share.",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-31},
-                        color={0.6,0.6,0.6,0.8},
-                        scale=1,
-                        font="compi",
-                        time_to_live=TICKS_PER_HOUR*2,
-                        -- players={player},
-                        draw_on_ground=true,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
-        rendering.draw_text{text="Attach to electric grid to draw power.",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+30.5},
-                        color={0.6,0.6,0.6,0.8},
-                        scale=1,
-                        font="compi",
-                        time_to_live=TICKS_PER_HOUR*2,
-                        -- players={player},
-                        draw_on_ground=true,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
+        SharedEnergySpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-18})
+        SharedEnergySpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+19})
 
         -- Input Chests
-        for i=-22,-17 do
-            SharedChestsSpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i})
-        end
+        SharedChestsSpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-10})
+        SharedChestsSpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-9})
+
         -- Tile arrows to help indicate
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-20}, "RIGHT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-20}, "LEFT")
-
-        -- Colored tiles for emphasis.
-        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
-                                {left_top = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-22},
-                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-17}},
-                                "yellow")
-
-        -- Helpful ground text
-        rendering.draw_text{text="Place items in to share.",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-23.5},
-                        color={0.7,0.7,0.1,0.7},
-                        scale=1,
-                        font="compi",
-                        time_to_live=TICKS_PER_HOUR*2,
-                        -- players={player},
-                        draw_on_ground=true,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
-
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-10}, "RIGHT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-10}, "LEFT")
 
         -- Combinators for monitoring items in the network.
         SharedChestsSpawnCombinators(player,
                 {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y-2}, -- Ctrl
-                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}, -- Status
-                {x=delayedSpawn.pos.x+x_dist-1-1, y=delayedSpawn.pos.y}) -- Pole
-        SharedChestsSpawnCombinators(player,
-                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-2}, -- Ctrl
-                {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y}, -- Status
-                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}) -- Pole
-        SharedChestsSpawnCombinators(player,
-                {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y-2}, -- Ctrl
-                {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y}, -- Status
-                {x=delayedSpawn.pos.x+x_dist-1+1, y=delayedSpawn.pos.y}) -- Pole
+                {x=delayedSpawn.pos.x+x_dist-1, y=delayedSpawn.pos.y}) -- Status
 
 
-        -- Helpful ground text
-        rendering.draw_text{text="Set signals here to monitor item counts.",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y-3},
-                        color={0.6,0.6,0.6,0.8},
-                        scale=1,
-                        font="compi",
-                        time_to_live=TICKS_PER_HOUR*2,
-                        -- players={player},
-                        draw_on_ground=true,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
-        rendering.draw_text{text="Receive signals here to see available items.",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+1},
-                        color={0.6,0.6,0.6,0.8},
-                        scale=1,
-                        font="compi",
-                        time_to_live=TICKS_PER_HOUR*2,
-                        -- players={player},
-                        draw_on_ground=true,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
-
-        -- Output Chests
-        for i=16,21 do
-            SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+i}, (i == 16))
-        end
+        SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+8}, true)
+        SharedChestsSpawnOutput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+9}, true)
 
         -- Tile arrows to help indicate
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+18}, "LEFT")
-        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+18}, "RIGHT")
-        -- Colored tiles for emphasis.
-        CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME],
-                                {left_top = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+16},
-                                right_bottom = {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y+21}},
-                                "blue")
-
-        --Helpful ground text
-        rendering.draw_text{text="Set filters to request items.",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+22.5},
-                        color={0.5,0.5,0.8,0.8},
-                        scale=1,
-                        font="compi",
-                        time_to_live=TICKS_PER_HOUR*2,
-                        -- players={player},
-                        draw_on_ground=true,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist-4, y=delayedSpawn.pos.y+8}, "LEFT")
+        CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+8}, "RIGHT")
 
         -- Cutscene to force the player to witness my brilliance
-        player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=200,time_to_wait=300,zoom=0.8},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
+        -- player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=150,time_to_wait=150,zoom=0.8},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
     end
 end
 
 function SendPlayerToSpawn(player)
     if (DoesPlayerHaveCustomSpawn(player)) then
-        player.teleport(global.playerSpawns[player.name], GAME_SURFACE_NAME)
+        SafeTeleport(player,
+                        game.surfaces[GAME_SURFACE_NAME],
+                        global.playerSpawns[player.name])
     else
-        player.teleport(game.forces[global.ocfg.main_force].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
+        SafeTeleport(player,
+                        game.surfaces[GAME_SURFACE_NAME],
+                        game.forces[global.ocfg.main_force].get_spawn_position(GAME_SURFACE_NAME))
     end
 end
 

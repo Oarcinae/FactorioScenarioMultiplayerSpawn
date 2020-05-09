@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 
 -- NAME of the top level element (outer frame)
-local OARC_GUI = "oarc_gui"
+OARC_GUI = "oarc_gui"
 
 -- LIST of all implemented tabs and their content Functions
 OARC_GAME_OPTS_GUI_TAB_NAME = "Server Info"

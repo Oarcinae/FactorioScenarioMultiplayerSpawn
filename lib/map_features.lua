@@ -168,13 +168,13 @@ function MagicFactoryChunkGenerator()
     SendBroadcastMsg("Number magic chunks: " .. #global.magic_factory_positions)
 end
 
-function IndicateClosestMagicChunk(player)
-
+function FindClosestMagicChunk(player)
     if (not player or not player.character) then return end
+    return GetClosestPosFromTable(GetChunkPosFromTilePos(player.character.position), global.magic_factory_positions)
+end
 
-    local closest_chunk = GetClosestPosFromTable(GetChunkPosFromTilePos(player.character.position), global.magic_factory_positions)
-    local target_pos = GetCenterTilePosFromChunkPos(closest_chunk)
-
+function IndicateClosestMagicChunk(player)
+    local target_pos = GetCenterTilePosFromChunkPos(FindClosestMagicChunk(player))
     rendering.draw_line{color={r=0.5,g=0.5,b=0.5,a=0.5},
                     width=2,
                     from=player.character,
@@ -186,7 +186,6 @@ function IndicateClosestMagicChunk(player)
 end
 
 function MagicalFactorySpawnAll()
-    local next_choice = math.random(1,3)
     for _,chunk_pos in pairs(global.magic_factory_positions) do
         
         local pos = GetCenterTilePosFromChunkPos(chunk_pos)
@@ -206,54 +205,11 @@ function MagicalFactorySpawnAll()
         end
         game.surfaces[GAME_SURFACE_NAME].set_tiles(dirtTiles)
 
-        -- Spawn Magic Stuff
-        if (next_choice == 1) then
-            SpawnFurnaceChunk(chunk_pos)
-            next_choice = 2
-        elseif (next_choice == 2) then
-            SpawnOilRefineryChunk(chunk_pos)
-            next_choice = 3
-        elseif (next_choice == 3) then
-            SpawnAssemblyChunk(chunk_pos)
-            next_choice = 1
-        end
-
         -- Yay colored tiles
         CreateFixedColorTileArea(game.surfaces[GAME_SURFACE_NAME], 
                                 {left_top = {x=c_area.left_top.x+2, y=c_area.left_top.y+2},
                                     right_bottom = {x=c_area.right_bottom.x-2, y=c_area.right_bottom.y-2}},
                                 "black")
-
-        -- Put some enemies nearby
-        -- SpawnEnemyTurret({x=pos.x-5,y=pos.y-5})
-        -- SpawnEnemyTurret({x=pos.x-5,y=pos.y+6})
-        -- SpawnEnemyTurret({x=pos.x+6,y=pos.y-5})
-        -- SpawnEnemyTurret({x=pos.x+6,y=pos.y+6})
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x-10,y=pos.y-10}, force = "enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x-10,y=pos.y+11}, force = "enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x+11,y=pos.y-10}, force = "enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name = ENEMY_WORM_TURRETS[math.random(0,2)], position = {x=pos.x+11,y=pos.y+11}, force = "enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name="biter-spawner", position={x=pos.x-12,y=pos.y}, force="enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name="spitter-spawner", position={x=pos.x+1,y=pos.y-12}, force="enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name="biter-spawner", position={x=pos.x+13,y=pos.y}, force="enemy"}
-        game.surfaces[GAME_SURFACE_NAME].create_entity{name="spitter-spawner", position={x=pos.x+1,y=pos.y+12}, force="enemy"}
-
-        -- Helper text
-        RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
-            {x=pos.x-4,y=pos.y-1},
-            1,
-            "Consumes energy from sharing system.",
-            {0.7,0.4,0.3,0.8})
-        RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
-            {x=pos.x-3.5,y=pos.y},
-            1,
-            "Supply energy at any player spawn.",
-            {0.7,0.4,0.3,0.8})
-        RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
-            {x=pos.x-4.5,y=pos.y+1},
-            1,
-            "Modules/beacons DO NOT have any effect!",
-            {0.7,0.4,0.3,0.8})
 
         -- Make it safe from regrowth
         if global.ocfg.enable_regrowth then
@@ -266,20 +222,6 @@ function MagicalFactorySpawnAll()
     end
 end
 
--- function MagicFurnaceDelayedSpawner()
-
---     -- Delay the creation of the magical outposts so we place them on already generated lands.
---     if (not global.oarc_magic_smelters_generated and (game.tick >= 10*TICKS_PER_SECOND)) then
---         game.surfaces[GAME_SURFACE_NAME].force_generate_chunk_requests() -- Block and generate all to be sure.
---         global.oarc_magic_smelters_generated = true
-
---         MagicalFactorySpawnAll()
-
---         log("Magical furnaces generated!")
---         SendBroadcastMsg("Magical furnaces are now available!")
---     end
--- end
-
 function SpawnEnemyTurret(pos)
 
     local turret = game.surfaces[GAME_SURFACE_NAME].create_entity{name="gun-turret", position=pos, force="enemy"}
@@ -288,6 +230,50 @@ function SpawnEnemyTurret(pos)
 
 end
 
+function RequestSpawnSpecialChunk(player, spawn_function)
+    local closest_chunk = FindClosestMagicChunk(player)
+    local player_chunk = GetChunkPosFromTilePos(player.character.position)
+    if ((closest_chunk.x == player_chunk.x) and (closest_chunk.y == player_chunk.y)) then
+        local chunk_area = GetAreaFromChunkPos(closest_chunk)
+
+        local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
+                                        area={left_top = {chunk_area.left_top.x+1, chunk_area.left_top.y+1},
+                                                right_bottom = {chunk_area.right_bottom.x-1, chunk_area.right_bottom.y-1}}}
+        if (#entities > 1) then
+            player.print("Looks like this chunk already has something in it other than just you the player?! " .. entities[1].name)
+            return false
+        elseif ((#entities == 1) and (entities[1].player == player)) or (#entities == 0) then
+            spawn_function(closest_chunk)
+            -- Teleport to center of chunk to be safe.
+            SafeTeleport(player, game.surfaces[GAME_SURFACE_NAME], GetCenterTilePosFromChunkPos(closest_chunk))
+            return true
+        end
+
+    else
+        player.print("You need to be standing inside the special chunk!")
+        return false
+    end
+
+    return false
+end
+
+function SpecialChunkHelperText(pos)
+    RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
+        {x=pos.x-4,y=pos.y-1},
+        1,
+        "Consumes energy from sharing system.",
+        {0.7,0.4,0.3,0.8})
+    RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
+        {x=pos.x-3.5,y=pos.y},
+        1,
+        "Supply energy at any player spawn.",
+        {0.7,0.4,0.3,0.8})
+    RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
+        {x=pos.x-4.5,y=pos.y+1},
+        1,
+        "Modules/beacons DO NOT have any effect!",
+        {0.7,0.4,0.3,0.8})
+end
 
 function SpawnFurnaceChunk(chunk_pos)
 
@@ -299,6 +285,7 @@ function SpawnFurnaceChunk(chunk_pos)
     SpawnMagicFurnace({x=center_pos.x-8,y=center_pos.y+8})
     SpawnMagicFurnace({x=center_pos.x+8,y=center_pos.y+8})
 
+    SpecialChunkHelperText(center_pos)
 end
 
 function SpawnOilRefineryChunk(chunk_pos)
@@ -317,6 +304,7 @@ function SpawnOilRefineryChunk(chunk_pos)
     SpawnMagicChemicalPlant({x=center_pos.x+6,y=center_pos.y+8})
     SpawnMagicChemicalPlant({x=center_pos.x+10,y=center_pos.y+8})
 
+    SpecialChunkHelperText(center_pos)
 end
 
 function SpawnAssemblyChunk(chunk_pos)
@@ -328,6 +316,8 @@ function SpawnAssemblyChunk(chunk_pos)
     SpawnMagicAssembler({x=center_pos.x+8,y=center_pos.y-8})
     SpawnMagicAssembler({x=center_pos.x-8,y=center_pos.y+8})
     SpawnMagicAssembler({x=center_pos.x+8,y=center_pos.y+8})
+
+    SpecialChunkHelperText(center_pos)
 end
 
 function SpawnMagicBuilding(entity_name, position)
@@ -727,23 +717,23 @@ function MagicAssemblerOnTick()
 end
 
 COIN_GENERATION_CHANCES = {
-    ["small-biter"] = 0.01,
-    ["medium-biter"] = 0.05,
-    ["big-biter"] = 0.15,
-    ["behemoth-biter"] = 0.50,
+    ["small-biter"] = 0.2,
+    ["medium-biter"] = 0.3,
+    ["big-biter"] = 1,
+    ["behemoth-biter"] = 5,
 
-    ["small-spitter"] = 0.02,
-    ["medium-spitter"] = 0.05,
-    ["big-spitter"] = 0.20,
-    ["behemoth-spitter"] = 0.50,
+    ["small-spitter"] = 0.3,
+    ["medium-spitter"] = 0.4,
+    ["big-spitter"] = 1,
+    ["behemoth-spitter"] = 5,
 
-    ["small-worm-turret"] = 0.10,
-    ["medium-worm-turret"] = 0.20,
-    ["big-worm-turret"] = 0.50,
-    ["behemoth-worm-turret"] = 1.00,
+    ["small-worm-turret"] = 2,
+    ["medium-worm-turret"] = 3,
+    ["big-worm-turret"] = 5,
+    ["behemoth-worm-turret"] = 10,
 
-    ["biter-spawner"] = 10,
-    ["spitter-spawner"] = 10,
+    ["biter-spawner"] = 5,
+    ["spitter-spawner"] = 5,
 }
 
 function CoinsFromEnemiesOnEntityDied(event)
@@ -769,11 +759,11 @@ function DropCoins(pos, count, force)
             drop_amount = 1
         end
 
-    -- If count is 1 or more, it represents a probability to drop between 1 and count coins.
+    -- If count is 1 or more, it represents a probability to drop at least that amount and up to 3x
     elseif (count >= 1) then
-        drop_amount = math.random(1,count)
+        drop_amount = math.random(count,count*3)
     end
 
     if drop_amount == 0 then return end
-    game.surfaces[GAME_SURFACE_NAME].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, nil, false) -- Set nil to force to auto decon.
+    game.surfaces[GAME_SURFACE_NAME].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, force, false) -- Set nil to force to auto decon.
 end

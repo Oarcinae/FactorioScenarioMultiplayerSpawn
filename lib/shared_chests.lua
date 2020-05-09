@@ -2,25 +2,6 @@
 -- Feb 2020
 -- Oarc's silly idea for a scripted item sharing solution.
 
--- Indestructible starting chests for deposits and withdrawing
--- Every second deposits get stored
--- Every second withdrawing filters are filled based on # of players and availability.
--- All shared.
-
--- Global keeps a list of all shared chests, with the player owner name.
--- Depositing can happen while players are offline
--- Withdrawing won't happen if player is offline?? Not sure about this one.
-
--- Globals:
---  List of input chests
---  List of output chests
---  List of items currently stored
---  List of requests by item, for each player.
---  List of requests by item, totals.
-
--- electric-energy-interface for sharing electricity?
-
-
 -- Buffer size is the limit of joules/tick so multiply by 60 to get /sec.
 SHARED_ELEC_OUTPUT_BUFFER_SIZE = 1000000000 -- Default 10000000000
 SHARED_ELEC_INPUT_BUFFER_SIZE = 1000000000 -- 480000000
@@ -37,10 +18,11 @@ function SharedChestInitItems()
     global.shared_chests = {}
     global.shared_requests = {}
     global.shared_requests_totals = {}
-    global.shared_electricity_io = {}
-    global.shared_electricity_combi = {}
+
+    global.shared_electricity_inputs = {}
+    global.shared_electricity_outputs = {}
+
     global.shared_electricity_player_limits = {}
-    global.shared_electricity_combi = {}
     global.shared_chests_combinators = {}
     global.shared_items = {}
     global.shared_items['red-wire'] = 10000
@@ -50,65 +32,87 @@ function SharedChestInitItems()
     global.shared_energy_stored_history = {start=SHARED_ENERGY_STARTING_VALUE, after_input=SHARED_ENERGY_STARTING_VALUE, after_output=SHARED_ENERGY_STARTING_VALUE}
 end
 
+function SharedEnergySpawnInput(player, pos)
 
-function SharedEnergySpawnIOPair(player, posIn, posOut)
-
-    local inputElec = game.surfaces[GAME_SURFACE_NAME].create_entity{name="electric-energy-interface", position=posIn, force="neutral"}
+    local inputElec = game.surfaces[GAME_SURFACE_NAME].create_entity{name="electric-energy-interface", position=pos, force="neutral"}
     inputElec.destructible = false
     inputElec.minable = false
     inputElec.operable = false
 
-    local outputElec = game.surfaces[GAME_SURFACE_NAME].create_entity{name="electric-energy-interface", position=posOut, force="neutral"}
+    inputElec.electric_buffer_size = SHARED_ELEC_INPUT_BUFFER_SIZE
+    inputElec.power_production = 0
+    inputElec.power_usage = 0
+    inputElec.energy = 0
+
+    local inputElecCombi = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position={x=pos.x+1, y=pos.y}, force="neutral"}
+    inputElecCombi.destructible = false
+    inputElecCombi.minable = false
+    inputElecCombi.operable = true -- Input combi can be set by the player!
+
+    -- Default share is 1MW
+    inputElecCombi.get_or_create_control_behavior().set_signal(1,
+        {signal={type="virtual", name="signal-M"},
+        count=1})
+
+    TemporaryHelperText("Connect to electric network to contribute shared energy.", {pos.x+1.5, pos.y-1}, TICKS_PER_MINUTE*2)
+    TemporaryHelperText("Use combinator to limit number of MW shared.", {pos.x+2.5, pos.y}, TICKS_PER_MINUTE*2)
+
+    table.insert(global.shared_electricity_inputs, {eei=inputElec, combi=inputElecCombi})
+end
+
+function SharedEnergySpawnOutput(player, pos)
+
+    local outputElec = game.surfaces[GAME_SURFACE_NAME].create_entity{name="electric-energy-interface", position=pos, force="neutral"}
     outputElec.destructible = false
     outputElec.minable = false
     outputElec.operable = false
 
-    local outputElecCombi = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position={x=posOut.x+1, y=posOut.y}, force="neutral"}
-    outputElecCombi.destructible = false
-    outputElecCombi.minable = false
-    outputElecCombi.operable = false
-    table.insert(global.shared_electricity_combi, outputElecCombi)
-
-    inputElec.electric_buffer_size = SHARED_ELEC_INPUT_BUFFER_SIZE
-    inputElec.power_production = 0 -- We disable this and never use it!
-    inputElec.power_usage = 0
-    inputElec.energy = 0
-
-    -- This buffer size matters because the local circuit may charge it up if there is surplus.
-    -- So the limit here is something reasonable...
-    outputElec.electric_buffer_size = SHARED_ELEC_OUTPUT_BUFFER_SIZE
-    outputElec.power_production = 0 -- We disable this and never use it!
+    outputElec.electric_buffer_size = SHARED_ELEC_INPUT_BUFFER_SIZE
+    outputElec.power_production = 0
     outputElec.power_usage = 0
     outputElec.energy = 0
 
-    if global.shared_electricity_io == nil then
-        global.shared_electricity_io = {}
-    end
+    local outputElecCombi = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position={x=pos.x+1, y=pos.y}, force="neutral"}
+    outputElecCombi.destructible = false
+    outputElecCombi.minable = false
+    outputElecCombi.operable = false -- Output combi is set my script!
 
-    global.shared_electricity_player_limits[player.name] = DEFAULT_SHARED_ELEC_INPUT_LIMIT
+    TemporaryHelperText("Connect to electric network to consume shared energy.", {pos.x+1.5, pos.y-1}, TICKS_PER_MINUTE*2)
+    TemporaryHelperText("Combinator outputs number of MJ currently stored.", {pos.x+2.5, pos.y}, TICKS_PER_MINUTE*2)
 
-    table.insert(global.shared_electricity_io, {player=player.name, input=inputElec, output=outputElec})
+    table.insert(global.shared_electricity_outputs, {eei=outputElec, combi=outputElecCombi})
 end
 
 function SharedEnergyStoreInputOnTick()
     global.shared_energy_stored_history.start = global.shared_energy_stored
 
-    if global.shared_electricity_io ~= nil then
-        for idx,elecPair in pairs(global.shared_electricity_io) do
-            if (elecPair.input == nil) or (not elecPair.input.valid) or 
-                (elecPair.input == nil) or (not elecPair.input.valid) then
-                global.shared_electricity_io[idx] = nil
-            
-            -- Is input at least half full, then we can start to store energy.
-            elseif (elecPair.input.energy > (SHARED_ELEC_INPUT_BUFFER_SIZE/2)) then
-                    local max_input_allowed = elecPair.input.energy - (SHARED_ELEC_INPUT_BUFFER_SIZE/2) 
-                    elecPair.input.power_usage = math.min(max_input_allowed, global.shared_electricity_player_limits[elecPair.player])
-                    global.shared_energy_stored = global.shared_energy_stored + elecPair.input.power_usage
+    for idx,input in pairs(global.shared_electricity_inputs) do
 
-            -- Switch off contribution if not at least half full.
-            else
-                elecPair.input.power_usage = 0
-            end
+        -- Check for entity no longer valid:
+        if (input.eei == nil) or (not input.eei.valid) or (input.combi == nil) or (not input.combi.valid) then
+            global.shared_electricity_inputs[idx] = nil
+        
+        -- Is input at least half full, then we can start to store energy.
+        elseif (input.eei.energy > (SHARED_ELEC_INPUT_BUFFER_SIZE/2)) then
+
+                -- Calculate the max we can share
+                local max_input_allowed = input.eei.energy - (SHARED_ELEC_INPUT_BUFFER_SIZE/2) 
+
+                -- Get the combinator limit
+                local limit = 0
+                local sig = input.combi.get_or_create_control_behavior().get_signal(1)
+                if ((sig ~= nil) and (sig.signal ~= nil) and (sig.signal.name == "signal-M")) then
+                    limit = sig.count
+                end
+
+                -- Get the minimum
+                input.eei.power_usage = math.min(max_input_allowed, math.floor(limit*1000000/60))
+                
+                global.shared_energy_stored = global.shared_energy_stored + input.eei.power_usage
+
+        -- Switch off contribution if not at least half full.
+        else
+            input.eei.power_usage = 0
         end
     end
 
@@ -117,43 +121,135 @@ end
 
 -- If there is room to distribute energy, we take shared amount split by players.
 function SharedEnergyDistributeOutputOnTick()
-    if (global.shared_electricity_io ~= nil) and (global.shared_energy_stored > 0) then
-        
-        -- Share limit is total amount stored divided by outputs
-        local energyShareCap = math.floor(global.shared_energy_stored / (#global.shared_electricity_io))
 
-        -- Iterate through and fill up outputs if they are under 50%
-        for idx,elecPair in pairs(global.shared_electricity_io) do
-            if (elecPair.output == nil) or (not elecPair.output.valid) or 
-                (elecPair.output == nil) or (not elecPair.output.valid) then
-                global.shared_electricity_io[idx] = nil
-            
+    -- Share limit is total amount stored divided by outputs
+    local energyShareCap = math.floor(global.shared_energy_stored / (#global.shared_electricity_outputs))
+
+    -- Iterate through and fill up outputs if they are under 50%
+    for idx,output in pairs(global.shared_electricity_outputs) do
+
+        -- Check for entity no longer valid:
+        if (output.eei == nil) or (not output.eei.valid) or (output.combi == nil) or (not output.combi.valid) then
+            global.shared_electricity_outputs[idx] = nil
+        
+        
+        else
             -- If it's not full, set production to fill (or as much as is allowed.)
-            elseif (elecPair.output.energy < (SHARED_ELEC_OUTPUT_BUFFER_SIZE/2)) then
-                local outBufferSpace = ((SHARED_ELEC_OUTPUT_BUFFER_SIZE/2) - elecPair.output.energy)
-                elecPair.output.power_production = math.min(outBufferSpace, energyShareCap)
+            if (output.eei.energy < (SHARED_ELEC_OUTPUT_BUFFER_SIZE/2)) then
+                local outBufferSpace = ((SHARED_ELEC_OUTPUT_BUFFER_SIZE/2) - output.eei.energy)
+                output.eei.power_production = math.min(outBufferSpace, energyShareCap)
                 global.shared_energy_stored = global.shared_energy_stored - math.min(outBufferSpace, energyShareCap)
             
             -- Switch off if we're more than half full.
             else
-                elecPair.output.power_production = 0
+                output.eei.power_production = 0
             end
-        end
-    end
 
-    -- Update combinators
-    for idx,combi in pairs(global.shared_electricity_combi) do
-        if (combi == nil) or (not combi.valid) then
-            global.shared_electricity_combi[idx] = nil
-        else
-            combi.get_or_create_control_behavior().set_signal(1, {signal={type="virtual", name="signal-M"}, count=clampInt32(math.floor(global.shared_energy_stored/1000000))})
+            -- Update output combinator
+            output.combi.get_or_create_control_behavior().set_signal(1,
+                            {signal={type="virtual", name="signal-M"},
+                            count=clampInt32(math.floor(global.shared_energy_stored/1000000))})
         end
     end
 
     global.shared_energy_stored_history.after_output = global.shared_energy_stored
 end
 
--- This function spawns chests at the given location.
+-- Returns NIL or position of destroyed chest.
+function FindClosestWoodenChestAndDestroy(player)
+    local target_chest = FindClosestPlayerOwnedEntity(player, "wooden-chest", 16)
+    if (not target_chest) then
+        player.print("Failed to find wooden-chest?")
+        return nil
+    end
+
+    if (not target_chest.get_inventory(defines.inventory.chest).is_empty()) then
+        player.print("Chest is NOT empty! Please empty it and try again.")
+        return nil
+    end
+
+    local pos = target_chest.position
+    if (not target_chest.destroy()) then
+        player.print("ERROR - Can't remove wooden chest??")
+        return nil
+    end
+
+    return {x=math.floor(pos.x),y=math.floor(pos.y)}
+end
+
+function ConvertWoodenChestToSharedChestInput(player)
+    local pos = FindClosestWoodenChestAndDestroy(player)
+    if (pos) then
+        SharedChestsSpawnInput(player, pos)
+        return true
+    end
+    return false
+end
+
+function ConvertWoodenChestToSharedChestOutput(player)
+    local pos = FindClosestWoodenChestAndDestroy(player)
+    if (pos) then
+        SharedChestsSpawnOutput(player, pos)
+        return true
+    end
+    return false
+end
+
+function ConvertWoodenChestToSharedChestCombinators(player)
+    local pos = FindClosestWoodenChestAndDestroy(player)
+    if (pos) then
+        if (player.surface.can_place_entity{name="constant-combinator", position={pos.x,pos.y-1}}) and 
+            (player.surface.can_place_entity{name="constant-combinator", position={pos.x,pos.y+1}}) then
+            SharedChestsSpawnCombinators(player, {x=pos.x,y=pos.y-1}, {x=pos.x,y=pos.y+1})
+            return true
+        else
+            player.print("Failed to place the special combinators. Please check there is enough space in the surrounding tiles!")
+        end
+    end
+    return false
+end
+
+function ConvertWoodenChestToShareEnergyInput(player)
+    local pos = FindClosestWoodenChestAndDestroy(player)
+    if (pos) then
+        if (player.surface.can_place_entity{name="electric-energy-interface", position=pos}) and 
+            (player.surface.can_place_entity{name="constant-combinator", position={x=pos.x+1, y=pos.y}}) then
+            SharedEnergySpawnInput(player, pos)
+            return true
+        else
+            player.print("Failed to place the shared energy input. Please check there is enough space in the surrounding tiles!")
+        end
+    end
+    return false
+end
+
+function ConvertWoodenChestToShareEnergyOutput(player)
+    local pos = FindClosestWoodenChestAndDestroy(player)
+    if (pos) then
+        if (player.surface.can_place_entity{name="electric-energy-interface", position=pos}) and 
+            (player.surface.can_place_entity{name="constant-combinator", position={x=pos.x+1, y=pos.y}}) then
+            SharedEnergySpawnOutput(player, pos)
+            return true
+        else
+            player.print("Failed to place the shared energy input. Please check there is enough space in the surrounding tiles!")
+        end
+    end
+    return false
+end
+
+function DestroyClosestSharedChestEntity(player)
+    local special_entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
+                                        name={"electric-energy-interface", "constant-combinator", "logistic-chest-storage", "logistic-chest-requester"},
+                                        position=player.position,
+                                        radius=5,
+                                        force={"neutral"},
+                                        limit=1}
+
+    if (#special_entities == 1) then
+        special_entities[1].destroy()
+    end
+end
+
 function SharedChestsSpawnInput(player, pos)
 
     local inputChest = game.surfaces[GAME_SURFACE_NAME].create_entity{name="logistic-chest-storage", position={pos.x, pos.y}, force="neutral"}
@@ -166,6 +262,8 @@ function SharedChestsSpawnInput(player, pos)
 
     local chestInfoIn = {player=player.name,type="INPUT",entity=inputChest}
     table.insert(global.shared_chests, chestInfoIn)
+
+    TemporaryHelperText("Place items in to share.", {pos.x+1.5, pos.y}, TICKS_PER_MINUTE*2)
 end
 
 function SharedChestsSpawnOutput(player, pos, enable_example)
@@ -184,10 +282,12 @@ function SharedChestsSpawnOutput(player, pos, enable_example)
 
     local chestInfoOut = {player=player.name,type="OUTPUT",entity=outputChest}
     table.insert(global.shared_chests, chestInfoOut)
+
+    TemporaryHelperText("Set filters to request items.", {pos.x+1.5, pos.y}, TICKS_PER_MINUTE*2)
 end
 
 
-function SharedChestsSpawnCombinators(player, posCtrl, posStatus, posPole)
+function SharedChestsSpawnCombinators(player, posCtrl, posStatus)
 
     local combiCtrl = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position=posCtrl, force="neutral"}
     combiCtrl.destructible = false
@@ -201,20 +301,15 @@ function SharedChestsSpawnCombinators(player, posCtrl, posStatus, posPole)
     combiStat.minable = false
     combiStat.operable = false
 
-    -- local pole = game.surfaces[GAME_SURFACE_NAME].create_entity{name="small-electric-pole", position=posPole, force="neutral"}
-    -- pole.destructible = false
-    -- pole.minable = false
-
-    -- Wire up dat pole
-    -- pole.connect_neighbour({wire=defines.wire_type.red,
-    --                         target_entity=combiStat})
-
     if global.shared_chests_combinators == nil then
         global.shared_chests_combinators = {}
     end
 
     local combiPair = {player=player.name,ctrl=combiCtrl,status=combiStat}
     table.insert(global.shared_chests_combinators, combiPair)
+
+    TemporaryHelperText("Set signals here to monitor item counts.", {posCtrl.x+1.5, posCtrl.y}, TICKS_PER_MINUTE*2)
+    TemporaryHelperText("Receive signals here to see available items.", {posStatus.x+1.5, posStatus.y}, TICKS_PER_MINUTE*2)
 end
 
 function SharedChestsUpdateCombinators()

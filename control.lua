@@ -37,6 +37,7 @@ require("lib/regrowth_map")
 require("lib/shared_chests")
 require("lib/notepad")
 require("lib/map_features")
+require("lib/oarc_buy")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -179,6 +180,7 @@ script.on_event(defines.events.on_gui_click, function(event)
     SharedSpawnJoinWaitMenuClick(event)
 
     ClickOarcGuiButton(event)
+    ClickOarcStoreButton(event)
 
     GameOptionsGuiClick(event)
 end)
@@ -190,6 +192,7 @@ end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
     TabChangeOarcGui(event)
+    TabChangeOarcStore(event)
 end)
 
 ----------------------------------------
@@ -213,6 +216,7 @@ script.on_event(defines.events.on_player_created, function(event)
     SeparateSpawnsPlayerCreated(event.player_index)
 
     InitOarcGuiTabs(player)
+    InitOarcStoreGuiTabs(player)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -229,55 +233,6 @@ script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
 end)
-
-----------------------------------------
--- On BUILD entity. Don't forget on_robot_built_entity too!
-----------------------------------------
-script.on_event(defines.events.on_built_entity, function(event)
-    if global.ocfg.enable_autofill then
-        Autofill(event)
-    end
-
-    if global.ocfg.enable_regrowth then
-        local s_index = event.created_entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.created_entity.position,
-                    2)
-    end
-
-    if global.ocfg.enable_anti_grief then
-        SetItemBlueprintTimeToLive(event)
-    end
-
-    if global.ocfg.frontier_rocket_silo then
-        BuildSiloAttempt(event)
-    end
-
-end)
-
-
-----------------------------------------
--- On script_raised_built. This should help catch mods that
--- place items that don't count as player_built and robot_built.
--- Specifically FARL.
-----------------------------------------
-script.on_event(defines.events.script_raised_built, function(event)
-    if global.ocfg.enable_regrowth then
-        local s_index = event.entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.entity.position,
-                    2)
-    end
-end)
-
 
 ----------------------------------------
 -- On tick events. Stuff that needs to happen at regular intervals.
@@ -309,13 +264,37 @@ script.on_event(defines.events.on_sector_scanned, function (event)
         RegrowthSectorScan(event)
     end
 end)
--- script.on_event(defines.events.on_sector_scanned, function (event)
 
--- end)
 
 ----------------------------------------
---
+-- Various on "built" events
 ----------------------------------------
+script.on_event(defines.events.on_built_entity, function(event)
+    if global.ocfg.enable_autofill then
+        Autofill(event)
+    end
+
+    if global.ocfg.enable_regrowth then
+        local s_index = event.created_entity.surface.index
+        if (global.rg[s_index] == nil) then return end
+
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    s_index,
+                    event.created_entity.position,
+                    2)
+    end
+
+    if global.ocfg.enable_anti_grief then
+        SetItemBlueprintTimeToLive(event)
+    end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
+
+end)
+
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
         local s_index = event.created_entity.surface.index
@@ -347,8 +326,23 @@ script.on_event(defines.events.on_player_built_tile, function (event)
     end
 end)
 
+----------------------------------------
+-- On script_raised_built. This should help catch mods that
+-- place items that don't count as player_built and robot_built.
+-- Specifically FARL.
+----------------------------------------
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.enable_regrowth then
+        local s_index = event.entity.surface.index
+        if (global.rg[s_index] == nil) then return end
 
-
+        remote.call("oarc_regrowth",
+                    "area_offlimits_tilepos",
+                    s_index,
+                    event.entity.position,
+                    2)
+    end
+end)
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
@@ -438,12 +432,13 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_closed, function(event)
     OarcGuiOnGuiClosedEvent(event)
+    OarcStoreOnGuiClosedEvent(event)
 end)
 
 ----------------------------------------
 -- On enemies killed
 -- For coin generation and stuff
 ----------------------------------------
--- script.on_event(defines.events.on_entity_died, function(event)
---     CoinsFromEnemiesOnEntityDied(event)
--- end)
+script.on_event(defines.events.on_entity_died, function(event)
+    CoinsFromEnemiesOnEntityDied(event)
+end)
