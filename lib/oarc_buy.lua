@@ -229,41 +229,53 @@ function SetOarcStoreTabEnabled(player, tab_name, enable)
     end
 end
 
--- function SwitchOarcStoreTab(player, tab_name)
---     if (not DoesOarcStoreExist(player)) then return end
-
---     local otabs = GetOarcStoreTabsPane(player)
-
---     for i,t in pairs(otabs.tabs) do
---         if (t.tab.name == tab_name) then
---             otabs.selected_tab_index = i
---             FakeTabChangeEventOarcStore(player)
---             return
---         end
---     end
--- end
-
 function OarcStoreOnGuiClosedEvent(event)
     if (event.element and (event.element.name == OARC_STORE_GUI)) then
         HideOarcStore(game.players[event.player_index])
     end
 end
 
--- function CreateMapFeatureStoreTab(tab_container, player)
---     tab_container.add{name="furnace_block_btn",
---                         type="sprite-button",
---                         sprite="item/electric-furnace",
---                         tooltip="Cost: 1000 [item=coin]",
---                         style=mod_gui.button_style}
---     tab_container.add{name="refinery_block_btn",
---                         type="sprite-button",
---                         sprite="item/oil-refinery",
---                         tooltip="Cost: 1000 [item=coin]",
---                         style=mod_gui.button_style}
---     tab_container.add{name="assembly_block_btn",
---                         type="sprite-button",
---                         sprite="item/assembling-machine-3",
---                         tooltip="Cost: 1000 [item=coin]",
---                         style=mod_gui.button_style}
--- end
--- OARC_STORE_TAB_CONTENT_FUNCTIONS[OARC_MAP_FEATURE_GUI_TAB_NAME] = CreateMapFeatureStoreTab
+commands.add_command("donate-coins", "Toss a Coin to Your Witcher", function(command)
+    
+    local player = game.players[command.player_index]
+    
+    if (command.parameter == nil) then
+        player.print("Invalid parameters? /donate-coins [username] [amount]")
+        return
+    end
+
+    local target, amount
+    local count = 1
+    for i in string.gmatch(command.parameter, "%S+") do
+        if (count == 1) then
+            target = i
+        end
+        if (count == 2) then
+            amount = i
+        end
+        count = count + 1
+    end
+
+    if (count ~= 3) then
+        player.print("Invalid parameters (count = " ..count..")? /donate-coins [username] [amount]")
+        return
+    end
+
+    -- Validate all the things...
+    if (game.players[target] and 
+        not game.players[target].ticks_to_respawn and 
+        amount and 
+        player and 
+        player.get_main_inventory()) then
+        local target_player = game.players[target]
+        local amount_number = tonumber(amount)
+        if ((amount_number > 0) and (player.get_main_inventory().get_item_count("coin") >= amount_number)) then
+            local transfer = target_player.get_main_inventory().insert({name="coin", count=amount_number})
+            player.get_main_inventory().remove({name="coin", count=transfer})
+            player.print("You transfered " .. transfer .. " coins to " .. target .. ".")
+            target_player.print("You received " .. transfer .. " coins from " .. player.name .. ".")
+        else
+            player.print("You can't transfer what you don't have... (Not enough coins!)")
+        end
+    end
+end)

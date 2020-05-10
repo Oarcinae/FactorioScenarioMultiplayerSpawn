@@ -9,6 +9,7 @@ OARC_STORE_MAP_CATEGORIES =
 {
     special_chests = "Special buildings for sharing or monitoring items and energy. This will convert the closest wooden chest (to you) within 16 tiles into a special building of your choice. Make sure to leave enough space! The combinators and accumulators can take up several tiles around them.",
     special_chunks = "Map features that can be built on the special empty chunks found on the map. You must be standing inside an empty special chunk to be able to build these. [color=red]THESE FEATURES ARE PERMANENT AND CAN NOT BE REMOVED![/color]",
+    special_buttons = "Special actions. Like teleporting home. (For now this is the only one...)",
 }
 
 OARC_STORE_MAP_FEATURES = 
@@ -16,9 +17,9 @@ OARC_STORE_MAP_FEATURES =
     special_chests = {
         ["logistic-chest-storage"] = {cost = 500, text="Input chest for sharing items."},
         ["logistic-chest-requester"] = {cost = 500, text="Output chest for requesting shared items."},
-        ["constant-combinator"] = {cost = 10, text="Combinator setup to monitor shared items."},
-        ["accumulator"] = {cost = 10, text="INPUT for shared energy system."},
-        ["electric-energy-interface"] = {cost = 10, text="OUTPUT for shared energy system."},
+        ["constant-combinator"] = {cost = 50, text="Combinator setup to monitor shared items."},
+        ["accumulator"] = {cost = 200, text="INPUT for shared energy system."},
+        ["electric-energy-interface"] = {cost = 200, text="OUTPUT for shared energy system."},
         ["deconstruction-planner"] = {cost = 0, text="Removes the closest special buildings (within 16 tiles). NO REFUNDS!"},
     },
 
@@ -28,6 +29,10 @@ OARC_STORE_MAP_FEATURES =
         ["assembling-machine-3"] = {cost = 500, text="Build a special assembly machine chunk here. Contains 4 assembling machines that run at very high speeds. [color=red]Requires energy from the shared storage. Modules have no effect![/color]"},
         -- ["rocket-silo"] = {cost = 1000, text="Build a special rocket silo chunk here."},
     },
+
+    special_buttons = {
+        ["assembling-machine-1"] = {cost = 10, text="Teleport home."},
+    }
     
     -- ["Utility"] = {
     --  ["fusion-reactor-equipment"] = {cost = 1000},
@@ -112,6 +117,9 @@ function OarcMapFeatureStoreButton(event)
         result = RequestSpawnSpecialChunk(player, SpawnOilRefineryChunk)
     elseif (button.name == "assembling-machine-3") then
         result = RequestSpawnSpecialChunk(player, SpawnAssemblyChunk)
+    elseif (button.name == "assembling-machine-1") then
+        SendPlayerToSpawn(player)
+        result = true
     end
 
     -- On success, we deduct money
