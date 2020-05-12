@@ -230,7 +230,7 @@ function SpawnEnemyTurret(pos)
 
 end
 
-function RequestSpawnSpecialChunk(player, spawn_function)
+function RequestSpawnSpecialChunk(player, spawn_function, feature_name)
     local closest_chunk = FindClosestMagicChunk(player)
     local player_chunk = GetChunkPosFromTilePos(player.character.position)
     if ((closest_chunk.x == player_chunk.x) and (closest_chunk.y == player_chunk.y)) then
@@ -246,6 +246,7 @@ function RequestSpawnSpecialChunk(player, spawn_function)
             spawn_function(closest_chunk)
             -- Teleport to center of chunk to be safe.
             SafeTeleport(player, game.surfaces[GAME_SURFACE_NAME], GetCenterTilePosFromChunkPos(closest_chunk))
+            OarcMapFeaturePlayerCountChange(player, "special_chunks", feature_name, 1)
             return true
         end
 
@@ -716,35 +717,38 @@ function MagicAssemblerOnTick()
     global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
 end
 
+COIN_MULTIPLIER = 2
+
 COIN_GENERATION_CHANCES = {
-    ["small-biter"] = 0.2,
-    ["medium-biter"] = 0.3,
-    ["big-biter"] = 1,
-    ["behemoth-biter"] = 5,
+    ["small-biter"] = 0.01,
+    ["medium-biter"] = 0.02,
+    ["big-biter"] = 0.05,
+    ["behemoth-biter"] = 1,
 
-    ["small-spitter"] = 0.3,
-    ["medium-spitter"] = 0.4,
-    ["big-spitter"] = 1,
-    ["behemoth-spitter"] = 5,
+    ["small-spitter"] = 0.01,
+    ["medium-spitter"] = 0.02,
+    ["big-spitter"] = 0.05,
+    ["behemoth-spitter"] = 1,
 
-    ["small-worm-turret"] = 2,
-    ["medium-worm-turret"] = 3,
-    ["big-worm-turret"] = 5,
-    ["behemoth-worm-turret"] = 10,
+    ["small-worm-turret"] = 5,
+    ["medium-worm-turret"] = 10,
+    ["big-worm-turret"] = 15,
+    ["behemoth-worm-turret"] = 25,
 
-    ["biter-spawner"] = 5,
-    ["spitter-spawner"] = 5,
+    ["biter-spawner"] = 20,
+    ["spitter-spawner"] = 20,
 }
 
-function CoinsFromEnemiesOnEntityDied(event)
-    if (not event.entity) then return end
-    if (event.entity.force.name ~= "enemy") then return end
+function CoinsFromEnemiesOnPostEntityDied(event)
+    if (not event.prototype or not event.prototype.name) then return end
 
-    for k,v in pairs(COIN_GENERATION_CHANCES) do
-        if (k == event.entity.name) then
-            DropCoins(event.entity.position, v, event.force)
-            return
-        end
+    local coin_chance = nil
+    if (COIN_GENERATION_CHANCES[event.prototype.name]) then
+        coin_chance = COIN_GENERATION_CHANCES[event.prototype.name]
+    end
+
+    if (coin_chance) then
+        DropCoins(event.position, coin_chance, event.force)
     end
 end
 
@@ -761,7 +765,7 @@ function DropCoins(pos, count, force)
 
     -- If count is 1 or more, it represents a probability to drop at least that amount and up to 3x
     elseif (count >= 1) then
-        drop_amount = math.random(count,count*3)
+        drop_amount = math.random(count,count*COIN_MULTIPLIER)
     end
 
     if drop_amount == 0 then return end

@@ -13,6 +13,14 @@ OARC_STORE_PLAYER_ITEMS =
         ["railgun"] = {cost = 1000, count = 1, play_time_locked=true},
     },
 
+    ["Guns"] = {
+        ["gun-turret"] = {cost = 100, count = 1, play_time_locked=false},
+        ["flamethrower-turret"] = {cost = 250, count = 1, play_time_locked=false},
+        ["laser-turret"] = {cost = 500, count = 1, play_time_locked=false},
+        ["artillery-turret"] = {cost = 1500, count = 1, play_time_locked=true},
+    },
+
+
     ["Ammo"] = {
         ["firearm-magazine"] = {cost = 10, count = 10, play_time_locked=false},
         ["piercing-rounds-magazine"] = {cost = 30, count = 10, play_time_locked=false},
@@ -21,6 +29,8 @@ OARC_STORE_PLAYER_ITEMS =
         ["rocket"] = {cost = 100, count = 10, play_time_locked=true},
         ["railgun-dart"] = {cost = 500, count = 10, play_time_locked=true},
         ["atomic-bomb"] = {cost = 1000, count = 1, play_time_locked=true},
+        ["artillery-shell"] = {cost = 50, count = 1, play_time_locked=true},
+
     },
 
     ["Special"] = {
@@ -33,6 +43,7 @@ OARC_STORE_PLAYER_ITEMS =
         ["destroyer-capsule"] = {cost = 500, count = 10, play_time_locked=false},
         ["poison-capsule"] = {cost = 200, count = 10, play_time_locked=false},
         ["slowdown-capsule"] = {cost = 100, count = 10, play_time_locked=false},
+        ["artillery-targeting-remote"] = {cost = 500, count = 1, play_time_locked=true},
     },
 
     ["Armor"] = {
@@ -54,6 +65,8 @@ OARC_STORE_PLAYER_ITEMS =
         ["personal-roboport-equipment"] = {cost = 100, count = 1, play_time_locked=false},
         ["personal-roboport-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
         ["construction-robot"] = {cost = 100, count = 10, play_time_locked=false},
+        ["roboport"] = {cost = 1000, count = 1, play_time_locked=false},
+        ["logistic-chest-storage"] = {cost = 100, count = 1, play_time_locked=false},
     },
 
     ["Misc Equipment"] = {
@@ -78,6 +91,7 @@ function CreatePlayerStoreTab(tab_container, player)
         "player_store_wallet_lbl",
         "Coins Available: " .. wallet .. "  [item=coin]",
         {top_margin=5, bottom_margin=5})
+    AddLabel(tab_container, "coin_info", "Players start with some coins. Earn more coins by killing enemies.", my_note_style)
     AddLabel(tab_container,
         "player_store_note_lbl",
         "Locked items become available after playing for awhile...",

@@ -65,6 +65,9 @@ ENABLE_AUTOFILL = true
 -- Enable vanilla loaders
 ENABLE_LOADERS = true
 
+-- Enable auto decon of miners
+ENABLE_MINER_AUTODECON = true
+
 -- Enable Playerlist
 ENABLE_PLAYER_LIST = true
 PLAYER_LIST_OFFLINE_PLAYERS = true -- List offline players as well.

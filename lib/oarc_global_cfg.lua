@@ -34,6 +34,7 @@ function InitOarcConfig()
     global.ocfg.enable_long_reach = ENABLE_LONGREACH
     global.ocfg.enable_autofill = ENABLE_AUTOFILL
     global.ocfg.enable_loaders = ENABLE_LOADERS
+    global.ocfg.enable_miner_decon = ENABLE_MINER_AUTODECON
     global.ocfg.enable_player_list = ENABLE_PLAYER_LIST
     global.ocfg.list_offline_players = PLAYER_LIST_OFFLINE_PLAYERS
     global.ocfg.enable_shared_team_vision = ENABLE_SHARED_TEAM_VISION

@@ -148,7 +148,8 @@ function CreateOarcStoreTabsPane(player)
         local subhead = inside_frame.add{
             type="frame",
             name="sub_header",
-            style = "changelog_subheader_frame"}
+            style = "changelog_subheader_frame",
+            direction = "vertical"}
         AddLabel(subhead, "store_info", "OARC Microtransactions and DLC", "subheader_caption_label")
 
         -- TABBED PANE

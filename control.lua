@@ -38,6 +38,7 @@ require("lib/shared_chests")
 require("lib/notepad")
 require("lib/map_features")
 require("lib/oarc_buy")
+require("lib/auto_decon_miners")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -119,6 +120,9 @@ script.on_init(function(event)
     if (global.ocfg.enable_magic_factories) then
         MagicFactoriesInit()
     end
+
+    OarcMapFeatureInitGlobalCounters()
+    OarcAutoDeconOnInit()
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
@@ -215,6 +219,8 @@ script.on_event(defines.events.on_player_created, function(event)
 
     SeparateSpawnsPlayerCreated(event.player_index)
 
+    OarcMapFeaturePlayerCreatedEvent(player)
+
     InitOarcGuiTabs(player)
     InitOarcStoreGuiTabs(player)
 end)
@@ -232,6 +238,10 @@ end)
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
     FindUnusedSpawns(game.players[event.player_index], true)
+end)
+
+script.on_event(defines.events.on_player_removed, function(event)
+    OarcMapFeaturePlayerRemovedEvent(game.players[event.player_index])
 end)
 
 ----------------------------------------
@@ -256,6 +266,10 @@ script.on_event(defines.events.on_tick, function(event)
 
     TimeoutSpeechBubblesOnTick()
     FadeoutRenderOnTick()
+
+    if global.ocfg.enable_miner_decon then
+        OarcAutoDeconOnTick()
+    end
 end)
 
 
@@ -439,6 +453,18 @@ end)
 -- On enemies killed
 -- For coin generation and stuff
 ----------------------------------------
-script.on_event(defines.events.on_entity_died, function(event)
-    CoinsFromEnemiesOnEntityDied(event)
+script.on_event(defines.events.on_post_entity_died, function(event)
+    if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
+    CoinsFromEnemiesOnPostEntityDied(event)
+end,
+{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}})
+
+
+----------------------------------------
+-- Scripted auto decon for miners...
+----------------------------------------
+script.on_event(defines.events.on_resource_depleted, function(event)
+    if global.ocfg.enable_miner_decon then
+        OarcAutoDeconOnResourceDepleted(event)
+    end
 end)

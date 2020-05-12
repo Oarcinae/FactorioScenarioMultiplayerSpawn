@@ -3,15 +3,10 @@
 -- Oarc's silly idea for a scripted item sharing solution.
 
 -- Buffer size is the limit of joules/tick so multiply by 60 to get /sec.
-SHARED_ELEC_OUTPUT_BUFFER_SIZE = 1000000000 -- Default 10000000000
-SHARED_ELEC_INPUT_BUFFER_SIZE = 1000000000 -- 480000000
-
-DEFAULT_SHARED_ELEC_INPUT_LIMIT = 16666 -- 1MW
+SHARED_ELEC_OUTPUT_BUFFER_SIZE = 1000000000
+SHARED_ELEC_INPUT_BUFFER_SIZE = 1000000001
 
 SHARED_ENERGY_STARTING_VALUE = 0 -- 100GJ
-
--- How often we are executing the electricity distribution.
-SHARED_ELEC_TICK_RATE = 60
 
 function SharedChestInitItems()
 
@@ -25,9 +20,11 @@ function SharedChestInitItems()
     global.shared_electricity_player_limits = {}
     global.shared_chests_combinators = {}
     global.shared_items = {}
+
     global.shared_items['red-wire'] = 10000
     global.shared_items['green-wire'] = 10000
     global.shared_items['raw-fish'] = 10000   
+
     global.shared_energy_stored = SHARED_ENERGY_STARTING_VALUE
     global.shared_energy_stored_history = {start=SHARED_ENERGY_STARTING_VALUE, after_input=SHARED_ENERGY_STARTING_VALUE, after_output=SHARED_ENERGY_STARTING_VALUE}
 end
@@ -38,6 +35,7 @@ function SharedEnergySpawnInput(player, pos)
     inputElec.destructible = false
     inputElec.minable = false
     inputElec.operable = false
+    inputElec.last_user = player
 
     inputElec.electric_buffer_size = SHARED_ELEC_INPUT_BUFFER_SIZE
     inputElec.power_production = 0
@@ -48,6 +46,7 @@ function SharedEnergySpawnInput(player, pos)
     inputElecCombi.destructible = false
     inputElecCombi.minable = false
     inputElecCombi.operable = true -- Input combi can be set by the player!
+    inputElecCombi.last_user = player
 
     -- Default share is 1MW
     inputElecCombi.get_or_create_control_behavior().set_signal(1,
@@ -66,8 +65,9 @@ function SharedEnergySpawnOutput(player, pos)
     outputElec.destructible = false
     outputElec.minable = false
     outputElec.operable = false
+    outputElec.last_user = player
 
-    outputElec.electric_buffer_size = SHARED_ELEC_INPUT_BUFFER_SIZE
+    outputElec.electric_buffer_size = SHARED_ELEC_OUTPUT_BUFFER_SIZE
     outputElec.power_production = 0
     outputElec.power_usage = 0
     outputElec.energy = 0
@@ -76,6 +76,7 @@ function SharedEnergySpawnOutput(player, pos)
     outputElecCombi.destructible = false
     outputElecCombi.minable = false
     outputElecCombi.operable = false -- Output combi is set my script!
+    outputElec.last_user = player
 
     TemporaryHelperText("Connect to electric network to consume shared energy.", {pos.x+1.5, pos.y-1}, TICKS_PER_MINUTE*2)
     TemporaryHelperText("Combinator outputs number of MJ currently stored.", {pos.x+2.5, pos.y}, TICKS_PER_MINUTE*2)
@@ -181,6 +182,7 @@ function ConvertWoodenChestToSharedChestInput(player)
     local pos = FindClosestWoodenChestAndDestroy(player)
     if (pos) then
         SharedChestsSpawnInput(player, pos)
+        OarcMapFeaturePlayerCountChange(player, "special_chests", "logistic-chest-storage", 1)
         return true
     end
     return false
@@ -190,6 +192,7 @@ function ConvertWoodenChestToSharedChestOutput(player)
     local pos = FindClosestWoodenChestAndDestroy(player)
     if (pos) then
         SharedChestsSpawnOutput(player, pos)
+        OarcMapFeaturePlayerCountChange(player, "special_chests", "logistic-chest-requester", 1)
         return true
     end
     return false
@@ -215,6 +218,7 @@ function ConvertWoodenChestToShareEnergyInput(player)
         if (player.surface.can_place_entity{name="electric-energy-interface", position=pos}) and 
             (player.surface.can_place_entity{name="constant-combinator", position={x=pos.x+1, y=pos.y}}) then
             SharedEnergySpawnInput(player, pos)
+            OarcMapFeaturePlayerCountChange(player, "special_chests", "accumulator", 1)
             return true
         else
             player.print("Failed to place the shared energy input. Please check there is enough space in the surrounding tiles!")
@@ -229,6 +233,7 @@ function ConvertWoodenChestToShareEnergyOutput(player)
         if (player.surface.can_place_entity{name="electric-energy-interface", position=pos}) and 
             (player.surface.can_place_entity{name="constant-combinator", position={x=pos.x+1, y=pos.y}}) then
             SharedEnergySpawnOutput(player, pos)
+            OarcMapFeaturePlayerCountChange(player, "special_chests", "electric-energy-interface", 1)
             return true
         else
             player.print("Failed to place the shared energy input. Please check there is enough space in the surrounding tiles!")
@@ -245,8 +250,28 @@ function DestroyClosestSharedChestEntity(player)
                                         force={"neutral"},
                                         limit=1}
 
+
     if (#special_entities == 1) then
-        special_entities[1].destroy()
+        if (special_entities[1].last_user and (special_entities[1].last_user ~= player)) then
+            player.print("You can't remove other players chests!")
+        else
+            -- Subtract from feature counter...
+            local name = special_entities[1].name
+            if (name == "electric-energy-interface") then
+                if (special_entities[1].electric_buffer_size == SHARED_ELEC_INPUT_BUFFER_SIZE) then
+                    OarcMapFeaturePlayerCountChange(player, "special_chests", "accumulator", -1)
+                else
+                    OarcMapFeaturePlayerCountChange(player, "special_chests", "electric-energy-interface", -1)
+                end
+            elseif (name == "logistic-chest-storage") then
+                OarcMapFeaturePlayerCountChange(player, "special_chests", "logistic-chest-storage", -1)
+            elseif (name == "logistic-chest-requester") then
+                OarcMapFeaturePlayerCountChange(player, "special_chests", "logistic-chest-requester", -1)
+            end
+            
+            special_entities[1].destroy()
+            player.print("Special entity removed!")
+        end
     end
 end
 
@@ -255,6 +280,7 @@ function SharedChestsSpawnInput(player, pos)
     local inputChest = game.surfaces[GAME_SURFACE_NAME].create_entity{name="logistic-chest-storage", position={pos.x, pos.y}, force="neutral"}
     inputChest.destructible = false
     inputChest.minable = false
+    inputChest.last_user = player
 
     if global.shared_chests == nil then
         global.shared_chests = {}
@@ -271,6 +297,7 @@ function SharedChestsSpawnOutput(player, pos, enable_example)
     local outputChest = game.surfaces[GAME_SURFACE_NAME].create_entity{name="logistic-chest-requester", position={pos.x, pos.y}, force="neutral"}
     outputChest.destructible = false
     outputChest.minable = false
+    outputChest.last_user = player
 
     if (enable_example) then
         outputChest.set_request_slot({name="raw-fish", count=1}, 1)
@@ -292,6 +319,7 @@ function SharedChestsSpawnCombinators(player, posCtrl, posStatus)
     local combiCtrl = game.surfaces[GAME_SURFACE_NAME].create_entity{name="constant-combinator", position=posCtrl, force="neutral"}
     combiCtrl.destructible = false
     combiCtrl.minable = false
+    combiCtrl.last_user = player
 
     -- Fish as an example.
     combiCtrl.get_or_create_control_behavior().set_signal(1, {signal={type="item", name="raw-fish"}, count=1})
@@ -300,6 +328,7 @@ function SharedChestsSpawnCombinators(player, posCtrl, posStatus)
     combiStat.destructible = false
     combiStat.minable = false
     combiStat.operable = false
+    combiStat.last_user = player
 
     if global.shared_chests_combinators == nil then
         global.shared_chests_combinators = {}
@@ -651,7 +680,7 @@ function CreateSharedItemsGuiTab(tab_container, player)
 
     for idx,itemName in pairs(sorted_items) do
         if (global.shared_items[itemName] > 0) then
-            local caption_str = itemName..": "..global.shared_items[itemName]
+            local caption_str = "[item="..itemName.."] " .. itemName..": "..global.shared_items[itemName]
             AddLabel(scrollFrame, itemName.."_itemlist", caption_str, my_player_list_style)
         end
     end
