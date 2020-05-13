@@ -19,32 +19,30 @@ OARC_STORE_MAP_FEATURES =
     special_chests = {
         ["logistic-chest-storage"] = {
             initial_cost = 200,
-            additional_cost = 200,
+            additional_cost = 20,
             multiplier_cost = 2,
-            limit = 100,
+            -- limit = 100,
             text="Input chest for sharing items."},
         ["logistic-chest-requester"] = {
             initial_cost = 200,
-            additional_cost = 200,
+            additional_cost = 50,
             multiplier_cost = 2,
-            limit = 100,
+            -- limit = 100,
             text="Output chest for requesting shared items."},
         ["constant-combinator"] = {
             initial_cost = 50, 
-            additional_cost = 0,
-            multiplier_cost = 1,
             text="Combinator setup to monitor shared items."},
         ["accumulator"] = {
             initial_cost = 200,
-            additional_cost = 100,
-            multiplier_cost = 1,
-            limit = 100,
+            additional_cost = 50,
+            multiplier_cost = 2,
+            -- limit = 100,
             text="INPUT for shared energy system."},
         ["electric-energy-interface"] = {
             initial_cost = 200,
-            additional_cost = 200,
-            multiplier_cost = 1,
-            limit = 100,
+            additional_cost = 100,
+            multiplier_cost = 2,
+            -- limit = 100,
             text="OUTPUT for shared energy system."},
         ["deconstruction-planner"] = {
             initial_cost = 0,
@@ -133,10 +131,6 @@ end
 
 function OarcMapFeaturePlayerCreatedEvent(player)
     global.oarc_store.pmf_counts[player.name] = {}
-end
-
-function OarcMapFeaturePlayerRemovedEvent(player)
-    global.oarc_store.pmf_counts[player.name] = nil
 end
 
 function OarcMapFeaturePlayerCountGet(player, category_name, feature_name)

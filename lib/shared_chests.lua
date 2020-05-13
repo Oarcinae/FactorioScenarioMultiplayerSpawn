@@ -246,19 +246,24 @@ function DestroyClosestSharedChestEntity(player)
     local special_entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
                                         name={"electric-energy-interface", "constant-combinator", "logistic-chest-storage", "logistic-chest-requester"},
                                         position=player.position,
-                                        radius=5,
-                                        force={"neutral"},
-                                        limit=1}
+                                        radius=16,
+                                        force={"neutral"}}
 
+    if (#special_entities == 0) then
+        player.print("Special entity not found? Are you close enough?")
+        return
+    end
 
-    if (#special_entities == 1) then
-        if (special_entities[1].last_user and (special_entities[1].last_user ~= player)) then
+    local closest = game.surfaces[GAME_SURFACE_NAME].get_closest(player.position, special_entities)
+
+    if (closest) then
+        if (closest.last_user and (closest.last_user ~= player)) then
             player.print("You can't remove other players chests!")
         else
             -- Subtract from feature counter...
-            local name = special_entities[1].name
+            local name = closest.name
             if (name == "electric-energy-interface") then
-                if (special_entities[1].electric_buffer_size == SHARED_ELEC_INPUT_BUFFER_SIZE) then
+                if (closest.electric_buffer_size == SHARED_ELEC_INPUT_BUFFER_SIZE) then
                     OarcMapFeaturePlayerCountChange(player, "special_chests", "accumulator", -1)
                 else
                     OarcMapFeaturePlayerCountChange(player, "special_chests", "electric-energy-interface", -1)
@@ -269,10 +274,12 @@ function DestroyClosestSharedChestEntity(player)
                 OarcMapFeaturePlayerCountChange(player, "special_chests", "logistic-chest-requester", -1)
             end
             
-            special_entities[1].destroy()
+            closest.destroy()
             player.print("Special entity removed!")
         end
-    end
+    else
+        player.print("Special entity not found? Are you close enough? -- ERROR")
+    end    
 end
 
 function SharedChestsSpawnInput(player, pos)

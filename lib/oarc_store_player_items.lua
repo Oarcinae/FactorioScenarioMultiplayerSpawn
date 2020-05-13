@@ -10,14 +10,14 @@ OARC_STORE_PLAYER_ITEMS =
         ["submachine-gun"] = {cost = 10, count = 1, play_time_locked=false},
         ["flamethrower"] = {cost = 100, count = 1, play_time_locked=true},
         ["rocket-launcher"] = {cost = 200, count = 1, play_time_locked=true},
-        ["railgun"] = {cost = 1000, count = 1, play_time_locked=true},
+        ["railgun"] = {cost = 500, count = 1, play_time_locked=true},
     },
 
     ["Guns"] = {
         ["gun-turret"] = {cost = 100, count = 1, play_time_locked=false},
-        ["flamethrower-turret"] = {cost = 250, count = 1, play_time_locked=false},
-        ["laser-turret"] = {cost = 500, count = 1, play_time_locked=false},
-        ["artillery-turret"] = {cost = 1500, count = 1, play_time_locked=true},
+        ["flamethrower-turret"] = {cost = 200, count = 1, play_time_locked=false},
+        ["laser-turret"] = {cost = 250, count = 1, play_time_locked=false},
+        ["artillery-turret"] = {cost = 1000, count = 1, play_time_locked=true},
     },
 
 
@@ -34,9 +34,9 @@ OARC_STORE_PLAYER_ITEMS =
     },
 
     ["Special"] = {
-        ["repair-pack"] = {cost = 2, count = 1, play_time_locked=false},
-        ["raw-fish"] = {cost = 2, count = 1, play_time_locked=false},
-        ["grenade"] = {cost = 100, count = 10, play_time_locked=true},
+        ["repair-pack"] = {cost = 1, count = 1, play_time_locked=false},
+        ["raw-fish"] = {cost = 1, count = 1, play_time_locked=false},
+        ["grenade"] = {cost = 50, count = 10, play_time_locked=true},
         ["cliff-explosives"] = {cost = 200, count = 10, play_time_locked=true},
         ["defender-capsule"] = {cost = 100, count = 10, play_time_locked=false},
         ["distractor-capsule"] = {cost = 200, count = 10, play_time_locked=false},

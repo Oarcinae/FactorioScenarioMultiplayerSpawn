@@ -240,9 +240,9 @@ script.on_event(defines.events.on_player_left_game, function(event)
     FindUnusedSpawns(game.players[event.player_index], true)
 end)
 
-script.on_event(defines.events.on_player_removed, function(event)
-    OarcMapFeaturePlayerRemovedEvent(game.players[event.player_index])
-end)
+-- script.on_event(defines.events.on_player_removed, function(event)
+    -- Player is already deleted when this is called.
+-- end)
 
 ----------------------------------------
 -- On tick events. Stuff that needs to happen at regular intervals.
@@ -457,7 +457,7 @@ script.on_event(defines.events.on_post_entity_died, function(event)
     if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
     CoinsFromEnemiesOnPostEntityDied(event)
 end,
-{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}})
+{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
 
 
 ----------------------------------------
