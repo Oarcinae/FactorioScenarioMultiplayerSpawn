@@ -101,6 +101,8 @@ NEUTRAL_FORCE_RECIPES =
     ["rail"] = true,
     ["solar-panel"] = true,
     ["stone-wall"] = true,
+    ["empty-barrel"] = true,
+    
     -- ["pipe"] = true,
     -- ["pipe-to-ground"] = true,
 }

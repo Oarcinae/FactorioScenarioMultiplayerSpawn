@@ -850,6 +850,9 @@ function CreateForce(force_name)
         end
     end
 
+    -- Loot distance buff
+    newForce.character_loot_pickup_distance_bonus = 24
+
     return newForce
 end
 
