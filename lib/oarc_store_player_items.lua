@@ -8,18 +8,17 @@ OARC_STORE_PLAYER_ITEMS =
         ["pistol"] = {cost = 1, count = 1, play_time_locked=false},
         ["shotgun"] = {cost = 5, count = 1, play_time_locked=false},
         ["submachine-gun"] = {cost = 10, count = 1, play_time_locked=false},
-        ["flamethrower"] = {cost = 100, count = 1, play_time_locked=true},
-        ["rocket-launcher"] = {cost = 200, count = 1, play_time_locked=true},
-        ["railgun"] = {cost = 500, count = 1, play_time_locked=true},
+        ["flamethrower"] = {cost = 50, count = 1, play_time_locked=true},
+        ["rocket-launcher"] = {cost = 50, count = 1, play_time_locked=true},
+        ["railgun"] = {cost = 250, count = 1, play_time_locked=true},
     },
 
     ["Guns"] = {
-        ["gun-turret"] = {cost = 100, count = 1, play_time_locked=false},
-        ["flamethrower-turret"] = {cost = 200, count = 1, play_time_locked=false},
-        ["laser-turret"] = {cost = 250, count = 1, play_time_locked=false},
-        ["artillery-turret"] = {cost = 1000, count = 1, play_time_locked=true},
+        ["gun-turret"] = {cost = 25, count = 1, play_time_locked=false},
+        ["flamethrower-turret"] = {cost = 50, count = 1, play_time_locked=false},
+        ["laser-turret"] = {cost = 75, count = 1, play_time_locked=false},
+        ["artillery-turret"] = {cost = 500, count = 1, play_time_locked=true},
     },
-
 
     ["Ammo"] = {
         ["firearm-magazine"] = {cost = 10, count = 10, play_time_locked=false},
@@ -27,7 +26,7 @@ OARC_STORE_PLAYER_ITEMS =
         ["shotgun-shell"] = {cost = 10, count = 10, play_time_locked=false},
         ["flamethrower-ammo"] = {cost = 50, count = 10, play_time_locked=true},
         ["rocket"] = {cost = 100, count = 10, play_time_locked=true},
-        ["railgun-dart"] = {cost = 500, count = 10, play_time_locked=true},
+        ["railgun-dart"] = {cost = 250, count = 10, play_time_locked=true},
         ["atomic-bomb"] = {cost = 1000, count = 1, play_time_locked=true},
         ["artillery-shell"] = {cost = 50, count = 1, play_time_locked=true},
 
@@ -36,13 +35,13 @@ OARC_STORE_PLAYER_ITEMS =
     ["Special"] = {
         ["repair-pack"] = {cost = 1, count = 1, play_time_locked=false},
         ["raw-fish"] = {cost = 1, count = 1, play_time_locked=false},
-        ["grenade"] = {cost = 50, count = 10, play_time_locked=true},
-        ["cliff-explosives"] = {cost = 200, count = 10, play_time_locked=true},
-        ["defender-capsule"] = {cost = 100, count = 10, play_time_locked=false},
-        ["distractor-capsule"] = {cost = 200, count = 10, play_time_locked=false},
-        ["destroyer-capsule"] = {cost = 500, count = 10, play_time_locked=false},
-        ["poison-capsule"] = {cost = 200, count = 10, play_time_locked=false},
-        ["slowdown-capsule"] = {cost = 100, count = 10, play_time_locked=false},
+        ["grenade"] = {cost = 20, count = 10, play_time_locked=true},
+        ["cliff-explosives"] = {cost = 20, count = 10, play_time_locked=true},
+        ["defender-capsule"] = {cost = 20, count = 10, play_time_locked=false},
+        ["distractor-capsule"] = {cost = 40, count = 10, play_time_locked=false},
+        ["destroyer-capsule"] = {cost = 60, count = 10, play_time_locked=false},
+        ["poison-capsule"] = {cost = 50, count = 10, play_time_locked=false},
+        ["slowdown-capsule"] = {cost = 25, count = 10, play_time_locked=false},
         ["artillery-targeting-remote"] = {cost = 500, count = 1, play_time_locked=true},
     },
 
@@ -74,10 +73,10 @@ OARC_STORE_PLAYER_ITEMS =
         ["exoskeleton-equipment"] = {cost = 100, count = 1, play_time_locked=false},
         ["night-vision-equipment"] = {cost = 50, count = 1, play_time_locked=false},
 
-        ["personal-laser-defense-equipment"] = {cost = 200, count = 1, play_time_locked=false},
+        ["personal-laser-defense-equipment"] = {cost = 100, count = 1, play_time_locked=false},
         -- ["discharge-defense-equipment"] = {cost = 1, count = 1, play_time_locked=false},
-        ["energy-shield-equipment"] = {cost = 100, count = 1, play_time_locked=false},
-        ["energy-shield-mk2-equipment"] = {cost = 1000, count = 1, play_time_locked=false},
+        ["energy-shield-equipment"] = {cost = 50, count = 1, play_time_locked=false},
+        ["energy-shield-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
     },
 }
 
