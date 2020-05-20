@@ -183,7 +183,6 @@ FAR_MAX_DIST = 300
 ---------------------------------------
 
 -- Num total spawns pre-assigned (minimum number)
--- Not sure you need that much anyways....
 -- Points are in an even grid layout.
 VANILLA_SPAWN_COUNT = 60
 

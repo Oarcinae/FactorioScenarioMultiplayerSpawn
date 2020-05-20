@@ -70,7 +70,7 @@ function SeparateSpawnsGenerateChunk(event)
     SetupAndClearSpawnAreas(surface, chunkArea)
 end
 
--- At twice the danger distance, you get full resources, and it is exponential from the spawn point to that distance.
+-- Based on the danger distance, you get full resources, and it is exponential from the spawn point to that distance.
 function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
 
     local closestSpawn = GetClosestUniqueSpawn(chunkArea.left_top)
@@ -78,7 +78,8 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
     if (closestSpawn == nil) then return end
 
     local distance = getDistance(chunkArea.left_top, closestSpawn.pos)
-    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*1.2))^3
+    -- Adjust multiplier to bring it in or out
+    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*1))^3
     if modifier < 0.1 then modifier = 0.1 end
     if modifier > 1 then return end
 
@@ -233,26 +234,28 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
 
         -- Create a bunch of useful area and position variables
         local landArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+CHUNK_SIZE)
-        local safeArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.safe_radius)
-        local warningArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.warn_radius)
-        local reducedArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.danger_radius)
+        -- local safeArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.safe_radius)
+        -- local warningArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.warn_radius)
+        -- local reducedArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.danger_radius)
         local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
                                          y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
         local spawnPosOffset = {x=spawn.pos.x+global.ocfg.spawn_config.gen_settings.land_area_tiles,
                                          y=spawn.pos.y+global.ocfg.spawn_config.gen_settings.land_area_tiles}
 
+
+
         -- Make chunks near a spawn safe by removing enemies
-        if CheckIfInArea(chunkAreaCenter,safeArea) then
+        if (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.safe_radius) then
             RemoveAliensInArea(surface, chunkArea)
 
         -- Create a warning area with heavily reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,warningArea) then
+        elseif (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.warn_radius) then
             ReduceAliensInArea(surface, chunkArea, global.ocfg.spawn_config.safe_area.warn_reduction)
             -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
             RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
 
         -- Create a third area with moderatly reduced enemies
-        elseif CheckIfInArea(chunkAreaCenter,reducedArea) then
+        elseif (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.danger_radius) then
             ReduceAliensInArea(surface, chunkArea, global.ocfg.spawn_config.safe_area.danger_reduction)
             -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
             RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
