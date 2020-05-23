@@ -13,7 +13,7 @@ OARC_STORE_PLAYER_ITEMS =
         ["railgun"] = {cost = 250, count = 1, play_time_locked=true},
     },
 
-    ["Guns"] = {
+    ["Turrets"] = {
         ["gun-turret"] = {cost = 25, count = 1, play_time_locked=false},
         ["flamethrower-turret"] = {cost = 50, count = 1, play_time_locked=false},
         ["laser-turret"] = {cost = 75, count = 1, play_time_locked=false},
