@@ -330,8 +330,9 @@ function SafeTeleport(player, surface, target_pos)
     local safe_pos = surface.find_non_colliding_position("character", target_pos, 15, 1)
     if (not safe_pos) then
         player.teleport(target_pos, surface)
+    else
+        player.teleport(safe_pos, surface)
     end
-    player.teleport(safe_pos, surface)
 end
 
 -- Create area given point and radius-distance

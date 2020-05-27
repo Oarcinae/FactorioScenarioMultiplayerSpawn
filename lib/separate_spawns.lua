@@ -743,8 +743,9 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 
-    local x_dist = global.ocfg.spawn_config.resource_rand_pos_settings.radius
-    if global.ocfg.enable_chest_sharing then
+    if (global.ocfg.enable_chest_sharing and not delayedSpawn.vanilla) then
+        
+        local x_dist = global.ocfg.spawn_config.resource_rand_pos_settings.radius
 
         -- Shared electricity IO pair of scripted electric-energy-interfaces
         SharedEnergySpawnInput(player, {x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y-18})
@@ -940,7 +941,7 @@ function FindUnusedVanillaSpawn(surface, target_distance)
 
         -- Check if chunks nearby are not generated.
         local chunk_pos = GetChunkPosFromTilePos(v)
-        if IsChunkAreaUngenerated(chunk_pos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS+15, surface) then
+        if IsChunkAreaUngenerated(chunk_pos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS, surface) then
 
             -- Is this our first valid find?
             if ((best_key == nil) or (best_distance == nil)) then
