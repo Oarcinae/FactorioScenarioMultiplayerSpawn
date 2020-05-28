@@ -126,6 +126,13 @@ script.on_init(function(event)
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
+    rendering.draw_sprite{sprite="item/coin",
+        render_layer=30,
+        target={0,0},
+        surface=game.surfaces[GAME_SURFACE_NAME],
+        tint={r = 0.1, g = 0.1, b = 0.1, a = 0.1},
+        x_scale=80,
+        y_scale=80}
 end)
 
 script.on_load(function()
