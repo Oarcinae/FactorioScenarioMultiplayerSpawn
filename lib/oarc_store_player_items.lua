@@ -37,12 +37,17 @@ OARC_STORE_PLAYER_ITEMS =
         ["raw-fish"] = {cost = 1, count = 1, play_time_locked=false},
         ["grenade"] = {cost = 20, count = 10, play_time_locked=true},
         ["cliff-explosives"] = {cost = 20, count = 10, play_time_locked=true},
+        ["artillery-targeting-remote"] = {cost = 500, count = 1, play_time_locked=true},
+    },
+
+
+    ["Capsules/Mines"] = {
+        ["land-mine"] = {cost = 20, count = 10, play_time_locked=false},
         ["defender-capsule"] = {cost = 20, count = 10, play_time_locked=false},
         ["distractor-capsule"] = {cost = 40, count = 10, play_time_locked=false},
         ["destroyer-capsule"] = {cost = 60, count = 10, play_time_locked=false},
         ["poison-capsule"] = {cost = 50, count = 10, play_time_locked=false},
         ["slowdown-capsule"] = {cost = 25, count = 10, play_time_locked=false},
-        ["artillery-targeting-remote"] = {cost = 500, count = 1, play_time_locked=true},
     },
 
     ["Armor"] = {
