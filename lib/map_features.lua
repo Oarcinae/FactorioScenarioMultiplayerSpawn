@@ -27,6 +27,7 @@ FURNACE_RECIPES = {
 CHEMPLANT_ENERGY_PER_CRAFT_SECOND = 210000 * POWER_USAGE_SCALING_FACTOR
 REFINERY_ENERGY_PER_CRAFT_SECOND = 420000 * POWER_USAGE_SCALING_FACTOR
 ASSEMBLER3_ENERGY_PER_CRAFT_SECOND = (375000 / 1.25) * POWER_USAGE_SCALING_FACTOR
+CENTRIFUGE_ENERGY_PER_CRAFT_SECOND = 350000 * POWER_USAGE_SCALING_FACTOR
 
 ENEMY_WORM_TURRETS =
 {
@@ -48,7 +49,7 @@ NEUTRAL_FORCE_RECIPES =
     -- Oil Stuff
     ["advanced-oil-processing"] = true,
     ["basic-oil-processing"] = true,
-    -- ["coal-liquefaction"] = true,
+    -- ["coal-liquefaction"] = true, -- Too difficult/costly to implement
 
     ["heavy-oil-cracking"] = true,
     ["light-oil-cracking"] = true,
@@ -103,6 +104,11 @@ NEUTRAL_FORCE_RECIPES =
     ["stone-wall"] = true,
     ["empty-barrel"] = true,
     
+    -- Nuclear
+    ["uranium-processing"] = true,
+    -- ["kovarex-enrichment-process"] = true,
+    -- ["nuclear-fuel-reprocessing"] = true,
+
     -- ["pipe"] = true,
     -- ["pipe-to-ground"] = true,
 }
@@ -135,6 +141,7 @@ function MagicFactoriesInit()
     global.magic_chemplants = {}
     global.magic_refineries = {}
     global.magic_assemblers = {}
+    global.magic_centrifuges = {}
 
     MagicFactoryChunkGenerator()
 
@@ -315,7 +322,7 @@ function SpawnAssemblyChunk(chunk_pos)
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
 
     -- 4 Assemblers
-    SpawnMagicAssembler({x=center_pos.x-11,y=center_pos.y-11})
+     ({x=center_pos.x-11,y=center_pos.y-11})
     SpawnMagicAssembler({x=center_pos.x,y=center_pos.y-11})
     SpawnMagicAssembler({x=center_pos.x+11,y=center_pos.y-11})
     SpawnMagicAssembler({x=center_pos.x-11,y=center_pos.y+11})
@@ -323,6 +330,49 @@ function SpawnAssemblyChunk(chunk_pos)
     SpawnMagicAssembler({x=center_pos.x+11,y=center_pos.y+11})
 
     SpecialChunkHelperText(center_pos)
+end
+
+function SpawnCentrifugeChunk(chunk_pos)
+
+    center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
+
+    -- 1 Centrifuge (MORE THAN ENOUGH!)
+    SpawnMagicCentrifuge({x=center_pos.x,y=center_pos.y})
+
+    SpecialChunkHelperText({x=center_pos.x,y=center_pos.y+3})
+end
+
+function SpawnSiloChunk(chunk_pos)
+
+    center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
+
+    table.insert(global.siloPosition, center_pos)
+    
+    RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
+        {x=center_pos.x-3.25,y=center_pos.y+6},
+        1,
+        "You can build a silo here!",
+        {0.7,0.4,0.3,0.8})
+
+    -- Set tiles below the silo
+    tiles = {}
+    for dx = -6,5 do
+        for dy = -6,5 do
+            if (game.active_mods["oarc-restricted-build"]) then
+                table.insert(tiles, {name = global.ocfg.locked_build_area_tile,
+                                    position = {center_pos.x+dx, center_pos.y+dy}})
+            else
+                if ((dx % 2 == 0) or (dx % 2 == 0)) then
+                    table.insert(tiles, {name = "concrete",
+                                        position = {center_pos.x+dx, center_pos.y+dy}})
+                else
+                    table.insert(tiles, {name = "hazard-concrete-left",
+                                        position = {center_pos.x+dx, center_pos.y+dy}})
+                end
+            end
+        end
+    end
+    game.surfaces[GAME_SURFACE_NAME].set_tiles(tiles, true)
 end
 
 function SpawnMagicBuilding(entity_name, position)
@@ -357,6 +407,11 @@ function SpawnMagicAssembler(pos)
     table.insert(global.magic_assemblers, SpawnMagicBuilding("assembling-machine-3",  pos))
 end
 
+function SpawnMagicCentrifuge(pos)
+    table.insert(global.magic_centrifuges, SpawnMagicBuilding("centrifuge",  pos))
+end
+
+
 function MagicFactoriesOnTick()
     global.magic_factory_energy_history[game.tick % 60] = 0
 
@@ -364,6 +419,7 @@ function MagicFactoriesOnTick()
     MagicChemplantOnTick()
     MagicRefineryOnTick()
     MagicAssemblerOnTick()
+    MagicCentrifugeOnTick()
 end
 
 function MagicFurnaceOnTick()
@@ -707,6 +763,95 @@ function MagicAssemblerOnTick()
         end
         
         assembler.products_finished = assembler.products_finished + 1
+
+        -- Track energy usage
+        energy_used = energy_used + energy_cost
+
+        ::continue::
+    end
+
+    -- Subtract energy
+    global.shared_energy_stored = global.shared_energy_stored - energy_used
+
+    if (not global.magic_factory_energy_history) then global.magic_factory_energy_history = {} end
+    global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
+end
+
+function MagicCentrifugeOnTick()
+
+    if not global.magic_centrifuges then return end
+    local energy_used = 0
+    local energy_share = global.shared_energy_stored/global.magic_building_total_count
+
+    for idx,centrifuge in pairs(global.magic_centrifuges) do
+        
+        if (centrifuge == nil) or (not centrifuge.valid) then
+            global.magic_centrifuges[idx] = nil
+            log("Magic centrifuge removed?")
+            goto continue
+        end
+        
+        recipe = centrifuge.get_recipe()
+
+        if (not recipe) then
+            goto continue -- No recipe means do nothing.
+        end
+
+        local energy_cost = recipe.energy * CENTRIFUGE_ENERGY_PER_CRAFT_SECOND
+        if (energy_share < energy_cost) then goto continue end -- Not enough energy!
+
+        local input_inv = centrifuge.get_inventory(defines.inventory.assembling_machine_input)
+        local input_items = input_inv.get_contents()
+
+        for _,v in ipairs(recipe.ingredients) do
+            if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
+                goto continue -- Not enough ingredients
+            end
+        end
+
+        local output_inv = centrifuge.get_inventory(defines.inventory.assembling_machine_output)     
+
+        local output_item, output_count
+
+        -- 10 uranium ore IN
+        -- .993 uranium-238 and .007 uranium-235 OUT
+        if (recipe.name == "uranium-processing") then
+
+            local rand_chance = math.random()
+
+            output_count = 1
+            if (rand_chance <= .007) then
+                output_item = "uranium-235"
+            else
+                output_item = "uranium-238"
+            end
+
+            -- Check if we can insert at least 1 of BOTH.
+            if not output_inv.can_insert({name="uranium-235", amount=output_count}) then
+                goto continue
+            end
+            if not output_inv.can_insert({name= "uranium-238", amount=output_count}) then
+                goto continue
+            end
+
+            output_inv.insert({name=output_item, count=output_count})
+            if (centrifuge.last_user) then
+                centrifuge.last_user.force.item_production_statistics.on_flow(output_item, output_count)
+            end
+
+            for _,v in ipairs(recipe.ingredients) do
+                if (input_items[v.name]) then
+                    input_inv.remove({name=v.name, count=v.amount})
+                    if (centrifuge.last_user) then
+                        centrifuge.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
+                    end
+                end
+            end
+        else
+            goto continue -- Unsupported!
+        end
+
+        centrifuge.products_finished = centrifuge.products_finished + 1
 
         -- Track energy usage
         energy_used = energy_used + energy_cost

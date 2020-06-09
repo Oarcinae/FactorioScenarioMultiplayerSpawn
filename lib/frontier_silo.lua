@@ -100,8 +100,8 @@ local function CreateRocketSilo(surface, siloPosition, force)
 
     -- Set tiles below the silo
     tiles = {}
-    for dx = -10,10 do
-        for dy = -10,10 do
+    for dx = -6,5 do
+        for dy = -6,5 do
             if (game.active_mods["oarc-restricted-build"]) then
                 table.insert(tiles, {name = global.ocfg.locked_build_area_tile,
                                     position = {siloPosition.x+dx, siloPosition.y+dy}})
@@ -176,7 +176,7 @@ function BuildSiloAttempt(event)
     local epos = event.created_entity.position
 
     for k,v in pairs(global.siloPosition) do
-        if (getDistance(epos, v) < 5) then
+        if (getDistance(epos, v) <= 1) then
             if (event.created_entity.name ~= "entity-ghost") then
                 SendBroadcastMsg("Rocket silo has been built!")
             end

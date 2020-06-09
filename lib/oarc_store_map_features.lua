@@ -52,16 +52,34 @@ OARC_STORE_MAP_FEATURES =
     special_chunks = {
         ["electric-furnace"] = {
             initial_cost = 1000,
-            limit = 1,
+            additional_cost = 1000,
+            multiplier_cost = 2,
+            limit = 3,
             text="Build a special furnace chunk here. Contains 4 furnaces that run at very high speeds. [color=red]Requires energy from the shared storage. Modules have no effect![/color]"},
         ["oil-refinery"] = {
             initial_cost = 1000,
-            limit = 1,
+            additional_cost = 1000,
+            multiplier_cost = 2,
+            limit = 3,
             text="Build a special oil refinery chunk here. Contains 2 refineries and some chemical plants that run at very high speeds. [color=red]Requires energy from the shared storage. Modules have no effect![/color]"},
         ["assembling-machine-3"] = {
             initial_cost = 1000,
+            additional_cost = 1000,
+            multiplier_cost = 2,
+            limit = 3,
+            text="Build a special assembly machine chunk here. Contains 6 assembling machines that run at very high speeds. [color=red]Requires energy from the shared storage. Modules have no effect![/color]"},
+        ["centrifuge"] = {
+            initial_cost = 1000,
+            -- additional_cost = 1000,
+            -- multiplier_cost = 2,
             limit = 1,
-            text="Build a special assembly machine chunk here. Contains 4 assembling machines that run at very high speeds. [color=red]Requires energy from the shared storage. Modules have no effect![/color]"},
+            text="Build a special centrifuge chunk here. Contains 1 centrifuge that runs at very high speeds. [color=red]Requires energy from the shared storage. Modules have no effect![/color]"},
+        ["rocket-silo"] = {
+            initial_cost = 1000,
+            additional_cost = 0,
+            multiplier_cost = 2,
+            -- limit = 2,
+            text="Convert this special chunk into a rocket launch pad. This allows you to build a rocket silo here!"},
         -- ["rocket-silo"] = {cost = 1000, text="Build a special rocket silo chunk here."}, TODO...
     },
 
@@ -220,6 +238,10 @@ function OarcMapFeatureStoreButton(event)
         result = RequestSpawnSpecialChunk(player, SpawnOilRefineryChunk, button.name)
     elseif (button.name == "assembling-machine-3") then
         result = RequestSpawnSpecialChunk(player, SpawnAssemblyChunk, button.name)
+    elseif (button.name == "centrifuge") then
+        result = RequestSpawnSpecialChunk(player, SpawnAssemblyChunk, button.name)
+    elseif (button.name == "rocket-silo") then
+        result = RequestSpawnSpecialChunk(player, SpawnSiloChunk, button.name)        
     elseif (button.name == "assembling-machine-1") then
         SendPlayerToSpawn(player)
         result = true
