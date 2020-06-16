@@ -443,7 +443,6 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_text_changed, function(event)
     NotepadOnGuiTextChange(event)
-    SharedElectricityPlayerGuiValueChange(event)
 end)
 
 

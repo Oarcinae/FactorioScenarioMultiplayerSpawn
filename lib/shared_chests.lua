@@ -17,7 +17,6 @@ function SharedChestInitItems()
     global.shared_electricity_inputs = {}
     global.shared_electricity_outputs = {}
 
-    global.shared_electricity_player_limits = {}
     global.shared_chests_combinators = {}
     global.shared_items = {}
 
@@ -664,20 +663,6 @@ function CreateSharedItemsGuiTab(tab_container, player)
 
     AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.shared_energy_stored/1000000) .. "MJ[/color] [color=" .. rate_color .. "](" .. energy_add_str .. " " .. energy_sub_str ..")[/color]", my_longer_label_style)
 
-    if ((global.shared_electricity_player_limits ~= nil) and 
-        (global.shared_electricity_player_limits[player.name] ~= nil)) then
-        
-        local limit_mw_nice = string.format("%.3fMW", (global.shared_electricity_player_limits[player.name]*60 / 1000000))
-
-        AddLabel(scrollFrame, "elec_limit_info", "Limit sharing amount (".. limit_mw_nice .."): ", my_longer_label_style)
-        scrollFrame.add{type="textfield",
-                            tooltip="Limit how much energy you are sharing with others!\nThis is in Joules/tick so you it is multiplied by 60 to get Watts.",
-                            name="energy_share_limit_input",
-                            numeric=true,
-                            allow_negative=false,
-                            text=global.shared_electricity_player_limits[player.name]}
-    end
-
     AddSpacerLine(scrollFrame)
     AddLabel(scrollFrame, "share_items_title_msg", "Shared Items:", my_label_header_style)
 
@@ -692,27 +677,4 @@ function CreateSharedItemsGuiTab(tab_container, player)
         end
     end
 
-end
-
-function SharedElectricityPlayerGuiValueChange(event)
-
-    if (event.element.name ~= "energy_share_limit_input") then return end
-
-    local player = game.players[event.player_index]
-
-    if (player ~= nil) and (global.shared_electricity_player_limits ~= nil) then
-        if (event.element.text == "") then 
-            event.element.text = 0
-        end
-        if (tonumber(event.element.text) > (SHARED_ELEC_INPUT_BUFFER_SIZE/2)) then
-            event.element.text = SHARED_ELEC_INPUT_BUFFER_SIZE/2
-        end           
-
-        global.shared_electricity_player_limits[player.name] = tonumber(event.element.text)
-        event.element.text = global.shared_electricity_player_limits[player.name]
-
-        local limit_mw_nice = string.format("%.3fMW", (global.shared_electricity_player_limits[player.name]*60 / 1000000))
-        event.element.parent.elec_limit_info.caption = "Limit sharing amount (".. limit_mw_nice .."): "
-
-    end
 end

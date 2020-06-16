@@ -40,7 +40,6 @@ OARC_STORE_PLAYER_ITEMS =
         ["artillery-targeting-remote"] = {cost = 500, count = 1, play_time_locked=true},
     },
 
-
     ["Capsules/Mines"] = {
         ["land-mine"] = {cost = 20, count = 10, play_time_locked=false},
         ["defender-capsule"] = {cost = 20, count = 10, play_time_locked=false},
