@@ -594,7 +594,7 @@ function FindUnusedSpawns(player, remove_player)
 
                 log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
 
-                MarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
+                RegrowthMarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
                 TriggerCleanup()
                 SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
 
@@ -675,7 +675,7 @@ end
 
 --             log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
 
---             MarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
+--             RegrowthMarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
 --             remote.call("oarc_regrowth",
 --                     "area_removal_tilepos",
 --                     game.surfaces[GAME_SURFACE_NAME].index,
@@ -919,7 +919,7 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn
 
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
-        MarkAreaSafeGivenTilePos(spawn, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+        RegrowthMarkAreaSafeGivenTilePos(spawn, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), true)
 
     else
         log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")

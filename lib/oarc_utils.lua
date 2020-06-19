@@ -737,7 +737,7 @@ function CreateGameSurface()
 
     -- Add surface and safe areas
     if global.ocfg.enable_regrowth then
-        MarkAreaSafeGivenChunkPos({x=0,y=0}, 4)
+        RegrowthMarkAreaSafeGivenChunkPos({x=0,y=0}, 4, true)
     end
 end
 

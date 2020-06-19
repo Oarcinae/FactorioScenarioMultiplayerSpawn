@@ -16,13 +16,13 @@
 require("lib/oarc_utils")
 require("config")
 
-REGROWTH_TIMEOUT_TICKS = TICKS_PER_MINUTE --TICKS_PER_HOUR
+REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR
 
 -- Init globals and set player join area to be off limits.
 function RegrowthInit()
     global.rg = {}
     global.rg.player_refresh_index = nil
-    global.rg.force_removal_flag = -1000
+    global.rg.force_removal_flag = -2000
     global.rg.map = {}
     global.rg.removal_list = {}
     global.rg.chunk_iter = nil
@@ -33,7 +33,7 @@ function TriggerCleanup()
     global.rg.force_removal_flag = game.tick
 end
 
-function ForceRemoveChunksCmd(cmd_table)
+function RegrowthForceRemoveChunksCmd(cmd_table)
     if (game.players[cmd_table.player_index].admin) then
         TriggerCleanup()
     end
@@ -41,10 +41,14 @@ end
 
 -- Get the next player index available
 function GetNextPlayerIndex(player_index)
-    if (table_size(game.players) > 0) then
-        global.rg.player_refresh_index = NextKeyInTableIncludingRestart(game.players, player_index)
+    if (not global.rg.player_refresh_index or not game.players[global.rg.player_refresh_index]) then
+        global.rg.player_refresh_index = 1
     else
-        global.rg.player_refresh_index = nil
+        global.rg.player_refresh_index = global.rg.player_refresh_index + 1
+    end
+
+    if (global.rg.player_refresh_index > #game.players) then
+        global.rg.player_refresh_index = 1
     end
 
     return global.rg.player_refresh_index
@@ -71,7 +75,7 @@ function RegrowthChunkGenerate(event)
 end
 
 -- Mark an area for "immediate" forced removal
-function MarkAreaForRemoval(pos, chunk_radius)
+function RegrowthMarkAreaForRemoval(pos, chunk_radius)
     local c_pos = GetChunkPosFromTilePos(pos)
     for i=-chunk_radius,chunk_radius do
         local x = c_pos.x+i
@@ -90,30 +94,37 @@ function MarkAreaForRemoval(pos, chunk_radius)
 end
 
 -- Marks a chunk containing a position to be relatively permanent.
-function MarkChunkSafe(c_pos)
+function MarkChunkSafe(c_pos, permanent)
     if (global.rg.map[c_pos.x] == nil) then
         global.rg.map[c_pos.x] = {}
     end
-    global.rg.map[c_pos.x][c_pos.y] = -1
-end
 
--- Marks a safe area around a TILE position to be relatively permanent.
-function MarkAreaSafeGivenTilePos(pos, chunk_radius)
-    if (global.rg == nil) then return end
+    if (permanent) then
+        global.rg.map[c_pos.x][c_pos.y] = -2
 
-    local c_pos = GetChunkPosFromTilePos(pos)
-    MarkAreaSafeGivenChunkPos(c_pos, chunk_radius)
+    -- Make sure we don't overwrite...
+    elseif (global.rg.map[c_pos.x][c_pos.y] and (global.rg.map[c_pos.x][c_pos.y] ~= -2)) then
+        global.rg.map[c_pos.x][c_pos.y] = -1
+    end
 end
 
 -- Marks a safe area around a CHUNK position to be relatively permanent.
-function MarkAreaSafeGivenChunkPos(c_pos, chunk_radius)
+function RegrowthMarkAreaSafeGivenChunkPos(c_pos, chunk_radius, permanent)
     if (global.rg == nil) then return end
 
     for i=-chunk_radius,chunk_radius do
         for j=-chunk_radius,chunk_radius do
-            MarkChunkSafe({x=c_pos.x+i,y=c_pos.y+j})
+            MarkChunkSafe({x=c_pos.x+i,y=c_pos.y+j}, permanent)
         end
     end
+end
+
+-- Marks a safe area around a TILE position to be relatively permanent.
+function RegrowthMarkAreaSafeGivenTilePos(pos, chunk_radius, permanent)
+    if (global.rg == nil) then return end
+
+    local c_pos = GetChunkPosFromTilePos(pos)
+    RegrowthMarkAreaSafeGivenChunkPos(c_pos, chunk_radius, permanent)
 end
 
 -- Refreshes timers on a chunk containing position
@@ -123,7 +134,7 @@ function RefreshChunkTimer(pos, bonus_time)
     if (global.rg.map[c_pos.x] == nil) then
         global.rg.map[c_pos.x] = {}
     end
-    if (global.rg.map[c_pos.x][c_pos.y] ~= -1) then
+    if (global.rg.map[c_pos.x][c_pos.y] >= 0) then
         global.rg.map[c_pos.x][c_pos.y] = game.tick + bonus_time
     end
 end
@@ -140,7 +151,7 @@ function RefreshArea(pos, chunk_radius, bonus_time)
             if (global.rg.map[x] == nil) then
                 global.rg.map[x] = {}
             end
-            if (global.rg.map[x][y] ~= -1) then
+            if ((global.rg.map[x][y] == nil) or (global.rg.map[x][y] >= 0)) then
                 global.rg.map[x][y] = game.tick + bonus_time
             end
         end
@@ -191,7 +202,7 @@ function RegrowthSingleStepArray()
 
     -- If the chunk has timed out, add it to the removal list
     local c_timer = global.rg.map[next_chunk.x][next_chunk.y]
-    if ((c_timer ~= nil) and (c_timer ~= -1) and ((c_timer + REGROWTH_TIMEOUT_TICKS) < game.tick)) then
+    if ((c_timer ~= nil) and (c_timer >= 0) and ((c_timer + REGROWTH_TIMEOUT_TICKS) < game.tick)) then
 
         -- Check chunk actually exists
         if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=next_chunk.x, y=next_chunk.y})) then
@@ -249,6 +260,8 @@ function RegrowthOnTick()
         RegrowthSingleStepArray()
     end
 
+    WorldEaterSingleStep()
+
     -- Allow enable/disable of auto cleanup, can change during runtime.
     local interval_ticks = REGROWTH_TIMEOUT_TICKS
     -- Send a broadcast warning before it happens.
@@ -282,34 +295,39 @@ function RegrowthForceRemovalOnTick()
     end
 end
 
--- function WorldEaterSingleStep()
+function WorldEaterSingleStep()
 
---     -- Make sure we have a valid iterator!
---     if (not global.rg.world_eater_iter or not global.rg.world_eater_iter.valid) then
---         global.rg.world_eater_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
---     end
+    -- Make sure we have a valid iterator!
+    if (not global.rg.world_eater_iter or not global.rg.world_eater_iter.valid) then
+        global.rg.world_eater_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
+    end
 
---     local next_chunk = global.rg.world_eater_iter()
+    local next_chunk = global.rg.world_eater_iter()
 
---     -- Check if we reached the end
---     if (not next_chunk) then 
---         global.rg.world_eater_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
---         next_chunk = global.rg.world_eater_iter()
---     end
+    -- Check if we reached the end
+    if (not next_chunk) then 
+        global.rg.world_eater_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
+        next_chunk = global.rg.world_eater_iter()
+    end
 
---     -- Need a flag for special areas like the map features and silos.
---     -- VS just the player built shit.
+    -- Do we have it in our map?
+    if (not global.rg.map[next_chunk.x] or not global.rg.map[next_chunk.x][next_chunk.y]) then
+        return -- Chunk isn't in our map so we don't care?
+    end 
 
---     -- If timer is player-built flag
+    -- If the chunk isn't marked permament, then check if we can remove it
+    local c_timer = global.rg.map[next_chunk.x][next_chunk.y]
+    if (c_timer == -1) then
 
+        local area = {left_top = {next_chunk.area.left_top.x-8, next_chunk.area.left_top.y-8},
+                      right_bottom = {next_chunk.area.right_bottom.x+8, next_chunk.area.right_bottom.y+8}}
 
+        local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=area, force={"enemy", "neutral"}, invert=true, limit=1}
 
--- end
-
--- World Eater Regrowth:
--- Use a chunk iterator surface.get_chunks()
--- If valid, get next
--- If nil, get new one and restart.
--- Check for any entities inside the chunk (and slightly nearby), anything with a non-neutral and non-enemy force
--- If none, check for special neutral buildings?
--- If still none
+        if (#entities > 0) then
+            return -- Something here.
+        else
+            global.rg.map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
+        end
+    end
+end
