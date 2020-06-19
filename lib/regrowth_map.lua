@@ -342,11 +342,11 @@ function WorldEaterSingleStep()
                 for k,v in pairs(entities) do
                     v.die(nil)
                 end
-                SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - ENTITIES FOUND")
+                -- SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - ENTITIES FOUND")
                 global.rg.map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
             end
         else
-            SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - NO ENTITIES FOUND")
+            -- SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - NO ENTITIES FOUND")
             global.rg.map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
         end
     end
