@@ -134,14 +134,15 @@ function MagicFactoriesInit()
 
     SetNeutralForceAllowedRecipes()
 
-    global.magic_building_total_count = 0
-    global.magic_factory_energy_history = {}
-    global.magic_factory_positions = {}
-    global.magic_furnaces = {}
-    global.magic_chemplants = {}
-    global.magic_refineries = {}
-    global.magic_assemblers = {}
-    global.magic_centrifuges = {}
+    global.omagic = {}
+    global.omagic.building_total_count = 0
+    global.omagic.factory_energy_history = {}
+    global.omagic.factory_positions = {}
+    global.omagic.furnaces = {}
+    global.omagic.chemplants = {}
+    global.omagic.refineries = {}
+    global.omagic.assemblers = {}
+    global.omagic.centrifuges = {}
 
     MagicFactoryChunkGenerator()
 
@@ -165,7 +166,7 @@ function MagicFactoryChunkGenerator()
 
             if (not game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({chunk_x,chunk_y})) then
                 
-                table.insert(global.magic_factory_positions, {x=chunk_x, y=chunk_y})
+                table.insert(global.omagic.factory_positions, {x=chunk_x, y=chunk_y})
                 game.surfaces[GAME_SURFACE_NAME].request_to_generate_chunks(GetCenterTilePosFromChunkPos({x=chunk_x, y=chunk_y}), 0)
                 log("Magic furnace position: " .. chunk_x .. ", " .. chunk_y .. ", " .. angle)
             else
@@ -174,12 +175,12 @@ function MagicFactoryChunkGenerator()
         end
     end
 
-    SendBroadcastMsg("Number magic chunks: " .. #global.magic_factory_positions)
+    SendBroadcastMsg("Number magic chunks: " .. #global.omagic.factory_positions)
 end
 
 function FindClosestMagicChunk(player)
     if (not player or not player.character) then return end
-    return GetClosestPosFromTable(GetChunkPosFromTilePos(player.character.position), global.magic_factory_positions)
+    return GetClosestPosFromTable(GetChunkPosFromTilePos(player.character.position), global.omagic.factory_positions)
 end
 
 function IndicateClosestMagicChunk(player)
@@ -195,7 +196,7 @@ function IndicateClosestMagicChunk(player)
 end
 
 function MagicalFactorySpawnAll()
-    for _,chunk_pos in pairs(global.magic_factory_positions) do
+    for _,chunk_pos in pairs(global.omagic.factory_positions) do
         
         local pos = GetCenterTilePosFromChunkPos(chunk_pos)
         local c_area = GetAreaFromChunkPos(chunk_pos)
@@ -222,11 +223,7 @@ function MagicalFactorySpawnAll()
 
         -- Make it safe from regrowth
         if global.ocfg.enable_regrowth then
-            remote.call("oarc_regrowth",
-                            "area_offlimits_tilepos",
-                            game.surfaces[GAME_SURFACE_NAME].index,
-                            pos,
-                            1)
+            MarkAreaSafeGivenTilePos(pos, 1)
         end
     end
 end
@@ -247,7 +244,9 @@ function RequestSpawnSpecialChunk(player, spawn_function, feature_name)
 
         local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
                                         area={left_top = {chunk_area.left_top.x+1, chunk_area.left_top.y+1},
-                                                right_bottom = {chunk_area.right_bottom.x-1, chunk_area.right_bottom.y-1}}}
+                                                right_bottom = {chunk_area.right_bottom.x-1, chunk_area.right_bottom.y-1}},
+                                                force={"enemy", "neutral"},
+                                                invert=true}
         if (#entities > 1) then
             player.print("Looks like this chunk already has something in it other than just you the player?! " .. entities[1].name)
             return false
@@ -386,34 +385,34 @@ function SpawnMagicBuilding(entity_name, position)
     magic_building.operable = true
     magic_building.active = false
 
-    global.magic_building_total_count = global.magic_building_total_count + 1
+    global.omagic.building_total_count = global.omagic.building_total_count + 1
 
     return magic_building
 end
 
 function SpawnMagicFurnace(pos)
-    table.insert(global.magic_furnaces, SpawnMagicBuilding("electric-furnace",  pos))
+    table.insert(global.omagic.furnaces, SpawnMagicBuilding("electric-furnace",  pos))
 end
 
 function SpawnMagicChemicalPlant(pos)
-    table.insert(global.magic_chemplants, SpawnMagicBuilding("chemical-plant",  pos))
+    table.insert(global.omagic.chemplants, SpawnMagicBuilding("chemical-plant",  pos))
 end
 
 function SpawnMagicRefinery(pos)
-    table.insert(global.magic_refineries, SpawnMagicBuilding("oil-refinery",  pos))
+    table.insert(global.omagic.refineries, SpawnMagicBuilding("oil-refinery",  pos))
 end
 
 function SpawnMagicAssembler(pos)
-    table.insert(global.magic_assemblers, SpawnMagicBuilding("assembling-machine-3",  pos))
+    table.insert(global.omagic.assemblers, SpawnMagicBuilding("assembling-machine-3",  pos))
 end
 
 function SpawnMagicCentrifuge(pos)
-    table.insert(global.magic_centrifuges, SpawnMagicBuilding("centrifuge",  pos))
+    table.insert(global.omagic.centrifuges, SpawnMagicBuilding("centrifuge",  pos))
 end
 
 
 function MagicFactoriesOnTick()
-    global.magic_factory_energy_history[game.tick % 60] = 0
+    global.omagic.factory_energy_history[game.tick % 60] = 0
 
     MagicFurnaceOnTick()
     MagicChemplantOnTick()
@@ -422,16 +421,20 @@ function MagicFactoriesOnTick()
     MagicCentrifugeOnTick()
 end
 
+-- Some helpful math:
+-- 94 per tick (max stack of ore in a smelter) (More like 2 or 3 ore per tick.)
+-- blue belt = 45 / sec
+-- 6 INPUT blue belts = 4.5 ore/tick (45 * 6 / 60) with productivity is an extra 0.9 maybe.
 function MagicFurnaceOnTick()
 
-    if not global.magic_furnaces then return end
+    if not global.omagic.furnaces then return end
     local energy_used = 0
-    local energy_share = global.shared_energy_stored/global.magic_building_total_count
+    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,furnace in pairs(global.magic_furnaces) do
+    for idx,furnace in pairs(global.omagic.furnaces) do
         
         if (furnace == nil) or (not furnace.valid) then
-            global.magic_furnaces[idx] = nil
+            global.omagic.furnaces[idx] = nil
             log("MagicFurnaceOnTick - Magic furnace removed?")
             goto continue
         end
@@ -512,22 +515,22 @@ function MagicFurnaceOnTick()
     end
 
     -- Subtract energy
-    global.shared_energy_stored = global.shared_energy_stored - energy_used
+    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
 
-    if (not global.magic_factory_energy_history) then global.magic_factory_energy_history = {} end
-    global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
+    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
+    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 function MagicChemplantOnTick()
 
-    if not global.magic_chemplants then return end
+    if not global.omagic.chemplants then return end
     local energy_used = 0
-    local energy_share = global.shared_energy_stored/global.magic_building_total_count
+    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,chemplant in pairs(global.magic_chemplants) do
+    for idx,chemplant in pairs(global.omagic.chemplants) do
         
         if (chemplant == nil) or (not chemplant.valid) then
-            global.magic_chemplants[idx] = nil
+            global.omagic.chemplants[idx] = nil
             log("Magic chemplant removed?")
             goto continue
         end
@@ -605,23 +608,23 @@ function MagicChemplantOnTick()
     end
 
     -- Subtract energy
-    global.shared_energy_stored = global.shared_energy_stored - energy_used
+    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
 
-    if (not global.magic_factory_energy_history) then global.magic_factory_energy_history = {} end
-    global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
+    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
+    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 
 function MagicRefineryOnTick()
 
-    if not global.magic_refineries then return end
+    if not global.omagic.refineries then return end
     local energy_used = 0
-    local energy_share = global.shared_energy_stored/global.magic_building_total_count
+    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,refinery in pairs(global.magic_refineries) do
+    for idx,refinery in pairs(global.omagic.refineries) do
         
         if (refinery == nil) or (not refinery.valid) then
-            global.magic_refineries[idx] = nil
+            global.omagic.refineries[idx] = nil
             log("Magic refinery removed?")
             goto continue
         end
@@ -691,22 +694,22 @@ function MagicRefineryOnTick()
     end
 
     -- Subtract energy
-    global.shared_energy_stored = global.shared_energy_stored - energy_used
+    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
 
-    if (not global.magic_factory_energy_history) then global.magic_factory_energy_history = {} end
-    global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
+    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
+    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 function MagicAssemblerOnTick()
 
-    if not global.magic_assemblers then return end
+    if not global.omagic.assemblers then return end
     local energy_used = 0
-    local energy_share = global.shared_energy_stored/global.magic_building_total_count
+    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,assembler in pairs(global.magic_assemblers) do
+    for idx,assembler in pairs(global.omagic.assemblers) do
         
         if (assembler == nil) or (not assembler.valid) then
-            global.magic_assemblers[idx] = nil
+            global.omagic.assemblers[idx] = nil
             log("Magic assembler removed?")
             goto continue
         end
@@ -771,22 +774,22 @@ function MagicAssemblerOnTick()
     end
 
     -- Subtract energy
-    global.shared_energy_stored = global.shared_energy_stored - energy_used
+    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
 
-    if (not global.magic_factory_energy_history) then global.magic_factory_energy_history = {} end
-    global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
+    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
+    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 function MagicCentrifugeOnTick()
 
-    if not global.magic_centrifuges then return end
+    if not global.omagic.centrifuges then return end
     local energy_used = 0
-    local energy_share = global.shared_energy_stored/global.magic_building_total_count
+    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,centrifuge in pairs(global.magic_centrifuges) do
+    for idx,centrifuge in pairs(global.omagic.centrifuges) do
         
         if (centrifuge == nil) or (not centrifuge.valid) then
-            global.magic_centrifuges[idx] = nil
+            global.omagic.centrifuges[idx] = nil
             log("Magic centrifuge removed?")
             goto continue
         end
@@ -860,10 +863,10 @@ function MagicCentrifugeOnTick()
     end
 
     -- Subtract energy
-    global.shared_energy_stored = global.shared_energy_stored - energy_used
+    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
 
-    if (not global.magic_factory_energy_history) then global.magic_factory_energy_history = {} end
-    global.magic_factory_energy_history[game.tick % 60] = global.magic_factory_energy_history[game.tick % 60] + energy_used
+    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
+    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 COIN_MULTIPLIER = 2

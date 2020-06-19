@@ -132,11 +132,7 @@ local function CreateRocketSilo(surface, siloPosition, force)
 
     -- Make silo safe from being removed.
     if global.ocfg.enable_regrowth then
-        remote.call("oarc_regrowth",
-                        "area_offlimits_tilepos",
-                        surface.index,
-                        siloPosition,
-                        5)
+        MarkAreaSafeGivenTilePos(siloPosition, 5)
     end
 
     if ENABLE_SILO_BEACONS then

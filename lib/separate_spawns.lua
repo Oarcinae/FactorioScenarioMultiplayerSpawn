@@ -7,9 +7,103 @@
 require("lib/oarc_utils")
 require("config")
 
---------------------------------------------------------------------------------
--- EVENT RELATED FUNCTIONS
---------------------------------------------------------------------------------
+--[[
+  ___  _  _  ___  _____ 
+ |_ _|| \| ||_ _||_   _|
+  | | | .` | | |   | |  
+ |___||_|\_||___|  |_|  
+                        
+--]]
+
+-- Initializes the globals used to track the special spawn and player
+-- status information
+function InitSpawnGlobalsAndForces()
+
+    -- Core global to help me organize shit.
+    if (global.ocore == nil) then
+        global.ocore = {}
+    end
+
+    -- This contains each player's spawn point. Literally where they will respawn.
+    -- There is a way in game to change this under one of the little menu features I added.
+    if (global.ocore.playerSpawns == nil) then
+        global.ocore.playerSpawns = {}
+    end
+
+    -- This is the most important table. It is a list of all the unique spawn points.
+    -- This is what chunk generation checks against.
+    -- Each entry looks like this: {pos={x,y},moat=bool,vanilla=bool}
+    if (global.ocore.uniqueSpawns == nil) then
+        global.ocore.uniqueSpawns = {}
+    end
+
+    -- List of available vanilla spawns
+    if (global.vanillaSpawns == nil) then
+        global.vanillaSpawns = {}
+    end
+
+    -- This keeps a list of any player that has shared their base.
+    -- Each entry contains information about if it's open, spawn pos, and players in the group.
+    if (global.ocore.sharedSpawns == nil) then
+        global.ocore.sharedSpawns = {}
+    end
+
+    -- Each player has an option to change their respawn which has a cooldown when used.
+    -- Other similar abilities/functions that require cooldowns could be added here.
+    if (global.ocore.playerCooldowns == nil) then
+        global.ocore.playerCooldowns = {}
+    end
+
+    -- List of players in the "waiting room" for a buddy spawn.
+    -- They show up in the list to select when doing a buddy spawn.
+    if (global.ocore.waitingBuddies == nil) then
+        global.ocore.waitingBuddies = {}
+    end
+
+    -- Players who have made a spawn choice get put into this list while waiting.
+    -- An on_tick event checks when it expires and then places down the base resources, and teleports the player.
+    -- Go look at DelayedSpawnOnTick() for more info.
+    if (global.ocore.delayedSpawns == nil) then
+        global.ocore.delayedSpawns = {}
+    end
+
+    -- This is what I use to communicate a buddy spawn request between the buddies.
+    -- This contains information of who is asking, and what options were selected.
+    if (global.ocore.buddySpawnOpts == nil) then
+        global.ocore.buddySpawnOpts = {}
+    end
+
+    -- Silo info
+    if (global.siloPosition == nil) then
+        global.siloPosition = {}
+    end
+
+    -- Buddy info: The only real use is to check if one of a buddy pair is online to see if we should allow enemy
+    -- attacks on the base.
+    if (global.ocore.buddyPairs == nil) then
+        global.ocore.buddyPairs = {}
+    end
+
+    -- Rendering fancy fadeouts.
+    if (global.oarc_renders_fadeout == nil) then
+        global.oarc_renders_fadeout = {}
+    end
+
+    -- Name a new force to be the default force.
+    -- This is what any new player is assigned to when they join, even before they spawn.
+    local main_force = CreateForce(global.ocfg.main_force)
+    main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
+end
+
+
+
+--[[
+  ___  _       _ __   __ ___  ___     ___  ___  ___  ___  ___  ___  ___  ___ 
+ | _ \| |     /_\\ \ / /| __|| _ \   / __|| _ \| __|/ __||_ _|| __||_ _|/ __|
+ |  _/| |__  / _ \\ V / | _| |   /   \__ \|  _/| _|| (__  | | | _|  | || (__ 
+ |_|  |____|/_/ \_\|_|  |___||_|_\   |___/|_|  |___|\___||___||_|  |___|\___|
+                                                                             
+--]]
 
 -- When a new player is created, present the spawn options
 -- Assign them to the main force so they can communicate with the team
@@ -48,337 +142,22 @@ function SeparateSpawnsPlayerRespawned(event)
 end
 
 
--- This is the main function that creates the spawn area
--- Provides resources, land and a safe zone
-function SeparateSpawnsGenerateChunk(event)
-    local surface = event.surface
-    local chunkArea = event.area
+--[[
+  ___  ___   _ __      __ _  _     ___  ___  _____  _   _  ___ 
+ / __|| _ \ /_\\ \    / /| \| |   / __|| __||_   _|| | | || _ \
+ \__ \|  _// _ \\ \/\/ / | .` |   \__ \| _|   | |  | |_| ||  _/
+ |___/|_| /_/ \_\\_/\_/  |_|\_|   |___/|___|  |_|   \___/ |_|  
+                                                               
+--]]
 
-    -- Modify enemies first.
-    if global.ocfg.modified_enemy_spawning then
-        DowngradeWormsDistanceBasedOnChunkGenerate(event)
-    end
-
-    -- Downgrade resources near to spawns
-    if global.ocfg.scale_resources_around_spawns then
-        DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
-    end
-
-    -- This handles chunk generation near player spawns
-    -- If it is near a player spawn, it does a few things like make the area
-    -- safe and provide a guaranteed area of land and water tiles.
-    SetupAndClearSpawnAreas(surface, chunkArea)
+-- Add a spawn to the shared spawn global
+-- Used for tracking which players are assigned to it, where it is and if
+-- it is open for new players to join
+function CreateNewSharedSpawn(player)
+    global.ocore.sharedSpawns[player.name] = {openAccess=true,
+                                    position=global.ocore.playerSpawns[player.name],
+                                    players={}}
 end
-
--- Based on the danger distance, you get full resources, and it is exponential from the spawn point to that distance.
-function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
-
-    local closestSpawn = GetClosestUniqueSpawn(chunkArea.left_top)
-
-    if (closestSpawn == nil) then return end
-
-    local distance = getDistance(chunkArea.left_top, closestSpawn.pos)
-    -- Adjust multiplier to bring it in or out
-    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*1))^3
-    if modifier < 0.1 then modifier = 0.1 end
-    if modifier > 1 then return end
-
-    local ore_per_tile_cap = math.floor(100000 * modifier)
-
-    for key, entity in pairs(surface.find_entities_filtered{area=chunkArea, type="resource"}) do
-        if entity.valid and entity and entity.position and entity.amount then
-            local new_amount = math.ceil(entity.amount * modifier)
-            if (new_amount < 1) then
-                entity.destroy()
-            else
-                if (entity.name ~= "crude-oil") then
-                    entity.amount = math.min(new_amount, ore_per_tile_cap)
-                else
-                    entity.amount = new_amount
-                end
-            end            
-        end
-    end
-end
-
--- Call this if a player leaves the game or is reset
-function FindUnusedSpawns(player, remove_player)
-    if not player then
-        log("ERROR - FindUnusedSpawns on NIL Player!")
-        return
-    end
-
-    if (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) then
-
-        -- If this player is staying in the game, lets make sure we don't delete them
-        -- along with the map chunks being cleared.
-        player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
-
-        -- Clear out global variables for that player
-        if (global.playerSpawns[player.name] ~= nil) then
-            global.playerSpawns[player.name] = nil
-        end
-
-        -- Remove them from the delayed spawn queue if they are in it
-        for i=#global.delayedSpawns,1,-1 do
-            delayedSpawn = global.delayedSpawns[i]
-
-            if (player.name == delayedSpawn.playerName) then
-                if (delayedSpawn.vanilla) then
-                    log("Returning a vanilla spawn back to available.")
-                    table.insert(global.vanillaSpawns, {x=delayedSpawn.pos.x,y=delayedSpawn.pos.y})
-                end
-
-                table.remove(global.delayedSpawns, i)
-                log("Removing player from delayed spawn queue: " .. player.name)
-            end
-        end
-
-        -- Transfer or remove a shared spawn if player is owner
-        if (global.sharedSpawns[player.name] ~= nil) then
-
-            local teamMates = global.sharedSpawns[player.name].players
-
-            if (#teamMates >= 1) then
-                local newOwnerName = table.remove(teamMates)
-                TransferOwnershipOfSharedSpawn(player.name, newOwnerName)
-            else
-                global.sharedSpawns[player.name] = nil
-            end
-        end
-
-        -- If a uniqueSpawn was created for the player, mark it as unused.
-        if (global.uniqueSpawns[player.name] ~= nil) then
-
-            local spawnPos = global.uniqueSpawns[player.name].pos
-
-            -- Check if it was near someone else's base.
-            nearOtherSpawn = false
-            for spawnPlayerName,otherSpawnPos in pairs(global.uniqueSpawns) do
-                if ((spawnPlayerName ~= player.name) and (getDistance(spawnPos, otherSpawnPos.pos) < (global.ocfg.spawn_config.gen_settings.land_area_tiles*3))) then
-                    log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
-                    nearOtherSpawn = true
-                end
-            end
-
-            -- Unused Chunk Removal mod (aka regrowth)
-            if (global.ocfg.enable_abandoned_base_removal and
-                (not nearOtherSpawn) and
-                global.ocfg.enable_regrowth) then
-
-                if (global.uniqueSpawns[player.name].vanilla) then
-                    log("Returning a vanilla spawn back to available.")
-                    table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
-                end
-
-                global.uniqueSpawns[player.name] = nil
-
-                log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-
-                remote.call("oarc_regrowth",
-                        "area_removal_tilepos",
-                        game.surfaces[GAME_SURFACE_NAME].index,
-                        spawnPos,
-                        CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
-                remote.call("oarc_regrowth",
-                        "trigger_immediate_cleanup")
-                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-
-            else
-                -- table.insert(global.unusedSpawns, global.uniqueSpawns[player.name]) -- Not used/implemented right now.
-                global.uniqueSpawns[player.name] = nil
-                SendBroadcastMsg(player.name .. " base was freed up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-            end
-        end
-
-        -- remove that player's cooldown setting
-        if (global.playerCooldowns[player.name] ~= nil) then
-            global.playerCooldowns[player.name] = nil
-        end
-
-        -- Remove from shared spawn player slots (need to search all)
-        for _,sharedSpawn in pairs(global.sharedSpawns) do
-            for key,playerName in pairs(sharedSpawn.players) do
-                if (player.name == playerName) then
-                    sharedSpawn.players[key] = nil;
-                end
-            end
-        end
-
-        -- Clear the buddy pair IF one exists
-        if (global.buddyPairs[player.name] ~= nil) then
-            local buddyName = global.buddyPairs[player.name]
-            global.buddyPairs[player.name] = nil
-            global.buddyPairs[buddyName] = nil
-        end
-
-        -- Remove a force if this player created it and they are the only one on it
-        if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg.main_force)) then
-            game.merge_forces(player.force, global.ocfg.main_force)
-        end
-
-        -- Remove the character completely
-        if (remove_player) then
-            game.remove_offline_players({player})
-        end
-    end
-end
-
--- Clear the spawn areas.
--- This should be run inside the chunk generate event and be given a list of all
--- unique spawn points.
--- This clears enemies in the immediate area, creates a slightly safe area around it,
--- It no LONGER generates the resources though as that is now handled in a delayed event!
-function SetupAndClearSpawnAreas(surface, chunkArea)
-    for name,spawn in pairs(global.uniqueSpawns) do
-
-        -- Create a bunch of useful area and position variables
-        local landArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+CHUNK_SIZE)
-        -- local safeArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.safe_radius)
-        -- local warningArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.warn_radius)
-        -- local reducedArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.danger_radius)
-        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
-                                         y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
-        local spawnPosOffset = {x=spawn.pos.x+global.ocfg.spawn_config.gen_settings.land_area_tiles,
-                                         y=spawn.pos.y+global.ocfg.spawn_config.gen_settings.land_area_tiles}
-
-
-
-        -- Make chunks near a spawn safe by removing enemies
-        if (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.safe_radius) then
-            RemoveAliensInArea(surface, chunkArea)
-
-        -- Create a warning area with heavily reduced enemies
-        elseif (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.warn_radius) then
-            ReduceAliensInArea(surface, chunkArea, global.ocfg.spawn_config.safe_area.warn_reduction)
-            -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
-            RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
-
-        -- Create a third area with moderatly reduced enemies
-        elseif (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.danger_radius) then
-            ReduceAliensInArea(surface, chunkArea, global.ocfg.spawn_config.safe_area.danger_reduction)
-            -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
-            RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
-        end
-
-        if (not spawn.vanilla) then
-            -- If the chunk is within the main land area, then clear trees/resources
-            -- and create the land spawn areas (guaranteed land with a circle of trees)
-            if CheckIfInArea(chunkAreaCenter,landArea) then
-
-                -- Remove trees/resources inside the spawn area
-                RemoveInCircle(surface, chunkArea, "tree", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles)
-                RemoveInCircle(surface, chunkArea, "resource", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
-                RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
-
-                local fill_tile = "landfill"
-                if (game.active_mods["oarc-restricted-build"]) then
-                    fill_tile = global.ocfg.locked_build_area_tile
-                end
-
-                if (global.ocfg.spawn_config.gen_settings.tree_circle) then
-                    CreateCropCircle(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, fill_tile)
-                end
-                if (global.ocfg.spawn_config.gen_settings.tree_octagon) then
-                    CreateCropOctagon(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, fill_tile)
-                end
-                if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
-                    if (spawn.moat) then
-                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "water", true)
-                    end
-                end
-            end
-        end
-    end
-end
-
--- Same as GetClosestPosFromTable but specific to global.uniqueSpawns
-function GetClosestUniqueSpawn(pos)
-
-    local closest_dist = nil
-    local closest_key = nil
-
-    for k,s in pairs(global.uniqueSpawns) do
-        local new_dist = getDistance(pos, s.pos)
-        if (closest_dist == nil) then
-            closest_dist = new_dist
-            closest_key = k
-        elseif (closest_dist > new_dist) then
-            closest_dist = new_dist
-            closest_key = k
-        end
-    end
-
-    if (closest_key == nil) then
-        -- log("GetClosestUniqueSpawn ERROR - None found?")
-        return nil
-    end
-
-    return global.uniqueSpawns[closest_key]
-end
-
--- I wrote this to ensure everyone gets safer spawns regardless of evolution level.
--- This is intended to downgrade any biters/spitters spawning near player bases.
--- I'm not sure the performance impact of this but I'm hoping it's not bad.
-function ModifyEnemySpawnsNearPlayerStartingAreas(event)
-
-    if (not event.entity or not (event.entity.force.name == "enemy") or not event.entity.position) then
-        log("ModifyBiterSpawns - Unexpected use.")
-        return
-    end
-
-    local enemy_pos = event.entity.position
-    local surface = event.entity.surface
-    local enemy_name = event.entity.name
-
-    local closest_spawn = GetClosestUniqueSpawn(enemy_pos)
-
-    if (closest_spawn == nil) then
-        -- log("GetClosestUniqueSpawn ERROR - None found?")
-        return
-    end
-
-    -- No enemies inside safe radius!
-    if (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.safe_radius) then
-        event.entity.destroy()
-
-    -- Warn distance is all SMALL only.
-    elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then
-        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
-            event.entity.destroy()
-            surface.create_entity{name = "small-biter", position = enemy_pos, force = game.forces.enemy}
-            -- log("Downgraded biter close to spawn.")
-        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter") or (enemy_name == "medium-spitter")) then
-            event.entity.destroy()
-            surface.create_entity{name = "small-spitter", position = enemy_pos, force = game.forces.enemy}
-            -- log("Downgraded spitter close to spawn.")
-        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret") or (enemy_name == "medium-worm-turret")) then
-            event.entity.destroy()
-            surface.create_entity{name = "small-worm-turret", position = enemy_pos, force = game.forces.enemy}
-            -- log("Downgraded worm close to spawn.")
-        end
-
-    -- Danger distance is MEDIUM max.
-    elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.danger_radius) then
-        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
-            event.entity.destroy()
-            surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
-            -- log("Downgraded biter further from spawn.")
-        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
-            event.entity.destroy()
-            surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
-            -- log("Downgraded spitter further from spawn
-        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret")) then
-            event.entity.destroy()
-            surface.create_entity{name = "medium-worm-turret", position = enemy_pos, force = game.forces.enemy}
-            -- log("Downgraded worm further from spawn.")
-        end
-    end
-end
-
---------------------------------------------------------------------------------
--- NON-EVENT RELATED FUNCTIONS
---------------------------------------------------------------------------------
 
 -- Generate the basic starter resource around a given location.
 function GenerateStartingResources(surface, pos)
@@ -433,277 +212,6 @@ function GenerateStartingResources(surface, pos)
         end
     end
 end
-
--- Add a spawn to the shared spawn global
--- Used for tracking which players are assigned to it, where it is and if
--- it is open for new players to join
-function CreateNewSharedSpawn(player)
-    global.sharedSpawns[player.name] = {openAccess=true,
-                                    position=global.playerSpawns[player.name],
-                                    players={}}
-end
-
-function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
-    -- Transfer the shared spawn global
-    global.sharedSpawns[newOwnerName] = global.sharedSpawns[prevOwnerName]
-    global.sharedSpawns[newOwnerName].openAccess = false
-    global.sharedSpawns[prevOwnerName] = nil
-
-    -- Transfer the unique spawn global
-    global.uniqueSpawns[newOwnerName] = global.uniqueSpawns[prevOwnerName]
-    global.uniqueSpawns[prevOwnerName] = nil
-
-    game.players[newOwnerName].print("You have been given ownership of this base!")
-end
-
--- Return the owner of the shared spawn for this player.
--- May return nil if player has not spawned yet.
-function FindPlayerSharedSpawn(playerName)
-
-    -- If the player IS an owner, he can't be in any other shared base.
-    if (global.sharedSpawns[playerName] ~= nil) then
-        return playerName
-    end
-
-    -- Otherwise, search all shared spawns for this player and return the owner.
-    for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
-        for _,sharingPlayerName in pairs(sharedSpawn.players) do
-            if (playerName == sharingPlayerName) then
-                return ownerName
-            end
-        end
-    end
-
-    -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
-    return nil
-end
-
--- Returns the number of players currently online at the shared spawn
-function GetOnlinePlayersAtSharedSpawn(ownerName)
-    if (global.sharedSpawns[ownerName] ~= nil) then
-
-        -- Does not count base owner
-        local count = 0
-
-        -- For each player in the shared spawn, check if online and add to count.
-        for _,player in pairs(game.connected_players) do
-            if (ownerName == player.name) then
-                count = count + 1
-            end
-
-            for _,playerName in pairs(global.sharedSpawns[ownerName].players) do
-
-                if (playerName == player.name) then
-                    count = count + 1
-                end
-            end
-        end
-
-        return count
-    else
-        return 0
-    end
-end
-
--- Get the number of currently available shared spawns
--- This means the base owner has enabled access AND the number of online players
--- is below the threshold.
-function GetNumberOfAvailableSharedSpawns()
-    local count = 0
-
-    for ownerName,sharedSpawn in pairs(global.sharedSpawns) do
-        if (sharedSpawn.openAccess and
-            (game.players[ownerName] ~= nil) and
-            game.players[ownerName].connected) then
-            if ((global.ocfg.max_players_shared_spawn == 0) or
-                (#global.sharedSpawns[ownerName].players < global.ocfg.max_players_shared_spawn)) then
-                count = count+1
-            end
-        end
-    end
-
-    return count
-end
-
--- Initializes the globals used to track the special spawn and player
--- status information
-function InitSpawnGlobalsAndForces()
-
-    -- This contains each player's spawn point. Literally where they will respawn.
-    -- There is a way in game to change this under one of the little menu features I added.
-    if (global.playerSpawns == nil) then
-        global.playerSpawns = {}
-    end
-
-    -- This is the most important table. It is a list of all the unique spawn points.
-    -- This is what chunk generation checks against.
-    -- Each entry looks like this: {pos={x,y},moat=bool,vanilla=bool}
-    if (global.uniqueSpawns == nil) then
-        global.uniqueSpawns = {}
-    end
-
-    -- List of available vanilla spawns
-    if (global.vanillaSpawns == nil) then
-        global.vanillaSpawns = {}
-    end
-
-    -- This keeps a list of any player that has shared their base.
-    -- Each entry contains information about if it's open, spawn pos, and players in the group.
-    if (global.sharedSpawns == nil) then
-        global.sharedSpawns = {}
-    end
-
-    -- This seems to be unused right now, but I had plans to re-use spawn points in the past.
-    -- if (global.unusedSpawns == nil) then
-    --     global.unusedSpawns = {}
-    -- end
-
-    -- Each player has an option to change their respawn which has a cooldown when used.
-    -- Other similar abilities/functions that require cooldowns could be added here.
-    if (global.playerCooldowns == nil) then
-        global.playerCooldowns = {}
-    end
-
-    -- List of players in the "waiting room" for a buddy spawn.
-    -- They show up in the list to select when doing a buddy spawn.
-    if (global.waitingBuddies == nil) then
-        global.waitingBuddies = {}
-    end
-
-    -- Players who have made a spawn choice get put into this list while waiting.
-    -- An on_tick event checks when it expires and then places down the base resources, and teleports the player.
-    -- Go look at DelayedSpawnOnTick() for more info.
-    if (global.delayedSpawns == nil) then
-        global.delayedSpawns = {}
-    end
-
-    -- This is what I use to communicate a buddy spawn request between the buddies.
-    -- This contains information of who is asking, and what options were selected.
-    if (global.buddySpawnOptions == nil) then
-        global.buddySpawnOptions = {}
-    end
-
-    -- Silo info
-    if (global.siloPosition == nil) then
-        global.siloPosition = {}
-    end
-
-    -- Buddy info
-    if (global.buddyPairs == nil) then
-        global.buddyPairs = {}
-    end
-
-    -- Rendering fancy fadeouts.
-    if (global.oarc_renders_fadeout == nil) then
-        global.oarc_renders_fadeout = {}
-    end
-
-    -- Name a new force to be the default force.
-    -- This is what any new player is assigned to when they join, even before they spawn.
-    local main_force = CreateForce(global.ocfg.main_force)
-    main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
-end
-
-function DoesPlayerHaveCustomSpawn(player)
-    for name,spawnPos in pairs(global.playerSpawns) do
-        if (player.name == name) then
-            return true
-        end
-    end
-    return false
-end
-
-function ChangePlayerSpawn(player, pos)
-    global.playerSpawns[player.name] = pos
-    global.playerCooldowns[player.name] = {setRespawn=game.tick}
-end
-
-function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn)
-
-    -- If we get a valid spawn point, setup the area
-    if ((spawn.x ~= 0) or (spawn.y ~= 0)) then
-        global.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled,vanilla=vanillaSpawn}
-
-        local delay_spawn_seconds = 5*(math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
-
-        game.players[playerName].print("Generating your spawn now, please wait for at least " .. delay_spawn_seconds .. " seconds...")
-        game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
-        delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
-        table.insert(global.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
-
-        DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    game.surfaces[GAME_SURFACE_NAME].index,
-                    spawn,
-                    math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
-
-    else
-        log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
-        SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
-    end
-end
-
-
--- Check a table to see if there are any players waiting to spawn
--- Check if we are past the delayed tick count
--- Spawn the players and remove them from the table.
-function DelayedSpawnOnTick()
-    if ((game.tick % (30)) == 1) then
-        if ((global.delayedSpawns ~= nil) and (#global.delayedSpawns > 0)) then
-            for i=#global.delayedSpawns,1,-1 do
-                delayedSpawn = global.delayedSpawns[i]
-
-                if (delayedSpawn.delayedTick < game.tick) then
-                    -- TODO, add check here for if chunks around spawn are generated surface.is_chunk_generated(chunkPos)
-                    if (game.players[delayedSpawn.playerName] ~= nil) then
-                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
-                    end
-                    table.remove(global.delayedSpawns, i)
-                end
-            end
-        end
-    end
-end
-
-
-function DisplayWelcomeGroundTextAtSpawn(player, pos)
-
-    -- Render some welcoming text...
-    local tcolor = {0.9, 0.7, 0.3, 0.8}
-    local ttl = 2000
-    local rid1 = rendering.draw_text{text="Welcome",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=pos.x-21, y=pos.y-15},
-                        color=tcolor,
-                        scale=20,
-                        font="compi",
-                        time_to_live=ttl,
-                        -- players={player},
-                        draw_on_ground=true,
-                        orientation=0,
-                        -- alignment=center,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
-    local rid2 = rendering.draw_text{text="Home",
-                        surface=game.surfaces[GAME_SURFACE_NAME],
-                        target={x=pos.x-14, y=pos.y-5},
-                        color=tcolor,
-                        scale=20,
-                        font="compi",
-                        time_to_live=ttl,
-                        -- players={player},
-                        draw_on_ground=true,
-                        orientation=0,
-                        -- alignment=center,
-                        scale_with_zoom=false,
-                        only_in_alt_mode=false}
-
-    table.insert(global.oarc_renders_fadeout, rid1)
-    table.insert(global.oarc_renders_fadeout, rid2)
-end
-
 
 function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
@@ -773,7 +281,671 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         CreateTileArrow(game.surfaces[GAME_SURFACE_NAME], {x=delayedSpawn.pos.x+x_dist+1, y=delayedSpawn.pos.y+4}, "RIGHT")
 
         -- Cutscene to force the player to witness my brilliance
-        -- player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist, y=delayedSpawn.pos.y},transition_time=150,time_to_wait=150,zoom=0.8},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}}, final_transition_time=45}
+        -- player.set_controller{type=defines.controllers.cutscene,waypoints={{position={x=delayedSpawn.pos.x+x_dist,
+        -- y=delayedSpawn.pos.y},transition_time=150,time_to_wait=150,zoom=0.8},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}},
+        -- final_transition_time=45}
+    end
+end
+
+function DisplayWelcomeGroundTextAtSpawn(player, pos)
+
+    -- Render some welcoming text...
+    local tcolor = {0.9, 0.7, 0.3, 0.8}
+    local ttl = 2000
+    local rid1 = rendering.draw_text{text="Welcome",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=pos.x-21, y=pos.y-15},
+                        color=tcolor,
+                        scale=20,
+                        font="compi",
+                        time_to_live=ttl,
+                        -- players={player},
+                        draw_on_ground=true,
+                        orientation=0,
+                        -- alignment=center,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+    local rid2 = rendering.draw_text{text="Home",
+                        surface=game.surfaces[GAME_SURFACE_NAME],
+                        target={x=pos.x-14, y=pos.y-5},
+                        color=tcolor,
+                        scale=20,
+                        font="compi",
+                        time_to_live=ttl,
+                        -- players={player},
+                        draw_on_ground=true,
+                        orientation=0,
+                        -- alignment=center,
+                        scale_with_zoom=false,
+                        only_in_alt_mode=false}
+
+    table.insert(global.oarc_renders_fadeout, rid1)
+    table.insert(global.oarc_renders_fadeout, rid2)
+end
+
+--[[
+   ___  _  _  _   _  _  _  _  __     ___  ___  _  _  ___  ___    _  _____  ___  ___   _  _ 
+  / __|| || || | | || \| || |/ /    / __|| __|| \| || __|| _ \  /_\|_   _||_ _|/ _ \ | \| |
+ | (__ | __ || |_| || .` || ' <    | (_ || _| | .` || _| |   / / _ \ | |   | || (_) || .` |
+  \___||_||_| \___/ |_|\_||_|\_\    \___||___||_|\_||___||_|_\/_/ \_\|_|  |___|\___/ |_|\_|
+                                                                                           
+--]]
+
+-- Clear the spawn areas.
+-- This should be run inside the chunk generate event and be given a list of all
+-- unique spawn points.
+-- This clears enemies in the immediate area, creates a slightly safe area around it,
+-- It no LONGER generates the resources though as that is now handled in a delayed event!
+function SetupAndClearSpawnAreas(surface, chunkArea)
+    for name,spawn in pairs(global.ocore.uniqueSpawns) do
+
+        -- Create a bunch of useful area and position variables
+        local landArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+CHUNK_SIZE)
+        -- local safeArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.safe_radius)
+        -- local warningArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.warn_radius)
+        -- local reducedArea = GetAreaAroundPos(spawn.pos, global.ocfg.spawn_config.safe_area.danger_radius)
+        local chunkAreaCenter = {x=chunkArea.left_top.x+(CHUNK_SIZE/2),
+                                         y=chunkArea.left_top.y+(CHUNK_SIZE/2)}
+        local spawnPosOffset = {x=spawn.pos.x+global.ocfg.spawn_config.gen_settings.land_area_tiles,
+                                         y=spawn.pos.y+global.ocfg.spawn_config.gen_settings.land_area_tiles}
+
+
+
+        -- Make chunks near a spawn safe by removing enemies
+        if (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.safe_radius) then
+            RemoveAliensInArea(surface, chunkArea)
+
+        -- Create a warning area with heavily reduced enemies
+        elseif (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.warn_radius) then
+            ReduceAliensInArea(surface, chunkArea, global.ocfg.spawn_config.safe_area.warn_reduction)
+            -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
+            RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
+
+        -- Create a third area with moderatly reduced enemies
+        elseif (getDistance(spawn.pos, chunkAreaCenter) < global.ocfg.spawn_config.safe_area.danger_radius) then
+            ReduceAliensInArea(surface, chunkArea, global.ocfg.spawn_config.safe_area.danger_reduction)
+            -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
+            RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
+        end
+
+        if (not spawn.vanilla) then
+            -- If the chunk is within the main land area, then clear trees/resources
+            -- and create the land spawn areas (guaranteed land with a circle of trees)
+            if CheckIfInArea(chunkAreaCenter,landArea) then
+
+                -- Remove trees/resources inside the spawn area
+                RemoveInCircle(surface, chunkArea, "tree", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles)
+                RemoveInCircle(surface, chunkArea, "resource", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
+                RemoveInCircle(surface, chunkArea, "cliff", spawn.pos, global.ocfg.spawn_config.gen_settings.land_area_tiles+5)
+
+                local fill_tile = "landfill"
+                if (game.active_mods["oarc-restricted-build"]) then
+                    fill_tile = global.ocfg.locked_build_area_tile
+                end
+
+                if (global.ocfg.spawn_config.gen_settings.tree_circle) then
+                    CreateCropCircle(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, fill_tile)
+                end
+                if (global.ocfg.spawn_config.gen_settings.tree_octagon) then
+                    CreateCropOctagon(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, fill_tile)
+                end
+                if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
+                    if (spawn.moat) then
+                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "water", true)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- This is the main function that creates the spawn area
+-- Provides resources, land and a safe zone
+function SeparateSpawnsGenerateChunk(event)
+    local surface = event.surface
+    local chunkArea = event.area
+
+    -- Modify enemies first.
+    if global.ocfg.modified_enemy_spawning then
+        DowngradeWormsDistanceBasedOnChunkGenerate(event)
+    end
+
+    -- Downgrade resources near to spawns
+    if global.ocfg.scale_resources_around_spawns then
+        DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
+    end
+
+    -- This handles chunk generation near player spawns
+    -- If it is near a player spawn, it does a few things like make the area
+    -- safe and provide a guaranteed area of land and water tiles.
+    SetupAndClearSpawnAreas(surface, chunkArea)
+end
+
+-- Based on the danger distance, you get full resources, and it is exponential from the spawn point to that distance.
+function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
+
+    local closestSpawn = GetClosestUniqueSpawn(chunkArea.left_top)
+
+    if (closestSpawn == nil) then return end
+
+    local distance = getDistance(chunkArea.left_top, closestSpawn.pos)
+    -- Adjust multiplier to bring it in or out
+    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius*1))^3
+    if modifier < 0.1 then modifier = 0.1 end
+    if modifier > 1 then return end
+
+    local ore_per_tile_cap = math.floor(100000 * modifier)
+
+    for key, entity in pairs(surface.find_entities_filtered{area=chunkArea, type="resource"}) do
+        if entity.valid and entity and entity.position and entity.amount then
+            local new_amount = math.ceil(entity.amount * modifier)
+            if (new_amount < 1) then
+                entity.destroy()
+            else
+                if (entity.name ~= "crude-oil") then
+                    entity.amount = math.min(new_amount, ore_per_tile_cap)
+                else
+                    entity.amount = new_amount
+                end
+            end            
+        end
+    end
+end
+
+-- I wrote this to ensure everyone gets safer spawns regardless of evolution level.
+-- This is intended to downgrade any biters/spitters spawning near player bases.
+-- I'm not sure the performance impact of this but I'm hoping it's not bad.
+function ModifyEnemySpawnsNearPlayerStartingAreas(event)
+
+    if (not event.entity or not (event.entity.force.name == "enemy") or not event.entity.position) then
+        log("ModifyBiterSpawns - Unexpected use.")
+        return
+    end
+
+    local enemy_pos = event.entity.position
+    local surface = event.entity.surface
+    local enemy_name = event.entity.name
+
+    local closest_spawn = GetClosestUniqueSpawn(enemy_pos)
+
+    if (closest_spawn == nil) then
+        -- log("GetClosestUniqueSpawn ERROR - None found?")
+        return
+    end
+
+    -- No enemies inside safe radius!
+    if (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.safe_radius) then
+        event.entity.destroy()
+
+    -- Warn distance is all SMALL only.
+    elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.warn_radius) then
+        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "small-biter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded biter close to spawn.")
+        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter") or (enemy_name == "medium-spitter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "small-spitter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded spitter close to spawn.")
+        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret") or (enemy_name == "medium-worm-turret")) then
+            event.entity.destroy()
+            surface.create_entity{name = "small-worm-turret", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded worm close to spawn.")
+        end
+
+    -- Danger distance is MEDIUM max.
+    elseif (getDistance(enemy_pos, closest_spawn.pos) < global.ocfg.spawn_config.safe_area.danger_radius) then
+        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "medium-biter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded biter further from spawn.")
+        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
+            event.entity.destroy()
+            surface.create_entity{name = "medium-spitter", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded spitter further from spawn
+        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret")) then
+            event.entity.destroy()
+            surface.create_entity{name = "medium-worm-turret", position = enemy_pos, force = game.forces.enemy}
+            -- log("Downgraded worm further from spawn.")
+        end
+    end
+end
+
+
+
+--[[
+   ___  _     ___    _    _  _  _   _  ___ 
+  / __|| |   | __|  /_\  | \| || | | || _ \
+ | (__ | |__ | _|  / _ \ | .` || |_| ||  _/
+  \___||____||___|/_/ \_\|_|\_| \___/ |_|  
+                                           
+--]]
+
+-- Call this if a player leaves the game or is reset
+function FindUnusedSpawns(player, remove_player)
+    if not player then
+        log("ERROR - FindUnusedSpawns on NIL Player!")
+        return
+    end
+
+    if (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) then
+
+        -- If this player is staying in the game, lets make sure we don't delete them
+        -- along with the map chunks being cleared.
+        player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
+
+        -- Clear out global variables for that player
+        if (global.ocore.playerSpawns[player.name] ~= nil) then
+            global.ocore.playerSpawns[player.name] = nil
+        end
+
+        -- Remove them from the delayed spawn queue if they are in it
+        for i=#global.ocore.delayedSpawns,1,-1 do
+            delayedSpawn = global.ocore.delayedSpawns[i]
+
+            if (player.name == delayedSpawn.playerName) then
+                if (delayedSpawn.vanilla) then
+                    log("Returning a vanilla spawn back to available.")
+                    table.insert(global.vanillaSpawns, {x=delayedSpawn.pos.x,y=delayedSpawn.pos.y})
+                end
+
+                table.remove(global.ocore.delayedSpawns, i)
+                log("Removing player from delayed spawn queue: " .. player.name)
+            end
+        end
+
+        -- Transfer or remove a shared spawn if player is owner
+        if (global.ocore.sharedSpawns[player.name] ~= nil) then
+
+            local teamMates = global.ocore.sharedSpawns[player.name].players
+
+            if (#teamMates >= 1) then
+                local newOwnerName = table.remove(teamMates)
+                TransferOwnershipOfSharedSpawn(player.name, newOwnerName)
+            else
+                global.ocore.sharedSpawns[player.name] = nil
+            end
+        end
+
+        -- If a uniqueSpawn was created for the player, mark it as unused.
+        if (global.ocore.uniqueSpawns[player.name] ~= nil) then
+
+            local spawnPos = global.ocore.uniqueSpawns[player.name].pos
+
+            -- Check if it was near someone else's base.
+            nearOtherSpawn = false
+            for spawnPlayerName,otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
+                if ((spawnPlayerName ~= player.name) and (getDistance(spawnPos, otherSpawnPos.pos) < (global.ocfg.spawn_config.gen_settings.land_area_tiles*3))) then
+                    log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
+                    nearOtherSpawn = true
+                end
+            end
+
+            -- Unused Chunk Removal mod (aka regrowth)
+            if (global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and
+                global.ocfg.enable_regrowth) then
+
+                if (global.ocore.uniqueSpawns[player.name].vanilla) then
+                    log("Returning a vanilla spawn back to available.")
+                    table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
+                end
+
+                global.ocore.uniqueSpawns[player.name] = nil
+
+                log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
+
+                MarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
+                TriggerCleanup()
+                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+
+            else
+                global.ocore.uniqueSpawns[player.name] = nil
+                SendBroadcastMsg(player.name .. " base was freed up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+            end
+        end
+
+        -- remove that player's cooldown setting
+        if (global.ocore.playerCooldowns[player.name] ~= nil) then
+            global.ocore.playerCooldowns[player.name] = nil
+        end
+
+        -- Remove from shared spawn player slots (need to search all)
+        for _,sharedSpawn in pairs(global.ocore.sharedSpawns) do
+            for key,playerName in pairs(sharedSpawn.players) do
+                if (player.name == playerName) then
+                    sharedSpawn.players[key] = nil;
+                end
+            end
+        end
+
+        -- Clear the buddy pair IF one exists
+        if (global.ocore.buddyPairs[player.name] ~= nil) then
+            local buddyName = global.ocore.buddyPairs[player.name]
+            global.ocore.buddyPairs[player.name] = nil
+            global.ocore.buddyPairs[buddyName] = nil
+        end
+
+        -- Remove a force if this player created it and they are the only one on it
+        if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg.main_force)) then
+            game.merge_forces(player.force, global.ocfg.main_force)
+        end
+
+        -- Remove the character completely
+        if (remove_player) then
+            game.remove_offline_players({player})
+        end
+    end
+end
+
+-- Cleanup a player's spawn and force
+    -- If within 15 min period OR If choosing to destroy (post 15 min)
+        -- Force delete the base chunks (buddy spawn???)
+        -- Force delete all player buildings
+        -- Remove force if solo force and no other players
+    -- If choosing to abandon (post 15 min)
+        -- Destroy 50% of player owned entities, destroy ALL radars, leave ALL rails!
+        -- Convert all player entities to neutral force
+        -- Disable all remaining entities (remove recipe)
+
+
+-- -- If a uniqueSpawn was created for the player, clean it the fuck up.
+-- function UniqueSpawnCleanup(playerName)
+--     if (global.ocore.uniqueSpawns[playerName] ~= nil) then
+
+--         local spawnPos = global.ocore.uniqueSpawns[playerName].pos
+
+--         -- Check if it was near someone else's base.
+--         nearOtherSpawn = false
+--         for spawnPlayerName,otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
+--             if ((spawnPlayerName ~= playerName) and (getDistance(spawnPos, otherSpawnPos.pos) < (global.ocfg.spawn_config.gen_settings.land_area_tiles*3))) then
+--                 log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
+--                 nearOtherSpawn = true
+--             end
+--         end
+
+--         -- Unused Chunk Removal mod (aka regrowth)
+--         if (global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and global.ocfg.enable_regrowth) then
+
+--             if (global.ocore.uniqueSpawns[playerName].vanilla) then
+--                 log("Returning a vanilla spawn back to available.")
+--                 table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
+--             end
+
+--             global.ocore.uniqueSpawns[playerName] = nil
+
+--             log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
+
+--             MarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
+--             remote.call("oarc_regrowth",
+--                     "area_removal_tilepos",
+--                     game.surfaces[GAME_SURFACE_NAME].index,
+--                     spawnPos,
+--                     CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
+--             remote.call("oarc_regrowth",
+--                     "trigger_immediate_cleanup")
+--             SendBroadcastMsg(playerName .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+
+--         else
+--             global.ocore.uniqueSpawns[playerName] = nil
+--             SendBroadcastMsg(playerName .. " base was freed up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+--         end
+--     end
+-- end
+
+function CleanupPlayerGlobals(playerName)
+
+    -- Clear the buddy pair IF one exists
+    if (global.ocore.buddyPairs[playerName] ~= nil) then
+        local buddyName = global.ocore.buddyPairs[playerName]
+        global.ocore.buddyPairs[playerName] = nil
+        global.ocore.buddyPairs[buddyName] = nil
+    end
+
+    -- Remove them from the buddy waiting list
+    for idx,name in pairs(global.ocore.waitingBuddies) do
+        if (name == playerName) then
+            table.remove(global.ocore.waitingBuddies, idx)
+            break
+        end
+    end
+
+    -- Clear buddy spawn options (should already be cleared, but just in case it isn't)
+    if (global.ocore.buddySpawnOpts[playerName] ~= nil) then
+        global.ocore.buddySpawnOpts[playerName] = nil
+    end
+
+    -- Transfer or remove a shared spawn if player is owner
+    if (global.ocore.sharedSpawns[playerName] ~= nil) then
+
+        local teamMates = global.ocore.sharedSpawns[playerName].players
+
+        if (#teamMates >= 1) then
+            local newOwnerName = table.remove(teamMates) -- Remove 1 to use as new owner.
+            TransferOwnershipOfSharedSpawn(playerName, newOwnerName)
+            SendBroadcastMsg(playerName .. "has left so " .. newOwnerName .. " now owns their base.")
+        else
+            global.ocore.sharedSpawns[playerName] = nil
+        end
+    end
+
+    -- Remove from other shared spawns (need to search all)
+    for _,sharedSpawn in pairs(global.ocore.sharedSpawns) do
+        for key,name in pairs(sharedSpawn.players) do
+            if (playerName == name) then
+                sharedSpawn.players[key] = nil;
+                goto LOOP_BREAK -- Nest loop break.
+            end
+        end
+    end
+    ::LOOP_BREAK::
+
+-- global.ocore.uniqueSpawns
+--     global.ocore.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled,vanilla=vanillaSpawn}
+
+    -- Clear their personal spawn point info
+    if (global.ocore.playerSpawns[playerName] ~= nil) then
+        global.ocore.playerSpawns[playerName] = nil
+    end
+
+    -- Remove them from the delayed spawn queue if they are in it
+    for idx,delayedSpawn in pairs(global.ocore.delayedSpawns) do
+        if (playerName == delayedSpawn.playerName) then
+            if (delayedSpawn.vanilla) then
+                log("Returning a vanilla spawn back to available.")
+                table.insert(global.vanillaSpawns, {x=delayedSpawn.pos.x,y=delayedSpawn.pos.y})
+            end
+
+            table.remove(global.ocore.delayedSpawns, idx)
+            log("Removing player from delayed spawn queue: " .. playerName)
+            break
+        end
+    end
+
+-- global.ocore.delayedSpawns
+--     table.insert(global.ocore.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
+
+
+    if (global.ocore.playerCooldowns[playerName] ~= nil) then
+        global.ocore.playerCooldowns[playerName] = nil
+    end
+
+    if (global.ocore.oarc_store.pmf_counts[playerName] ~= nil) then
+        global.ocore.oarc_store.pmf_counts[playerName] = nil
+    end
+
+end
+
+function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
+    -- Transfer the shared spawn global
+    global.ocore.sharedSpawns[newOwnerName] = global.ocore.sharedSpawns[prevOwnerName]
+    global.ocore.sharedSpawns[newOwnerName].openAccess = false
+    global.ocore.sharedSpawns[prevOwnerName] = nil
+
+    -- Transfer the unique spawn global
+    global.ocore.uniqueSpawns[newOwnerName] = global.ocore.uniqueSpawns[prevOwnerName]
+    global.ocore.uniqueSpawns[prevOwnerName] = nil
+
+    game.players[newOwnerName].print("You have been given ownership of this base!")
+end
+
+--[[
+  _  _  ___  _     ___  ___  ___     ___  _____  _   _  ___  ___ 
+ | || || __|| |   | _ \| __|| _ \   / __||_   _|| | | || __|| __|
+ | __ || _| | |__ |  _/| _| |   /   \__ \  | |  | |_| || _| | _| 
+ |_||_||___||____||_|  |___||_|_\   |___/  |_|   \___/ |_|  |_|  
+                                                              
+--]]
+
+-- Same as GetClosestPosFromTable but specific to global.ocore.uniqueSpawns
+function GetClosestUniqueSpawn(pos)
+
+    local closest_dist = nil
+    local closest_key = nil
+
+    for k,s in pairs(global.ocore.uniqueSpawns) do
+        local new_dist = getDistance(pos, s.pos)
+        if (closest_dist == nil) then
+            closest_dist = new_dist
+            closest_key = k
+        elseif (closest_dist > new_dist) then
+            closest_dist = new_dist
+            closest_key = k
+        end
+    end
+
+    if (closest_key == nil) then
+        -- log("GetClosestUniqueSpawn ERROR - None found?")
+        return nil
+    end
+
+    return global.ocore.uniqueSpawns[closest_key]
+end
+
+-- Return the owner of the shared spawn for this player.
+-- May return nil if player has not spawned yet.
+function FindPlayerSharedSpawn(playerName)
+
+    -- If the player IS an owner, he can't be in any other shared base.
+    if (global.ocore.sharedSpawns[playerName] ~= nil) then
+        return playerName
+    end
+
+    -- Otherwise, search all shared spawns for this player and return the owner.
+    for ownerName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
+        for _,sharingPlayerName in pairs(sharedSpawn.players) do
+            if (playerName == sharingPlayerName) then
+                return ownerName
+            end
+        end
+    end
+
+    -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
+    return nil
+end
+
+-- Returns the number of players currently online at the shared spawn
+function GetOnlinePlayersAtSharedSpawn(ownerName)
+    if (global.ocore.sharedSpawns[ownerName] ~= nil) then
+
+        -- Does not count base owner
+        local count = 0
+
+        -- For each player in the shared spawn, check if online and add to count.
+        for _,player in pairs(game.connected_players) do
+            if (ownerName == player.name) then
+                count = count + 1
+            end
+
+            for _,playerName in pairs(global.ocore.sharedSpawns[ownerName].players) do
+
+                if (playerName == player.name) then
+                    count = count + 1
+                end
+            end
+        end
+
+        return count
+    else
+        return 0
+    end
+end
+
+-- Get the number of currently available shared spawns
+-- This means the base owner has enabled access AND the number of online players
+-- is below the threshold.
+function GetNumberOfAvailableSharedSpawns()
+    local count = 0
+
+    for ownerName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
+        if (sharedSpawn.openAccess and
+            (game.players[ownerName] ~= nil) and
+            game.players[ownerName].connected) then
+            if ((global.ocfg.max_players_shared_spawn == 0) or
+                (#global.ocore.sharedSpawns[ownerName].players < global.ocfg.max_players_shared_spawn)) then
+                count = count+1
+            end
+        end
+    end
+
+    return count
+end
+
+function DoesPlayerHaveCustomSpawn(player)
+    for name,spawnPos in pairs(global.ocore.playerSpawns) do
+        if (player.name == name) then
+            return true
+        end
+    end
+    return false
+end
+
+function ChangePlayerSpawn(player, pos)
+    global.ocore.playerSpawns[player.name] = pos
+    global.ocore.playerCooldowns[player.name] = {setRespawn=game.tick}
+end
+
+function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn)
+
+    -- If we get a valid spawn point, setup the area
+    if ((spawn.x ~= 0) or (spawn.y ~= 0)) then
+        global.ocore.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled,vanilla=vanillaSpawn}
+
+        local delay_spawn_seconds = 5*(math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+
+        game.players[playerName].print("Generating your spawn now, please wait for at least " .. delay_spawn_seconds .. " seconds...")
+        game.players[playerName].surface.request_to_generate_chunks(spawn, 4)
+        delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
+        table.insert(global.ocore.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
+
+        DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
+
+        MarkAreaSafeGivenTilePos(spawn, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+
+    else
+        log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
+        SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
+    end
+end
+
+
+-- Check a table to see if there are any players waiting to spawn
+-- Check if we are past the delayed tick count
+-- Spawn the players and remove them from the table.
+function DelayedSpawnOnTick()
+    if ((game.tick % (30)) == 1) then
+        if ((global.ocore.delayedSpawns ~= nil) and (#global.ocore.delayedSpawns > 0)) then
+            for i=#global.ocore.delayedSpawns,1,-1 do
+                delayedSpawn = global.ocore.delayedSpawns[i]
+
+                if (delayedSpawn.delayedTick < game.tick) then
+                    -- TODO, add check here for if chunks around spawn are generated surface.is_chunk_generated(chunkPos)
+                    if (game.players[delayedSpawn.playerName] ~= nil) then
+                        SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
+                    end
+                    table.remove(global.ocore.delayedSpawns, i)
+                end
+            end
+        end
     end
 end
 
@@ -781,7 +953,7 @@ function SendPlayerToSpawn(player)
     if (DoesPlayerHaveCustomSpawn(player)) then
         SafeTeleport(player,
                         game.surfaces[GAME_SURFACE_NAME],
-                        global.playerSpawns[player.name])
+                        global.ocore.playerSpawns[player.name])
     else
         SafeTeleport(player,
                         game.surfaces[GAME_SURFACE_NAME],
@@ -790,7 +962,7 @@ function SendPlayerToSpawn(player)
 end
 
 function SendPlayerToRandomSpawn(player)
-    local numSpawns = TableLength(global.uniqueSpawns)
+    local numSpawns = TableLength(global.ocore.uniqueSpawns)
     local rndSpawn = math.random(0,numSpawns)
     local counter = 0
 
@@ -798,7 +970,7 @@ function SendPlayerToRandomSpawn(player)
         player.teleport(game.forces[global.ocfg.main_force].get_spawn_position(GAME_SURFACE_NAME), GAME_SURFACE_NAME)
     else
         counter = counter + 1
-        for name,spawn in pairs(global.uniqueSpawns) do
+        for name,spawn in pairs(global.ocore.uniqueSpawns) do
             if (counter == rndSpawn) then
                 player.teleport(spawn.pos)
                 break
@@ -807,6 +979,14 @@ function SendPlayerToRandomSpawn(player)
         end
     end
 end
+
+--[[
+  ___  ___   ___   ___  ___     ___  ___  ___  ___  ___  ___  ___  ___ 
+ | __|/ _ \ | _ \ / __|| __|   / __|| _ \| __|/ __||_ _|| __||_ _|/ __|
+ | _|| (_) ||   /| (__ | _|    \__ \|  _/| _|| (__  | | | _|  | || (__ 
+ |_|  \___/ |_|_\ \___||___|   |___/|_|  |___|\___||___||_|  |___|\___|
+                                                                       
+--]]
 
 function CreateForce(force_name)
     local newForce = nil
@@ -836,7 +1016,7 @@ function CreateForce(force_name)
             AntiGriefing(newForce)
         end
 
-        if global.ocfg.lock_goodies_rocket_launch and not global.satellite_sent then
+        if global.ocfg.lock_goodies_rocket_launch and not global.ocore.satellite_sent then
             for _,v in ipairs(LOCKED_TECHNOLOGIES) do
                 DisableTech(newForce, v.t)
             end
@@ -873,6 +1053,14 @@ function CreatePlayerCustomForce(player)
 
     return newForce
 end
+
+--[[
+ __   __ _    _  _  ___  _     _       _     ___  ___   _ __      __ _  _  ___ 
+ \ \ / //_\  | \| ||_ _|| |   | |     /_\   / __|| _ \ /_\\ \    / /| \| |/ __|
+  \ V // _ \ | .` | | | | |__ | |__  / _ \  \__ \|  _// _ \\ \/\/ / | .` |\__ \
+   \_//_/ \_\|_|\_||___||____||____|/_/ \_\ |___/|_| /_/ \_\\_/\_/  |_|\_||___/
+                                                                               
+--]]
 
 -- Function to generate some map_gen_settings.starting_points
 -- You should only use this at the start of the game really.

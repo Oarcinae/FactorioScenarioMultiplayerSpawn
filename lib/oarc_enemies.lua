@@ -140,7 +140,7 @@ function OarcModifyEnemyGroup(group)
         end
 
         -- Is there a buddy spawn and is the buddy online?
-        local buddyName = global.buddyPairs[sharedSpawnOwnerName]
+        local buddyName = global.ocore.buddyPairs[sharedSpawnOwnerName]
         if (buddyName ~= nil) and (game.players[buddyName] ~= nil) then
             if (game.players[buddyName].connected or (GetOnlinePlayersAtSharedSpawn(buddyName) > 0)) then
                 if (global.enable_oe_debug) then

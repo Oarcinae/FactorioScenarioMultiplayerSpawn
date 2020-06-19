@@ -22,8 +22,8 @@ function RocketLaunchEvent(event)
     end
 
     -- First ever sat launch
-    if not global.satellite_sent then
-        global.satellite_sent = {}
+    if not global.ocore.satellite_sent then
+        global.ocore.satellite_sent = {}
         SendBroadcastMsg("Team " .. force.name .. " was the first to launch a rocket!")
         ServerWriteFile("rocket_events", "Team " .. force.name .. " was the first to launch a rocket!" .. "\n")
 
@@ -33,15 +33,15 @@ function RocketLaunchEvent(event)
     end
 
     -- Track additional satellites launched by this force
-    if global.satellite_sent[force.name] then
-        global.satellite_sent[force.name] = global.satellite_sent[force.name] + 1
-        SendBroadcastMsg("Team " .. force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name])
-        ServerWriteFile("rocket_events", "Team " .. force.name .. " launched another rocket. Total " .. global.satellite_sent[force.name] .. "\n")
+    if global.ocore.satellite_sent[force.name] then
+        global.ocore.satellite_sent[force.name] = global.ocore.satellite_sent[force.name] + 1
+        SendBroadcastMsg("Team " .. force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name])
+        ServerWriteFile("rocket_events", "Team " .. force.name .. " launched another rocket. Total " .. global.ocore.satellite_sent[force.name] .. "\n")
 
     -- First sat launch for this force.
     else
         -- game.set_game_state{game_finished=true, player_won=true, can_continue=true}
-        global.satellite_sent[force.name] = 1
+        global.ocore.satellite_sent[force.name] = 1
         SendBroadcastMsg("Team " .. force.name .. " launched their first rocket!")
         ServerWriteFile("rocket_events", "Team " .. force.name .. " launched their first rocket!" .. "\n")
 
@@ -64,10 +64,10 @@ function CreateRocketGuiTab(tab_container, player)
 
     AddLabel(tab_container, nil, "Satellites Launched:", my_label_header_style)
 
-    if (global.satellite_sent == nil) then
+    if (global.ocore.satellite_sent == nil) then
         AddLabel(tab_container, nil, "No launches yet.", my_label_style)
     else
-        for force_name,sat_count in pairs(global.satellite_sent) do
+        for force_name,sat_count in pairs(global.ocore.satellite_sent) do
             AddLabel(tab_container,
                     "rc_"..force_name,
                     "Team " .. force_name .. ": " .. tostring(sat_count),

@@ -10,22 +10,24 @@ SHARED_ENERGY_STARTING_VALUE = 0 -- 100GJ
 
 function SharedChestInitItems()
 
-    global.shared_chests = {}
-    global.shared_requests = {}
-    global.shared_requests_totals = {}
+    global.oshared = {}
 
-    global.shared_electricity_inputs = {}
-    global.shared_electricity_outputs = {}
+    global.oshared.chests = {}
+    global.oshared.requests = {}
+    global.oshared.requests_totals = {}
 
-    global.shared_chests_combinators = {}
-    global.shared_items = {}
+    global.oshared.electricity_inputs = {}
+    global.oshared.electricity_outputs = {}
 
-    global.shared_items['red-wire'] = 10000
-    global.shared_items['green-wire'] = 10000
-    global.shared_items['raw-fish'] = 10000   
+    global.oshared.chests_combinators = {}
+    global.oshared.items = {}
 
-    global.shared_energy_stored = SHARED_ENERGY_STARTING_VALUE
-    global.shared_energy_stored_history = {start=SHARED_ENERGY_STARTING_VALUE, after_input=SHARED_ENERGY_STARTING_VALUE, after_output=SHARED_ENERGY_STARTING_VALUE}
+    global.oshared.items['red-wire'] = 10000
+    global.oshared.items['green-wire'] = 10000
+    global.oshared.items['raw-fish'] = 10000   
+
+    global.oshared.energy_stored = SHARED_ENERGY_STARTING_VALUE
+    global.oshared.energy_stored_history = {start=SHARED_ENERGY_STARTING_VALUE, after_input=SHARED_ENERGY_STARTING_VALUE, after_output=SHARED_ENERGY_STARTING_VALUE}
 end
 
 function SharedEnergySpawnInput(player, pos)
@@ -55,7 +57,7 @@ function SharedEnergySpawnInput(player, pos)
     TemporaryHelperText("Connect to electric network to contribute shared energy.", {pos.x+1.5, pos.y-1}, TICKS_PER_MINUTE*2)
     TemporaryHelperText("Use combinator to limit number of MW shared.", {pos.x+2.5, pos.y}, TICKS_PER_MINUTE*2)
 
-    table.insert(global.shared_electricity_inputs, {eei=inputElec, combi=inputElecCombi})
+    table.insert(global.oshared.electricity_inputs, {eei=inputElec, combi=inputElecCombi})
 end
 
 function SharedEnergySpawnOutput(player, pos)
@@ -80,17 +82,17 @@ function SharedEnergySpawnOutput(player, pos)
     TemporaryHelperText("Connect to electric network to consume shared energy.", {pos.x+1.5, pos.y-1}, TICKS_PER_MINUTE*2)
     TemporaryHelperText("Combinator outputs number of MJ currently stored.", {pos.x+2.5, pos.y}, TICKS_PER_MINUTE*2)
 
-    table.insert(global.shared_electricity_outputs, {eei=outputElec, combi=outputElecCombi})
+    table.insert(global.oshared.electricity_outputs, {eei=outputElec, combi=outputElecCombi})
 end
 
 function SharedEnergyStoreInputOnTick()
-    global.shared_energy_stored_history.start = global.shared_energy_stored
+    global.oshared.energy_stored_history.start = global.oshared.energy_stored
 
-    for idx,input in pairs(global.shared_electricity_inputs) do
+    for idx,input in pairs(global.oshared.electricity_inputs) do
 
         -- Check for entity no longer valid:
         if (input.eei == nil) or (not input.eei.valid) or (input.combi == nil) or (not input.combi.valid) then
-            global.shared_electricity_inputs[idx] = nil
+            global.oshared.electricity_inputs[idx] = nil
         
         -- Is input at least half full, then we can start to store energy.
         elseif (input.eei.energy > (SHARED_ELEC_INPUT_BUFFER_SIZE/2)) then
@@ -108,7 +110,7 @@ function SharedEnergyStoreInputOnTick()
                 -- Get the minimum
                 input.eei.power_usage = math.min(max_input_allowed, math.floor(limit*1000000/60))
                 
-                global.shared_energy_stored = global.shared_energy_stored + input.eei.power_usage
+                global.oshared.energy_stored = global.oshared.energy_stored + input.eei.power_usage
 
         -- Switch off contribution if not at least half full.
         else
@@ -116,21 +118,21 @@ function SharedEnergyStoreInputOnTick()
         end
     end
 
-    global.shared_energy_stored_history.after_input = global.shared_energy_stored
+    global.oshared.energy_stored_history.after_input = global.oshared.energy_stored
 end
 
 -- If there is room to distribute energy, we take shared amount split by players.
 function SharedEnergyDistributeOutputOnTick()
 
     -- Share limit is total amount stored divided by outputs
-    local energyShareCap = math.floor(global.shared_energy_stored / (#global.shared_electricity_outputs))
+    local energyShareCap = math.floor(global.oshared.energy_stored / (#global.oshared.electricity_outputs))
 
     -- Iterate through and fill up outputs if they are under 50%
-    for idx,output in pairs(global.shared_electricity_outputs) do
+    for idx,output in pairs(global.oshared.electricity_outputs) do
 
         -- Check for entity no longer valid:
         if (output.eei == nil) or (not output.eei.valid) or (output.combi == nil) or (not output.combi.valid) then
-            global.shared_electricity_outputs[idx] = nil
+            global.oshared.electricity_outputs[idx] = nil
         
         
         else
@@ -138,7 +140,7 @@ function SharedEnergyDistributeOutputOnTick()
             if (output.eei.energy < (SHARED_ELEC_OUTPUT_BUFFER_SIZE/2)) then
                 local outBufferSpace = ((SHARED_ELEC_OUTPUT_BUFFER_SIZE/2) - output.eei.energy)
                 output.eei.power_production = math.min(outBufferSpace, energyShareCap)
-                global.shared_energy_stored = global.shared_energy_stored - math.min(outBufferSpace, energyShareCap)
+                global.oshared.energy_stored = global.oshared.energy_stored - math.min(outBufferSpace, energyShareCap)
             
             -- Switch off if we're more than half full.
             else
@@ -148,11 +150,11 @@ function SharedEnergyDistributeOutputOnTick()
             -- Update output combinator
             output.combi.get_or_create_control_behavior().set_signal(1,
                             {signal={type="virtual", name="signal-M"},
-                            count=clampInt32(math.floor(global.shared_energy_stored/1000000))})
+                            count=clampInt32(math.floor(global.oshared.energy_stored/1000000))})
         end
     end
 
-    global.shared_energy_stored_history.after_output = global.shared_energy_stored
+    global.oshared.energy_stored_history.after_output = global.oshared.energy_stored
 end
 
 -- Returns NIL or position of destroyed chest.
@@ -288,12 +290,12 @@ function SharedChestsSpawnInput(player, pos)
     inputChest.minable = false
     inputChest.last_user = player
 
-    if global.shared_chests == nil then
-        global.shared_chests = {}
+    if global.oshared.chests == nil then
+        global.oshared.chests = {}
     end
 
     local chestInfoIn = {player=player.name,type="INPUT",entity=inputChest}
-    table.insert(global.shared_chests, chestInfoIn)
+    table.insert(global.oshared.chests, chestInfoIn)
 
     TemporaryHelperText("Place items in to share.", {pos.x+1.5, pos.y}, TICKS_PER_MINUTE*2)
 end
@@ -309,12 +311,12 @@ function SharedChestsSpawnOutput(player, pos, enable_example)
         outputChest.set_request_slot({name="raw-fish", count=1}, 1)
     end
 
-    if global.shared_chests == nil then
-        global.shared_chests = {}
+    if global.oshared.chests == nil then
+        global.oshared.chests = {}
     end
 
     local chestInfoOut = {player=player.name,type="OUTPUT",entity=outputChest}
-    table.insert(global.shared_chests, chestInfoOut)
+    table.insert(global.oshared.chests, chestInfoOut)
 
     TemporaryHelperText("Set filters to request items.", {pos.x+1.5, pos.y}, TICKS_PER_MINUTE*2)
 end
@@ -336,12 +338,12 @@ function SharedChestsSpawnCombinators(player, posCtrl, posStatus)
     combiStat.operable = false
     combiStat.last_user = player
 
-    if global.shared_chests_combinators == nil then
-        global.shared_chests_combinators = {}
+    if global.oshared.chests_combinators == nil then
+        global.oshared.chests_combinators = {}
     end
 
     local combiPair = {player=player.name,ctrl=combiCtrl,status=combiStat}
-    table.insert(global.shared_chests_combinators, combiPair)
+    table.insert(global.oshared.chests_combinators, combiPair)
 
     TemporaryHelperText("Set signals here to monitor item counts.", {posCtrl.x+1.5, posCtrl.y}, TICKS_PER_MINUTE*2)
     TemporaryHelperText("Receive signals here to see available items.", {posStatus.x+1.5, posStatus.y}, TICKS_PER_MINUTE*2)
@@ -349,16 +351,16 @@ end
 
 function SharedChestsUpdateCombinators()
 
-    if global.shared_chests_combinators == nil then
-        global.shared_chests_combinators = {}
+    if global.oshared.chests_combinators == nil then
+        global.oshared.chests_combinators = {}
     end
 
-    for idx,combiPair in pairs(global.shared_chests_combinators) do
+    for idx,combiPair in pairs(global.oshared.chests_combinators) do
 
         -- Check if combinators still exist
         if (combiPair.ctrl == nil) or (combiPair.status == nil) or
             (not combiPair.ctrl.valid) or (not combiPair.status.valid) then
-            global.shared_chests_combinators[idx] = nil
+            global.oshared.chests_combinators[idx] = nil
         else
 
             local combiCtrlBehav = combiPair.ctrl.get_or_create_control_behavior()
@@ -377,7 +379,7 @@ function SharedChestsUpdateCombinators()
             -- Set signals on the status combi:
             for i=1,combiCtrlBehav.signals_count do
                 if (ctrlSignals[i] ~= nil) then
-                    local availAmnt = global.shared_items[ctrlSignals[i]]
+                    local availAmnt = global.oshared.items[ctrlSignals[i]]
                     if availAmnt == nil then availAmnt = 0 end
 
                     combiStatBehav.set_signal(i, {signal={type="item", name=ctrlSignals[i]}, count=clampInt32(availAmnt)})
@@ -391,10 +393,10 @@ end
 
 function SharedChestUploadItem(item_name, count)
     if (not game.item_prototypes[item_name].has_flag("hidden")) then
-        if (global.shared_items[item_name] == nil) then
-            global.shared_items[item_name] = count
+        if (global.oshared.items[item_name] == nil) then
+            global.oshared.items[item_name] = count
         else
-            global.shared_items[item_name] = global.shared_items[item_name] + count
+            global.oshared.items[item_name] = global.oshared.items[item_name] + count
         end
         return true
     else
@@ -443,17 +445,17 @@ end
 -- Pull all items in the deposit chests
 function SharedChestsDepositAll()
     
-    if global.shared_items == nil then
-        global.shared_items = {}
+    if global.oshared.items == nil then
+        global.oshared.items = {}
     end
 
-    for idx,chest_info in pairs(global.shared_chests) do
+    for idx,chest_info in pairs(global.oshared.chests) do
 
         local chest_entity = chest_info.entity
 
         -- Delete any chest that is no longer valid.
         if ((chest_entity == nil) or (not chest_entity.valid)) then
-            global.shared_chests[idx] = nil
+            global.oshared.chests[idx] = nil
         
         -- Take inputs and store.
         elseif (chest_info.type == "INPUT") then
@@ -466,17 +468,17 @@ end
 function SharedChestsTallyRequests()
 
     -- Clear existing requests. Also serves as an init
-    global.shared_requests = {}
-    global.shared_requests_totals = {}
+    global.oshared.requests = {}
+    global.oshared.requests_totals = {}
 
     -- For each output chest.
-    for idx,chestInfo in pairs(global.shared_chests) do
+    for idx,chestInfo in pairs(global.oshared.chests) do
 
         local chestEntity = chestInfo.entity
 
         -- Delete any chest that is no longer valid.
         if ((chestEntity == nil) or (not chestEntity.valid)) then
-            global.shared_chests[idx] = nil
+            global.oshared.chests[idx] = nil
         
         elseif (chestInfo.type == "OUTPUT") then
 
@@ -487,16 +489,16 @@ function SharedChestsTallyRequests()
                 -- If there is a request, add the request count to our request table.
                 if (req ~= nil) then
 
-                    if global.shared_requests[req.name] == nil then
-                        global.shared_requests[req.name] = {}
+                    if global.oshared.requests[req.name] == nil then
+                        global.oshared.requests[req.name] = {}
                     end
 
-                    if global.shared_requests[req.name][chestInfo.player] == nil then
-                        global.shared_requests[req.name][chestInfo.player] = 0
+                    if global.oshared.requests[req.name][chestInfo.player] == nil then
+                        global.oshared.requests[req.name][chestInfo.player] = 0
                     end
 
-                    if global.shared_requests_totals[req.name] == nil then
-                        global.shared_requests_totals[req.name] = 0
+                    if global.oshared.requests_totals[req.name] == nil then
+                        global.oshared.requests_totals[req.name] = 0
                     end
 
                     -- Calculate actual request to fill remainder
@@ -504,8 +506,8 @@ function SharedChestsTallyRequests()
                     local requestAmount = math.max(req.count-existingAmount, 0)
 
                     -- Add the request counts
-                    global.shared_requests[req.name][chestInfo.player] = global.shared_requests[req.name][chestInfo.player] + requestAmount
-                    global.shared_requests_totals[req.name] = global.shared_requests_totals[req.name] + requestAmount
+                    global.oshared.requests[req.name][chestInfo.player] = global.oshared.requests[req.name][chestInfo.player] + requestAmount
+                    global.oshared.requests_totals[req.name] = global.oshared.requests_totals[req.name] + requestAmount
                 end
             end
         end
@@ -513,20 +515,20 @@ function SharedChestsTallyRequests()
 
 
     -- If demand is more than supply, limit each player's total item request to shared amount
-    for reqName,reqTally in pairs(global.shared_requests) do
+    for reqName,reqTally in pairs(global.oshared.requests) do
 
         local cap = 0
         local mustCap = false
 
         -- No shared items means nothing to supply.
-        if (global.shared_items[reqName] == nil) or (global.shared_items[reqName] == 0) then
+        if (global.oshared.items[reqName] == nil) or (global.oshared.items[reqName] == 0) then
             mustCap = true
             cap = 0
 
         -- Otherwise, limit by dividing by players.
-        elseif (global.shared_requests_totals[reqName] > global.shared_items[reqName]) then
+        elseif (global.oshared.requests_totals[reqName] > global.oshared.items[reqName]) then
             mustCap = true
-            cap = math.floor(global.shared_items[reqName] / TableLength(global.shared_requests[reqName]))
+            cap = math.floor(global.oshared.items[reqName] / TableLength(global.oshared.requests[reqName]))
 
             -- In the case where we are rounding down to 0, let's bump the minimum distribution to 1.
             if (cap == 0) then
@@ -536,9 +538,9 @@ function SharedChestsTallyRequests()
 
         -- Limit each request to the cap.
         if mustCap then
-            for player,reqCount in pairs(global.shared_requests[reqName]) do
+            for player,reqCount in pairs(global.oshared.requests[reqName]) do
                 if (reqCount > cap) then
-                    global.shared_requests[reqName][player] = cap
+                    global.oshared.requests[reqName][player] = cap
                 end
             end
         end
@@ -551,14 +553,14 @@ end
 function SharedChestsDistributeRequests()
 
     -- For each output chest.
-    for idx,chestInfo in pairs(global.shared_chests) do
+    for idx,chestInfo in pairs(global.oshared.chests) do
         if (chestInfo.type == "OUTPUT") then
 
             local chestEntity = chestInfo.entity
 
             -- Delete any chest that is no longer valid.
             if ((chestEntity == nil) or (not chestEntity.valid)) then
-                global.shared_chests[idx] = nil
+                global.oshared.chests[idx] = nil
 
             -- For each request slot
             else
@@ -570,27 +572,27 @@ function SharedChestsDistributeRequests()
 
                         -- Make sure requests have been created.
                         -- Make sure shared items exist.
-                        if (global.shared_requests_totals[req.name] ~= nil) and 
-                            (global.shared_items[req.name] ~= nil) and 
-                            (global.shared_requests[req.name][chestInfo.player] ~= nil) then
+                        if (global.oshared.requests_totals[req.name] ~= nil) and 
+                            (global.oshared.items[req.name] ~= nil) and 
+                            (global.oshared.requests[req.name][chestInfo.player] ~= nil) then
                             
-                            if (global.shared_requests[req.name][chestInfo.player] > 0)and (global.shared_items[req.name] > 0) then
+                            if (global.oshared.requests[req.name][chestInfo.player] > 0)and (global.oshared.items[req.name] > 0) then
 
                                 -- How much is already in the chest?
                                 local existingAmount = chestEntity.get_inventory(defines.inventory.chest).get_item_count(req.name)
                                 -- How much is required to fill the remainder request?
                                 local requestAmount = math.max(req.count-existingAmount, 0)
                                 -- How much is allowed based on the player's current request amount?
-                                local allowedAmount = math.min(requestAmount, global.shared_requests[req.name][chestInfo.player])
+                                local allowedAmount = math.min(requestAmount, global.oshared.requests[req.name][chestInfo.player])
                                 
                                 if (allowedAmount > 0) then
                                     local chestInv = chestEntity.get_inventory(defines.inventory.chest) 
                                     if chestInv.can_insert({name=req.name}) then
 
-                                        local amnt = chestInv.insert({name=req.name, count=math.min(allowedAmount, global.shared_items[req.name])})
-                                        global.shared_items[req.name] = global.shared_items[req.name] - amnt
-                                        global.shared_requests[req.name][chestInfo.player] = global.shared_requests[req.name][chestInfo.player] - amnt
-                                        global.shared_requests_totals[req.name] = global.shared_requests_totals[req.name] - amnt
+                                        local amnt = chestInv.insert({name=req.name, count=math.min(allowedAmount, global.oshared.items[req.name])})
+                                        global.oshared.items[req.name] = global.oshared.items[req.name] - amnt
+                                        global.oshared.requests[req.name][chestInfo.player] = global.oshared.requests[req.name][chestInfo.player] - amnt
+                                        global.oshared.requests_totals[req.name] = global.oshared.requests_totals[req.name] - amnt
 
                                     end
                                 end
@@ -645,13 +647,13 @@ function CreateSharedItemsGuiTab(tab_container, player)
 
     -- MW charging/discharging rate. (delta change * sample rate per second)
     local smelter_energy_used = 0
-    if (global.magic_factory_energy_history) then
-        for k,v in pairs(global.magic_factory_energy_history) do
+    if (global.omagic.factory_energy_history) then
+        for k,v in pairs(global.omagic.factory_energy_history) do
             smelter_energy_used = smelter_energy_used + v
         end
     end
-    local energy_change_add = (global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.start)*60/1000000
-    local energy_change_sub = (((global.shared_energy_stored_history.after_input - global.shared_energy_stored_history.after_output)*60)+smelter_energy_used)/1000000
+    local energy_change_add = (global.oshared.energy_stored_history.after_input - global.oshared.energy_stored_history.start)*60/1000000
+    local energy_change_sub = (((global.oshared.energy_stored_history.after_input - global.oshared.energy_stored_history.after_output)*60)+smelter_energy_used)/1000000
     local energy_add_str = string.format("+%.3fMW", energy_change_add)
     local energy_sub_str = string.format("-%.3fMW", energy_change_sub)
     local rate_color = "green"
@@ -661,18 +663,18 @@ function CreateSharedItemsGuiTab(tab_container, player)
         rate_color = "orange"
     end
 
-    AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.shared_energy_stored/1000000) .. "MJ[/color] [color=" .. rate_color .. "](" .. energy_add_str .. " " .. energy_sub_str ..")[/color]", my_longer_label_style)
+    AddLabel(scrollFrame, "elec_avail_info", "[color=acid]Current electricity available: " .. string.format("%.3f", global.oshared.energy_stored/1000000) .. "MJ[/color] [color=" .. rate_color .. "](" .. energy_add_str .. " " .. energy_sub_str ..")[/color]", my_longer_label_style)
 
     AddSpacerLine(scrollFrame)
     AddLabel(scrollFrame, "share_items_title_msg", "Shared Items:", my_label_header_style)
 
     local sorted_items = {}
-    for k in pairs(global.shared_items) do table.insert(sorted_items, k) end
+    for k in pairs(global.oshared.items) do table.insert(sorted_items, k) end
     table.sort(sorted_items)
 
     for idx,itemName in pairs(sorted_items) do
-        if (global.shared_items[itemName] > 0) then
-            local caption_str = "[item="..itemName.."] " .. itemName..": "..global.shared_items[itemName]
+        if (global.oshared.items[itemName] > 0) then
+            local caption_str = "[item="..itemName.."] " .. itemName..": "..global.oshared.items[itemName]
             AddLabel(scrollFrame, itemName.."_itemlist", caption_str, my_player_list_style)
         end
     end

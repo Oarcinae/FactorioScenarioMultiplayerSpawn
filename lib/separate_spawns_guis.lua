@@ -18,7 +18,7 @@ local SPAWN_GUI_MAX_HEIGHT = 1000
 -- local sharedSpawnExample3 = {openAccess=true,
 --                             position={x=400,y=400},
 --                             players={"A", "B", "C", "D"}}
--- global.sharedSpawns = {testName1=sharedSpawnExample1,
+-- global.ocore.sharedSpawns = {testName1=sharedSpawnExample1,
 --                        testName2=sharedSpawnExample2,
 --                        Oarc=sharedSpawnExample3}
 
@@ -389,7 +389,7 @@ function SpawnOptsGuiClick(event)
 
     -- Hacky buddy spawn system
     elseif (elemName == "buddy_spawn") then
-        table.insert(global.waitingBuddies, player.name)
+        table.insert(global.ocore.waitingBuddies, player.name)
         SendBroadcastMsg({"oarc-looking-for-buddy", player.name})
 
         DisplayBuddySpawnOptions(player)
@@ -413,11 +413,11 @@ function DisplaySharedSpawnOptions(player)
     shGui.horizontal_scroll_policy = "never"
 
 
-    for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
+    for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
         if (sharedSpawn.openAccess and
             (game.players[spawnName] ~= nil) and
             game.players[spawnName].connected) then
-            local spotsRemaining = global.ocfg.max_players_shared_spawn - #global.sharedSpawns[spawnName].players
+            local spotsRemaining = global.ocfg.max_players_shared_spawn - #global.ocore.sharedSpawns[spawnName].players
             if (global.ocfg.max_players_shared_spawn == 0) then
                 shGui.add{type="button", caption=spawnName, name=spawnName}
             elseif (spotsRemaining > 0) then
@@ -464,16 +464,16 @@ function SharedSpwnOptsGuiClick(event)
     -- Else check for which spawn was selected
     -- If a spawn is removed during this time, the button will not do anything
     else
-        for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
+        for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
             if ((buttonClicked == spawnName) and
                 (game.players[spawnName] ~= nil) and
                 (game.players[spawnName].connected)) then
 
                 -- Add the player to that shared spawns join queue.
-                if (global.sharedSpawns[spawnName].joinQueue == nil) then
-                    global.sharedSpawns[spawnName].joinQueue = {}
+                if (global.ocore.sharedSpawns[spawnName].joinQueue == nil) then
+                    global.ocore.sharedSpawns[spawnName].joinQueue = {}
                 end
-                table.insert(global.sharedSpawns[spawnName].joinQueue, player.name)
+                table.insert(global.ocore.sharedSpawns[spawnName].joinQueue, player.name)
 
                 -- Clear the shared spawn options gui.
                 if (player.gui.screen.shared_spawn_opts ~= nil) then
@@ -531,11 +531,11 @@ function SharedSpawnJoinWaitMenuClick(event)
         DisplaySpawnOptions(player)
 
         -- Find and remove the player from the joinQueue they were in.
-        for spawnName,sharedSpawn in pairs(global.sharedSpawns) do
+        for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
             if (sharedSpawn.joinQueue ~= nil) then
                 for index,requestingPlayer in pairs(sharedSpawn.joinQueue) do
                     if (requestingPlayer == player.name) then
-                        table.remove(global.sharedSpawns[spawnName].joinQueue, index)
+                        table.remove(global.ocore.sharedSpawns[spawnName].joinQueue, index)
                         game.players[spawnName].print({"oarc-player-cancel-join-request", player.name})
                         return
                     end
@@ -548,8 +548,8 @@ function SharedSpawnJoinWaitMenuClick(event)
 end
 
 local function IsSharedSpawnActive(player)
-    if ((global.sharedSpawns[player.name] == nil) or
-        (global.sharedSpawns[player.name].openAccess == false)) then
+    if ((global.ocore.sharedSpawns[player.name] == nil) or
+        (global.ocore.sharedSpawns[player.name].openAccess == false)) then
         return false
     else
         return true
@@ -559,11 +559,11 @@ end
 
 -- Get a random warp point to go to
 function GetRandomSpawnPoint()
-    local numSpawnPoints = TableLength(global.sharedSpawns)
+    local numSpawnPoints = TableLength(global.ocore.sharedSpawns)
     if (numSpawnPoints > 0) then
         local randSpawnNum = math.random(1,numSpawnPoints)
         local counter = 1
-        for _,sharedSpawn in pairs(global.sharedSpawns) do
+        for _,sharedSpawn in pairs(global.ocore.sharedSpawns) do
             if (randSpawnNum == counter) then
                 return sharedSpawn.position
             end
@@ -585,7 +585,7 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
     spwnCtrls.horizontal_scroll_policy = "never"
 
     if global.ocfg.enable_shared_spawns then
-        if (global.uniqueSpawns[player.name] ~= nil) then
+        if (global.ocore.uniqueSpawns[player.name] ~= nil) then
             -- This checkbox allows people to join your base when they first
             -- start the game.
             spwnCtrls.add{type="checkbox", name="accessToggle",
@@ -596,27 +596,27 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
     end
 
     -- Sets the player's custom spawn point to their current location
-    if ((game.tick - global.playerCooldowns[player.name].setRespawn) >
+    if ((game.tick - global.ocore.playerCooldowns[player.name].setRespawn) >
             (global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)) then
         spwnCtrls.add{type="button", name="setRespawnLocation", caption={"oarc-set-respawn-loc"}}
         spwnCtrls["setRespawnLocation"].style.font = "default-small-semibold"
 
     else
         AddLabel(spwnCtrls,"respawn_cooldown_note1",
-            {"oarc-set-respawn-loc-cooldown", formattime((global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)-(game.tick - global.playerCooldowns[player.name].setRespawn))}, my_note_style)
+            {"oarc-set-respawn-loc-cooldown", formattime((global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)-(game.tick - global.ocore.playerCooldowns[player.name].setRespawn))}, my_note_style)
     end
     AddLabel(spwnCtrls, "respawn_cooldown_note2", {"oarc-set-respawn-note"}, my_note_style)
 
     -- Display a list of people in the join queue for your base.
     if (global.ocfg.enable_shared_spawns and IsSharedSpawnActive(player)) then
-        if ((global.sharedSpawns[player.name].joinQueue ~= nil) and
-            (#global.sharedSpawns[player.name].joinQueue > 0)) then
+        if ((global.ocore.sharedSpawns[player.name].joinQueue ~= nil) and
+            (#global.ocore.sharedSpawns[player.name].joinQueue > 0)) then
 
 
             AddLabel(spwnCtrls, "drop_down_msg_lbl1", {"oarc-select-player-join-queue"}, my_label_style)
             spwnCtrls.add{name = "join_queue_dropdown",
                             type = "drop-down",
-                            items = global.sharedSpawns[player.name].joinQueue}
+                            items = global.ocore.sharedSpawns[player.name].joinQueue}
             spwnCtrls.add{name = "accept_player_request",
                             type = "button",
                             caption={"oarc-accept"}}
@@ -646,17 +646,17 @@ function SpawnCtrlGuiOptionsSelect(event)
     if (name == "accessToggle") then
         if event.element.state then
             if DoesPlayerHaveCustomSpawn(player) then
-                if (global.sharedSpawns[player.name] == nil) then
+                if (global.ocore.sharedSpawns[player.name] == nil) then
                     CreateNewSharedSpawn(player)
                 else
-                    global.sharedSpawns[player.name].openAccess = true
+                    global.ocore.sharedSpawns[player.name].openAccess = true
                 end
 
                 SendBroadcastMsg({"oarc-start-shared-base", player.name})
             end
         else
-            if (global.sharedSpawns[player.name] ~= nil) then
-                global.sharedSpawns[player.name].openAccess = false
+            if (global.ocore.sharedSpawns[player.name] ~= nil) then
+                global.ocore.sharedSpawns[player.name].openAccess = false
                 SendBroadcastMsg({"oarc-stop-shared-base", player.name})
             end
         end
@@ -722,9 +722,9 @@ function SpawnCtrlGuiClick(event)
             end
 
             -- Find and remove the player from the joinQueue they were in.
-            for index,requestingPlayer in pairs(global.sharedSpawns[player.name].joinQueue) do
+            for index,requestingPlayer in pairs(global.ocore.sharedSpawns[player.name].joinQueue) do
                 if (requestingPlayer == joinQueuePlayerChoice) then
-                    table.remove(global.sharedSpawns[player.name].joinQueue, index)
+                    table.remove(global.ocore.sharedSpawns[player.name].joinQueue, index)
                     return
                 end
             end
@@ -732,9 +732,9 @@ function SpawnCtrlGuiClick(event)
         elseif (elemName == "accept_player_request") then
 
             -- Find and remove the player from the joinQueue they were in.
-            for index,requestingPlayer in pairs(global.sharedSpawns[player.name].joinQueue) do
+            for index,requestingPlayer in pairs(global.ocore.sharedSpawns[player.name].joinQueue) do
                 if (requestingPlayer == joinQueuePlayerChoice) then
-                    table.remove(global.sharedSpawns[player.name].joinQueue, index)
+                    table.remove(global.ocore.sharedSpawns[player.name].joinQueue, index)
                 end
             end
 
@@ -750,14 +750,14 @@ function SpawnCtrlGuiClick(event)
 
                 -- Spawn the player
                 local joiningPlayer = game.players[joinQueuePlayerChoice]
-                ChangePlayerSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
+                ChangePlayerSpawn(joiningPlayer, global.ocore.sharedSpawns[player.name].position)
                 SendPlayerToSpawn(joiningPlayer)
                 GivePlayerStarterItems(joiningPlayer)
-                table.insert(global.sharedSpawns[player.name].players, joiningPlayer.name)
+                table.insert(global.ocore.sharedSpawns[player.name].players, joiningPlayer.name)
                 joiningPlayer.force = game.players[player.name].force
 
                 -- Render some welcoming text...
-                DisplayWelcomeGroundTextAtSpawn(joiningPlayer, global.sharedSpawns[player.name].position)
+                DisplayWelcomeGroundTextAtSpawn(joiningPlayer, global.ocore.sharedSpawns[player.name].position)
 
                 -- Unlock spawn control gui tab
                 SetOarcGuiTabEnabled(joiningPlayer, OARC_SPAWN_CTRL_GUI_NAME, true)
@@ -790,7 +790,7 @@ function DisplayBuddySpawnOptions(player)
                                     style = "bordered_frame"}
 
     buddyList = {}
-    for _,buddyName in pairs(global.waitingBuddies) do
+    for _,buddyName in pairs(global.ocore.waitingBuddies) do
         if (buddyName ~= player.name) then
             table.insert(buddyList, buddyName)
         end
@@ -877,7 +877,7 @@ function BuddySpawnOptsGuiClick(event)
     if (elemName == "refresh_buddy_list") then
         waiting_buddies_dropdown.clear_items()
 
-        for _,buddyName in pairs(global.waitingBuddies) do
+        for _,buddyName in pairs(global.ocore.waitingBuddies) do
             if (player.name ~= buddyName) then
                 waiting_buddies_dropdown.add_item(buddyName)
             end
@@ -891,10 +891,9 @@ function BuddySpawnOptsGuiClick(event)
         DisplaySpawnOptions(player)
 
         -- Remove them from the buddy list when they cancel
-        for i=#global.waitingBuddies,1,-1 do
-            local name = global.waitingBuddies[i]
-            if (name == player.name) then
-                table.remove(global.waitingBuddies, i)
+        for i=#global.ocore.waitingBuddies,1,-1 do
+            if (global.ocore.waitingBuddies[i] == player.name) then
+                table.remove(global.ocore.waitingBuddies, i)
             end
         end
     end
@@ -917,7 +916,7 @@ function BuddySpawnOptsGuiClick(event)
         end
 
         local buddyIsStillWaiting = false
-        for _,buddyName in pairs(global.waitingBuddies) do
+        for _,buddyName in pairs(global.ocore.waitingBuddies) do
             if (buddyChoice == buddyName) then
                 if (game.players[buddyChoice]) then
                     buddyIsStillWaiting = true
@@ -946,7 +945,7 @@ function BuddySpawnOptsGuiClick(event)
         end
 
         -- Save the chosen spawn options somewhere for later use.
-        global.buddySpawnOptions[player.name] = {joinMainTeamRadio=joinMainTeamRadio,
+        global.ocore.buddySpawnOpts[player.name] = {joinMainTeamRadio=joinMainTeamRadio,
                                                     joinOwnTeamRadio=joinOwnTeamRadio,
                                                     joinBuddyTeamRadio=joinBuddyTeamRadio,
                                                     moatChoice=moatChoice,
@@ -963,10 +962,10 @@ function BuddySpawnOptsGuiClick(event)
         end
 
         -- Remove them from the buddy list while they make up their minds.
-        for i=#global.waitingBuddies,1,-1 do
-            name = global.waitingBuddies[i]
+        for i=#global.ocore.waitingBuddies,1,-1 do
+            name = global.ocore.waitingBuddies[i]
             if ((name == player.name) or (name == buddyChoice)) then
-                table.remove(global.waitingBuddies, i)
+                table.remove(global.ocore.waitingBuddies, i)
             end
         end
 
@@ -1015,7 +1014,7 @@ function BuddySpawnWaitMenuClick(event)
         player.gui.screen.buddy_wait_menu.destroy()
         DisplaySpawnOptions(player)
 
-        local buddy = game.players[global.buddySpawnOptions[player.name].buddyChoice]
+        local buddy = game.players[global.ocore.buddySpawnOpts[player.name].buddyChoice]
 
         -- Catch a case where the buddy has left the game early and no longer exists.
         if (buddy == nil) then
@@ -1054,23 +1053,23 @@ function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
     AddLabel(sGui, "warning_lbl1", {"oarc-buddy-requesting-from-you", requestingBuddyName}, my_warning_style)
 
     local teamText = "error!"
-    if (global.buddySpawnOptions[requestingBuddyName].joinMainTeamRadio) then
+    if (global.ocore.buddySpawnOpts[requestingBuddyName].joinMainTeamRadio) then
         teamText = {"oarc-buddy-txt-main-team"}
-    elseif (global.buddySpawnOptions[requestingBuddyName].joinOwnTeamRadio) then
+    elseif (global.ocore.buddySpawnOpts[requestingBuddyName].joinOwnTeamRadio) then
         teamText = {"oarc-buddy-txt-new-teams"}
-    elseif (global.buddySpawnOptions[requestingBuddyName].joinBuddyTeamRadio) then
+    elseif (global.ocore.buddySpawnOpts[requestingBuddyName].joinBuddyTeamRadio) then
         teamText = {"oarc-buddy-txt-buddy-team"}
     end
 
     local moatText = " "
-    if (global.buddySpawnOptions[requestingBuddyName].moatChoice) then
+    if (global.ocore.buddySpawnOpts[requestingBuddyName].moatChoice) then
         moatText = {"oarc-buddy-txt-moat"}
     end
 
     local distText = "error!"
-    if (global.buddySpawnOptions[requestingBuddyName].distChoice == "buddy_spawn_request_near") then
+    if (global.ocore.buddySpawnOpts[requestingBuddyName].distChoice == "buddy_spawn_request_near") then
         distText = {"oarc-buddy-txt-near"}
-    elseif (global.buddySpawnOptions[requestingBuddyName].distChoice == "buddy_spawn_request_far") then
+    elseif (global.ocore.buddySpawnOpts[requestingBuddyName].distChoice == "buddy_spawn_request_far") then
         distText = {"oarc-buddy-txt-far"}
     end
 
@@ -1106,22 +1105,23 @@ function BuddySpawnRequestMenuClick(event)
     end
 
 
-
     -- Check if it's a button press and lookup the matching buddy info
     if ((elemName == "accept_buddy_request") or (elemName == "decline_buddy_request")) then
-        for name,opts in pairs(global.buddySpawnOptions) do
+        for name,opts in pairs(global.ocore.buddySpawnOpts) do
             if (opts.buddyChoice == player.name) then
                 requesterName = name
                 requesterOptions = opts
             end
         end
 
+        -- Not sure about this error condition...
         if (requesterName == nil) then
-            player.print("Error! Invalid buddy info...")
+            SendBroadcastMsg("Error! Invalid buddy info???")
             log("Error! Invalid buddy info...")
 
             player.gui.screen.buddy_request_menu.destroy()
             DisplaySpawnOptions(player)
+            return
         end
     else
         return -- Not a button click
@@ -1190,12 +1190,11 @@ function BuddySpawnRequestMenuClick(event)
         game.players[requesterName].print({"", {"oarc-please-wait"}, "!"})
         game.players[requesterName].print({"", {"oarc-please-wait"}, "!!"})
 
-        global.buddyPairs[player.name] = requesterName
-        global.buddyPairs[requesterName] = player.name
-    end
+        global.ocore.buddyPairs[player.name] = requesterName
+        global.ocore.buddyPairs[requesterName] = player.name
 
     -- Check if player is cancelling the request.
-    if (elemName == "decline_buddy_request") then
+    elseif (elemName == "decline_buddy_request") then
         player.gui.screen.buddy_request_menu.destroy()
         DisplaySpawnOptions(player)
 
@@ -1211,6 +1210,8 @@ function BuddySpawnRequestMenuClick(event)
 
         requesterBuddy.print({"oarc-buddy-declined", player.name})
     end
+
+    table.remove(global.ocore.buddySpawnOpts, requesterName)
 end
 
 

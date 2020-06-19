@@ -202,6 +202,28 @@ function GetRandomKeyFromTable(t)
     return keyset[math.random(#keyset)]
 end
 
+-- A safer way to attempt to get the next key in a table. CHECK TABLE SIZE BEFORE CALLING THIS!
+-- Ensures the key points to a valid entry before calling next. Otherwise it restarts.
+-- If you get nil as a return, it means you hit the return.
+function NextButChecksKeyIsValidFirst(table_in, key)
+    -- if (table_size(table_in) == 0) then you're fucked end
+    if ((not key) or (not table_in[key])) then
+        return next(table_in, nil)
+    else
+        return next(table_in, key)
+    end
+end
+
+-- Gets the next key, even if we have to start again.
+function NextKeyInTableIncludingRestart(table_in, key)
+    local next_key = NextButChecksKeyIsValidFirst(table_in, key)
+    if (not next_key) then
+        return NextButChecksKeyIsValidFirst(table_in, next_key)
+    else
+        return next_key
+    end
+end
+
 function GetRandomValueFromTable(t)
     return t[GetRandomKeyFromTable(t)]
 end
@@ -715,8 +737,7 @@ function CreateGameSurface()
 
     -- Add surface and safe areas
     if global.ocfg.enable_regrowth then
-        remote.call("oarc_regrowth", "add_surface", s.index)
-        remote.call("oarc_regrowth", "area_offlimits_chunkpos", s.index, {x=0,y=0}, 5)
+        MarkAreaSafeGivenChunkPos({x=0,y=0}, 4)
     end
 end
 

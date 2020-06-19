@@ -65,12 +65,11 @@ GAME_SURFACE_NAME="oarc"
 
 
 -- I'm reverting my decision to turn the regrowth thing into a mod.
-remote.add_interface("oarc_regrowth",
-            {area_offlimits_chunkpos = MarkAreaSafeGivenChunkPos,
-            area_offlimits_tilepos = MarkAreaSafeGivenTilePos,
-            area_removal_tilepos = MarkAreaForRemoval,
-            trigger_immediate_cleanup = TriggerCleanup,
-            add_surface = RegrowthAddSurface})
+-- remote.add_interface("oarc_regrowth",
+--             {area_offlimits_chunkpos = MarkAreaSafeGivenChunkPos,
+--             area_removal_tilepos = MarkAreaForRemoval,
+--             trigger_immediate_cleanup = TriggerCleanup})
+--             -- add_surface = RegrowthAddSurface,
 
 commands.add_command("trigger-map-cleanup",
     "Force immediate removal of all expired chunks (unused chunk removal mod)",
@@ -159,6 +158,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     if global.ocfg.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
+
     if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
     end
@@ -280,7 +280,7 @@ script.on_event(defines.events.on_tick, function(event)
 end)
 
 
-script.on_event(defines.events.on_sector_scanned, function (event)
+script.on_event(defines.events.on_sector_scanned, function (event)   
     if global.ocfg.enable_regrowth then
         RegrowthSectorScan(event)
     end
@@ -296,14 +296,8 @@ script.on_event(defines.events.on_built_entity, function(event)
     end
 
     if global.ocfg.enable_regrowth then
-        local s_index = event.created_entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.created_entity.position,
-                    2)
+        if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        MarkAreaSafeGivenTilePos(event.created_entity.position, 2)
     end
 
     if global.ocfg.enable_anti_grief then
@@ -318,14 +312,8 @@ end)
 
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
-        local s_index = event.created_entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.created_entity.position,
-                    2)
+        if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        MarkAreaSafeGivenTilePos(event.created_entity.position, 2)
     end
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
@@ -334,15 +322,10 @@ end)
 
 script.on_event(defines.events.on_player_built_tile, function (event)
     if global.ocfg.enable_regrowth then
-        local s_index = event.surface_index
-        if (global.rg[s_index] == nil) then return end
+        if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
 
         for k,v in pairs(event.tiles) do
-            remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    v.position,
-                    2)
+            MarkAreaSafeGivenTilePos(v.position, 2)
         end
     end
 end)
@@ -354,14 +337,8 @@ end)
 ----------------------------------------
 script.on_event(defines.events.script_raised_built, function(event)
     if global.ocfg.enable_regrowth then
-        local s_index = event.entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.entity.position,
-                    2)
+        if (event.entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        MarkAreaSafeGivenTilePos(event.entity.position, 2)
     end
 end)
 
@@ -392,7 +369,7 @@ script.on_event(defines.events.on_research_finished, function(event)
     end
 
     if global.ocfg.lock_goodies_rocket_launch and
-        (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
+        (not global.ocore.satellite_sent or not global.ocore.satellite_sent[event.research.force.name]) then
         for _,v in ipairs(LOCKED_RECIPES) do
             RemoveRecipe(event.research.force, v.r)
         end

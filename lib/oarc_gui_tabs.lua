@@ -49,7 +49,7 @@ function InitOarcGuiTabs(player)
 
     -- Rockets tab, only enable if one has been launched already
     AddOarcGuiTab(player, OARC_ROCKETS_GUI_TAB_NAME)
-    if (global.satellite_sent) then
+    if (global.ocore.satellite_sent) then
         SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
     end
 
