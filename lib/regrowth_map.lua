@@ -16,7 +16,7 @@
 require("lib/oarc_utils")
 require("config")
 
-REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR
+REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR -- TICKS_PER_HOUR TICKS_PER_MINUTE
 
 -- Init globals and set player join area to be off limits.
 function RegrowthInit()
@@ -27,6 +27,7 @@ function RegrowthInit()
     global.rg.removal_list = {}
     global.rg.chunk_iter = nil
     global.rg.world_eater_iter = nil
+    global.rg.timeout_ticks = REGROWTH_TIMEOUT_TICKS
 end
 
 function TriggerCleanup()
@@ -144,8 +145,8 @@ function RefreshArea(pos, chunk_radius, bonus_time)
     local c_pos = GetChunkPosFromTilePos(pos)
 
     for i=-chunk_radius,chunk_radius do
+        local x = c_pos.x+i
         for k=-chunk_radius,chunk_radius do
-            local x = c_pos.x+i
             local y = c_pos.y+k
 
             if (global.rg.map[x] == nil) then
@@ -202,7 +203,7 @@ function RegrowthSingleStepArray()
 
     -- If the chunk has timed out, add it to the removal list
     local c_timer = global.rg.map[next_chunk.x][next_chunk.y]
-    if ((c_timer ~= nil) and (c_timer >= 0) and ((c_timer + REGROWTH_TIMEOUT_TICKS) < game.tick)) then
+    if ((c_timer ~= nil) and (c_timer >= 0) and ((c_timer + global.rg.timeout_ticks) < game.tick)) then
 
         -- Check chunk actually exists
         if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=next_chunk.x, y=next_chunk.y})) then
@@ -260,10 +261,12 @@ function RegrowthOnTick()
         RegrowthSingleStepArray()
     end
 
-    WorldEaterSingleStep()
+    if (not global.world_eater_disable) then
+        WorldEaterSingleStep()
+    end
 
     -- Allow enable/disable of auto cleanup, can change during runtime.
-    local interval_ticks = REGROWTH_TIMEOUT_TICKS
+    local interval_ticks = global.rg.timeout_ticks
     -- Send a broadcast warning before it happens.
     if ((game.tick % interval_ticks) == interval_ticks-(60*30 + 1)) then
         if (#global.rg.removal_list > 100) then

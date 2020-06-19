@@ -223,7 +223,7 @@ function MagicalFactorySpawnAll()
 
         -- Make it safe from regrowth
         if global.ocfg.enable_regrowth then
-            RegrowthMarkAreaSafeGivenTilePos(pos, 1, true)
+            RegrowthMarkAreaSafeGivenTilePos(pos, 0, true)
         end
     end
 end
