@@ -673,67 +673,80 @@ function RemoveInCircle(surface, area, type, pos, dist)
     end
 end
 
+-- For easy local testing of map gen settings. Just set what you want and uncomment usage in CreateGameSurface!
+function SurfaceSettingsHelper(settings)
+
+    settings.terrain_segmentation = 4
+    settings.water = 3
+    settings.starting_area = 0
+
+    local r_freq = 1.20
+    local r_rich = 5.00
+    local r_size = 0.18
+
+    settings.autoplace_controls["coal"].frequency = r_freq
+    settings.autoplace_controls["coal"].richness = r_rich
+    settings.autoplace_controls["coal"].size = r_size
+    settings.autoplace_controls["copper-ore"].frequency = r_freq
+    settings.autoplace_controls["copper-ore"].richness = r_rich
+    settings.autoplace_controls["copper-ore"].size = r_size
+    settings.autoplace_controls["crude-oil"].frequency = r_freq
+    settings.autoplace_controls["crude-oil"].richness = r_rich
+    settings.autoplace_controls["crude-oil"].size = r_size
+    settings.autoplace_controls["iron-ore"].frequency = r_freq
+    settings.autoplace_controls["iron-ore"].richness = r_rich
+    settings.autoplace_controls["iron-ore"].size = r_size
+    settings.autoplace_controls["stone"].frequency = r_freq
+    settings.autoplace_controls["stone"].richness = r_rich
+    settings.autoplace_controls["stone"].size = r_size
+    settings.autoplace_controls["uranium-ore"].frequency = r_freq*0.5
+    settings.autoplace_controls["uranium-ore"].richness = r_rich
+    settings.autoplace_controls["uranium-ore"].size = r_size
+
+    settings.autoplace_controls["enemy-base"].frequency = 0.80
+    settings.autoplace_controls["enemy-base"].richness = 0.70
+    settings.autoplace_controls["enemy-base"].size = 0.70
+
+    settings.autoplace_controls["trees"].frequency = 1.00
+    settings.autoplace_controls["trees"].richness = 1.00
+    settings.autoplace_controls["trees"].size = 1.00
+
+    settings.cliff_settings.cliff_elevation_0 = 3
+    settings.cliff_settings.cliff_elevation_interval = 200
+    settings.cliff_settings.richness = 3
+
+    settings.property_expression_names["control-setting:aux:bias"] = "0.00"
+    settings.property_expression_names["control-setting:aux:frequency:multiplier"] = "5.00"
+    settings.property_expression_names["control-setting:moisture:bias"] = "0.40"
+    settings.property_expression_names["control-setting:moisture:frequency:multiplier"] = "50"
+
+    return settings
+end
+
 -- Create another surface so that we can modify map settings and not have a screwy nauvis map.
 function CreateGameSurface()
 
-    -- Get starting surface settings.
-    local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
+    if (GAME_SURFACE_NAME ~= "nauvis") then
 
-    if global.ocfg.enable_vanilla_spawns then
-        nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
+        -- Get starting surface settings.
+        local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
 
-        -- ENFORCE ISLAND MAP GEN
-        if (global.ocfg.silo_islands) then
-            nauvis_settings.property_expression_names.elevation = "0_17-island"
+        if global.ocfg.enable_vanilla_spawns then
+            nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
+
+            -- ENFORCE ISLAND MAP GEN
+            if (global.ocfg.silo_islands) then
+                nauvis_settings.property_expression_names.elevation = "0_17-island"
+            end
         end
+
+        -- Enable this to test things out easily.
+        -- nauvis_settings = SurfaceSettingsHelper(nauvis_settings)
+
+        -- Create new game surface
+        local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
+
     end
-
-    -- For easy local testing of map gen settings. Just set what you want and uncomment.
-    -- nauvis_settings.terrain_segmentation = 2
-    -- nauvis_settings.water = 2.5
-    -- nauvis_settings.starting_area = 0
-
-    -- local r_freq = 0.20
-    -- local r_rich = 10.00
-    -- local r_size = 0.20
-    -- nauvis_settings.autoplace_controls["coal"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["coal"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["coal"].size = r_size
-    -- nauvis_settings.autoplace_controls["copper-ore"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["copper-ore"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["copper-ore"].size = r_size
-    -- nauvis_settings.autoplace_controls["crude-oil"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["crude-oil"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["crude-oil"].size = r_size
-    -- nauvis_settings.autoplace_controls["iron-ore"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["iron-ore"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["iron-ore"].size = r_size
-    -- nauvis_settings.autoplace_controls["stone"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["stone"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["stone"].size = r_size
-    -- nauvis_settings.autoplace_controls["uranium-ore"].frequency = r_freq*0.5
-    -- nauvis_settings.autoplace_controls["uranium-ore"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["uranium-ore"].size = r_size
-
-    -- nauvis_settings.autoplace_controls["enemy-base"].frequency = 0.40
-    -- nauvis_settings.autoplace_controls["enemy-base"].richness = 0.50
-    -- nauvis_settings.autoplace_controls["enemy-base"].size = 0.50
-
-    -- nauvis_settings.autoplace_controls["trees"].frequency = 0.30
-    -- nauvis_settings.autoplace_controls["trees"].richness = 1.50
-    -- nauvis_settings.autoplace_controls["trees"].size = 1.00
-
-    -- nauvis_settings.cliff_settings.cliff_elevation_0 = 10
-    -- nauvis_settings.cliff_settings.cliff_elevation_interval = 50
-    -- nauvis_settings.cliff_settings.richness = 10
-
-    -- nauvis_settings.property_expression_names["control-setting:aux:bias"] = "0.00"
-    -- nauvis_settings.property_expression_names["control-setting:aux:frequency:multiplier"] = "5.00"
-    -- nauvis_settings.property_expression_names["control-setting:moisture:bias"] = "0.20"
-    -- nauvis_settings.property_expression_names["control-setting:moisture:frequency:multiplier"] = "20"
-
-    -- Create new game surface
-    local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
 
     -- Add surface and safe areas
     if global.ocfg.enable_regrowth then
