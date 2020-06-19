@@ -108,28 +108,33 @@ end
 -- When a new player is created, present the spawn options
 -- Assign them to the main force so they can communicate with the team
 -- without shouting.
-function SeparateSpawnsPlayerCreated(player_index)
+function SeparateSpawnsPlayerCreated(player_index, clear_inv)
     local player = game.players[player_index]
 
     -- Make sure spawn control tab is disabled
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, false)
     SwitchOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME)
 
-    -- This checks if they have just joined the server.
-    -- No assigned force yet.
+    -- If they are NOT a new player, reset them.
     if (player.force.name ~= "player") then
-        FindUnusedSpawns(player, false)
+        RemoveOrResetPlayer(player, false, true)
+    else
+        player.force = global.ocfg.main_force
     end
 
-    -- Ensure cleared inventory!
-    player.get_inventory(defines.inventory.character_main ).clear()
-    player.get_inventory(defines.inventory.character_guns).clear()
-    player.get_inventory(defines.inventory.character_ammo).clear()
-    player.get_inventory(defines.inventory.character_armor).clear()
-    -- player.get_inventory(defines.inventory.character_vehicle).clear()
-    player.get_inventory(defines.inventory.character_trash).clear()
 
-    player.force = global.ocfg.main_force
+    -- Reset counts for map feature usage for this player.
+    OarcMapFeaturePlayerCreatedEvent(player)
+
+    -- Ensure cleared inventory!
+    if (clear_inv) then
+        player.get_inventory(defines.inventory.character_main ).clear()
+        player.get_inventory(defines.inventory.character_guns).clear()
+        player.get_inventory(defines.inventory.character_ammo).clear()
+        player.get_inventory(defines.inventory.character_armor).clear()
+        player.get_inventory(defines.inventory.character_trash).clear()
+    end
+
     DisplayWelcomeTextGui(player)
 end
 
@@ -521,176 +526,75 @@ end
                                            
 --]]
 
--- Call this if a player leaves the game or is reset
-function FindUnusedSpawns(player, remove_player)
-    if not player then
-        log("ERROR - FindUnusedSpawns on NIL Player!")
+-- Call this if a player leaves the game early (or a player wants an early game reset)
+function RemoveOrResetPlayer(player, remove_player, remove_force)
+    if (not player) then
+        log("ERROR - CleanupPlayer on NIL Player!")
         return
     end
 
-    if (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) then
+    -- If this player is staying in the game, lets make sure we don't delete them along with the map chunks being
+    -- cleared.
+    player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
+    local player_old_force = player.force
+    player.force = global.ocfg.main_force
 
-        -- If this player is staying in the game, lets make sure we don't delete them
-        -- along with the map chunks being cleared.
-        player.teleport({x=0,y=0}, GAME_SURFACE_NAME)
+    -- Clear globals
+    CleanupPlayerGlobals(player.name) -- Except global.ocore.uniqueSpawns
 
-        -- Clear out global variables for that player
-        if (global.ocore.playerSpawns[player.name] ~= nil) then
-            global.ocore.playerSpawns[player.name] = nil
+    -- Clear their unique spawn (if they have one)
+    UniqueSpawnCleanupRemove(player.name) -- Specifically global.ocore.uniqueSpawns
+
+    -- Remove a force if this player created it and they are the only one on it
+    if (remove_force) then
+        if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.main_force)) then
+            SendBroadcastMsg("FORCE REMOVED?!")
+            log("RemoveOrResetPlayer - FORCE REMOVED: " .. player_old_force.name)
+            game.merge_forces(player_old_force, "neutral")           
         end
+    end
 
-        -- Remove them from the delayed spawn queue if they are in it
-        for i=#global.ocore.delayedSpawns,1,-1 do
-            delayedSpawn = global.ocore.delayedSpawns[i]
-
-            if (player.name == delayedSpawn.playerName) then
-                if (delayedSpawn.vanilla) then
-                    log("Returning a vanilla spawn back to available.")
-                    table.insert(global.vanillaSpawns, {x=delayedSpawn.pos.x,y=delayedSpawn.pos.y})
-                end
-
-                table.remove(global.ocore.delayedSpawns, i)
-                log("Removing player from delayed spawn queue: " .. player.name)
-            end
-        end
-
-        -- Transfer or remove a shared spawn if player is owner
-        if (global.ocore.sharedSpawns[player.name] ~= nil) then
-
-            local teamMates = global.ocore.sharedSpawns[player.name].players
-
-            if (#teamMates >= 1) then
-                local newOwnerName = table.remove(teamMates)
-                TransferOwnershipOfSharedSpawn(player.name, newOwnerName)
-            else
-                global.ocore.sharedSpawns[player.name] = nil
-            end
-        end
-
-        -- If a uniqueSpawn was created for the player, mark it as unused.
-        if (global.ocore.uniqueSpawns[player.name] ~= nil) then
-
-            local spawnPos = global.ocore.uniqueSpawns[player.name].pos
-
-            -- Check if it was near someone else's base.
-            nearOtherSpawn = false
-            for spawnPlayerName,otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
-                if ((spawnPlayerName ~= player.name) and (getDistance(spawnPos, otherSpawnPos.pos) < (global.ocfg.spawn_config.gen_settings.land_area_tiles*3))) then
-                    log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
-                    nearOtherSpawn = true
-                end
-            end
-
-            -- Unused Chunk Removal mod (aka regrowth)
-            if (global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and
-                global.ocfg.enable_regrowth) then
-
-                if (global.ocore.uniqueSpawns[player.name].vanilla) then
-                    log("Returning a vanilla spawn back to available.")
-                    table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
-                end
-
-                global.ocore.uniqueSpawns[player.name] = nil
-
-                log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-
-                RegrowthMarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
-                TriggerCleanup()
-                SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-
-            else
-                global.ocore.uniqueSpawns[player.name] = nil
-                SendBroadcastMsg(player.name .. " base was freed up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-            end
-        end
-
-        -- remove that player's cooldown setting
-        if (global.ocore.playerCooldowns[player.name] ~= nil) then
-            global.ocore.playerCooldowns[player.name] = nil
-        end
-
-        -- Remove from shared spawn player slots (need to search all)
-        for _,sharedSpawn in pairs(global.ocore.sharedSpawns) do
-            for key,playerName in pairs(sharedSpawn.players) do
-                if (player.name == playerName) then
-                    sharedSpawn.players[key] = nil;
-                end
-            end
-        end
-
-        -- Clear the buddy pair IF one exists
-        if (global.ocore.buddyPairs[player.name] ~= nil) then
-            local buddyName = global.ocore.buddyPairs[player.name]
-            global.ocore.buddyPairs[player.name] = nil
-            global.ocore.buddyPairs[buddyName] = nil
-        end
-
-        -- Remove a force if this player created it and they are the only one on it
-        if ((#player.force.players <= 1) and (player.force.name ~= global.ocfg.main_force)) then
-            game.merge_forces(player.force, global.ocfg.main_force)
-        end
-
-        -- Remove the character completely
-        if (remove_player) then
-            game.remove_offline_players({player})
-        end
+    -- Remove the character completely
+    if (remove_player) then
+        game.remove_offline_players({player})
     end
 end
 
--- Cleanup a player's spawn and force
-    -- If within 15 min period OR If choosing to destroy (post 15 min)
-        -- Force delete the base chunks (buddy spawn???)
-        -- Force delete all player buildings
-        -- Remove force if solo force and no other players
-    -- If choosing to abandon (post 15 min)
-        -- Destroy 50% of player owned entities, destroy ALL radars, leave ALL rails!
-        -- Convert all player entities to neutral force
-        -- Disable all remaining entities (remove recipe)
+function UniqueSpawnCleanupRemove(playerName)
+    if (global.ocore.uniqueSpawns[playerName] == nil) then return end -- Safety
+    log("UniqueSpawnCleanupRemove - " .. playerName)
 
+    local spawnPos = global.ocore.uniqueSpawns[playerName].pos
 
--- -- If a uniqueSpawn was created for the player, clean it the fuck up.
--- function UniqueSpawnCleanup(playerName)
---     if (global.ocore.uniqueSpawns[playerName] ~= nil) then
+    -- Check if it was near someone else's base. (Really just buddy base is possible I think.)
+    nearOtherSpawn = false
+    for spawnPlayerName,otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
+        if ((spawnPlayerName ~= playerName) and (getDistance(spawnPos, otherSpawnPos.pos) < (global.ocfg.spawn_config.gen_settings.land_area_tiles*3))) then
+            log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
+            nearOtherSpawn = true
+        end
+    end
 
---         local spawnPos = global.ocore.uniqueSpawns[playerName].pos
+    -- Unused Chunk Removal mod (aka regrowth)
+    if (global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and global.ocfg.enable_regrowth) then
 
---         -- Check if it was near someone else's base.
---         nearOtherSpawn = false
---         for spawnPlayerName,otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
---             if ((spawnPlayerName ~= playerName) and (getDistance(spawnPos, otherSpawnPos.pos) < (global.ocfg.spawn_config.gen_settings.land_area_tiles*3))) then
---                 log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
---                 nearOtherSpawn = true
---             end
---         end
+        if (global.ocore.uniqueSpawns[playerName].vanilla) then
+            log("Returning a vanilla spawn back to available.")
+            table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
+        end
 
---         -- Unused Chunk Removal mod (aka regrowth)
---         if (global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and global.ocfg.enable_regrowth) then
+        log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
 
---             if (global.ocore.uniqueSpawns[playerName].vanilla) then
---                 log("Returning a vanilla spawn back to available.")
---                 table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
---             end
+        RegrowthMarkAreaForRemoval(spawnPos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+        TriggerCleanup()
+        SendBroadcastMsg(playerName .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
 
---             global.ocore.uniqueSpawns[playerName] = nil
+    else
+        SendBroadcastMsg(playerName .. " base was abandoned because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+    end
 
---             log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-
---             RegrowthMarkAreaForRemoval(spawnPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
---             remote.call("oarc_regrowth",
---                     "area_removal_tilepos",
---                     game.surfaces[GAME_SURFACE_NAME].index,
---                     spawnPos,
---                     CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS)
---             remote.call("oarc_regrowth",
---                     "trigger_immediate_cleanup")
---             SendBroadcastMsg(playerName .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-
---         else
---             global.ocore.uniqueSpawns[playerName] = nil
---             SendBroadcastMsg(playerName .. " base was freed up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
---         end
---     end
--- end
+    global.ocore.uniqueSpawns[playerName] = nil
+end
 
 function CleanupPlayerGlobals(playerName)
 
@@ -739,9 +643,6 @@ function CleanupPlayerGlobals(playerName)
     end
     ::LOOP_BREAK::
 
--- global.ocore.uniqueSpawns
---     global.ocore.uniqueSpawns[playerName] = {pos=spawn,moat=moatEnabled,vanilla=vanillaSpawn}
-
     -- Clear their personal spawn point info
     if (global.ocore.playerSpawns[playerName] ~= nil) then
         global.ocore.playerSpawns[playerName] = nil
@@ -761,18 +662,13 @@ function CleanupPlayerGlobals(playerName)
         end
     end
 
--- global.ocore.delayedSpawns
---     table.insert(global.ocore.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
-
-
     if (global.ocore.playerCooldowns[playerName] ~= nil) then
         global.ocore.playerCooldowns[playerName] = nil
     end
 
-    if (global.ocore.oarc_store.pmf_counts[playerName] ~= nil) then
-        global.ocore.oarc_store.pmf_counts[playerName] = nil
+    if (global.oarc_store.pmf_counts[playerName] ~= nil) then
+        global.oarc_store.pmf_counts[playerName] = nil
     end
-
 end
 
 function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)

@@ -30,7 +30,7 @@ function GameOptionsGuiClick(event)
         if (pIndex ~= 0) then
             local resetPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
             if (game.players[resetPlayer]) then
-                SeparateSpawnsPlayerCreated(resetPlayer)
+                SeparateSpawnsPlayerCreated(resetPlayer, true)
                 log("Resetting " .. resetPlayer)
             end
         end

@@ -16,7 +16,7 @@
 require("lib/oarc_utils")
 require("config")
 
-REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR -- TICKS_PER_HOUR TICKS_PER_MINUTE
+REGROWTH_TIMEOUT_TICKS = TICKS_PER_MINUTE -- TICKS_PER_HOUR TICKS_PER_MINUTE
 
 -- Init globals and set player join area to be off limits.
 function RegrowthInit()
@@ -325,11 +325,28 @@ function WorldEaterSingleStep()
         local area = {left_top = {next_chunk.area.left_top.x-8, next_chunk.area.left_top.y-8},
                       right_bottom = {next_chunk.area.right_bottom.x+8, next_chunk.area.right_bottom.y+8}}
 
-        local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=area, force={"enemy", "neutral"}, invert=true, limit=1}
+        local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=area, force={"enemy", "neutral"}, invert=true}
+        local total_count = #entities
+        local has_last_user_set = false
 
-        if (#entities > 0) then
-            return -- Something here.
+        if (total_count > 0) then
+            for k,v in pairs(entities) do
+                if (v.last_user or (v.type == "character")) then
+                    has_last_user_set = true
+                    return -- This means we're done checking this chunk.
+                end
+            end
+
+            -- If all entities found have no last user, then KILL all entities!
+            if (not has_last_user_set) then
+                for k,v in pairs(entities) do
+                    v.die(nil)
+                end
+                SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - ENTITIES FOUND")
+                global.rg.map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
+            end
         else
+            SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - NO ENTITIES FOUND")
             global.rg.map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
         end
     end

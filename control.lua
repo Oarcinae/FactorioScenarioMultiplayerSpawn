@@ -216,9 +216,7 @@ script.on_event(defines.events.on_player_created, function(event)
         GivePlayerLongReach(player)
     end
 
-    SeparateSpawnsPlayerCreated(event.player_index)
-
-    OarcMapFeaturePlayerCreatedEvent(player)
+    SeparateSpawnsPlayerCreated(event.player_index, true)
 
     InitOarcGuiTabs(player)
     InitOarcStoreGuiTabs(player)
@@ -236,7 +234,12 @@ end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
-    FindUnusedSpawns(game.players[event.player_index], true)
+    
+    -- If players leave early, say goodbye.
+    if ((player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) and
+        game.players[event.player_index]) then
+        RemoveOrResetPlayer(game.players[event.player_index], true, true)
+    end
 end)
 
 -- script.on_event(defines.events.on_player_removed, function(event)
