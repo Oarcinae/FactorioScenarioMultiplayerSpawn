@@ -94,6 +94,21 @@ function RegrowthMarkAreaForRemoval(pos, chunk_radius)
     end
 end
 
+-- Downgrades permanent flag to semi-permanent.
+function RegrowthMarkAreaNotPermanentOVERWRITE(pos, chunk_radius)
+    local c_pos = GetChunkPosFromTilePos(pos)
+    for i=-chunk_radius,chunk_radius do
+        local x = c_pos.x+i
+        for k=-chunk_radius,chunk_radius do
+            local y = c_pos.y+k
+
+            if (global.rg.map[x] and (global.rg.map[x][y] == -2)) then
+                global.rg.map[x][y] = -1
+            end
+        end
+    end
+end
+
 -- Marks a chunk containing a position to be relatively permanent.
 function MarkChunkSafe(c_pos, permanent)
     if (global.rg.map[c_pos.x] == nil) then

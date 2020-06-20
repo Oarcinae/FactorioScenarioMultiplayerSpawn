@@ -129,17 +129,20 @@ function CreateMapFeatureStoreTab(tab_container, player)
         local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
         for item_name,item in pairs(section) do
 
-            if (item.solo_force and (player.force.name == global.ocfg.main_force)) then
-                goto SKIP_ITEM
+            local blocked = false
+            if (item.solo_force and ((player.force.name == global.ocfg.main_force) or
+                                     (not global.ocore.playerSpawns[player.name]))) then
+                blocked = true
             end
-            if (item.main_force and (player.force.name ~= global.ocfg.main_force)) then
-                goto SKIP_ITEM
+            if (item.main_force and ((player.force.name ~= global.ocfg.main_force) or
+                                     (not global.ocore.playerSpawns[player.name]))) then
+                blocked = true
             end
 
             local count = OarcMapFeaturePlayerCountGet(player, category, item_name)
             local cost = OarcMapFeatureCostScaling(player, category, item_name)
             local color = "[color=green]"
-            if ((cost > wallet) or (cost < 0)) then
+            if ((cost > wallet) or (cost < 0) or blocked) then
                 color = "[color=red]"
             end
             local btn = flow.add{name=item_name,
@@ -152,6 +155,9 @@ function CreateMapFeatureStoreTab(tab_container, player)
                 btn.enabled = false
                 btn.tooltip = item.text .. "\n "..color..
                                  "Limit: ("..count.."/"..item.limit..") [/color]"
+            elseif (blocked) then
+                btn.enabled = false
+                btn.tooltip = item.text.." Cost: "..color..cost.."[/color] [item=coin]"
             elseif (item.limit) then
                 btn.tooltip = item.text .. "\nCost: "..color..cost.."[/color] [item=coin] "..
                                 "Limit: ("..count.."/"..item.limit..")"

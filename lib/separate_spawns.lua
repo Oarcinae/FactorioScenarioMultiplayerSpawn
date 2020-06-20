@@ -138,6 +138,8 @@ function SeparateSpawnsPlayerCreated(player_index, clear_inv)
         player.get_inventory(defines.inventory.character_trash).clear()
     end
 
+    HideOarcGui(player)
+    HideOarcStore(player)
     DisplayWelcomeTextGui(player)
 end
 
@@ -541,7 +543,8 @@ function DestroyForce(player)
         game.merge_forces(player_old_force, global.ocore.destroyed_force)           
     end
 
-    RemoveOrResetPlayer(player, false, false, false)
+    RemoveOrResetPlayer(player, false, false, true, true)
+    SeparateSpawnsPlayerCreated(player.index, true)
 end
 
 function AbandonForce(player)
@@ -555,7 +558,8 @@ function AbandonForce(player)
         game.merge_forces(player_old_force, global.ocore.abandoned_force)           
     end
 
-    RemoveOrResetPlayer(player, false, false, false)
+    RemoveOrResetPlayer(player, false, false, false, false)
+    SeparateSpawnsPlayerCreated(player.index, true)
 end
 
 function KickAndMarkPlayerForRemoval(player)
@@ -567,7 +571,7 @@ function KickAndMarkPlayerForRemoval(player)
 end
 
 -- Call this if a player leaves the game early (or a player wants an early game reset)
-function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base)
+function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, immediate)
     if (not player) then
         log("ERROR - CleanupPlayer on NIL Player!")
         return
@@ -583,7 +587,7 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base)
     CleanupPlayerGlobals(player.name) -- Except global.ocore.uniqueSpawns
 
     -- Clear their unique spawn (if they have one)
-    UniqueSpawnCleanupRemove(player.name, remove_base) -- Specifically global.ocore.uniqueSpawns
+    UniqueSpawnCleanupRemove(player.name, remove_base, immediate) -- Specifically global.ocore.uniqueSpawns
 
     -- Remove a force if this player created it and they are the only one on it
     if (remove_force) then
@@ -599,7 +603,7 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base)
     end
 end
 
-function UniqueSpawnCleanupRemove(playerName, cleanup)
+function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
     if (global.ocore.uniqueSpawns[playerName] == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. playerName)
 
@@ -622,10 +626,14 @@ function UniqueSpawnCleanupRemove(playerName, cleanup)
             table.insert(global.vanillaSpawns, {x=spawnPos.x,y=spawnPos.y})
         end
 
-        log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-
-        RegrowthMarkAreaForRemoval(spawnPos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
-        TriggerCleanup()
+        if (immediate) then
+            log("IMMEDIATE Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
+            RegrowthMarkAreaForRemoval(spawnPos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+            TriggerCleanup()
+        else
+            log("Removing permanent flags on base: " .. spawnPos.x .. "," .. spawnPos.y)
+            RegrowthMarkAreaNotPermanentOVERWRITE(spawnPos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
+        end
     end
 
     global.ocore.uniqueSpawns[playerName] = nil
@@ -846,6 +854,8 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn
         delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
         table.insert(global.ocore.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
 
+        HideOarcGui(player)
+        HideOarcStore(player)
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
         RegrowthMarkAreaSafeGivenTilePos(spawn, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), true)
