@@ -701,9 +701,7 @@ function CleanupPlayerGlobals(playerName)
         global.ocore.playerCooldowns[playerName] = nil
     end
 
-    if (global.oarc_store.pmf_counts[playerName] ~= nil) then
-        global.oarc_store.pmf_counts[playerName] = nil
-    end
+    global.oarc_store.pmf_counts[playerName] = {}
 end
 
 function TransferOwnershipOfSharedSpawn(prevOwnerName, newOwnerName)
