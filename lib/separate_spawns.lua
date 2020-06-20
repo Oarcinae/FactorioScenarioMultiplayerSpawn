@@ -854,8 +854,8 @@ function QueuePlayerForDelayedSpawn(playerName, spawn, moatEnabled, vanillaSpawn
         delayedTick = game.tick + delay_spawn_seconds*TICKS_PER_SECOND
         table.insert(global.ocore.delayedSpawns, {playerName=playerName, pos=spawn, moat=moatEnabled, vanilla=vanillaSpawn, delayedTick=delayedTick})
 
-        HideOarcGui(player)
-        HideOarcStore(player)
+        HideOarcGui(game.players[playerName])
+        HideOarcStore(game.players[playerName])
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
         RegrowthMarkAreaSafeGivenTilePos(spawn, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), true)
