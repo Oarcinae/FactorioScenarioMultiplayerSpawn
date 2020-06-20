@@ -234,11 +234,20 @@ end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
-    
+    local player = game.players[event.player_index]
+
     -- If players leave early, say goodbye.
-    if ((player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE)) and
-        game.players[event.player_index]) then
-        RemoveOrResetPlayer(game.players[event.player_index], true, true)
+    if (player and (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE))) then
+        RemoveOrResetPlayer(player, true, true, true)
+        SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+    
+    -- Otherwise check if they are on the removal list.
+    else
+        for _,p in pairs(global.ocore.player_removal_list) do
+            if (p == player) then
+                RemoveOrResetPlayer(player, true, false, false)
+            end
+        end
     end
 end)
 

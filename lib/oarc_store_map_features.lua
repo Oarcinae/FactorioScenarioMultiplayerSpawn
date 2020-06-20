@@ -9,7 +9,7 @@ OARC_STORE_MAP_CATEGORIES =
 {
     special_chests = "Special buildings for sharing or monitoring items and energy. This will convert the closest wooden chest (to you) within 16 tiles into a special building of your choice. Make sure to leave enough space! The combinators and accumulators can take up several tiles around them.",
     special_chunks = "Map features that can be built on the special empty chunks found on the map. You must be standing inside an empty special chunk to be able to build these. Each player can only build one of each type. [color=red]THESE FEATURES ARE PERMANENT AND CAN NOT BE REMOVED![/color]",
-    special_buttons = "Special actions. Like teleporting home. (For now this is the only one...)",
+    special_buttons = "Special actions. Like teleporting home. (For now this is the only one...)"
 }
 
 -- N = number already purchased
@@ -87,6 +87,21 @@ OARC_STORE_MAP_FEATURES =
         ["assembling-machine-1"] = {
             initial_cost = 10,
             text="Teleport home."},
+        ["crash-site-generator"] = {
+            initial_cost = 5000,
+            solo_force = true,
+            text="DESTROY your base and restart. This allows you to choose a new spawn and will completely remove all your buildings and your force. All technology progress will be reset."
+        },
+        ["crash-site-lab-broken"] = {
+            initial_cost = 10000,
+            solo_force = true,
+            text="ABANDON your base and restart. This allows you to choose a new spawn and will move all your buildings to a neutral force. They will still be on the map and can be interacted with, but will not be owned by any player or player force. All radars will be destroyed to help trim map size."
+        },
+        ["crash-site-chest-1"] = {
+            initial_cost = 5000,
+            main_force = true,
+            text="Restart your player. This will kick you from the game and delete your player. Any buildings that you created or interacted with (last_user = you) will be destroyed."
+        }
     }
 }
 
@@ -113,6 +128,14 @@ function CreateMapFeatureStoreTab(tab_container, player)
                 {bottom_margin=5, maximal_width = 400, single_line = false})
         local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
         for item_name,item in pairs(section) do
+
+            if (item.solo_force and (player.force ~= global.ocfg.main_force)) then
+                goto SKIP_ITEM
+            end
+            if (item.main_force and (player.force == global.ocfg.main_force)) then
+                goto SKIP_ITEM
+            end
+
             local count = OarcMapFeaturePlayerCountGet(player, category, item_name)
             local cost = OarcMapFeatureCostScaling(player, category, item_name)
             local color = "[color=green]"
@@ -135,6 +158,7 @@ function CreateMapFeatureStoreTab(tab_container, player)
             else
                 btn.tooltip = item.text.." Cost: "..color..cost.."[/color] [item=coin]"
             end
+            ::SKIP_ITEM::
         end
         local line2 = tab_container.add{type="line", direction="horizontal"}
         line2.style.top_margin = 5
@@ -241,9 +265,18 @@ function OarcMapFeatureStoreButton(event)
     elseif (button.name == "centrifuge") then
         result = RequestSpawnSpecialChunk(player, SpawnAssemblyChunk, button.name)
     elseif (button.name == "rocket-silo") then
-        result = RequestSpawnSpecialChunk(player, SpawnSiloChunk, button.name)        
+        result = RequestSpawnSpecialChunk(player, SpawnSiloChunk, button.name)
     elseif (button.name == "assembling-machine-1") then
         SendPlayerToSpawn(player)
+        result = true
+    elseif (button.name == "crash-site-generator") then
+        DestroyForce(player)
+        result = true
+    elseif (button.name == "crash-site-lab-broken") then
+        AbandonForce(player)
+        result = true
+    elseif (button.name == "crash-site-chest-1") then
+        KickAndMarkPlayerForRemoval(player)
         result = true
     end
 

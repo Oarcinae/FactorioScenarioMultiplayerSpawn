@@ -318,6 +318,30 @@ function WorldEaterSingleStep()
         return -- Chunk isn't in our map so we don't care?
     end 
 
+    -- Search for any abandoned radars and destroy them?
+    local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=next_chunk.area,
+                                                                                force={global.ocore.abandoned_force},
+                                                                                name="radar"}
+    for k,v in pairs(entities) do
+        v.die(nil)
+    end
+
+    -- Search for any entities with _DESTROYED_ force and kill them.
+    entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=next_chunk.area,
+                                                                                force={global.ocore.destroyed_force}}
+    for k,v in pairs(entities) do
+        v.die(nil)
+    end
+
+    -- Text for visual debugging.
+    rendering.draw_text{text="WORLD EATER",
+                    surface=game.surfaces[GAME_SURFACE_NAME],
+                    target=GetCenterTilePosFromChunkPos(next_chunk),
+                    color={0.7,0.7,0.7,0.7},
+                    scale=1,
+                    font="compi",
+                    time_to_live=60*3}
+
     -- If the chunk isn't marked permament, then check if we can remove it
     local c_timer = global.rg.map[next_chunk.x][next_chunk.y]
     if (c_timer == -1) then

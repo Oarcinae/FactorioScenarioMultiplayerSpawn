@@ -381,9 +381,9 @@ end
 -- Set all forces to ceasefire
 function SetCeaseFireBetweenAllForces()
     for name,team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" then
+        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
             for x,y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" then
+                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
                     team.set_cease_fire(x,true)
                 end
             end
@@ -394,9 +394,9 @@ end
 -- Set all forces to friendly
 function SetFriendlyBetweenAllForces()
     for name,team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" then
+        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
             for x,y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" then
+                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
                     team.set_friend(x,true)
                 end
             end

@@ -93,6 +93,12 @@ function InitSpawnGlobalsAndForces()
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreateForce(global.ocfg.main_force)
     main_force.set_spawn_position({x=0,y=0}, GAME_SURFACE_NAME)
+
+    -- Special forces for when players with their own force want a reset.
+    global.ocore.abandoned_force = "_ABANDONED_"
+    global.ocore.destroyed_force = "_DESTROYED_"
+    game.create_force(global.ocore.abandoned_force)
+    game.create_force(global.ocore.destroyed_force)
 end
 
 
@@ -115,13 +121,10 @@ function SeparateSpawnsPlayerCreated(player_index, clear_inv)
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, false)
     SwitchOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME)
 
-    -- If they are NOT a new player, reset them.
-    if (player.force.name ~= "player") then
-        RemoveOrResetPlayer(player, false, true)
-    else
+    -- If they are a new player, put them on the main force.
+    if (player.force.name == "player") then
         player.force = global.ocfg.main_force
     end
-
 
     -- Reset counts for map feature usage for this player.
     OarcMapFeaturePlayerCreatedEvent(player)
@@ -526,8 +529,45 @@ end
                                            
 --]]
 
+
+function DestroyForce(player)
+    local player_old_force = player.force
+
+    player.force = global.ocfg.main_force
+
+    if ((#player_old_force.players <= 1) and (player_old_force.name ~= global.ocfg.main_force)) then
+        SendBroadcastMsg("Team " .. player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.")
+        log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
+        game.merge_forces(player_old_force, global.ocore.destroyed_force)           
+    end
+
+    RemoveOrResetPlayer(player, false, false, false)
+end
+
+function AbandonForce(player)
+    local player_old_force = player.force
+
+    player.force = global.ocfg.main_force
+
+    if ((#player_old_force.players <= 1) and (player_old_force.name ~= global.ocfg.main_force)) then
+        SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!")
+        log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
+        game.merge_forces(player_old_force, global.ocore.abandoned_force)           
+    end
+
+    RemoveOrResetPlayer(player, false, false, false)
+end
+
+function KickAndMarkPlayerForRemoval(player)
+    game.kick_player(player, "KickAndMarkPlayerForRemoval")
+    if (not global.ocore.player_removal_list) then
+        global.ocore.player_removal_list = {}
+    end
+    table.insert(global.ocore.player_removal_list, player)
+end
+
 -- Call this if a player leaves the game early (or a player wants an early game reset)
-function RemoveOrResetPlayer(player, remove_player, remove_force)
+function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base)
     if (not player) then
         log("ERROR - CleanupPlayer on NIL Player!")
         return
@@ -543,12 +583,11 @@ function RemoveOrResetPlayer(player, remove_player, remove_force)
     CleanupPlayerGlobals(player.name) -- Except global.ocore.uniqueSpawns
 
     -- Clear their unique spawn (if they have one)
-    UniqueSpawnCleanupRemove(player.name) -- Specifically global.ocore.uniqueSpawns
+    UniqueSpawnCleanupRemove(player.name, remove_base) -- Specifically global.ocore.uniqueSpawns
 
     -- Remove a force if this player created it and they are the only one on it
     if (remove_force) then
         if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.main_force)) then
-            SendBroadcastMsg("FORCE REMOVED?!")
             log("RemoveOrResetPlayer - FORCE REMOVED: " .. player_old_force.name)
             game.merge_forces(player_old_force, "neutral")           
         end
@@ -560,7 +599,7 @@ function RemoveOrResetPlayer(player, remove_player, remove_force)
     end
 end
 
-function UniqueSpawnCleanupRemove(playerName)
+function UniqueSpawnCleanupRemove(playerName, cleanup)
     if (global.ocore.uniqueSpawns[playerName] == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. playerName)
 
@@ -576,7 +615,7 @@ function UniqueSpawnCleanupRemove(playerName)
     end
 
     -- Unused Chunk Removal mod (aka regrowth)
-    if (global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and global.ocfg.enable_regrowth) then
+    if (cleanup and global.ocfg.enable_abandoned_base_removal and (not nearOtherSpawn) and global.ocfg.enable_regrowth) then
 
         if (global.ocore.uniqueSpawns[playerName].vanilla) then
             log("Returning a vanilla spawn back to available.")
@@ -587,10 +626,6 @@ function UniqueSpawnCleanupRemove(playerName)
 
         RegrowthMarkAreaForRemoval(spawnPos, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE))
         TriggerCleanup()
-        SendBroadcastMsg(playerName .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
-
-    else
-        SendBroadcastMsg(playerName .. " base was abandoned because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
     end
 
     global.ocore.uniqueSpawns[playerName] = nil
@@ -890,7 +925,7 @@ function CreateForce(force_name)
     -- Check if force already exists
     if (game.forces[force_name] ~= nil) then
         log("Force already exists!")
-        return game.forces[global.ocfg.main_force]
+        return CreateForce(force_name .. "_") -- Append a character to make the force name unique.
 
     -- Create a new force
     elseif (TableLength(game.forces) < MAX_FORCES) then
