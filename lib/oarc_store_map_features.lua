@@ -129,10 +129,10 @@ function CreateMapFeatureStoreTab(tab_container, player)
         local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
         for item_name,item in pairs(section) do
 
-            if (item.solo_force and (player.force ~= global.ocfg.main_force)) then
+            if (item.solo_force and (player.force.name == global.ocfg.main_force)) then
                 goto SKIP_ITEM
             end
-            if (item.main_force and (player.force == global.ocfg.main_force)) then
+            if (item.main_force and (player.force.name ~= global.ocfg.main_force)) then
                 goto SKIP_ITEM
             end
 
