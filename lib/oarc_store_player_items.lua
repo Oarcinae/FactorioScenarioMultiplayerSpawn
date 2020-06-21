@@ -107,21 +107,19 @@ function CreatePlayerStoreTab(tab_container, player)
     for category,section in pairs(OARC_STORE_PLAYER_ITEMS) do
         local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
         for item_name,item in pairs(section) do
-            -- if (not item.play_time_locked or (player.online_time > TICKS_PER_MINUTE*15)) then
-                local color = "[color=green]"
-                if (item.cost > wallet) then
-                    color = "[color=red]"
-                end
-                local btn = flow.add{name=item_name,
-                            type="sprite-button",
-                            number=item.count,
-                            sprite="item/"..item_name,
-                            tooltip=item_name .. " Cost: "..color..item.cost.."[/color] [item=coin]",
-                            style=mod_gui.button_style}
-                if (item.play_time_locked and (player.online_time < TICKS_PER_MINUTE*15)) then
-                    btn.enabled = false
-                end
-            -- end
+            local color = "[color=green]"
+            if (item.cost > wallet) then
+                color = "[color=red]"
+            end
+            local btn = flow.add{name=item_name,
+                        type="sprite-button",
+                        number=item.count,
+                        sprite="item/"..item_name,
+                        tooltip=item_name .. " Cost: "..color..item.cost.."[/color] [item=coin]",
+                        style=mod_gui.button_style}
+            if (item.play_time_locked and (player.online_time < TICKS_PER_MINUTE*15)) then
+                btn.enabled = false
+            end
         end
         local line2 = tab_container.add{type="line", direction="horizontal"}
         line2.style.top_margin = 5

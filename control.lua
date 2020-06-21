@@ -241,15 +241,6 @@ script.on_event(defines.events.on_player_left_game, function(event)
         log("Player left early: " .. player.name)
         SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
         RemoveOrResetPlayer(player, true, true, true, true)
-    
-    -- Otherwise check if they are on the removal list.
-    elseif (global.ocore.player_removal_list) then
-        for k,p in pairs(global.ocore.player_removal_list) do
-            if (p == player) then
-                RemoveOrResetPlayer(player, true, false, false, false)
-                global.ocore.player_removal_list[k] = nil
-            end
-        end
     end
 end)
 

@@ -90,17 +90,16 @@ OARC_STORE_MAP_FEATURES =
         ["crash-site-generator"] = {
             initial_cost = 5000,
             solo_force = true,
-            text="DESTROY your base and restart. This allows you to choose a new spawn and will completely remove all your buildings and your force. All technology progress will be reset."
+            text="DESTROY your base and restart. This allows you to choose a new spawn and will completely destroy all your buildings and your force. All technology progress will be reset. You get to keep your current items and armor! [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         },
         ["crash-site-lab-broken"] = {
             initial_cost = 10000,
             solo_force = true,
-            text="ABANDON your base and restart. This allows you to choose a new spawn and will move all your buildings to a neutral force. They will still be on the map and can be interacted with, but will not be owned by any player or player force. All radars will be destroyed to help trim map size."
+            text="ABANDON your base and restart. This allows you to choose a new spawn and will move all your buildings to a neutral force. They will still be on the map and can be interacted with, but will not be owned by any player or player force. All radars will be destroyed to help trim map size. You get to keep your current items and armor! [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         },
         ["crash-site-chest-1"] = {
             initial_cost = 5000,
-            main_force = true,
-            text="Restart your player. This will kick you from the game and delete your player. Any buildings that you created or interacted with (last_user = you) will be destroyed."
+            text="Restart your game. This will reset your player, your force and your base. [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         }
     }
 }
@@ -134,10 +133,6 @@ function CreateMapFeatureStoreTab(tab_container, player)
                                      (not global.ocore.playerSpawns[player.name]))) then
                 blocked = true
             end
-            if (item.main_force and ((player.force.name ~= global.ocfg.main_force) or
-                                     (not global.ocore.playerSpawns[player.name]))) then
-                blocked = true
-            end
 
             local count = OarcMapFeaturePlayerCountGet(player, category, item_name)
             local cost = OarcMapFeatureCostScaling(player, category, item_name)
@@ -157,7 +152,7 @@ function CreateMapFeatureStoreTab(tab_container, player)
                                  "Limit: ("..count.."/"..item.limit..") [/color]"
             elseif (blocked) then
                 btn.enabled = false
-                btn.tooltip = item.text.." Cost: "..color..cost.."[/color] [item=coin]"
+                btn.tooltip = item.text .. " (This is only allowed for players on their own force that own the spawn. If you have other players on your force, they must reset first before you can use this.)" .." Cost: "..color..cost.."[/color] [item=coin]"
             elseif (item.limit) then
                 btn.tooltip = item.text .. "\nCost: "..color..cost.."[/color] [item=coin] "..
                                 "Limit: ("..count.."/"..item.limit..")"
@@ -276,13 +271,13 @@ function OarcMapFeatureStoreButton(event)
         SendPlayerToSpawn(player)
         result = true
     elseif (button.name == "crash-site-generator") then
-        DestroyForce(player)
+        ResetPlayerAndDestroyForce(player)
         result = true
     elseif (button.name == "crash-site-lab-broken") then
-        AbandonForce(player)
+        ResetPlayerAndAbandonForce(player)
         result = true
     elseif (button.name == "crash-site-chest-1") then
-        KickAndMarkPlayerForRemoval(player)
+        ResetPlayerAndMergeForceToNeutral(player)
         result = true
     end
 

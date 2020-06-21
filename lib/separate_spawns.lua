@@ -532,33 +532,38 @@ end
 --]]
 
 
-function DestroyForce(player)
+function ResetPlayerAndDestroyForce(player)
     local player_old_force = player.force
 
     player.force = global.ocfg.main_force
 
-    if ((#player_old_force.players <= 1) and (player_old_force.name ~= global.ocfg.main_force)) then
+    if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.main_force)) then
         SendBroadcastMsg("Team " .. player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.")
         log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
         game.merge_forces(player_old_force, global.ocore.destroyed_force)           
     end
 
     RemoveOrResetPlayer(player, false, false, true, true)
-    SeparateSpawnsPlayerCreated(player.index, true)
+    SeparateSpawnsPlayerCreated(player.index, false)
 end
 
-function AbandonForce(player)
+function ResetPlayerAndAbandonForce(player)
     local player_old_force = player.force
 
     player.force = global.ocfg.main_force
 
-    if ((#player_old_force.players <= 1) and (player_old_force.name ~= global.ocfg.main_force)) then
+    if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.main_force)) then
         SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!")
         log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
         game.merge_forces(player_old_force, global.ocore.abandoned_force)           
     end
 
     RemoveOrResetPlayer(player, false, false, false, false)
+    SeparateSpawnsPlayerCreated(player.index, false)
+end
+
+function ResetPlayerAndMergeForceToNeutral(player)
+    RemoveOrResetPlayer(player, false, true, true, true)
     SeparateSpawnsPlayerCreated(player.index, true)
 end
 

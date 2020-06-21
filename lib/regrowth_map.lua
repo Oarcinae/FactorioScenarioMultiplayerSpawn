@@ -102,7 +102,7 @@ function RegrowthMarkAreaNotPermanentOVERWRITE(pos, chunk_radius)
         for k=-chunk_radius,chunk_radius do
             local y = c_pos.y+k
 
-            if (global.rg.map[x] and (global.rg.map[x][y] == -2)) then
+            if (global.rg.map[x] and global.rg.map[x][y] and (global.rg.map[x][y] == -2)) then
                 global.rg.map[x][y] = -1
             end
         end
