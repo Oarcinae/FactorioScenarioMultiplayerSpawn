@@ -16,7 +16,7 @@
 require("lib/oarc_utils")
 require("config")
 
-REGROWTH_TIMEOUT_TICKS = TICKS_PER_MINUTE -- TICKS_PER_HOUR TICKS_PER_MINUTE
+REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR -- TICKS_PER_HOUR TICKS_PER_MINUTE
 
 -- Init globals and set player join area to be off limits.
 function RegrowthInit()
@@ -347,15 +347,6 @@ function WorldEaterSingleStep()
     for k,v in pairs(entities) do
         v.die(nil)
     end
-
-    -- Text for visual debugging.
-    rendering.draw_text{text="WORLD EATER",
-                    surface=game.surfaces[GAME_SURFACE_NAME],
-                    target=GetCenterTilePosFromChunkPos(next_chunk),
-                    color={0.7,0.7,0.7,0.7},
-                    scale=1,
-                    font="compi",
-                    time_to_live=60*3}
 
     -- If the chunk isn't marked permament, then check if we can remove it
     local c_timer = global.rg.map[next_chunk.x][next_chunk.y]
