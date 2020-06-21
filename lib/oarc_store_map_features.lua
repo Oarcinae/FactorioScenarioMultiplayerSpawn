@@ -9,7 +9,7 @@ OARC_STORE_MAP_CATEGORIES =
 {
     special_chests = "Special buildings for sharing or monitoring items and energy. This will convert the closest wooden chest (to you) within 16 tiles into a special building of your choice. Make sure to leave enough space! The combinators and accumulators can take up several tiles around them.",
     special_chunks = "Map features that can be built on the special empty chunks found on the map. You must be standing inside an empty special chunk to be able to build these. Each player can only build one of each type. [color=red]THESE FEATURES ARE PERMANENT AND CAN NOT BE REMOVED![/color]",
-    special_buttons = "Special actions. Like teleporting home. (For now this is the only one...)"
+    special_buttons = "Special actions. Like teleporting home or resetting your player."
 }
 
 -- N = number already purchased
