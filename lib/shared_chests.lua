@@ -243,6 +243,15 @@ function ConvertWoodenChestToShareEnergyOutput(player)
     return false
 end
 
+function ConvertWoodenChestToWaterFill(player)
+    local pos = FindClosestWoodenChestAndDestroy(player)
+    if (pos) then
+        player.surface.set_tiles({[1]={name = "water", position=pos}})
+        return true
+    end
+    return false
+end
+
 function DestroyClosestSharedChestEntity(player)
     local special_entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
                                         name={"electric-energy-interface", "constant-combinator", "logistic-chest-storage", "logistic-chest-requester"},

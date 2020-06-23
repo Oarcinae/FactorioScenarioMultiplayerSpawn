@@ -90,7 +90,7 @@ script.on_init(function(event)
     InitSpawnGlobalsAndForces()
 
     -- Frontier Silo Area Generation
-    if (global.ocfg.frontier_rocket_silo) then
+    if (global.ocfg.frontier_rocket_silo and not global.ocfg.enable_magic_factories) then
         SpawnSilosAndGenerateSiloAreas()
     end
 

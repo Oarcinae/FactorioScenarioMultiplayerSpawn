@@ -9,7 +9,8 @@ OARC_STORE_MAP_CATEGORIES =
 {
     special_chests = "Special buildings for sharing or monitoring items and energy. This will convert the closest wooden chest (to you) within 16 tiles into a special building of your choice. Make sure to leave enough space! The combinators and accumulators can take up several tiles around them.",
     special_chunks = "Map features that can be built on the special empty chunks found on the map. You must be standing inside an empty special chunk to be able to build these. Each player can only build one of each type. [color=red]THESE FEATURES ARE PERMANENT AND CAN NOT BE REMOVED![/color]",
-    special_buttons = "Special actions. Like teleporting home or resetting your player."
+    special_buttons = "Special buttons like teleporting home and placing waterfill.",
+    reset_buttons = "Reset your player and base. [color=red]Choose carefully! Can't be undone.[/color] If you don't own a base and your own force, some options may not be available to you."
 }
 
 -- N = number already purchased
@@ -22,7 +23,7 @@ OARC_STORE_MAP_FEATURES =
             additional_cost = 20,
             multiplier_cost = 2,
             -- limit = 100,
-            text="Input chest for sharing items."},
+            text="Input chest for storing shared items."},
         ["logistic-chest-requester"] = {
             initial_cost = 200,
             additional_cost = 50,
@@ -80,20 +81,26 @@ OARC_STORE_MAP_FEATURES =
             multiplier_cost = 2,
             -- limit = 2,
             text="Convert this special chunk into a rocket launch pad. This allows you to build a rocket silo here!"},
-        -- ["rocket-silo"] = {cost = 1000, text="Build a special rocket silo chunk here."}, TODO...
     },
 
     special_buttons = {
         ["assembling-machine-1"] = {
             initial_cost = 10,
             text="Teleport home."},
+        ["offshore-pump"] = {
+            initial_cost = 50,
+            text="Converts the closest empty wooden chest into a water tile!"
+        }
+    },
+
+    reset_buttons = {
         ["crash-site-generator"] = {
             initial_cost = 5000,
             solo_force = true,
             text="DESTROY your base and restart. This allows you to choose a new spawn and will completely destroy all your buildings and your force. All technology progress will be reset. You get to keep your current items and armor! [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         },
         ["crash-site-lab-broken"] = {
-            initial_cost = 10000,
+            initial_cost = 5000,
             solo_force = true,
             text="ABANDON your base and restart. This allows you to choose a new spawn and will move all your buildings to a neutral force. They will still be on the map and can be interacted with, but will not be owned by any player or player force. All radars will be destroyed to help trim map size. You get to keep your current items and armor! [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         },
@@ -270,6 +277,8 @@ function OarcMapFeatureStoreButton(event)
     elseif (button.name == "assembling-machine-1") then
         SendPlayerToSpawn(player)
         result = true
+    elseif (button.name == "offshore-pump") then
+        result = ConvertWoodenChestToWaterFill(player)
     elseif (button.name == "crash-site-generator") then
         ResetPlayerAndDestroyForce(player)
         result = true
