@@ -321,6 +321,7 @@ function SpawnAssemblyChunk(chunk_pos)
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
 
     -- 4 Assemblers
+    SpawnMagicAssembler({x=center_pos.x-11,y=center_pos.y-11})
     SpawnMagicAssembler({x=center_pos.x,y=center_pos.y-11})
     SpawnMagicAssembler({x=center_pos.x+11,y=center_pos.y-11})
     SpawnMagicAssembler({x=center_pos.x-11,y=center_pos.y+11})
