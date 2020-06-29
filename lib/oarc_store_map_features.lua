@@ -271,7 +271,7 @@ function OarcMapFeatureStoreButton(event)
     elseif (button.name == "assembling-machine-3") then
         result = RequestSpawnSpecialChunk(player, SpawnAssemblyChunk, button.name)
     elseif (button.name == "centrifuge") then
-        result = RequestSpawnSpecialChunk(player, SpawnAssemblyChunk, button.name)
+        result = RequestSpawnSpecialChunk(player, SpawnCentrifugeChunk, button.name)
     elseif (button.name == "rocket-silo") then
         result = RequestSpawnSpecialChunk(player, SpawnSiloChunk, button.name)
     elseif (button.name == "assembling-machine-1") then
