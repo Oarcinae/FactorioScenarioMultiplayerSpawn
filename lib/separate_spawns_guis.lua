@@ -535,7 +535,7 @@ function SharedSpawnJoinWaitMenuClick(event)
             if (sharedSpawn.joinQueue ~= nil) then
                 for index,requestingPlayer in pairs(sharedSpawn.joinQueue) do
                     if (requestingPlayer == player.name) then
-                        table.remove(global.ocore.sharedSpawns[spawnName].joinQueue, index)
+                        global.ocore.sharedSpawns[spawnName].joinQueue[index] = false
                         game.players[spawnName].print({"oarc-player-cancel-join-request", player.name})
                         return
                     end
@@ -724,7 +724,7 @@ function SpawnCtrlGuiClick(event)
             -- Find and remove the player from the joinQueue they were in.
             for index,requestingPlayer in pairs(global.ocore.sharedSpawns[player.name].joinQueue) do
                 if (requestingPlayer == joinQueuePlayerChoice) then
-                    table.remove(global.ocore.sharedSpawns[player.name].joinQueue, index)
+                    global.ocore.sharedSpawns[player.name].joinQueue[index] = nil
                     return
                 end
             end
@@ -734,7 +734,7 @@ function SpawnCtrlGuiClick(event)
             -- Find and remove the player from the joinQueue they were in.
             for index,requestingPlayer in pairs(global.ocore.sharedSpawns[player.name].joinQueue) do
                 if (requestingPlayer == joinQueuePlayerChoice) then
-                    table.remove(global.ocore.sharedSpawns[player.name].joinQueue, index)
+                    global.ocore.sharedSpawns[player.name].joinQueue[index] = nil
                 end
             end
 
@@ -893,7 +893,7 @@ function BuddySpawnOptsGuiClick(event)
         -- Remove them from the buddy list when they cancel
         for i=#global.ocore.waitingBuddies,1,-1 do
             if (global.ocore.waitingBuddies[i] == player.name) then
-                table.remove(global.ocore.waitingBuddies, i)
+                global.ocore.waitingBuddies[i] = nil
             end
         end
     end
@@ -965,7 +965,7 @@ function BuddySpawnOptsGuiClick(event)
         for i=#global.ocore.waitingBuddies,1,-1 do
             name = global.ocore.waitingBuddies[i]
             if ((name == player.name) or (name == buddyChoice)) then
-                table.remove(global.ocore.waitingBuddies, i)
+                global.ocore.waitingBuddies[i] = nil
             end
         end
 
@@ -1211,7 +1211,7 @@ function BuddySpawnRequestMenuClick(event)
         requesterBuddy.print({"oarc-buddy-declined", player.name})
     end
 
-    table.remove(global.ocore.buddySpawnOpts, requesterName)
+    global.ocore.buddySpawnOpts[requesterName] = nil
 end
 
 
