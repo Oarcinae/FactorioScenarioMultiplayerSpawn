@@ -22,12 +22,14 @@ OARC_STORE_MAP_FEATURES =
             initial_cost = 200,
             additional_cost = 20,
             multiplier_cost = 2,
+            max_cost = 2000,
             -- limit = 100,
             text="Input chest for storing shared items."},
         ["logistic-chest-requester"] = {
             initial_cost = 200,
             additional_cost = 50,
             multiplier_cost = 2,
+            max_cost = 4000,
             -- limit = 100,
             text="Output chest for requesting shared items."},
         ["constant-combinator"] = {
@@ -37,12 +39,14 @@ OARC_STORE_MAP_FEATURES =
             initial_cost = 200,
             additional_cost = 50,
             multiplier_cost = 2,
+            max_cost = 2000,
             -- limit = 100,
             text="INPUT for shared energy system."},
         ["electric-energy-interface"] = {
             initial_cost = 200,
             additional_cost = 100,
             multiplier_cost = 2,
+            max_cost = 4000,
             -- limit = 100,
             text="OUTPUT for shared energy system."},
         ["deconstruction-planner"] = {
@@ -79,6 +83,7 @@ OARC_STORE_MAP_FEATURES =
             initial_cost = 1000,
             additional_cost = 0,
             multiplier_cost = 2,
+            max_cost = 10000,
             -- limit = 2,
             text="Convert this special chunk into a rocket launch pad. This allows you to build a rocket silo here!"},
     },
@@ -225,7 +230,12 @@ function OarcMapFeatureCostScaling(player, category_name, feature_name)
     end
 
     if (map_feature.initial_cost and map_feature.additional_cost and map_feature.multiplier_cost) then
-        return (map_feature.initial_cost + (map_feature.additional_cost*(count^map_feature.multiplier_cost)))
+        local calc_cost = (map_feature.initial_cost + (map_feature.additional_cost*(count^map_feature.multiplier_cost)))
+        if (map_feature.max_cost) then
+            return math.min(map_feature.max_cost, calc_cost)
+        else
+            return calc_cost
+        end
     else
         return map_feature.initial_cost
     end
