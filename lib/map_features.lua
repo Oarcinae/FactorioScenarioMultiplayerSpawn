@@ -247,15 +247,17 @@ function RequestSpawnSpecialChunk(player, spawn_function, feature_name)
                                                 right_bottom = {chunk_area.right_bottom.x-1, chunk_area.right_bottom.y-1}},
                                                 force={"enemy", "neutral"},
                                                 invert=true}
-        if (#entities > 1) then
-            player.print("Looks like this chunk already has something in it other than just you the player?! " .. entities[1].name)
-            return false
-        elseif ((#entities == 1) and (entities[1].player == player)) or (#entities == 0) then
+        
+        -- Either there are no entities in the chunk (player is just on the boundary), or the only entity is the player.
+        if ((#entities == 1) and (entities[1].player) and (entities[1].player == player)) or (#entities == 0) then
             spawn_function(closest_chunk)
             -- Teleport to center of chunk to be safe.
             SafeTeleport(player, game.surfaces[GAME_SURFACE_NAME], GetCenterTilePosFromChunkPos(closest_chunk))
             OarcMapFeaturePlayerCountChange(player, "special_chunks", feature_name, 1)
             return true
+        else
+            player.print("Looks like this chunk already has something in it other than just you the player?! " .. entities[1].name)
+            return false
         end
 
     else
