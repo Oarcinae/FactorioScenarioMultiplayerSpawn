@@ -595,6 +595,11 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
         end
     end
 
+    -- @todo Figure out why this case could be hit... Fix for error report in github.
+    if (global.ocore.playerCooldowns[player.name] == nil) then
+        global.ocore.playerCooldowns[player.name] = {setRespawn=game.tick}
+    end
+
     -- Sets the player's custom spawn point to their current location
     if ((game.tick - global.ocore.playerCooldowns[player.name].setRespawn) >
             (global.ocfg.respawn_cooldown_min * TICKS_PER_MINUTE)) then
