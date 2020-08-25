@@ -108,7 +108,7 @@ script.on_init(function(event)
         SharedChestInitItems()
     end
 
-    if (global.ocfg.enable_magic_factories) then
+    if (global.ocfg.enable_chest_sharing and global.ocfg.enable_magic_factories) then
         MagicFactoriesInit()
     end
 
@@ -264,7 +264,7 @@ script.on_event(defines.events.on_tick, function(event)
         SharedChestsOnTick()
     end
 
-    if global.ocfg.enable_magic_factories then
+    if (global.ocfg.enable_chest_sharing and global.ocfg.enable_magic_factories) then
         MagicFactoriesOnTick()
     end
 

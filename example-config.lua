@@ -88,7 +88,7 @@ ENABLE_RESEARCH_QUEUE = true
 ENABLE_CHEST_SHARING = false
 
 -- Enable magic factories around the map. (Similar to whistle stop mod)
-ENABLE_MAGIC_FACTORIES = false
+ENABLE_MAGIC_FACTORIES = false -- REQUIRES ENABLE_CHEST_SHARING!
 
 -- This inhibits enemy attacks on bases where all players are offline.
 -- Not 100% guaranteed.
