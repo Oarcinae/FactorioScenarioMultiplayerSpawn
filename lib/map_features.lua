@@ -17,10 +17,18 @@ POWER_USAGE_SCALING_FACTOR = 2
 -- This is a table indexed by the single INPUT item!
 FURNACE_ENERGY_PER_CRAFT_SECOND = (180000 / 2) * POWER_USAGE_SCALING_FACTOR
 FURNACE_RECIPES = {
-    ["iron-ore"] = {recipe_name = "iron-plate", recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND},
-    ["copper-ore"] = {recipe_name = "copper-plate", recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND},
-    ["iron-plate"] = {recipe_name = "steel-plate", recipe_energy = 16*FURNACE_ENERGY_PER_CRAFT_SECOND}, 
-    ["stone"] = {recipe_name = "stone-brick", recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND},
+    ["iron-ore"] = {recipe_name = "iron-plate",
+                    recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND,
+                    recipe_pollution = 0.053},
+    ["copper-ore"] = {recipe_name = "copper-plate",
+                    recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND,
+                    recipe_pollution = 0.053},
+    ["iron-plate"] = {recipe_name = "steel-plate",
+                    recipe_energy = 16*FURNACE_ENERGY_PER_CRAFT_SECOND},
+                        recipe_pollution = 0.267, 
+    ["stone"] = {recipe_name = "stone-brick",
+                    recipe_energy = 3.2*FURNACE_ENERGY_PER_CRAFT_SECOND,
+                    recipe_pollution = 0.053},
 }
 
 -- The chemplants/refineries/assemblers lookup their own recipes since they can be set by the player.
@@ -28,6 +36,12 @@ CHEMPLANT_ENERGY_PER_CRAFT_SECOND = 210000 * POWER_USAGE_SCALING_FACTOR
 REFINERY_ENERGY_PER_CRAFT_SECOND = 420000 * POWER_USAGE_SCALING_FACTOR
 ASSEMBLER3_ENERGY_PER_CRAFT_SECOND = (375000 / 1.25) * POWER_USAGE_SCALING_FACTOR
 CENTRIFUGE_ENERGY_PER_CRAFT_SECOND = 350000 * POWER_USAGE_SCALING_FACTOR
+
+CHEMPLANT_POLLUTION_PER_CRAFT_SECOND = 4/60
+REFINERY_POLLUTION_PER_CRAFT_SECOND = 6/60
+ASSEMBLER3_POLLUTION_PER_CRAFT_SECOND = 2/60
+CENTRIFUGE_POLLUTION_PER_CRAFT_SECOND = 4/60
+
 
 ENEMY_WORM_TURRETS =
 {
@@ -136,7 +150,6 @@ function MagicFactoriesInit()
 
     global.omagic = {}
     global.omagic.building_total_count = 0
-    global.omagic.factory_energy_history = {}
     global.omagic.factory_positions = {}
     global.omagic.furnaces = {}
     global.omagic.chemplants = {}
@@ -245,7 +258,7 @@ function RequestSpawnSpecialChunk(player, spawn_function, feature_name)
         local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
                                         area={left_top = {chunk_area.left_top.x+1, chunk_area.left_top.y+1},
                                                 right_bottom = {chunk_area.right_bottom.x-1, chunk_area.right_bottom.y-1}},
-                                                force={"enemy", "neutral"},
+                                                force={"enemy"},
                                                 invert=true}
         
         -- Either there are no entities in the chunk (player is just on the boundary), or the only entity is the player.
@@ -270,32 +283,42 @@ end
 
 function SpecialChunkHelperText(pos)
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
-        {x=pos.x-4,y=pos.y-1},
+        {x=pos.x-3.5,y=pos.y+1},
         1,
-        "Consumes energy from sharing system.",
+        "Supply energy to this interface!",
         {0.7,0.4,0.3,0.8})
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
-        {x=pos.x-3.5,y=pos.y},
-        1,
-        "Supply energy at any player spawn.",
-        {0.7,0.4,0.3,0.8})
-    RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME].index,
-        {x=pos.x-4.5,y=pos.y+1},
+        {x=pos.x-4.5,y=pos.y+2},
         1,
         "Modules/beacons DO NOT have any effect!",
         {0.7,0.4,0.3,0.8})
 end
 
+function spawnSpecialChunkInputElec(center_pos)
+    local inputElec = game.surfaces[GAME_SURFACE_NAME].create_entity{name="electric-energy-interface", position=center_pos, force="neutral"}
+    inputElec.destructible = false
+    inputElec.minable = false
+    inputElec.operable = false
+    inputElec.electric_buffer_size = 1000000000
+    inputElec.power_production = 0
+    inputElec.power_usage = 0
+    inputElec.energy = 0
+    return inputElec
+end
+
 function SpawnFurnaceChunk(chunk_pos)
 
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
+    local furnace_chunk = {["energy_input"] = spawnSpecialChunkInputElec(center_pos),
+                            ["entities"] = {}}
 
-    -- 4 Furnaces
-    SpawnMagicFurnace({x=center_pos.x-8,y=center_pos.y-8})
-    SpawnMagicFurnace({x=center_pos.x+8,y=center_pos.y-8})
-    SpawnMagicFurnace({x=center_pos.x-8,y=center_pos.y+8})
-    SpawnMagicFurnace({x=center_pos.x+8,y=center_pos.y+8})
+    -- 4x furnaces
+    table.insert(furnace_chunk.entities, SpawnMagicBuilding("electric-furnace", {x=center_pos.x-12,y=center_pos.y-12}))
+    table.insert(furnace_chunk.entities, SpawnMagicBuilding("electric-furnace", {x=center_pos.x+11,y=center_pos.y-12}))
+    table.insert(furnace_chunk.entities, SpawnMagicBuilding("electric-furnace", {x=center_pos.x-12,y=center_pos.y+11}))
+    table.insert(furnace_chunk.entities, SpawnMagicBuilding("electric-furnace", {x=center_pos.x+11,y=center_pos.y+11}))
 
+    table.insert(global.omagic.furnaces, furnace_chunk)
     SpecialChunkHelperText(center_pos)
 end
 
@@ -303,44 +326,56 @@ function SpawnOilRefineryChunk(chunk_pos)
 
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
 
-    -- Refineries
-    SpawnMagicRefinery({x=center_pos.x-5,y=center_pos.y-8})
-    SpawnMagicRefinery({x=center_pos.x+5,y=center_pos.y-8})
+    local oil_chunk = {["energy_input"] = spawnSpecialChunkInputElec(center_pos),
+                            ["chemplants"] = {},
+                            ["refineries"] = {}}
 
-    -- Chem Plants
-    SpawnMagicChemicalPlant({x=center_pos.x-10,y=center_pos.y+8})
-    SpawnMagicChemicalPlant({x=center_pos.x-6,y=center_pos.y+8})
-    SpawnMagicChemicalPlant({x=center_pos.x-2,y=center_pos.y+8})
-    SpawnMagicChemicalPlant({x=center_pos.x+2,y=center_pos.y+8})
-    SpawnMagicChemicalPlant({x=center_pos.x+6,y=center_pos.y+8})
-    SpawnMagicChemicalPlant({x=center_pos.x+10,y=center_pos.y+8})
+    -- 2x Refineries
+    table.insert(oil_chunk.refineries, SpawnMagicBuilding("oil-refinery", {x=center_pos.x-5,y=center_pos.y-8}))
+    table.insert(oil_chunk.refineries, SpawnMagicBuilding("oil-refinery", {x=center_pos.x+5,y=center_pos.y-8}))
 
+    -- 6x Chem Plants
+    table.insert(oil_chunk.chemplants, SpawnMagicBuilding("chemical-plant", {x=center_pos.x-10,y=center_pos.y+8}))
+    table.insert(oil_chunk.chemplants, SpawnMagicBuilding("chemical-plant", {x=center_pos.x-6,y=center_pos.y+8}))
+    table.insert(oil_chunk.chemplants, SpawnMagicBuilding("chemical-plant", {x=center_pos.x-2,y=center_pos.y+8}))
+    table.insert(oil_chunk.chemplants, SpawnMagicBuilding("chemical-plant", {x=center_pos.x+2,y=center_pos.y+8}))
+    table.insert(oil_chunk.chemplants, SpawnMagicBuilding("chemical-plant", {x=center_pos.x+6,y=center_pos.y+8}))
+    table.insert(oil_chunk.chemplants, SpawnMagicBuilding("chemical-plant", {x=center_pos.x+10,y=center_pos.y+8}))
+
+    table.insert(global.omagic.refineries, oil_chunk)
+    table.insert(global.omagic.chemplants, oil_chunk)
     SpecialChunkHelperText(center_pos)
 end
 
 function SpawnAssemblyChunk(chunk_pos)
 
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
+    local assembler_chunk = {["energy_input"] = spawnSpecialChunkInputElec(center_pos),
+                            ["entities"] = {}}
 
-    -- 4 Assemblers
-    SpawnMagicAssembler({x=center_pos.x-11,y=center_pos.y-11})
-    SpawnMagicAssembler({x=center_pos.x,y=center_pos.y-11})
-    SpawnMagicAssembler({x=center_pos.x+11,y=center_pos.y-11})
-    SpawnMagicAssembler({x=center_pos.x-11,y=center_pos.y+11})
-    SpawnMagicAssembler({x=center_pos.x,y=center_pos.y+11})
-    SpawnMagicAssembler({x=center_pos.x+11,y=center_pos.y+11})
+    -- 6x Assemblers
+    table.insert(assembler_chunk.entities, SpawnMagicBuilding("assembling-machine-3", {x=center_pos.x-12,y=center_pos.y-12}))
+    table.insert(assembler_chunk.entities, SpawnMagicBuilding("assembling-machine-3", {x=center_pos.x,y=center_pos.y-12}))
+    table.insert(assembler_chunk.entities, SpawnMagicBuilding("assembling-machine-3", {x=center_pos.x+11,y=center_pos.y-12}))
+    table.insert(assembler_chunk.entities, SpawnMagicBuilding("assembling-machine-3", {x=center_pos.x-12,y=center_pos.y+11}))
+    table.insert(assembler_chunk.entities, SpawnMagicBuilding("assembling-machine-3", {x=center_pos.x-1,y=center_pos.y+11}))
+    table.insert(assembler_chunk.entities, SpawnMagicBuilding("assembling-machine-3", {x=center_pos.x+11,y=center_pos.y+11}))
 
+    table.insert(global.omagic.assemblers, assembler_chunk)
     SpecialChunkHelperText(center_pos)
 end
 
 function SpawnCentrifugeChunk(chunk_pos)
 
     center_pos = GetCenterTilePosFromChunkPos(chunk_pos)
+    local centrifuge_chunk = {["energy_input"] = spawnSpecialChunkInputElec(center_pos),
+                            ["entities"] = {}}
 
     -- 1 Centrifuge (MORE THAN ENOUGH!)
-    SpawnMagicCentrifuge({x=center_pos.x,y=center_pos.y})
+    table.insert(centrifuge_chunk.entities, SpawnMagicBuilding("centrifuge", {x=center_pos.x,y=center_pos.y-10}))
 
-    SpecialChunkHelperText({x=center_pos.x,y=center_pos.y+3})
+    table.insert(global.omagic.centrifuges, centrifuge_chunk)
+    SpecialChunkHelperText(center_pos)
 end
 
 function SpawnSiloChunk(chunk_pos)
@@ -392,30 +427,7 @@ function SpawnMagicBuilding(entity_name, position)
     return magic_building
 end
 
-function SpawnMagicFurnace(pos)
-    table.insert(global.omagic.furnaces, SpawnMagicBuilding("electric-furnace",  pos))
-end
-
-function SpawnMagicChemicalPlant(pos)
-    table.insert(global.omagic.chemplants, SpawnMagicBuilding("chemical-plant",  pos))
-end
-
-function SpawnMagicRefinery(pos)
-    table.insert(global.omagic.refineries, SpawnMagicBuilding("oil-refinery",  pos))
-end
-
-function SpawnMagicAssembler(pos)
-    table.insert(global.omagic.assemblers, SpawnMagicBuilding("assembling-machine-3",  pos))
-end
-
-function SpawnMagicCentrifuge(pos)
-    table.insert(global.omagic.centrifuges, SpawnMagicBuilding("centrifuge",  pos))
-end
-
-
 function MagicFactoriesOnTick()
-    global.omagic.factory_energy_history[game.tick % 60] = 0
-
     MagicFurnaceOnTick()
     MagicChemplantOnTick()
     MagicRefineryOnTick()
@@ -428,447 +440,478 @@ end
 -- blue belt = 45 / sec
 -- 6 INPUT blue belts = 4.5 ore/tick (45 * 6 / 60) with productivity is an extra 0.9 maybe.
 function MagicFurnaceOnTick()
-
     if not global.omagic.furnaces then return end
-    local energy_used = 0
-    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,furnace in pairs(global.omagic.furnaces) do
+    for entry_idx,entry in pairs(global.omagic.furnaces) do
         
-        if (furnace == nil) or (not furnace.valid) then
-            global.omagic.furnaces[idx] = nil
-            log("MagicFurnaceOnTick - Magic furnace removed?")
-            goto continue
-        end
-        
-        local input_inv = furnace.get_inventory(defines.inventory.furnace_source)
-        local input_items = input_inv.get_contents()
-
-        -- We have something inside?
-        local input_item_name = next(input_items)
-        if not input_item_name then 
-            goto continue
+        -- Validate the entry.
+        if (entry == nil) or (entry.entities == nil) or (entry.energy_input == nil) or (not entry.energy_input.valid) then
+            global.omagic.furnaces[entry_idx] = nil
+            log("MagicFurnaceOnTick - Magic furnace entry removed?")
+            goto next_furnace_entry
         end
 
-        -- Does the input item have a recipe?
-        if not FURNACE_RECIPES[input_item_name] then 
-            log("MagicFurnaceOnTick - Missing FURNACE_RECIPES?")
-            goto continue
-        end
-        local recipe = game.forces["neutral"].recipes[FURNACE_RECIPES[input_item_name].recipe_name]
-        if not recipe then 
-            log("MagicFurnaceOnTick - Missing neutral force recipes?")
-            goto continue
-        end
+        local energy_share = entry.energy_input.energy/#entry.entities
 
-        -- Verify 1 ingredient type and 1 product type (for furnaces)
-        if (#recipe.products ~= 1) or (#recipe.ingredients ~= 1) then 
-            log("MagicFurnaceOnTick - Recipe product/ingredient more than 1?")
-            goto continue
-        end
-        local recipe_ingredient = recipe.ingredients[next(recipe.ingredients)]
-        local recipe_product = recipe.products[next(recipe.products)]
+        for idx,furnace in pairs(entry.entities) do
 
-        local output_inv = furnace.get_inventory(defines.inventory.furnace_result)
-        
-        -- Can we insert at least 1 of the recipe result?
-        -- if not output_inv.can_insert({name=recipe_product.name}) then goto continue end
-        local output_space = output_inv.get_insertable_count(recipe_product.name)
-        
-        -- Calculate how many times we can make the recipe.
-        local ingredient_limit = math.floor(input_items[input_item_name]/recipe_ingredient.amount)
-        local output_limit = math.floor(output_space/recipe_product.amount)
-
-        -- Use shared energy pool
-        local energy_limit = math.floor(energy_share/FURNACE_RECIPES[input_item_name].recipe_energy)
-        local recipe_count = math.min(ingredient_limit, output_limit, energy_limit)
-
-        -- Hit a limit somewhere?
-        if (recipe_count <= 0) then goto continue end
-
-        -- Track energy usage
-        energy_used = energy_used + (FURNACE_RECIPES[input_item_name].recipe_energy*recipe_count)
-
-        -- Check if it has a last_user
-        if (not furnace.last_user) then
-            local player_entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
-                                                position=furnace.position,
-                                                radius=10,
-                                                force={"enemy", "neutral"},
-                                                limit=1,
-                                                invert=true}
-            if (player_entities and player_entities[1] and player_entities[1].last_user) then 
-                furnace.last_user = player_entities[1].last_user
+            if (furnace == nil) or (not furnace.valid) then
+                global.omagic.furnaces[entry_idx] = nil
+                log("MagicFurnaceOnTick - Magic furnace removed?")
+                goto next_furnace_entry
             end
+
+            local input_inv = furnace.get_inventory(defines.inventory.furnace_source)
+            local input_items = input_inv.get_contents()
+
+            -- We have something inside?
+            local input_item_name = next(input_items)
+            if not input_item_name then 
+                goto next_furnace
+            end
+
+            -- Does the input item have a recipe?
+            if not FURNACE_RECIPES[input_item_name] then 
+                log("MagicFurnaceOnTick - Missing FURNACE_RECIPES?")
+                goto next_furnace
+            end
+            local recipe = game.forces["neutral"].recipes[FURNACE_RECIPES[input_item_name].recipe_name]
+            if not recipe then 
+                log("MagicFurnaceOnTick - Missing neutral force recipes?")
+                goto next_furnace
+            end
+
+            -- Verify 1 ingredient type and 1 product type (for furnaces)
+            if (#recipe.products ~= 1) or (#recipe.ingredients ~= 1) then 
+                log("MagicFurnaceOnTick - Recipe product/ingredient more than 1?")
+                goto next_furnace
+            end
+            local recipe_ingredient = recipe.ingredients[next(recipe.ingredients)]
+            local recipe_product = recipe.products[next(recipe.products)]
+
+            local output_inv = furnace.get_inventory(defines.inventory.furnace_result)
+            
+            -- Can we insert at least 1 of the recipe result?
+            -- if not output_inv.can_insert({name=recipe_product.name}) then goto next_furnace end
+            local output_space = output_inv.get_insertable_count(recipe_product.name)
+            
+            -- Calculate how many times we can make the recipe.
+            local ingredient_limit = math.floor(input_items[input_item_name]/recipe_ingredient.amount)
+            local output_limit = math.floor(output_space/recipe_product.amount)
+
+            -- Use shared energy pool
+            local energy_limit = math.floor(energy_share/FURNACE_RECIPES[input_item_name].recipe_energy)
+            local recipe_count = math.min(ingredient_limit, output_limit, energy_limit)
+
+            -- Hit a limit somewhere?
+            if (recipe_count <= 0) then goto next_furnace end
+
+            -- Track energy usage
+            entry.energy_input.energy = entry.energy_input.energy - (FURNACE_RECIPES[input_item_name].recipe_energy*recipe_count)
+            furnace.surface.pollute(furnace.position, FURNACE_RECIPES[input_item_name].recipe_pollution*recipe_count)
+
+            -- Check if it has a last_user
+            if (not furnace.last_user) then
+                local player_entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{
+                                                    position=furnace.position,
+                                                    radius=10,
+                                                    force={"enemy", "neutral"},
+                                                    limit=1,
+                                                    invert=true}
+                if (player_entities and player_entities[1] and player_entities[1].last_user) then 
+                    furnace.last_user = player_entities[1].last_user
+                end
+            end
+
+            -- Subtract recipe count from input and Add recipe count to output
+            input_inv.remove({name=recipe_ingredient.name, count=recipe_count*recipe_ingredient.amount})
+            output_inv.insert({name=recipe_product.name, count=recipe_count*recipe_product.amount})
+            furnace.products_finished = furnace.products_finished + recipe_count
+
+            -- If we have a user, do the stats
+            if (furnace.last_user) then
+                furnace.last_user.force.item_production_statistics.on_flow(recipe_ingredient.name, -recipe_count*recipe_ingredient.amount)
+                furnace.last_user.force.item_production_statistics.on_flow(recipe_product.name, recipe_count*recipe_product.amount)
+            end
+
+            ::next_furnace::
         end
 
-        -- Subtract recipe count from input and Add recipe count to output
-        input_inv.remove({name=recipe_ingredient.name, count=recipe_count*recipe_ingredient.amount})
-        output_inv.insert({name=recipe_product.name, count=recipe_count*recipe_product.amount})
-        furnace.products_finished = furnace.products_finished + recipe_count
-
-        -- If we have a user, do the stats
-        if (furnace.last_user) then
-            furnace.last_user.force.item_production_statistics.on_flow(recipe_ingredient.name, -recipe_count*recipe_ingredient.amount)
-            furnace.last_user.force.item_production_statistics.on_flow(recipe_product.name, recipe_count*recipe_product.amount)
-        end
-
-        ::continue::
+        ::next_furnace_entry::
     end
-
-    -- Subtract energy
-    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
-
-    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
-    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 function MagicChemplantOnTick()
-
     if not global.omagic.chemplants then return end
-    local energy_used = 0
-    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,chemplant in pairs(global.omagic.chemplants) do
-        
-        if (chemplant == nil) or (not chemplant.valid) then
-            global.omagic.chemplants[idx] = nil
-            log("Magic chemplant removed?")
-            goto continue
-        end
-        
-        recipe = chemplant.get_recipe()
+    for entry_idx,entry in pairs(global.omagic.chemplants) do
 
-        if (not recipe) then
-            goto continue -- No recipe means do nothing.
+        -- Validate the entry.
+        if (entry == nil) or (entry.chemplants == nil) or (entry.energy_input == nil) or (not entry.energy_input.valid) then
+            global.omagic.chemplants[entry_idx] = nil
+            log("MagicChemplantOnTick - Magic assembler entry removed?")
+            goto next_chemplant_entry
         end
 
-        local energy_cost = recipe.energy * CHEMPLANT_ENERGY_PER_CRAFT_SECOND
-        if (energy_share < energy_cost) then goto continue end -- Not enough energy!
+        local energy_share = entry.energy_input.energy/(#entry.chemplants + #entry.refineries)
 
-        local input_inv = chemplant.get_inventory(defines.inventory.assembling_machine_input)
-        local input_items = input_inv.get_contents()
-        local input_fluids = chemplant.get_fluid_contents()
+        for idx,chemplant in pairs(entry.chemplants) do
+            
+            if (chemplant == nil) or (not chemplant.valid) then
+                global.omagic.chemplants[idx] = nil
+                log("Magic chemplant removed?")
+                goto next_chemplant_entry
+            end
+            
+            recipe = chemplant.get_recipe()
 
-        for _,v in ipairs(recipe.ingredients) do
-            if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
-                if (not input_fluids[v.name] or (input_fluids[v.name] < v.amount)) then
-                    goto continue -- Not enough ingredients
+            if (not recipe) then
+                goto next_chemplant -- No recipe means do nothing.
+            end
+
+            local energy_cost = recipe.energy * CHEMPLANT_ENERGY_PER_CRAFT_SECOND
+            if (energy_share < energy_cost) then goto next_chemplant end -- Not enough energy!
+
+            local input_inv = chemplant.get_inventory(defines.inventory.assembling_machine_input)
+            local input_items = input_inv.get_contents()
+            local input_fluids = chemplant.get_fluid_contents()
+
+            for _,v in ipairs(recipe.ingredients) do
+                if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
+                    if (not input_fluids[v.name] or (input_fluids[v.name] < v.amount)) then
+                        goto next_chemplant -- Not enough ingredients
+                    end
                 end
             end
-        end
 
-        local recipe_product = recipe.products[next(recipe.products)] -- Assume only 1 product.             
+            local recipe_product = recipe.products[next(recipe.products)] -- Assume only 1 product.             
 
-        if recipe_product.type == "fluid" then
+            if recipe_product.type == "fluid" then
 
-            if ((chemplant.get_fluid_count(recipe_product.name) + recipe_product.amount) > 100) then
-                goto continue -- Not enough space for ouput
-            end
+                if ((chemplant.get_fluid_count(recipe_product.name) + recipe_product.amount) > 100) then
+                    goto next_chemplant -- Not enough space for ouput
+                end
 
-            chemplant.insert_fluid({name=recipe_product.name, amount=recipe_product.amount})
-            if (chemplant.last_user) then
-                chemplant.last_user.force.fluid_production_statistics.on_flow(recipe_product.name, recipe_product.amount)
-            end
-
-        -- Otherwise it must be an item type
-        else
-
-            local output_inv = chemplant.get_inventory(defines.inventory.assembling_machine_output)
-        
-            -- Can we insert at least 1 of the recipe result?
-            if not output_inv.can_insert({name=recipe_product.name, amount=recipe_product.amount}) then goto continue end
-
-            -- Add recipe count to output
-            output_inv.insert({name=recipe_product.name, count=recipe_product.amount})
-            if (chemplant.last_user) then
-                chemplant.last_user.force.item_production_statistics.on_flow(recipe_product.name, recipe_product.amount)
-            end
-        end
-
-        -- Subtract ingredients from input
-        for _,v in ipairs(recipe.ingredients) do
-            if (input_items[v.name]) then
-                input_inv.remove({name=v.name, count=v.amount})
+                chemplant.insert_fluid({name=recipe_product.name, amount=recipe_product.amount})
                 if (chemplant.last_user) then
-                    chemplant.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
+                    chemplant.last_user.force.fluid_production_statistics.on_flow(recipe_product.name, recipe_product.amount)
                 end
-            elseif (input_fluids[v.name]) then
-                chemplant.remove_fluid{name=v.name, amount=v.amount}
+
+            -- Otherwise it must be an item type
+            else
+
+                local output_inv = chemplant.get_inventory(defines.inventory.assembling_machine_output)
+            
+                -- Can we insert at least 1 of the recipe result?
+                if not output_inv.can_insert({name=recipe_product.name, amount=recipe_product.amount}) then goto next_chemplant end
+
+                -- Add recipe count to output
+                output_inv.insert({name=recipe_product.name, count=recipe_product.amount})
                 if (chemplant.last_user) then
-                    chemplant.last_user.force.fluid_production_statistics.on_flow(v.name, -v.amount)
+                    chemplant.last_user.force.item_production_statistics.on_flow(recipe_product.name, recipe_product.amount)
                 end
             end
+
+            -- Subtract ingredients from input
+            for _,v in ipairs(recipe.ingredients) do
+                if (input_items[v.name]) then
+                    input_inv.remove({name=v.name, count=v.amount})
+                    if (chemplant.last_user) then
+                        chemplant.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
+                    end
+                elseif (input_fluids[v.name]) then
+                    chemplant.remove_fluid{name=v.name, amount=v.amount}
+                    if (chemplant.last_user) then
+                        chemplant.last_user.force.fluid_production_statistics.on_flow(v.name, -v.amount)
+                    end
+                end
+            end
+
+            chemplant.products_finished = chemplant.products_finished + 1
+            
+            -- Track energy usage
+            entry.energy_input.energy = entry.energy_input.energy - energy_cost
+            chemplant.surface.pollute(chemplant.position, recipe.energy*CHEMPLANT_POLLUTION_PER_CRAFT_SECOND)
+
+
+            ::next_chemplant::
         end
 
-        chemplant.products_finished = chemplant.products_finished + 1
-        
-        -- Track energy usage
-        energy_used = energy_used + energy_cost
-
-        ::continue::
+        ::next_chemplant_entry::
     end
-
-    -- Subtract energy
-    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
-
-    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
-    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 
 function MagicRefineryOnTick()
-
     if not global.omagic.refineries then return end
-    local energy_used = 0
-    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,refinery in pairs(global.omagic.refineries) do
-        
-        if (refinery == nil) or (not refinery.valid) then
-            global.omagic.refineries[idx] = nil
-            log("Magic refinery removed?")
-            goto continue
-        end
-        
-        recipe = refinery.get_recipe()
+    for entry_idx,entry in pairs(global.omagic.refineries) do
 
-        if (not recipe) then
-            goto continue -- No recipe means do nothing.
+        -- Validate the entry.
+        if (entry == nil) or (entry.refineries == nil) or (entry.energy_input == nil) or (not entry.energy_input.valid) then
+            global.omagic.refineries[entry_idx] = nil
+            log("MagicRefineryOnTick - Magic assembler entry removed?")
+            goto next_refinery_entry
         end
 
-        local energy_cost = recipe.energy * REFINERY_ENERGY_PER_CRAFT_SECOND
-        if (energy_share < energy_cost) then goto continue end -- Not enough energy!
+        local energy_share = entry.energy_input.energy/(#entry.chemplants + #entry.refineries)
 
-        local fluidbox_copy = refinery.fluidbox
+        for idx,refinery in pairs(entry.refineries) do
+            
+            if (refinery == nil) or (not refinery.valid) then
+                global.omagic.refineries[idx] = nil
+                log("Magic refinery removed?")
+                goto next_refinery_entry
+            end
+            
+            recipe = refinery.get_recipe()
 
-        -- If recipe is COAL LIQUEFACTION: heavy(1), steam(2), heavy(3), light(4), petro(5)
-        -- if (recipe.name == "coal-liquefaction") then
-
-
-        -- If recipe is Advanced OIL: water(1), crude(2), heavy(3), light(4), petro(5)
-        if (recipe.name == "advanced-oil-processing") then
-
-            if ((not refinery.fluidbox[1]) or (refinery.fluidbox[1].amount < 50)) then goto continue end -- Not enough water
-            if ((not refinery.fluidbox[2]) or (refinery.fluidbox[2].amount < 100)) then goto continue end -- Not enough crude               
-            if ((refinery.fluidbox[3]) and (refinery.fluidbox[3].amount > 25)) then goto continue end -- Not enough space for heavy
-            if ((refinery.fluidbox[4]) and (refinery.fluidbox[4].amount > 45)) then goto continue end -- Not enough space for light
-            if ((refinery.fluidbox[5]) and (refinery.fluidbox[5].amount > 55)) then goto continue end -- Not enough space for petro
-
-            refinery.remove_fluid{name="water", amount=50}
-            refinery.remove_fluid{name="crude-oil", amount=100}
-            refinery.insert_fluid({name="heavy-oil", amount=25})
-            refinery.insert_fluid({name="light-oil", amount=45})
-            refinery.insert_fluid({name="petroleum-gas", amount=55})
-
-            if (refinery.last_user) then
-                refinery.last_user.force.fluid_production_statistics.on_flow("water", -50)
-                refinery.last_user.force.fluid_production_statistics.on_flow("crude-oil", -100)
-                refinery.last_user.force.fluid_production_statistics.on_flow("heavy-oil", 25)
-                refinery.last_user.force.fluid_production_statistics.on_flow("light-oil", 45)
-                refinery.last_user.force.fluid_production_statistics.on_flow("petroleum-gas", 55)
+            if (not recipe) then
+                goto next_refinery -- No recipe means do nothing.
             end
 
-        -- If recipe is Basic OIL:  crude(1), petro(2)
-        elseif (recipe.name == "basic-oil-processing") then
+            local energy_cost = recipe.energy * REFINERY_ENERGY_PER_CRAFT_SECOND
+            if (energy_share < energy_cost) then goto next_refinery end -- Not enough energy!
 
-            if ((not refinery.fluidbox[1]) or (refinery.fluidbox[1].amount < 100)) then goto continue end -- Not enough crude
-            if ((refinery.fluidbox[2]) and (refinery.fluidbox[2].amount > 45)) then goto continue end -- Not enough space for petro
+            local fluidbox_copy = refinery.fluidbox
 
-            refinery.remove_fluid{name="crude-oil", amount=100}
-            refinery.insert_fluid({name="petroleum-gas", amount=45})
+            -- If recipe is COAL LIQUEFACTION: heavy(1), steam(2), heavy(3), light(4), petro(5)
+            -- if (recipe.name == "coal-liquefaction") then
 
-            if (refinery.last_user) then
-                refinery.last_user.force.fluid_production_statistics.on_flow("crude-oil", -100)
-                refinery.last_user.force.fluid_production_statistics.on_flow("petroleum-gas", 45)
+
+            -- If recipe is Advanced OIL: water(1), crude(2), heavy(3), light(4), petro(5)
+            if (recipe.name == "advanced-oil-processing") then
+
+                if ((not refinery.fluidbox[1]) or (refinery.fluidbox[1].amount < 50)) then goto next_refinery end -- Not enough water
+                if ((not refinery.fluidbox[2]) or (refinery.fluidbox[2].amount < 100)) then goto next_refinery end -- Not enough crude               
+                if ((refinery.fluidbox[3]) and (refinery.fluidbox[3].amount > 25)) then goto next_refinery end -- Not enough space for heavy
+                if ((refinery.fluidbox[4]) and (refinery.fluidbox[4].amount > 45)) then goto next_refinery end -- Not enough space for light
+                if ((refinery.fluidbox[5]) and (refinery.fluidbox[5].amount > 55)) then goto next_refinery end -- Not enough space for petro
+
+                refinery.remove_fluid{name="water", amount=50}
+                refinery.remove_fluid{name="crude-oil", amount=100}
+                refinery.insert_fluid({name="heavy-oil", amount=25})
+                refinery.insert_fluid({name="light-oil", amount=45})
+                refinery.insert_fluid({name="petroleum-gas", amount=55})
+
+                if (refinery.last_user) then
+                    refinery.last_user.force.fluid_production_statistics.on_flow("water", -50)
+                    refinery.last_user.force.fluid_production_statistics.on_flow("crude-oil", -100)
+                    refinery.last_user.force.fluid_production_statistics.on_flow("heavy-oil", 25)
+                    refinery.last_user.force.fluid_production_statistics.on_flow("light-oil", 45)
+                    refinery.last_user.force.fluid_production_statistics.on_flow("petroleum-gas", 55)
+                end
+
+            -- If recipe is Basic OIL:  crude(1), petro(2)
+            elseif (recipe.name == "basic-oil-processing") then
+
+                if ((not refinery.fluidbox[1]) or (refinery.fluidbox[1].amount < 100)) then goto next_refinery end -- Not enough crude
+                if ((refinery.fluidbox[2]) and (refinery.fluidbox[2].amount > 45)) then goto next_refinery end -- Not enough space for petro
+
+                refinery.remove_fluid{name="crude-oil", amount=100}
+                refinery.insert_fluid({name="petroleum-gas", amount=45})
+
+                if (refinery.last_user) then
+                    refinery.last_user.force.fluid_production_statistics.on_flow("crude-oil", -100)
+                    refinery.last_user.force.fluid_production_statistics.on_flow("petroleum-gas", 45)
+                end
+
+            else
+                goto next_refinery -- Shouldn't hit this...
             end
+           
+            refinery.products_finished = refinery.products_finished + 1
 
-        else
-            goto continue -- Shouldn't hit this...
+            -- Track energy usage
+            entry.energy_input.energy = entry.energy_input.energy - energy_cost
+            refinery.surface.pollute(refinery.position, recipe.energy*REFINERY_POLLUTION_PER_CRAFT_SECOND)
+
+            ::next_refinery::
         end
-       
-        refinery.products_finished = refinery.products_finished + 1
 
-        -- Track energy usage
-        energy_used = energy_used + energy_cost
-
-        ::continue::
+        ::next_refinery_entry::
     end
-
-    -- Subtract energy
-    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
-
-    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
-    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
 end
 
 function MagicAssemblerOnTick()
-
     if not global.omagic.assemblers then return end
-    local energy_used = 0
-    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
 
-    for idx,assembler in pairs(global.omagic.assemblers) do
-        
-        if (assembler == nil) or (not assembler.valid) then
-            global.omagic.assemblers[idx] = nil
-            log("Magic assembler removed?")
-            goto continue
-        end
-        
-        recipe = assembler.get_recipe()
+    for entry_idx,entry in pairs(global.omagic.assemblers) do
 
-        if (not recipe) then
-            goto continue -- No recipe means do nothing.
+        -- Validate the entry.
+        if (entry == nil) or (entry.entities == nil) or (entry.energy_input == nil) or (not entry.energy_input.valid) then
+            global.omagic.assemblers[entry_idx] = nil
+            log("MagicAssemblerOnTick - Magic assembler entry removed?")
+            goto next_assembler_entry
         end
 
-        local energy_cost = recipe.energy * ASSEMBLER3_ENERGY_PER_CRAFT_SECOND
-        if (energy_share < energy_cost) then goto continue end -- Not enough energy!
+        local energy_share = entry.energy_input.energy/#entry.entities
 
-         -- Assume only 1 product and that it's an item!
-        local recipe_product = recipe.products[next(recipe.products)]           
-        if recipe_product.type ~= "item" then goto continue end
+        for idx,assembler in pairs(entry.entities) do
 
-        local input_inv = assembler.get_inventory(defines.inventory.assembling_machine_input)
-        local input_items = input_inv.get_contents()
-        local input_fluids = assembler.get_fluid_contents()
-
-        for _,v in ipairs(recipe.ingredients) do
-            if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
-                if (not input_fluids[v.name] or (input_fluids[v.name] < v.amount)) then
-                    goto continue -- Not enough ingredients
-                end
+            if (assembler == nil) or (not assembler.valid) then
+                global.omagic.assemblers[entry_idx] = nil
+                log("MagicAssemblerOnTick - Magic assembler removed?")
+                goto next_assembler_entry
             end
-        end
+            
+            recipe = assembler.get_recipe()
 
-        local output_inv = assembler.get_inventory(defines.inventory.assembling_machine_output)        
-        if not output_inv.can_insert({name=recipe_product.name, amount=recipe_product.amount}) then
-            goto continue -- Can we insert the result?
-        end
-
-        -- Add recipe count to output
-        output_inv.insert({name=recipe_product.name, count=recipe_product.amount})
-        if (assembler.last_user) then
-            assembler.last_user.force.item_production_statistics.on_flow(recipe_product.name, recipe_product.amount)
-        end
-
-        -- Subtract ingredients from input
-        for _,v in ipairs(recipe.ingredients) do
-            if (input_items[v.name]) then
-                input_inv.remove({name=v.name, count=v.amount})
-                if (assembler.last_user) then
-                    assembler.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
-                end
-            elseif (input_fluids[v.name]) then
-                assembler.remove_fluid{name=v.name, amount=v.amount}
-                if (assembler.last_user) then
-                    assembler.last_user.force.fluid_production_statistics.on_flow(v.name, -v.amount)
-                end
-            end
-        end
-        
-        assembler.products_finished = assembler.products_finished + 1
-
-        -- Track energy usage
-        energy_used = energy_used + energy_cost
-
-        ::continue::
-    end
-
-    -- Subtract energy
-    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
-
-    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
-    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
-end
-
-function MagicCentrifugeOnTick()
-
-    if not global.omagic.centrifuges then return end
-    local energy_used = 0
-    local energy_share = global.oshared.energy_stored/global.omagic.building_total_count
-
-    for idx,centrifuge in pairs(global.omagic.centrifuges) do
-        
-        if (centrifuge == nil) or (not centrifuge.valid) then
-            global.omagic.centrifuges[idx] = nil
-            log("Magic centrifuge removed?")
-            goto continue
-        end
-        
-        recipe = centrifuge.get_recipe()
-
-        if (not recipe) then
-            goto continue -- No recipe means do nothing.
-        end
-
-        local energy_cost = recipe.energy * CENTRIFUGE_ENERGY_PER_CRAFT_SECOND
-        if (energy_share < energy_cost) then goto continue end -- Not enough energy!
-
-        local input_inv = centrifuge.get_inventory(defines.inventory.assembling_machine_input)
-        local input_items = input_inv.get_contents()
-
-        for _,v in ipairs(recipe.ingredients) do
-            if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
-                goto continue -- Not enough ingredients
-            end
-        end
-
-        local output_inv = centrifuge.get_inventory(defines.inventory.assembling_machine_output)     
-
-        local output_item, output_count
-
-        -- 10 uranium ore IN
-        -- .993 uranium-238 and .007 uranium-235 OUT
-        if (recipe.name == "uranium-processing") then
-
-            local rand_chance = math.random()
-
-            output_count = 1
-            if (rand_chance <= .007) then
-                output_item = "uranium-235"
-            else
-                output_item = "uranium-238"
+            if (not recipe) then
+                goto next_assembler -- No recipe means do nothing.
             end
 
-            -- Check if we can insert at least 1 of BOTH.
-            if not output_inv.can_insert({name="uranium-235", amount=output_count}) then
-                goto continue
-            end
-            if not output_inv.can_insert({name= "uranium-238", amount=output_count}) then
-                goto continue
-            end
+            local energy_cost = recipe.energy * ASSEMBLER3_ENERGY_PER_CRAFT_SECOND
+            if (energy_share < energy_cost) then goto next_assembler end -- Not enough energy!
 
-            output_inv.insert({name=output_item, count=output_count})
-            if (centrifuge.last_user) then
-                centrifuge.last_user.force.item_production_statistics.on_flow(output_item, output_count)
-            end
+             -- Assume only 1 product and that it's an item!
+            local recipe_product = recipe.products[next(recipe.products)]           
+            if recipe_product.type ~= "item" then goto next_assembler end
+
+            local input_inv = assembler.get_inventory(defines.inventory.assembling_machine_input)
+            local input_items = input_inv.get_contents()
+            local input_fluids = assembler.get_fluid_contents()
 
             for _,v in ipairs(recipe.ingredients) do
-                if (input_items[v.name]) then
-                    input_inv.remove({name=v.name, count=v.amount})
-                    if (centrifuge.last_user) then
-                        centrifuge.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
+                if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
+                    if (not input_fluids[v.name] or (input_fluids[v.name] < v.amount)) then
+                        goto next_assembler -- Not enough ingredients
                     end
                 end
             end
-        else
-            goto continue -- Unsupported!
+
+            local output_inv = assembler.get_inventory(defines.inventory.assembling_machine_output)        
+            if not output_inv.can_insert({name=recipe_product.name, amount=recipe_product.amount}) then
+                goto next_assembler -- Can we insert the result?
+            end
+
+            -- Add recipe count to output
+            output_inv.insert({name=recipe_product.name, count=recipe_product.amount})
+            if (assembler.last_user) then
+                assembler.last_user.force.item_production_statistics.on_flow(recipe_product.name, recipe_product.amount)
+            end
+
+            -- Subtract ingredients from input
+            for _,v in ipairs(recipe.ingredients) do
+                if (input_items[v.name]) then
+                    input_inv.remove({name=v.name, count=v.amount})
+                    if (assembler.last_user) then
+                        assembler.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
+                    end
+                elseif (input_fluids[v.name]) then
+                    assembler.remove_fluid{name=v.name, amount=v.amount}
+                    if (assembler.last_user) then
+                        assembler.last_user.force.fluid_production_statistics.on_flow(v.name, -v.amount)
+                    end
+                end
+            end
+
+            -- Track energy usage
+            entry.energy_input.energy = entry.energy_input.energy - energy_cost
+            assembler.surface.pollute(assembler.position, recipe.energy*ASSEMBLER3_POLLUTION_PER_CRAFT_SECOND)
+
+            assembler.products_finished = assembler.products_finished + 1
+
+            ::next_assembler::
         end
 
-        centrifuge.products_finished = centrifuge.products_finished + 1
-
-        -- Track energy usage
-        energy_used = energy_used + energy_cost
-
-        ::continue::
+        ::next_assembler_entry::
     end
+end
 
-    -- Subtract energy
-    global.oshared.energy_stored = global.oshared.energy_stored - energy_used
+function MagicCentrifugeOnTick()
+    if not global.omagic.centrifuges then return end
 
-    if (not global.omagic.factory_energy_history) then global.omagic.factory_energy_history = {} end
-    global.omagic.factory_energy_history[game.tick % 60] = global.omagic.factory_energy_history[game.tick % 60] + energy_used
+    for entry_idx,entry in pairs(global.omagic.centrifuges) do
+        
+        -- Validate the entry.
+        if (entry == nil) or (entry.entities == nil) or (entry.energy_input == nil) or (not entry.energy_input.valid) then
+            global.omagic.centrifuges[entry_idx] = nil
+            log("MagicCentrifugeOnTick - Magic centrifuge entry removed?")
+            goto next_centrifuge_entry
+        end
+
+        local energy_share = entry.energy_input.energy/#entry.entities
+
+        for idx,centrifuge in pairs(entry.entities) do
+
+            if (centrifuge == nil) or (not centrifuge.valid) then
+                global.omagic.centrifuges[entry_idx] = nil
+                log("MagicCentrifugeOnTick - Magic centrifuge removed?")
+                goto next_centrifuge_entry
+            end
+           
+            recipe = centrifuge.get_recipe()
+
+            if (not recipe) then
+                goto next_centrifuge -- No recipe means do nothing.
+            end
+
+            local energy_cost = recipe.energy * CENTRIFUGE_ENERGY_PER_CRAFT_SECOND
+            if (energy_share < energy_cost) then goto next_centrifuge end -- Not enough energy!
+
+            local input_inv = centrifuge.get_inventory(defines.inventory.assembling_machine_input)
+            local input_items = input_inv.get_contents()
+
+            for _,v in ipairs(recipe.ingredients) do
+                if (not input_items[v.name] or (input_items[v.name] < v.amount)) then
+                    goto next_centrifuge -- Not enough ingredients
+                end
+            end
+
+            local output_inv = centrifuge.get_inventory(defines.inventory.assembling_machine_output)     
+
+            local output_item, output_count
+
+            -- 10 uranium ore IN
+            -- .993 uranium-238 and .007 uranium-235 OUT
+            if (recipe.name == "uranium-processing") then
+
+                local rand_chance = math.random()
+
+                output_count = 1
+                if (rand_chance <= .007) then
+                    output_item = "uranium-235"
+                else
+                    output_item = "uranium-238"
+                end
+
+                -- Check if we can insert at least 1 of BOTH.
+                if not output_inv.can_insert({name="uranium-235", amount=output_count}) then
+                    goto next_centrifuge
+                end
+                if not output_inv.can_insert({name= "uranium-238", amount=output_count}) then
+                    goto next_centrifuge
+                end
+
+                output_inv.insert({name=output_item, count=output_count})
+                if (centrifuge.last_user) then
+                    centrifuge.last_user.force.item_production_statistics.on_flow(output_item, output_count)
+                end
+
+                for _,v in ipairs(recipe.ingredients) do
+                    if (input_items[v.name]) then
+                        input_inv.remove({name=v.name, count=v.amount})
+                        if (centrifuge.last_user) then
+                            centrifuge.last_user.force.item_production_statistics.on_flow(v.name, -v.amount)
+                        end
+                    end
+                end
+            else
+                goto next_centrifuge -- Unsupported!
+            end
+
+            centrifuge.products_finished = centrifuge.products_finished + 1
+
+            -- Track energy usage
+            entry.energy_input.energy = entry.energy_input.energy - energy_cost
+            centrifuge.surface.pollute(centrifuge.position, recipe.energy*CENTRIFUGE_POLLUTION_PER_CRAFT_SECOND)
+
+            ::next_centrifuge::
+        end
+
+        ::next_centrifuge_entry::
+    end
 end
 
 COIN_MULTIPLIER = 2

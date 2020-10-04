@@ -6,6 +6,7 @@
 
 require("lib/oarc_utils")
 require("config")
+local crash_site = require("crash-site")
 
 --[[
   ___  _  _  ___  _____ 
@@ -295,6 +296,15 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         -- y=delayedSpawn.pos.y},transition_time=150,time_to_wait=150,zoom=0.8},{target=player.character,transition_time=60,time_to_wait=30,zoom=0.8}},
         -- final_transition_time=45}
     end
+
+    crash_site.create_crash_site(game.surfaces[GAME_SURFACE_NAME],
+                                {x=delayedSpawn.pos.x+15, y=delayedSpawn.pos.y-25},
+                                {["spidertron"] = 1,
+                                 ["electronic-circuit"] = math.random(100,200),
+                                 ["iron-gear-wheel"] = math.random(50,100),
+                                 ["copper-cable"] = math.random(100,200),
+                                 ["steel-plate"] = math.random(50,100)},
+                                {["iron-plate"] = math.random(50,100)})
 end
 
 function DisplayWelcomeGroundTextAtSpawn(player, pos)

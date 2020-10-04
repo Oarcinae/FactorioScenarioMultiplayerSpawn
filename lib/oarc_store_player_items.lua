@@ -82,6 +82,11 @@ OARC_STORE_PLAYER_ITEMS =
         ["energy-shield-equipment"] = {cost = 50, count = 1, play_time_locked=false},
         ["energy-shield-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
     },
+
+    ["Spidertron"] = {
+        ["spidertron"] = {cost = 5000, count = 1, play_time_locked=false},
+        ["spidertron-remote"] = {cost = 500, count = 1, play_time_locked=false},
+    },
 }
 
 function CreatePlayerStoreTab(tab_container, player)

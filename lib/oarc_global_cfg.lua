@@ -41,7 +41,8 @@ function InitOarcConfig()
     global.ocfg.enable_regrowth = ENABLE_REGROWTH
     global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
     global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
-    global.ocfg.enable_chest_sharing = ENABLE_CHEST_SHARING
+    global.ocfg.enable_coin_shop = ENABLE_COIN_SHOP
+    global.ocfg.enable_chest_sharing = ENABLE_ITEM_AND_ENERGY_SHARING
     global.ocfg.enable_magic_factories = ENABLE_MAGIC_FACTORIES
     global.ocfg.enable_offline_protect = ENABLE_OFFLINE_PROTECTION
     global.ocfg.enable_power_armor_start = ENABLE_POWER_ARMOR_QUICK_START

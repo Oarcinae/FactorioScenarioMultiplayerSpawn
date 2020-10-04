@@ -273,15 +273,15 @@ end
 
 -- Give player these default items.
 function GivePlayerItems(player)
-    for _,item in pairs(PLAYER_RESPAWN_START_ITEMS) do
-        player.insert(item)
+    for name,count in pairs(PLAYER_RESPAWN_START_ITEMS) do
+        player.insert({name=name, count=count})
     end
 end
 
 -- Starter only items
 function GivePlayerStarterItems(player)
-    for _,item in pairs(PLAYER_SPAWN_START_ITEMS) do
-        player.insert(item)
+    for name,count in pairs(PLAYER_SPAWN_START_ITEMS) do
+        player.insert({name=name, count=count})
     end
 
     if global.ocfg.enable_power_armor_start then

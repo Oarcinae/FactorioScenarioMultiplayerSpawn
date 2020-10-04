@@ -22,7 +22,6 @@
 --      4. Put all other files into lib folder
 --      5. Provided an examples folder for example/recommended map gen settings
 
-
 -- Generic Utility Includes
 require("lib/oarc_utils")
 
@@ -104,11 +103,11 @@ script.on_init(function(event)
     
     Compat.handle_factoriomaps()
 
-    if (global.ocfg.enable_chest_sharing) then
+    if (global.ocfg.enable_coin_shop and global.ocfg.enable_chest_sharing) then
         SharedChestInitItems()
     end
 
-    if (global.ocfg.enable_chest_sharing and global.ocfg.enable_magic_factories) then
+    if (global.ocfg.enable_coin_shop and global.ocfg.enable_magic_factories) then
         MagicFactoriesInit()
     end
 
@@ -117,13 +116,6 @@ script.on_init(function(event)
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
-    rendering.draw_sprite{sprite="item/coin",
-        render_layer=30,
-        target={0,0},
-        surface=game.surfaces[GAME_SURFACE_NAME],
-        tint={r = 0.1, g = 0.1, b = 0.1, a = 0.1},
-        x_scale=80,
-        y_scale=80}
 end)
 
 script.on_load(function()
@@ -183,7 +175,10 @@ script.on_event(defines.events.on_gui_click, function(event)
     SharedSpawnJoinWaitMenuClick(event)
 
     ClickOarcGuiButton(event)
-    ClickOarcStoreButton(event)
+
+    if global.ocfg.enable_coin_shop then
+        ClickOarcStoreButton(event)
+    end
 
     GameOptionsGuiClick(event)
 end)
@@ -195,7 +190,10 @@ end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
     TabChangeOarcGui(event)
-    TabChangeOarcStore(event)
+
+    if global.ocfg.enable_coin_shop then
+        TabChangeOarcStore(event)
+    end
 end)
 
 ----------------------------------------
@@ -219,7 +217,10 @@ script.on_event(defines.events.on_player_created, function(event)
     SeparateSpawnsPlayerCreated(event.player_index, true)
 
     InitOarcGuiTabs(player)
-    InitOarcStoreGuiTabs(player)
+
+    if global.ocfg.enable_coin_shop then
+        InitOarcStoreGuiTabs(player)
+    end
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -426,7 +427,9 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_closed, function(event)
     OarcGuiOnGuiClosedEvent(event)
-    OarcStoreOnGuiClosedEvent(event)
+    if global.ocfg.enable_coin_shop then
+        OarcStoreOnGuiClosedEvent(event)
+    end
 end)
 
 ----------------------------------------
@@ -435,7 +438,9 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_post_entity_died, function(event)
     if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
-    CoinsFromEnemiesOnPostEntityDied(event)
+    if global.ocfg.enable_coin_shop then
+        CoinsFromEnemiesOnPostEntityDied(event)
+    end
 end,
 {{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
 

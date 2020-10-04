@@ -5,7 +5,7 @@
 require("lib/shared_chests")
 require("lib/map_features")
 
-OARC_STORE_MAP_CATEGORIES = 
+OARC_STORE_MAP_TEXT = 
 {
     special_chests = "Special buildings for sharing or monitoring items and energy. This will convert the closest wooden chest (to you) within 16 tiles into a special building of your choice. Make sure to leave enough space! The combinators and accumulators can take up several tiles around them.",
     special_chunks = "Map features that can be built on the special empty chunks found on the map. You must be standing inside an empty special chunk to be able to build these. Each player can only build one of each type. [color=red]THESE FEATURES ARE PERMANENT AND CAN NOT BE REMOVED![/color]",
@@ -41,14 +41,14 @@ OARC_STORE_MAP_FEATURES =
             multiplier_cost = 2,
             max_cost = 2000,
             -- limit = 100,
-            text="INPUT for shared energy system."},
+            text="INPUT for shared energy system. [color=red]Only starts to share once it is charged to 50%.[/color]"},
         ["electric-energy-interface"] = {
             initial_cost = 200,
             additional_cost = 100,
             multiplier_cost = 2,
             max_cost = 4000,
             -- limit = 100,
-            text="OUTPUT for shared energy system."},
+            text="OUTPUT for shared energy system. [color=red]Will NOT power other special eletric interfaces! You especially can't power special chunks with this![/color]"},
         ["deconstruction-planner"] = {
             initial_cost = 0,
             text="Removes the closest special building within range. NO REFUNDS!"},
@@ -133,9 +133,18 @@ function CreateMapFeatureStoreTab(tab_container, player)
     line.style.bottom_margin = 5
 
     for category,section in pairs(OARC_STORE_MAP_FEATURES) do
+
+        if (not global.ocfg.enable_chest_sharing and (category == "special_chests")) then
+            goto SKIP_CATEGORY
+        end
+
+        if (not global.ocfg.enable_magic_factories and (category == "special_chunks")) then
+            goto SKIP_CATEGORY
+        end
+
         AddLabel(tab_container,
                 nil,
-                OARC_STORE_MAP_CATEGORIES[category],
+                OARC_STORE_MAP_TEXT[category],
                 {bottom_margin=5, maximal_width = 400, single_line = false})
         local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
         for item_name,item in pairs(section) do
@@ -171,11 +180,15 @@ function CreateMapFeatureStoreTab(tab_container, player)
             else
                 btn.tooltip = item.text.." Cost: "..color..cost.."[/color] [item=coin]"
             end
-            ::SKIP_ITEM::
+            
         end
+
+        -- Spacer
         local line2 = tab_container.add{type="line", direction="horizontal"}
         line2.style.top_margin = 5
         line2.style.bottom_margin = 5
+
+        ::SKIP_CATEGORY::
     end
 end
 
@@ -257,6 +270,11 @@ function OarcMapFeatureStoreButton(event)
     -- Check if we have enough money
     if (wallet < cost) then
         player.print("You're broke! Go kill some enemies or beg for change...")
+        return
+    end
+
+    if (player.vehicle) then
+        player.print("Sir, please step out of the vehicle before you try to make any purchases...")
         return
     end
 
