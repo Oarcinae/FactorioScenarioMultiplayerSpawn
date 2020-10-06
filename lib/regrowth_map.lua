@@ -370,7 +370,9 @@ function WorldEaterSingleStep()
             -- If all entities found have no last user, then KILL all entities!
             if (not has_last_user_set) then
                 for k,v in pairs(entities) do
-                    v.die(nil)
+                    if (v and v.valid) then
+                        v.die(nil)
+                    end
                 end
                 -- SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - ENTITIES FOUND")
                 global.rg.map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
