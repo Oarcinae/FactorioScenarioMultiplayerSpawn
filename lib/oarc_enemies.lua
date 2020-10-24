@@ -50,7 +50,7 @@ function OarcModifyEnemyGroup(group)
 
         local distance = CHUNK_SIZE*3
         if (group.command.type == defines.command.build_base) then
-            distance = CHUNK_SIZE*7 --game.map_settings.enemy_expansion.max_expansion_distance
+            distance = CHUNK_SIZE*(game.map_settings.enemy_expansion.max_expansion_distance)
         end
 
         -- Find some enemies near the attack point.
@@ -140,7 +140,7 @@ function OarcModifyEnemyGroup(group)
         end
 
         -- Is there a buddy spawn and is the buddy online?
-        local buddyName = global.buddyPairs[sharedSpawnOwnerName]
+        local buddyName = global.ocore.buddyPairs[sharedSpawnOwnerName]
         if (buddyName ~= nil) and (game.players[buddyName] ~= nil) then
             if (game.players[buddyName].connected or (GetOnlinePlayersAtSharedSpawn(buddyName) > 0)) then
                 if (global.enable_oe_debug) then

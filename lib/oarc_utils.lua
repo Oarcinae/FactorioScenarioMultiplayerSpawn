@@ -65,9 +65,23 @@ function RenderPermanentGroundText(surface, position, scale, text, color)
                     target=position,
                     color=color,
                     scale=scale,
-                    font="scenario-message-dialog",
+                    --Allowed fonts: default-dialog-button default-game compilatron-message-font default-large default-large-semibold default-large-bold heading-1 compi
+                    font="compi",
                     draw_on_ground=true}
 end 
+
+-- A standardized helper text that fades out over time
+function TemporaryHelperText(text, position, ttl)
+    local rid = rendering.draw_text{text=text,
+                    surface=game.surfaces[GAME_SURFACE_NAME],
+                    target=position,
+                    color={0.7,0.7,0.7,0.7},
+                    scale=1,
+                    font="compi",
+                    time_to_live=ttl,
+                    draw_on_ground=false}
+    table.insert(global.oarc_renders_fadeout, rid)
+end
 
 -- Every second, check a global table to see if we have any speech bubbles to kill.
 function TimeoutSpeechBubblesOnTick()
@@ -156,6 +170,10 @@ function clampInt32(val)
     return clamp(val, MAX_INT32_NEG, MAX_INT32_POS)
 end
 
+function MathRound(num)
+    return math.floor(num+0.5)
+end
+
 -- Simple function to get total number of items in table
 function TableLength(T)
   local count = 0
@@ -182,6 +200,28 @@ function GetRandomKeyFromTable(t)
         table.insert(keyset, k)
     end
     return keyset[math.random(#keyset)]
+end
+
+-- A safer way to attempt to get the next key in a table. CHECK TABLE SIZE BEFORE CALLING THIS!
+-- Ensures the key points to a valid entry before calling next. Otherwise it restarts.
+-- If you get nil as a return, it means you hit the return.
+function NextButChecksKeyIsValidFirst(table_in, key)
+    -- if (table_size(table_in) == 0) then you're fucked end
+    if ((not key) or (not table_in[key])) then
+        return next(table_in, nil)
+    else
+        return next(table_in, key)
+    end
+end
+
+-- Gets the next key, even if we have to start again.
+function NextKeyInTableIncludingRestart(table_in, key)
+    local next_key = NextButChecksKeyIsValidFirst(table_in, key)
+    if (not next_key) then
+        return NextButChecksKeyIsValidFirst(table_in, next_key)
+    else
+        return next_key
+    end
 end
 
 function GetRandomValueFromTable(t)
@@ -213,6 +253,13 @@ function GetClosestPosFromTable(pos, pos_table)
             closest_key = k
         end
     end
+
+    if (closest_key == nil) then
+        log("GetClosestPosFromTable ERROR - None found?")
+        return nil
+    end
+
+    return pos_table[closest_key]
 end
 
 -- Chart area for a force
@@ -226,15 +273,15 @@ end
 
 -- Give player these default items.
 function GivePlayerItems(player)
-    for _,item in pairs(PLAYER_RESPAWN_START_ITEMS) do
-        player.insert(item)
+    for name,count in pairs(PLAYER_RESPAWN_START_ITEMS) do
+        player.insert({name=name, count=count})
     end
 end
 
 -- Starter only items
 function GivePlayerStarterItems(player)
-    for _,item in pairs(PLAYER_SPAWN_START_ITEMS) do
-        player.insert(item)
+    for name,count in pairs(PLAYER_SPAWN_START_ITEMS) do
+        player.insert({name=name, count=count})
     end
 
     if global.ocfg.enable_power_armor_start then
@@ -286,6 +333,30 @@ function GiveQuickStartPowerArmor(player)
     end
 end
 
+TEST_KIT = {
+    {name="infinity-chest", count = 50},
+    {name="infinity-pipe", count = 50},
+    {name="electric-energy-interface", count = 50},
+    {name="express-loader", count = 50},
+    {name="express-transport-belt", count = 50},
+}
+
+function GiveTestKit(player)
+    for _,item in pairs(TEST_KIT) do
+        player.insert(item)
+    end
+end
+
+-- Safer teleport
+function SafeTeleport(player, surface, target_pos)
+    local safe_pos = surface.find_non_colliding_position("character", target_pos, 15, 1)
+    if (not safe_pos) then
+        player.teleport(target_pos, surface)
+    else
+        player.teleport(safe_pos, surface)
+    end
+end
+
 -- Create area given point and radius-distance
 function GetAreaFromPointAndDistance(point, dist)
     local area = {left_top=
@@ -310,9 +381,9 @@ end
 -- Set all forces to ceasefire
 function SetCeaseFireBetweenAllForces()
     for name,team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" then
+        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
             for x,y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" then
+                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
                     team.set_cease_fire(x,true)
                 end
             end
@@ -323,9 +394,9 @@ end
 -- Set all forces to friendly
 function SetFriendlyBetweenAllForces()
     for name,team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" then
+        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
             for x,y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" then
+                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
                     team.set_friend(x,true)
                 end
             end
@@ -602,72 +673,84 @@ function RemoveInCircle(surface, area, type, pos, dist)
     end
 end
 
+-- For easy local testing of map gen settings. Just set what you want and uncomment usage in CreateGameSurface!
+function SurfaceSettingsHelper(settings)
+
+    settings.terrain_segmentation = 4
+    settings.water = 3
+    settings.starting_area = 0
+
+    local r_freq = 1.20
+    local r_rich = 5.00
+    local r_size = 0.18
+
+    settings.autoplace_controls["coal"].frequency = r_freq
+    settings.autoplace_controls["coal"].richness = r_rich
+    settings.autoplace_controls["coal"].size = r_size
+    settings.autoplace_controls["copper-ore"].frequency = r_freq
+    settings.autoplace_controls["copper-ore"].richness = r_rich
+    settings.autoplace_controls["copper-ore"].size = r_size
+    settings.autoplace_controls["crude-oil"].frequency = r_freq
+    settings.autoplace_controls["crude-oil"].richness = r_rich
+    settings.autoplace_controls["crude-oil"].size = r_size
+    settings.autoplace_controls["iron-ore"].frequency = r_freq
+    settings.autoplace_controls["iron-ore"].richness = r_rich
+    settings.autoplace_controls["iron-ore"].size = r_size
+    settings.autoplace_controls["stone"].frequency = r_freq
+    settings.autoplace_controls["stone"].richness = r_rich
+    settings.autoplace_controls["stone"].size = r_size
+    settings.autoplace_controls["uranium-ore"].frequency = r_freq*0.5
+    settings.autoplace_controls["uranium-ore"].richness = r_rich
+    settings.autoplace_controls["uranium-ore"].size = r_size
+
+    settings.autoplace_controls["enemy-base"].frequency = 0.80
+    settings.autoplace_controls["enemy-base"].richness = 0.70
+    settings.autoplace_controls["enemy-base"].size = 0.70
+
+    settings.autoplace_controls["trees"].frequency = 1.00
+    settings.autoplace_controls["trees"].richness = 1.00
+    settings.autoplace_controls["trees"].size = 1.00
+
+    settings.cliff_settings.cliff_elevation_0 = 3
+    settings.cliff_settings.cliff_elevation_interval = 200
+    settings.cliff_settings.richness = 3
+
+    settings.property_expression_names["control-setting:aux:bias"] = "0.00"
+    settings.property_expression_names["control-setting:aux:frequency:multiplier"] = "5.00"
+    settings.property_expression_names["control-setting:moisture:bias"] = "0.40"
+    settings.property_expression_names["control-setting:moisture:frequency:multiplier"] = "50"
+
+    return settings
+end
+
 -- Create another surface so that we can modify map settings and not have a screwy nauvis map.
 function CreateGameSurface()
 
-    -- Get starting surface settings.
-    local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
+    if (GAME_SURFACE_NAME ~= "nauvis") then
 
-    if global.ocfg.enable_vanilla_spawns then
-        nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
+        -- Get starting surface settings.
+        local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
 
-        -- ENFORCE ISLAND MAP GEN
-        if (global.ocfg.silo_islands) then
-            nauvis_settings.property_expression_names.elevation = "0_17-island"
+        if global.ocfg.enable_vanilla_spawns then
+            nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
+
+            -- ENFORCE ISLAND MAP GEN
+            if (global.ocfg.silo_islands) then
+                nauvis_settings.property_expression_names.elevation = "0_17-island"
+            end
         end
+
+        -- Enable this to test things out easily.
+        -- nauvis_settings = SurfaceSettingsHelper(nauvis_settings)
+
+        -- Create new game surface
+        local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
+
     end
-
-    -- For easy local testing of map gen settings. Just set what you want and uncomment.
-    -- nauvis_settings.terrain_segmentation = 0.5
-    -- nauvis_settings.water = 1.2
-    -- nauvis_settings.starting_area = 0
-
-    -- local r_freq = 0.15
-    -- local r_rich = 2.00
-    -- local r_size = 0.08
-    -- nauvis_settings.autoplace_controls["coal"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["coal"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["coal"].size = r_size
-    -- nauvis_settings.autoplace_controls["copper-ore"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["copper-ore"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["copper-ore"].size = r_size
-    -- nauvis_settings.autoplace_controls["crude-oil"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["crude-oil"].richness = r_rich*1.5
-    -- nauvis_settings.autoplace_controls["crude-oil"].size = r_size
-    -- nauvis_settings.autoplace_controls["iron-ore"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["iron-ore"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["iron-ore"].size = r_size
-    -- nauvis_settings.autoplace_controls["stone"].frequency = r_freq
-    -- nauvis_settings.autoplace_controls["stone"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["stone"].size = r_size
-    -- nauvis_settings.autoplace_controls["uranium-ore"].frequency = 0.10
-    -- nauvis_settings.autoplace_controls["uranium-ore"].richness = r_rich
-    -- nauvis_settings.autoplace_controls["uranium-ore"].size = r_size
-
-    -- nauvis_settings.autoplace_controls["enemy-base"].frequency = 0.15
-    -- nauvis_settings.autoplace_controls["enemy-base"].richness = 0.50
-    -- nauvis_settings.autoplace_controls["enemy-base"].size = 0.50
-
-    -- nauvis_settings.autoplace_controls["trees"].frequency = 0.50
-    -- nauvis_settings.autoplace_controls["trees"].richness = 1.50
-    -- nauvis_settings.autoplace_controls["trees"].size = 1.00
-
-    -- nauvis_settings.cliff_settings.cliff_elevation_0 = 15
-    -- nauvis_settings.cliff_settings.cliff_elevation_interval = 35
-    -- nauvis_settings.cliff_settings.richness = 10
-
-    -- nauvis_settings.property_expression_names["control-setting:aux:bias"] = "0.00"
-    -- nauvis_settings.property_expression_names["control-setting:aux:frequency:multiplier"] = "1.00"
-    -- nauvis_settings.property_expression_names["control-setting:moisture:bias"] = "0.50"
-    -- nauvis_settings.property_expression_names["control-setting:moisture:frequency:multiplier"] = "1.00"
-
-    -- Create new game surface
-    local s = game.create_surface(GAME_SURFACE_NAME, nauvis_settings)
 
     -- Add surface and safe areas
     if global.ocfg.enable_regrowth then
-        remote.call("oarc_regrowth", "add_surface", s.index)
-        remote.call("oarc_regrowth", "area_offlimits_chunkpos", s.index, {x=0,y=0}, 5)
+        RegrowthMarkAreaSafeGivenChunkPos({x=0,y=0}, 4, true)
     end
 end
 
@@ -696,6 +779,32 @@ function CreateTileArrow(surface, pos, type)
     end
     
     surface.set_tiles(tiles, true)
+end
+
+-- Allowed colors: red, green, blue, orange, yellow, pink, purple, black, brown, cyan, acid
+function CreateFixedColorTileArea(surface, area, color)
+
+    tiles = {}
+
+    for i=area.left_top.x,area.right_bottom.x do
+        for j=area.left_top.y,area.right_bottom.y do
+            table.insert(tiles, {name = color.."-refined-concrete", position = {i,j}})
+        end
+    end
+
+    surface.set_tiles(tiles, true)
+end
+
+-- Find closest player-owned entity
+function FindClosestPlayerOwnedEntity(player, name, radius)
+
+    local entities = player.surface.find_entities_filtered{position=player.position,
+                                            radius=radius,
+                                            name=name,
+                                            force=player.force}
+    if (not entities or (#entities == 0)) then return nil end
+
+    return player.surface.get_closest(player.position, entities)
 end
 
 --------------------------------------------------------------------------------
@@ -823,19 +932,20 @@ end
 function AntiGriefing(force)
     force.zoom_to_world_deconstruction_planner_enabled=false
     SetForceGhostTimeToLive(force)
+    -- TODO: Mess with permission groups and shit
 end
 
 function SetForceGhostTimeToLive(force)
-    if GHOST_TIME_TO_LIVE ~= 0 then
-        force.ghost_time_to_live = GHOST_TIME_TO_LIVE+1
+    if global.ocfg.ghost_ttl ~= 0 then
+        force.ghost_time_to_live = global.ocfg.ghost_ttl+1
     end
 end
 
 function SetItemBlueprintTimeToLive(event)
     local type = event.created_entity.type
     if type == "entity-ghost" or type == "tile-ghost" then
-        if GHOST_TIME_TO_LIVE ~= 0 then
-            event.created_entity.time_to_live = GHOST_TIME_TO_LIVE
+        if global.ocfg.ghost_ttl ~= 0 then
+            event.created_entity.time_to_live = global.ocfg.ghost_ttl
         end
     end
 end
@@ -1208,6 +1318,9 @@ end
 function PlayerJoinedMessages(event)
     local player = game.players[event.player_index]
     player.print(global.ocfg.welcome_msg)
+    if (global.oarc_announcements) then
+        player.print(global.oarc_announcements)
+    end
 end
 
 -- Remove decor to save on file size

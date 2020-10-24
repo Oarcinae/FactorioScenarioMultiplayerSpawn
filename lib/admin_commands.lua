@@ -5,8 +5,13 @@
 
 require("lib/oarc_utils")
 
+-- name :: string: Name of the command.
+-- tick :: uint: Tick the command was used.
+-- player_index :: uint (optional): The player who used the command. It will be missing if run from the server console.
+-- parameter :: string (optional): The parameter passed after the command, separated from the command by 1 space.
+
 -- Give yourself or another player, power armor
-commands.add_command("powerstart", "give a start kit", function(command)
+commands.add_command("give-power-armor-kit", "give a start kit", function(command)
     
     local player = game.players[command.player_index]
     local target = player
@@ -24,6 +29,28 @@ commands.add_command("powerstart", "give a start kit", function(command)
         GiveQuickStartPowerArmor(target)
         player.print("Gave a powerstart kit to " .. target.name)
         target.print("You have been given a power armor starting kit!")
+    end
+end)
+
+
+commands.add_command("give-test-kit", "give a start kit", function(command)
+    
+    local player = game.players[command.player_index]
+    local target = player
+    
+    if player ~= nil and player.admin then
+        if (command.parameter ~= nil) then
+            if game.players[command.parameter] ~= nil then
+                target = game.players[command.parameter]
+            else
+                target.print("Invalid player target. Double check the player name?")
+                return
+            end
+        end
+
+        GiveTestKit(target)
+        player.print("Gave a test kit to " .. target.name)
+        target.print("You have been given a test kit!")
     end
 end)
 

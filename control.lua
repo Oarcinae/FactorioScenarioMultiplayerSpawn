@@ -22,7 +22,6 @@
 --      4. Put all other files into lib folder
 --      5. Provided an examples folder for example/recommended map gen settings
 
-
 -- Generic Utility Includes
 require("lib/oarc_utils")
 
@@ -36,6 +35,9 @@ require("lib/admin_commands")
 require("lib/regrowth_map")
 require("lib/shared_chests")
 require("lib/notepad")
+require("lib/map_features")
+require("lib/oarc_buy")
+require("lib/auto_decon_miners")
 
 -- For Philip. I currently do not use this and need to add proper support for
 -- commands like this in the future.
@@ -60,18 +62,9 @@ require("compat/factoriomaps")
 -- Create a new surface so we can modify map settings at the start.
 GAME_SURFACE_NAME="oarc"
 
-
--- I'm reverting my decision to turn the regrowth thing into a mod.
-remote.add_interface("oarc_regrowth",
-            {area_offlimits_chunkpos = MarkAreaSafeGivenChunkPos,
-            area_offlimits_tilepos = MarkAreaSafeGivenTilePos,
-            area_removal_tilepos = MarkAreaForRemoval,
-            trigger_immediate_cleanup = TriggerCleanup,
-            add_surface = RegrowthAddSurface})
-
 commands.add_command("trigger-map-cleanup",
     "Force immediate removal of all expired chunks (unused chunk removal mod)",
-    ForceRemoveChunksCmd)
+    RegrowthForceRemoveChunksCmd)
 
 --------------------------------------------------------------------------------
 -- ALL EVENT HANLDERS ARE HERE IN ONE PLACE!
@@ -96,20 +89,30 @@ script.on_init(function(event)
     InitSpawnGlobalsAndForces()
 
     -- Frontier Silo Area Generation
-    if (global.ocfg.frontier_rocket_silo) then
+    if (global.ocfg.frontier_rocket_silo and not global.ocfg.enable_magic_factories) then
         SpawnSilosAndGenerateSiloAreas()
     end
 
     -- Everyone do the shuffle. Helps avoid always starting at the same location.
-    global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
-    log("Vanilla spawns:")
-    log(serpent.block(global.vanillaSpawns))
-
+    -- Needs to be done after the silo spawning.
+    if (global.ocfg.enable_vanilla_spawns) then
+        global.vanillaSpawns = FYShuffle(global.vanillaSpawns)
+        log("Vanilla spawns:")
+        log(serpent.block(global.vanillaSpawns))
+    end
+    
     Compat.handle_factoriomaps()
 
-    if (global.ocfg.enable_chest_sharing) then
+    if (global.ocfg.enable_coin_shop and global.ocfg.enable_chest_sharing) then
         SharedChestInitItems()
     end
+
+    if (global.ocfg.enable_coin_shop and global.ocfg.enable_magic_factories) then
+        MagicFactoriesInit()
+    end
+
+    OarcMapFeatureInitGlobalCounters()
+    OarcAutoDeconOnInit()
 
     -- Display starting point text as a display of dominance.
     RenderPermanentGroundText(game.surfaces[GAME_SURFACE_NAME], {x=-29,y=-30}, 40, "OARC", {0.9, 0.7, 0.3, 0.8})
@@ -125,9 +128,7 @@ end)
 -- Used for end game win conditions / unlocking late game stuff
 ----------------------------------------
 script.on_event(defines.events.on_rocket_launched, function(event)
-    if global.ocfg.frontier_rocket_silo then
-        RocketLaunchEvent(event)
-    end
+    RocketLaunchEvent(event)
 end)
 
 
@@ -136,15 +137,14 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
 
+    if (event.surface.name ~= GAME_SURFACE_NAME) then return end
+
     if global.ocfg.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
+
     if global.ocfg.enable_undecorator then
         UndecorateOnChunkGenerate(event)
-    end
-
-    if global.ocfg.frontier_rocket_silo then
-        GenerateRocketSiloChunk(event)
     end
 
     SeparateSpawnsGenerateChunk(event)
@@ -176,6 +176,10 @@ script.on_event(defines.events.on_gui_click, function(event)
 
     ClickOarcGuiButton(event)
 
+    if global.ocfg.enable_coin_shop then
+        ClickOarcStoreButton(event)
+    end
+
     GameOptionsGuiClick(event)
 end)
 
@@ -186,6 +190,10 @@ end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
     TabChangeOarcGui(event)
+
+    if global.ocfg.enable_coin_shop then
+        TabChangeOarcStore(event)
+    end
 end)
 
 ----------------------------------------
@@ -206,9 +214,13 @@ script.on_event(defines.events.on_player_created, function(event)
         GivePlayerLongReach(player)
     end
 
-    SeparateSpawnsPlayerCreated(event.player_index)
+    SeparateSpawnsPlayerCreated(event.player_index, true)
 
     InitOarcGuiTabs(player)
+
+    if global.ocfg.enable_coin_shop then
+        InitOarcStoreGuiTabs(player)
+    end
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -223,57 +235,19 @@ end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
     ServerWriteFile("player_events", game.players[event.player_index].name .. " left the game." .. "\n")
-    FindUnusedSpawns(game.players[event.player_index], true)
-end)
+    local player = game.players[event.player_index]
 
-----------------------------------------
--- On BUILD entity. Don't forget on_robot_built_entity too!
-----------------------------------------
-script.on_event(defines.events.on_built_entity, function(event)
-    if global.ocfg.enable_autofill then
-        Autofill(event)
-    end
-
-    if global.ocfg.enable_regrowth then
-        local s_index = event.created_entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.created_entity.position,
-                    2)
-    end
-
-    if ENABLE_ANTI_GRIEFING then
-        SetItemBlueprintTimeToLive(event)
-    end
-
-    if global.ocfg.frontier_rocket_silo then
-        BuildSiloAttempt(event)
-    end
-
-end)
-
-
-----------------------------------------
--- On script_raised_built. This should help catch mods that
--- place items that don't count as player_built and robot_built.
--- Specifically FARL.
-----------------------------------------
-script.on_event(defines.events.script_raised_built, function(event)
-    if global.ocfg.enable_regrowth then
-        local s_index = event.entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.entity.position,
-                    2)
+    -- If players leave early, say goodbye.
+    if (player and (player.online_time < (global.ocfg.minimum_online_time * TICKS_PER_MINUTE))) then
+        log("Player left early: " .. player.name)
+        SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.minimum_online_time.." minutes of joining.")
+        RemoveOrResetPlayer(player, true, true, true, true)
     end
 end)
 
+-- script.on_event(defines.events.on_player_removed, function(event)
+    -- Player is already deleted when this is called.
+-- end)
 
 ----------------------------------------
 -- On tick events. Stuff that needs to happen at regular intervals.
@@ -287,41 +261,57 @@ script.on_event(defines.events.on_tick, function(event)
 
     DelayedSpawnOnTick()
 
-    if global.ocfg.frontier_rocket_silo then
-        DelayedSiloCreationOnTick(game.surfaces[GAME_SURFACE_NAME])
-    end
-
     if global.ocfg.enable_chest_sharing then
         SharedChestsOnTick()
     end
 
+    if (global.ocfg.enable_chest_sharing and global.ocfg.enable_magic_factories) then
+        MagicFactoriesOnTick()
+    end
+
     TimeoutSpeechBubblesOnTick()
     FadeoutRenderOnTick()
+
+    if global.ocfg.enable_miner_decon then
+        OarcAutoDeconOnTick()
+    end
 end)
 
 
-script.on_event(defines.events.on_sector_scanned, function (event)
+script.on_event(defines.events.on_sector_scanned, function (event)   
     if global.ocfg.enable_regrowth then
         RegrowthSectorScan(event)
     end
 end)
--- script.on_event(defines.events.on_sector_scanned, function (event)
 
--- end)
 
 ----------------------------------------
---
+-- Various on "built" events
 ----------------------------------------
+script.on_event(defines.events.on_built_entity, function(event)
+    if global.ocfg.enable_autofill then
+        Autofill(event)
+    end
+
+    if global.ocfg.enable_regrowth then
+        if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.position, 2, false)
+    end
+
+    if global.ocfg.enable_anti_grief then
+        SetItemBlueprintTimeToLive(event)
+    end
+
+    if global.ocfg.frontier_rocket_silo then
+        BuildSiloAttempt(event)
+    end
+
+end)
+
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.enable_regrowth then
-        local s_index = event.created_entity.surface.index
-        if (global.rg[s_index] == nil) then return end
-
-        remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    event.created_entity.position,
-                    2)
+        if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.position, 2, false)
     end
     if global.ocfg.frontier_rocket_silo then
         BuildSiloAttempt(event)
@@ -330,21 +320,25 @@ end)
 
 script.on_event(defines.events.on_player_built_tile, function (event)
     if global.ocfg.enable_regrowth then
-        local s_index = event.surface_index
-        if (global.rg[s_index] == nil) then return end
+        if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
 
         for k,v in pairs(event.tiles) do
-            remote.call("oarc_regrowth",
-                    "area_offlimits_tilepos",
-                    s_index,
-                    v.position,
-                    2)
+            RegrowthMarkAreaSafeGivenTilePos(v.position, 2, false)
         end
     end
 end)
 
-
-
+----------------------------------------
+-- On script_raised_built. This should help catch mods that
+-- place items that don't count as player_built and robot_built.
+-- Specifically FARL.
+----------------------------------------
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.enable_regrowth then
+        if (event.entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        RegrowthMarkAreaSafeGivenTilePos(event.entity.position, 2, false)
+    end
+end)
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
@@ -373,7 +367,7 @@ script.on_event(defines.events.on_research_finished, function(event)
     end
 
     if global.ocfg.lock_goodies_rocket_launch and
-        (not global.satellite_sent or not global.satellite_sent[event.research.force.name]) then
+        (not global.ocore.satellite_sent or not global.ocore.satellite_sent[event.research.force.name]) then
         for _,v in ipairs(LOCKED_RECIPES) do
             RemoveRecipe(event.research.force, v.r)
         end
@@ -424,7 +418,6 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_text_changed, function(event)
     NotepadOnGuiTextChange(event)
-    SharedElectricityPlayerGuiValueChange(event)
 end)
 
 
@@ -434,4 +427,29 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_closed, function(event)
     OarcGuiOnGuiClosedEvent(event)
+    if global.ocfg.enable_coin_shop then
+        OarcStoreOnGuiClosedEvent(event)
+    end
+end)
+
+----------------------------------------
+-- On enemies killed
+-- For coin generation and stuff
+----------------------------------------
+script.on_event(defines.events.on_post_entity_died, function(event)
+    if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
+    if global.ocfg.enable_coin_shop then
+        CoinsFromEnemiesOnPostEntityDied(event)
+    end
+end,
+{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
+
+
+----------------------------------------
+-- Scripted auto decon for miners...
+----------------------------------------
+script.on_event(defines.events.on_resource_depleted, function(event)
+    if global.ocfg.enable_miner_decon then
+        OarcAutoDeconOnResourceDepleted(event)
+    end
 end)

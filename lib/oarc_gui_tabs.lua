@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 
 -- NAME of the top level element (outer frame)
-local OARC_GUI = "oarc_gui"
+OARC_GUI = "oarc_gui"
 
 -- LIST of all implemented tabs and their content Functions
 OARC_GAME_OPTS_GUI_TAB_NAME = "Server Info"
@@ -49,7 +49,7 @@ function InitOarcGuiTabs(player)
 
     -- Rockets tab, only enable if one has been launched already
     AddOarcGuiTab(player, OARC_ROCKETS_GUI_TAB_NAME)
-    if (global.satellite_sent) then
+    if (global.ocore.satellite_sent) then
         SetOarcGuiTabEnabled(player, OARC_ROCKETS_GUI_TAB_NAME, true)
     end
 
@@ -191,8 +191,7 @@ end
 
 -- Function creates a new tab.
 -- It adds whatever it wants to the provided scroll-pane.
--- content_function takes a content holder GUI and player
-function AddOarcGuiTab(player, tab_name, content_function)
+function AddOarcGuiTab(player, tab_name)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
     end

@@ -34,17 +34,21 @@ function InitOarcConfig()
     global.ocfg.enable_long_reach = ENABLE_LONGREACH
     global.ocfg.enable_autofill = ENABLE_AUTOFILL
     global.ocfg.enable_loaders = ENABLE_LOADERS
+    global.ocfg.enable_miner_decon = ENABLE_MINER_AUTODECON
     global.ocfg.enable_player_list = ENABLE_PLAYER_LIST
     global.ocfg.list_offline_players = PLAYER_LIST_OFFLINE_PLAYERS
     global.ocfg.enable_shared_team_vision = ENABLE_SHARED_TEAM_VISION
     global.ocfg.enable_regrowth = ENABLE_REGROWTH
     global.ocfg.enable_abandoned_base_removal = ENABLE_ABANDONED_BASE_REMOVAL
     global.ocfg.enable_research_queue = ENABLE_RESEARCH_QUEUE
-    global.ocfg.enable_chest_sharing = ENABLE_CHEST_SHARING
+    global.ocfg.enable_coin_shop = ENABLE_COIN_SHOP
+    global.ocfg.enable_chest_sharing = ENABLE_ITEM_AND_ENERGY_SHARING
+    global.ocfg.enable_magic_factories = ENABLE_MAGIC_FACTORIES
     global.ocfg.enable_offline_protect = ENABLE_OFFLINE_PROTECTION
     global.ocfg.enable_power_armor_start = ENABLE_POWER_ARMOR_QUICK_START
     global.ocfg.enable_modular_armor_start = ENABLE_MODULAR_ARMOR_QUICK_START
     global.ocfg.lock_goodies_rocket_launch = LOCK_GOODIES_UNTIL_ROCKET_LAUNCH
+    global.ocfg.scale_resources_around_spawns = SCALE_RESOURCES_AROUND_SPAWNS
 
     global.ocfg.modified_enemy_spawning = OARC_MODIFIED_ENEMY_SPAWNING
     global.ocfg.near_dist_start = NEAR_MIN_DIST
@@ -69,6 +73,10 @@ function InitOarcConfig()
     global.ocfg.frontier_silo_vision = ENABLE_SILO_VISION
     global.ocfg.frontier_allow_build = ENABLE_SILO_PLAYER_BUILD
 
+    global.ocfg.enable_anti_grief = ENABLE_ANTI_GRIEFING
+    global.ocfg.ghost_ttl = GHOST_TIME_TO_LIVE
+    global.ocfg.enable_friendly_fire = ENABLE_FRIENDLY_FIRE
+
     global.ocfg.enable_server_write_files = ENABLE_SERVER_WRITE_FILES
 
 
@@ -82,6 +90,10 @@ function InitOarcConfig()
 
     if (global.ocfg.enable_vanilla_spawns) then
         global.ocfg.enable_buddy_spawn = false
+    end
+
+    if (not global.ocfg.enable_chest_sharing) then
+        global.ocfg.enable_magic_factories = false
     end
 
 end

@@ -30,7 +30,8 @@ function GameOptionsGuiClick(event)
         if (pIndex ~= 0) then
             local resetPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
             if (game.players[resetPlayer]) then
-                SeparateSpawnsPlayerCreated(resetPlayer)
+                RemoveOrResetPlayer(player, false, true, true, true)
+                SeparateSpawnsPlayerCreated(resetPlayer, true)
                 log("Resetting " .. resetPlayer)
             end
         end
@@ -40,10 +41,21 @@ end
 -- Used by AddOarcGuiTab
 function CreateGameOptionsTab(tab_container, player)
 
+    if global.oarc_announcements == nil then
+        global.oarc_announcements = "No announcements... Stay tuned."
+    end
+
+    AddLabel(tab_container, "announcement_info_label", "Server announcements:", my_label_header_style)
+    AddLabel(tab_container, "announcement_info_txt", global.oarc_announcements, my_longer_label_style)
+    AddSpacerLine(tab_container)
+
     -- General Server Info:
     AddLabel(tab_container, "info_1", global.ocfg.welcome_msg, my_longer_label_style)
     AddLabel(tab_container, "info_2", global.ocfg.server_rules, my_longer_label_style)
     AddLabel(tab_container, "info_3", global.ocfg.server_contact, my_longer_label_style)
+    tab_container.add{type="textfield",
+                            tooltip="Come join the discord (copy this invite)!",
+                            text=DISCORD_INV}
     AddSpacerLine(tab_container)
 
     -- Enemy Settings:
