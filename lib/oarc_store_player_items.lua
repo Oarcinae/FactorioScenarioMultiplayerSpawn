@@ -2,6 +2,8 @@
 -- May 2020
 -- Adding microtransactions.
 
+local mod_gui = require("mod-gui")
+
 OARC_STORE_PLAYER_ITEMS = 
 {
     ["Guns"] = {
@@ -10,7 +12,7 @@ OARC_STORE_PLAYER_ITEMS =
         ["submachine-gun"] = {cost = 10, count = 1, play_time_locked=false},
         ["flamethrower"] = {cost = 50, count = 1, play_time_locked=true},
         ["rocket-launcher"] = {cost = 50, count = 1, play_time_locked=true},
-        ["railgun"] = {cost = 250, count = 1, play_time_locked=true},
+        -- ["railgun"] = {cost = 250, count = 1, play_time_locked=true}, -- SAD
     },
 
     ["Turrets"] = {
@@ -26,7 +28,7 @@ OARC_STORE_PLAYER_ITEMS =
         ["shotgun-shell"] = {cost = 10, count = 10, play_time_locked=false},
         ["flamethrower-ammo"] = {cost = 50, count = 10, play_time_locked=true},
         ["rocket"] = {cost = 100, count = 10, play_time_locked=true},
-        ["railgun-dart"] = {cost = 250, count = 10, play_time_locked=true},
+        -- ["railgun-dart"] = {cost = 250, count = 10, play_time_locked=true}, -- SAD
         ["atomic-bomb"] = {cost = 1000, count = 1, play_time_locked=true},
         ["artillery-shell"] = {cost = 50, count = 1, play_time_locked=true},
 

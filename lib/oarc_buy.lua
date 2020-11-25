@@ -4,6 +4,7 @@
 
 require("lib/oarc_store_player_items")
 require("lib/oarc_store_map_features")
+local mod_gui = require("mod-gui")
 
 -- NAME of the top level element (outer frame)
 OARC_STORE_GUI = "oarc_store_gui"

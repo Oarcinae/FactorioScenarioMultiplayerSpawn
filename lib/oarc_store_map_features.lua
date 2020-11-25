@@ -4,6 +4,7 @@
 
 require("lib/shared_chests")
 require("lib/map_features")
+local mod_gui = require("mod-gui")
 
 OARC_STORE_MAP_TEXT = 
 {
@@ -88,6 +89,14 @@ OARC_STORE_MAP_FEATURES =
             text="Convert this special chunk into a rocket launch pad. This allows you to build a rocket silo here!"},
     },
 
+    -- special_chunks_upgrades = {
+    --     ["big-electric-pole"] = {
+    --         cost = 0,
+    --         text = "Upgrade your special chunk so that it pulls power from the cloud! Refills the accumulator from the cloud automatically if it falls below 50%."
+    --     }
+
+    -- }
+
     special_buttons = {
         ["assembling-machine-1"] = {
             initial_cost = 10,
@@ -99,17 +108,17 @@ OARC_STORE_MAP_FEATURES =
     },
 
     reset_buttons = {
-        ["crash-site-generator"] = {
+        ["electronic-circuit"] = {
             initial_cost = 5000,
             solo_force = true,
             text="DESTROY your base and restart. This allows you to choose a new spawn and will completely destroy all your buildings and your force. All technology progress will be reset. You get to keep your current items and armor! [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         },
-        ["crash-site-lab-broken"] = {
+        ["advanced-circuit"] = {
             initial_cost = 5000,
             solo_force = true,
             text="ABANDON your base and restart. This allows you to choose a new spawn and will move all your buildings to a neutral force. They will still be on the map and can be interacted with, but will not be owned by any player or player force. All radars will be destroyed to help trim map size. You get to keep your current items and armor! [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         },
-        ["crash-site-chest-1"] = {
+        ["processing-unit"] = {
             initial_cost = 5000,
             text="Restart your game. This will reset your player, your force and your base. [color=red]THERE IS NO CONFIRMATION PROMPT! THIS CAN NOT BE UNDONE![/color]"
         }
@@ -307,13 +316,13 @@ function OarcMapFeatureStoreButton(event)
         result = true
     elseif (button.name == "offshore-pump") then
         result = ConvertWoodenChestToWaterFill(player)
-    elseif (button.name == "crash-site-generator") then
+    elseif (button.name == "electronic-circuit") then
         ResetPlayerAndDestroyForce(player)
         result = true
-    elseif (button.name == "crash-site-lab-broken") then
+    elseif (button.name == "advanced-circuit") then
         ResetPlayerAndAbandonForce(player)
         result = true
-    elseif (button.name == "crash-site-chest-1") then
+    elseif (button.name == "processing-unit") then
         ResetPlayerAndMergeForceToNeutral(player)
         result = true
     end
