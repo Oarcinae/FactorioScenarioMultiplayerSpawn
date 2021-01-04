@@ -297,14 +297,14 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         -- final_transition_time=45}
     end
 
-    crash_site.create_crash_site(game.surfaces[GAME_SURFACE_NAME],
-                                {x=delayedSpawn.pos.x+15, y=delayedSpawn.pos.y-25},
-                                {["spidertron"] = 1,
-                                 ["electronic-circuit"] = math.random(100,200),
-                                 ["iron-gear-wheel"] = math.random(50,100),
-                                 ["copper-cable"] = math.random(100,200),
-                                 ["steel-plate"] = math.random(50,100)},
-                                {["iron-plate"] = math.random(50,100)})
+    -- crash_site.create_crash_site(game.surfaces[GAME_SURFACE_NAME],
+    --                             {x=delayedSpawn.pos.x+15, y=delayedSpawn.pos.y-25},
+    --                             {["spidertron"] = 1,
+    --                              ["electronic-circuit"] = math.random(100,200),
+    --                              ["iron-gear-wheel"] = math.random(50,100),
+    --                              ["copper-cable"] = math.random(100,200),
+    --                              ["steel-plate"] = math.random(50,100)},
+    --                             {["iron-plate"] = math.random(50,100)})
 end
 
 function DisplayWelcomeGroundTextAtSpawn(player, pos)
