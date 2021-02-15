@@ -297,14 +297,13 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
         -- final_transition_time=45}
     end
 
-    -- crash_site.create_crash_site(game.surfaces[GAME_SURFACE_NAME],
-    --                             {x=delayedSpawn.pos.x+15, y=delayedSpawn.pos.y-25},
-    --                             {["spidertron"] = 1,
-    --                              ["electronic-circuit"] = math.random(100,200),
-    --                              ["iron-gear-wheel"] = math.random(50,100),
-    --                              ["copper-cable"] = math.random(100,200),
-    --                              ["steel-plate"] = math.random(50,100)},
-    --                             {["iron-plate"] = math.random(50,100)})
+    if (global.ocfg.spawn_config.gen_settings.crashed_ship) then
+        crash_site.create_crash_site(game.surfaces[GAME_SURFACE_NAME],
+                                    {x=delayedSpawn.pos.x+15, y=delayedSpawn.pos.y-25},
+                                    global.ocfg.spawn_config.gen_settings.crashed_ship_resources,
+                                    global.ocfg.spawn_config.gen_settings.crashed_ship_wreakage)
+    end
+
 end
 
 function DisplayWelcomeGroundTextAtSpawn(player, pos)
@@ -411,7 +410,12 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 end
                 if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled) then
                     if (spawn.moat) then
-                        CreateMoat(surface, spawn.pos, chunkArea, global.ocfg.spawn_config.gen_settings.land_area_tiles, "water", true)
+                        CreateMoat(surface,
+                            spawn.pos,
+                            chunkArea,
+                            global.ocfg.spawn_config.gen_settings.land_area_tiles,
+                            "water",
+                            global.ocfg.spawn_config.gen_settings.moat_bridging)
                     end
                 end
             end

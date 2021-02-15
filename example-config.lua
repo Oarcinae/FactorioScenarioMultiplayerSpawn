@@ -1,5 +1,5 @@
 -- example-config.lua (Rename this file to config.lua to use it)
--- Oct 3 2020 (updated on)
+-- Feb 15 2020 (updated on)
 -- Configuration Options
 --
 -- You should be safe to leave most of the settings here as defaults if you want.
@@ -191,6 +191,8 @@ OARC_CFG = {
 
         -- Allow players to choose to spawn with a moat
         moat_choice_enabled = true,
+        -- If there is a moat, this attempts to connect to land to avoid "turtling"
+        moat_bridging = true, 
 
         -- If you change the spawn area size, you might have to adjust this as well
         moat_size_modifier = 1,
@@ -204,6 +206,17 @@ OARC_CFG = {
         -- Spawn a circle/octagon of trees around the base outline.
         tree_circle = true,
         tree_octagon = false,
+
+        -- Add a crashed ship like a vanilla game (create_crash_site)
+        -- Resources go in the ship itself. (5 slots)
+        -- Wreakage is distributed in small pieces. (I recommend only 1 item type.)
+        crashed_ship = true,
+        crashed_ship_resources = {["electronic-circuit"] = math.random(100,200),
+                                 ["iron-gear-wheel"] = math.random(50,100),
+                                 ["copper-cable"] = math.random(100,200),
+                                 -- ["spidertron"] = 1,
+                                 ["steel-plate"] = math.random(50,100)},
+        crashed_ship_wreakage = {["iron-plate"] = math.random(50,100)},
     },
 
     -- Safe Spawn Area Options

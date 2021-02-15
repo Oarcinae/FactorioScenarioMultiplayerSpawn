@@ -1227,7 +1227,8 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
         for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
 
             if (bridge and ((j == centerPos.y-1) or (j == centerPos.y) or (j == centerPos.y+1))) then
-
+                -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
+                -- land connections if the spawn is on or near land.
             else
 
                 -- This ( X^2 + Y^2 ) is used to calculate if something
@@ -1240,13 +1241,6 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
                     table.insert(tiles, {name = moatTile, position ={i,j}})
                 end
             end
-
-            -- Enforce land inside the edges of the circle to make sure it's
-            -- a clean transition
-            -- if ((distVar <= tileRadSqr) and
-            --     (distVar > tileRadSqr-10000)) then
-            --     table.insert(tiles, {name = fillTile, position ={i,j}})
-            -- end
         end
     end
 
