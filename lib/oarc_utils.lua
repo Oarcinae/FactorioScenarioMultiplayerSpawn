@@ -1328,7 +1328,8 @@ function UndecorateOnChunkGenerate(event)
     local surface = event.surface
     local chunkArea = event.area
     RemoveDecorationsArea(surface, chunkArea)
-    RemoveFish(surface, chunkArea)
+    -- If you care to, you can remove all fish with the Undecorator option here:
+    -- RemoveFish(surface, chunkArea)
 end
 
 -- Give player items on respawn
