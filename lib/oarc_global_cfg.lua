@@ -91,6 +91,10 @@ function InitOarcConfig()
         global.ocfg.enable_buddy_spawn = false
     end
 
+    if (not global.ocfg.enable_coin_shop) then
+        global.ocfg.enable_chest_sharing = false
+    end
+
     if (not global.ocfg.enable_chest_sharing) then
         global.ocfg.enable_magic_factories = false
     end
