@@ -1352,18 +1352,3 @@ function Autofill(event)
         AutoFillVehicle(player, eventEntity)
     end
 end
-
--- Map loaders to logistics tech for unlocks.
-local loaders_technology_map = {
-    ['logistics'] = 'loader',
-    ['logistics-2'] = 'fast-loader',
-    ['logistics-3'] = 'express-loader'
-}
-
-function EnableLoaders(event)
-    local research = event.research
-    local recipe = loaders_technology_map[research.name]
-    if recipe then
-        research.force.recipes[recipe].enabled = true
-    end
-end

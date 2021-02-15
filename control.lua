@@ -372,10 +372,6 @@ script.on_event(defines.events.on_research_finished, function(event)
             RemoveRecipe(event.research.force, v.r)
         end
     end
-
-    if global.ocfg.enable_loaders then
-        EnableLoaders(event)
-    end
 end)
 
 ----------------------------------------

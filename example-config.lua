@@ -51,9 +51,6 @@ ENABLE_LONGREACH = true
 -- Enable Autofill (My autofill is very simplistic, if you are using a similar mod disable this!)
 ENABLE_AUTOFILL = true
 
--- Enable vanilla loaders
-ENABLE_LOADERS = true
-
 -- Enable auto decon of miners (My miner decon is very simplistic, if you are using a similar mod disable this!)
 ENABLE_MINER_AUTODECON = true
 
