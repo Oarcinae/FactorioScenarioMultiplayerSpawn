@@ -208,12 +208,16 @@ OARC_CFG = {
         -- Resources go in the ship itself. (5 slots)
         -- Wreakage is distributed in small pieces. (I recommend only 1 item type.)
         crashed_ship = true,
-        crashed_ship_resources = {["electronic-circuit"] = math.random(100,200),
-                                 ["iron-gear-wheel"] = math.random(50,100),
-                                 ["copper-cable"] = math.random(100,200),
-                                 -- ["spidertron"] = 1,
-                                 ["steel-plate"] = math.random(50,100)},
-        crashed_ship_wreakage = {["iron-plate"] = math.random(50,100)},
+        crashed_ship_resources = {
+                                    ["electronic-circuit"] = 200,
+                                    ["iron-gear-wheel"] = 100,
+                                    ["copper-cable"] = 200,
+                                    -- ["spidertron"] = 1,
+                                    ["steel-plate"] = 100
+                                 },
+        crashed_ship_wreakage = {
+                                    ["iron-plate"] = 100
+                                },
     },
 
     -- Safe Spawn Area Options
