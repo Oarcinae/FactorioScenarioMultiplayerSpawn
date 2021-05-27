@@ -1,5 +1,5 @@
 -- example-config.lua (Rename this file to config.lua to use it)
--- Feb 15 2020 (updated on)
+-- May 26 2020 (updated on)
 -- Configuration Options
 --
 -- You should be safe to leave most of the settings here as defaults if you want.
@@ -143,8 +143,8 @@ PLAYER_SPAWN_START_ITEMS = {
 
 -- Items provided after EVERY respawn (disabled by default)
 PLAYER_RESPAWN_START_ITEMS = {
-    -- {name="pistol", count=1},
-    -- {name="firearm-magazine", count=100}
+    -- ["pistol"]=1,
+    -- ["firearm-magazine"]=100,
 }
 
 ------------------------------------------------------------------------------------------------------------------------
