@@ -361,7 +361,7 @@ function WorldEaterSingleStep()
 
         if (total_count > 0) then
             for k,v in pairs(entities) do
-                if (v.last_user or (v.type == "character")) then
+                if (v.last_user or (v.type == "character") or string.contains(v.type, "robot")) then
                     has_last_user_set = true
                     return -- This means we're done checking this chunk.
                 end

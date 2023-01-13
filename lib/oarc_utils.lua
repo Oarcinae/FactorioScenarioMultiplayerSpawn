@@ -26,6 +26,14 @@ MAX_INT32_NEG = -2147483648
 -- General Helper Functions
 --------------------------------------------------------------------------------
 
+--- Tests if a string contains a given substring
+-- @param s the string to check for the substring
+-- @param ends the substring to test for
+-- @return true if the substring was found in the string
+function string.contains(s, ends)
+    return s and string.find(s, ends) ~= nil
+end
+
 -- Prints flying text.
 -- Color is optional
 function FlyingText(msg, pos, color, surface)
