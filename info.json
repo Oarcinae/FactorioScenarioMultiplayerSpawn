@@ -1,0 +1,11 @@
+{
+  "name": "oarc-mod",
+  "version": "2.0.0",
+  "factorio_version": "1.1",
+  "title": "Oarc Multiplayer Spawn",
+  "author": "Oarcinae",
+  "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
+  "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn",
+  "description": "This mod provides a scenario that overhauls multiplayer spawning.\n[color=red][font=default-bold]Please check out the github page and discord for more information and support.[/font][/color]",
+  "dependencies": ["base >= 1.1.0"]
+}

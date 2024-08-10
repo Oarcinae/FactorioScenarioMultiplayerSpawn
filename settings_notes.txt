@@ -1,0 +1,119 @@
+-- Scenario Settings:
+--   Startup
+--      Enable main force
+--      Enable separate teams
+--      Enable buddy spawn
+--      (Tentative) Enable vanilla spawn points
+--         Number of vanilla spawn points
+--         Vanilla spawn point spacing
+--      (Tentative V2.0) Enable spawning on other surfaces
+
+--   Runtime global
+--      Enable regrowth
+--          Enable world eater
+--      Enable shared team vision
+--      Enable shared team chat
+--      Enable shared spawns
+--          Number of players per shared spawn
+--      Enable abandoned base cleanup
+--      Enable friendly fire
+--      Enable allow moats around spawns
+--          Enable force bridges next to moats
+--      Minimum distance to existing chunks for new spawn location
+--      Near spawn Min/Max distances
+--      Far spawn Min/Max distances
+
+--   Runtime per player
+--      (TENTATIVE - Likely NOT) Enable shared base (? Sync with scenario GUI ?)
+
+--   ONLY editable in a lua config file like the original scenario.
+--      Gen Settings
+--          Enable resource scaling around spawns
+--          Enable safe spawn area (removes and downgrades biters near spawn)
+--          (?) Start items
+--          (?) Respawn items
+--          Radius of the spawn circle in tiles
+--          moat_size_modifier = 1
+--          resources_circle_shape_enabled (bool)
+--          force_grass_enabled (bool)
+--          tree_circle_enabled (bool)
+--          tree_octagon_enabled (bool)
+--          crashed_ship_enabled (bool)
+--          PLAYER_SPAWN_START_ITEMS = {
+--              ["pistol"]=1,
+--              ["firearm-magazine"]=200,
+--              ["iron-plate"]=100,
+--              ["burner-mining-drill"] = 4,
+--              ["stone-furnace"] = 4,
+--              ["coal"] = 50,
+--              ["stone"] = 50,
+--          }
+--          PLAYER_RESPAWN_START_ITEMS = {
+--              ["pistol"]=1,
+--              ["firearm-magazine"]=100,
+--          }
+--          crashed_ship_resources = {
+--              ["electronic-circuit"] = 200
+--              ["iron-gear-wheel"] = 100
+--              ["copper-cable"] = 200
+--              ["steel-plate"] = 100
+--          }
+--          crashed_ship_wreakage = {
+--              ["iron-plate"] = 100
+--          }
+--          safe_area = {
+--              safe_radius = CHUNK_SIZE*6
+--              warn_radius = CHUNK_SIZE*12
+--              warn_reduction = 20
+--              danger_radius = CHUNK_SIZE*32
+--              danger_reduction = 5
+--          }
+--          water = {
+--              x_offset = -4
+--              y_offset = -48
+--              length = 8
+--          }
+--          resource_rand_pos_settings = {
+--              enabled_enabled (bool)
+--              radius = 45
+--              angle_offset = 2.32
+--              angle_final = 4.46
+--          }
+--          resource_tiles = {
+--              ["iron-ore"] = {
+--                  amount = 1500
+--                  size = 18
+--                  x_offset = -29
+--                  y_offset = 16
+--              }
+--              ["copper-ore"] = {
+--                  amount = 1200
+--                  size = 18
+--                  x_offset = -28
+--                  y_offset = -3
+--              }
+--              ["stone"] = {
+--                  amount = 1200
+--                  size = 16
+--                  x_offset = -27
+--                  y_offset = -34
+--              }
+--              ["coal"] = {
+--                  amount = 1200
+--                  size = 16
+--                  x_offset = -27
+--                  y_offset = -20
+--              }
+--          }
+--          resource_patches =
+--          {
+--              ["crude-oil"] =
+--              {
+--                  num_patches = 2,
+--                  amount = 900000,
+--                  x_offset_start = -3,
+--                  y_offset_start = 48,
+--                  x_offset_next = 6,
+--                  y_offset_next = 0
+--              }
+--          },

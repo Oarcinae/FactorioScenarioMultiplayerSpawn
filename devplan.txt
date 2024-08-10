@@ -1,0 +1,16 @@
+
+
+3. Start copying in the core pieces required for the primary spawning mechanic.
+4. Go through separate spawns code carefully and make sure it can support MULTIPLE SURFACES!
+5. Document config and mod settings using Lua annotation as a custom class
+6. Document global ocore as a custom class (with subclasses/types as needed)
+
+
+Random Notes:
+Configurable welcome message in admin GUI.
+Figure out how to define custom lua table/data structs to make syntax/linting work?
+
+
+
+1. (DONE) First setup the mod settings and lua global settings.
+2. (DONE) Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.
