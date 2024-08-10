@@ -68,15 +68,15 @@ MAX_INT32_NEG = -2147483648
 ---@param color Color
 ---@return nil
 function RenderPermanentGroundText(surface, position, scale, text, color)
-    rendering.draw_text{text=text,
-                    surface=surface,
-                    target=position,
-                    color=color,
-                    scale=scale,
-                    --Allowed fonts: default-dialog-button default-game compilatron-message-font default-large default-large-semibold default-large-bold heading-1 compi
-                    font="compi",
-                    draw_on_ground=true}
-end 
+    rendering.draw_text { text = text,
+        surface = surface,
+        target = position,
+        color = color,
+        scale = scale,
+        --Allowed fonts: default-dialog-button default-game compilatron-message-font default-large default-large-semibold default-large-bold heading-1 compi
+        font = "compi",
+        draw_on_ground = true }
+end
 
 ---A standardized helper text that fades out over time
 ---@param text string
@@ -85,14 +85,14 @@ end
 ---@param ttl number
 ---@return nil
 function TemporaryHelperText(text, surface, position, ttl)
-    local rid = rendering.draw_text{text=text,
-                    surface=surface,
-                    target=position,
-                    color={0.7,0.7,0.7,0.7},
-                    scale=1,
-                    font="compi",
-                    time_to_live=ttl,
-                    draw_on_ground=false}
+    local rid = rendering.draw_text { text = text,
+        surface = surface,
+        target = position,
+        color = { 0.7, 0.7, 0.7, 0.7 },
+        scale = 1,
+        font = "compi",
+        time_to_live = ttl,
+        draw_on_ground = false }
     table.insert(global.oarc_renders_fadeout, rid)
 end
 
@@ -116,13 +116,13 @@ end
 ---@return nil
 function FadeoutRenderOnTick()
     if (global.oarc_renders_fadeout and (#global.oarc_renders_fadeout > 0)) then
-        for k,rid in pairs(global.oarc_renders_fadeout) do
+        for k, rid in pairs(global.oarc_renders_fadeout) do
             if (rendering.is_valid(rid)) then
                 local ttl = rendering.get_time_to_live(rid)
                 if ((ttl > 0) and (ttl < 200)) then
                     local color = rendering.get_color(rid)
                     if (color.a > 0.005) then
-                        rendering.set_color(rid, {r=color.r, g=color.g, b=color.b, a=color.a-0.005})
+                        rendering.set_color(rid, { r = color.r, g = color.g, b = color.b, a = color.a - 0.005 })
                     end
                 end
             else
@@ -136,7 +136,7 @@ end
 ---@param msg LocalisedString
 ---@return nil
 function SendBroadcastMsg(msg)
-    for name,player in pairs(game.connected_players) do
+    for name, player in pairs(game.connected_players) do
         player.print(msg)
     end
 end
@@ -194,9 +194,9 @@ end
 ---@param T table
 ---@return integer
 function TableLength(T)
-  local count = 0
-  for _ in pairs(T) do count = count + 1 end
-  return count
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
 end
 
 -- Fisher-Yares shuffle
@@ -280,18 +280,18 @@ end
 ---@param surface LuaSurface
 function ChartArea(force, position, chunkDist, surface)
     force.chart(surface,
-        {{position.x-(CHUNK_SIZE*chunkDist),
-        position.y-(CHUNK_SIZE*chunkDist)},
-        {position.x+(CHUNK_SIZE*chunkDist),
-        position.y+(CHUNK_SIZE*chunkDist)}})
+        { { position.x - (CHUNK_SIZE * chunkDist),
+            position.y - (CHUNK_SIZE * chunkDist) },
+            { position.x + (CHUNK_SIZE * chunkDist),
+                position.y + (CHUNK_SIZE * chunkDist) } })
 end
 
 ---Gives the player the respawn items if there are any
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerRespawnItems(player)
-    for name,count in pairs(global.ocfg.starting_items.player_respawn_start_items) do
-        player.insert({name=name, count=count})
+    for name, count in pairs(global.ocfg.starting_items.player_respawn_start_items) do
+        player.insert({ name = name, count = count })
     end
 end
 
@@ -301,8 +301,8 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerStarterItems(player)
-    for name,count in pairs(global.ocfg.starting_items.player_spawn_start_items) do
-        player.insert({name=name, count=count})
+    for name, count in pairs(global.ocfg.starting_items.player_spawn_start_items) do
+        player.insert({ name = name, count = count })
     end
 end
 
@@ -400,31 +400,33 @@ function CheckIfInArea(point, area)
     return false
 end
 
--- -- Set all forces to ceasefire
--- function SetCeaseFireBetweenAllForces()
---     for name,team in pairs(game.forces) do
---         if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
---             for x,y in pairs(game.forces) do
---                 if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
---                     team.set_cease_fire(x,true)
---                 end
---             end
---         end
---     end
--- end
+---Set all forces to ceasefire
+---@return nil
+function SetCeaseFireBetweenAllForces()
+    for name, team in pairs(game.forces) do
+        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
+            for x, y in pairs(game.forces) do
+                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
+                    team.set_cease_fire(x, true)
+                end
+            end
+        end
+    end
+end
 
--- -- Set all forces to friendly
--- function SetFriendlyBetweenAllForces()
---     for name,team in pairs(game.forces) do
---         if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
---             for x,y in pairs(game.forces) do
---                 if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
---                     team.set_friend(x,true)
---                 end
---             end
---         end
---     end
--- end
+---Set all forces to friendly
+---@return nil
+function SetFriendlyBetweenAllForces()
+    for name, team in pairs(game.forces) do
+        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
+            for x, y in pairs(game.forces) do
+                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
+                    team.set_friend(x, true)
+                end
+            end
+        end
+    end
+end
 
 -- -- For each other player force, share a chat msg.
 -- function ShareChatBetweenForces(player, msg)
@@ -484,134 +486,150 @@ end
 --     end
 -- end
 
--- -- Get a random 1 or -1
--- function RandomNegPos()
---     if (math.random(0,1) == 1) then
---         return 1
---     else
---         return -1
---     end
--- end
+---Get a random 1 or -1
+---@return number
+function RandomNegPos()
+    if (math.random(0,1) == 1) then
+        return 1
+    else
+        return -1
+    end
+end
 
--- -- Create a random direction vector to look in
--- function GetRandomVector()
---     local randVec = {x=0,y=0}
---     while ((randVec.x == 0) and (randVec.y == 0)) do
---         randVec.x = math.random(-3,3)
---         randVec.y = math.random(-3,3)
---     end
---     log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
---     return randVec
--- end
+---Create a random direction vector to look in
+---@return MapPosition
+function GetRandomVector()
+    local randVec = {x=0,y=0}
+    while ((randVec.x == 0) and (randVec.y == 0)) do
+        randVec.x = math.random(-3,3)
+        randVec.y = math.random(-3,3)
+    end
+    log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
+    return randVec
+end
 
--- -- Check for ungenerated chunks around a specific chunk
--- -- +/- chunkDist in x and y directions
--- function IsChunkAreaUngenerated(chunkPos, chunkDist, surface)
---     for x=-chunkDist, chunkDist do
---         for y=-chunkDist, chunkDist do
---             local checkPos = {x=chunkPos.x+x,
---                              y=chunkPos.y+y}
---             if (surface.is_chunk_generated(checkPos)) then
---                 return false
---             end
---         end
---     end
---     return true
--- end
+---Check for ungenerated chunks around a specific chunk +/- chunkDist in x and y directions
+---@param chunkPos MapPosition
+---@param chunkDist integer
+---@param surface LuaSurface
+---@return boolean
+function IsChunkAreaUngenerated(chunkPos, chunkDist, surface)
+    for x=-chunkDist, chunkDist do
+        for y=-chunkDist, chunkDist do
+            local checkPos = {x=chunkPos.x+x,
+                             y=chunkPos.y+y}
+            if (surface.is_chunk_generated(checkPos)) then
+                return false
+            end
+        end
+    end
+    return true
+end
 
 -- Clear out enemies around an area with a certain distance
 ---@param pos MapPosition
 ---@param safeDist number
 ---@param surface LuaSurface
 function ClearNearbyEnemies(pos, safeDist, surface)
-    local safeArea = {left_top=
-                    {x=pos.x-safeDist,
-                     y=pos.y-safeDist},
-                  right_bottom=
-                    {x=pos.x+safeDist,
-                     y=pos.y+safeDist}}
+    local safeArea = {
+        left_top =
+        {
+            x = pos.x - safeDist,
+            y = pos.y - safeDist
+        },
+        right_bottom =
+        {
+            x = pos.x + safeDist,
+            y = pos.y + safeDist
+        }
+    }
 
-    for _, entity in pairs(surface.find_entities_filtered{area = safeArea, force = "enemy"}) do
+    for _, entity in pairs(surface.find_entities_filtered { area = safeArea, force = "enemy" }) do
         entity.destroy()
     end
 end
 
--- -- Function to find coordinates of ungenerated map area in a given direction
--- -- starting from the center of the map
--- function FindMapEdge(directionVec, surface)
---     local position = {x=0,y=0}
---     local chunkPos = {x=0,y=0}
+---Function to find coordinates of ungenerated map area in a given direction starting from the center of the map
+---@param directionVec MapPosition
+---@param surface LuaSurface
+---@return MapPosition
+function FindMapEdge(directionVec, surface)
+    local position = {x=0,y=0}
+    local chunkPos = {x=0,y=0}
 
---     -- Keep checking chunks in the direction of the vector
---     while(true) do
+    -- Keep checking chunks in the direction of the vector
+    while(true) do
 
---         -- Set some absolute limits.
---         if ((math.abs(chunkPos.x) > 1000) or (math.abs(chunkPos.y) > 1000)) then
---             break
+        -- Set some absolute limits.
+        if ((math.abs(chunkPos.x) > 1000) or (math.abs(chunkPos.y) > 1000)) then
+            break
 
---         -- If chunk is already generated, keep looking
---         elseif (surface.is_chunk_generated(chunkPos)) then
---             chunkPos.x = chunkPos.x + directionVec.x
---             chunkPos.y = chunkPos.y + directionVec.y
+        -- If chunk is already generated, keep looking
+        elseif (surface.is_chunk_generated(chunkPos)) then
+            chunkPos.x = chunkPos.x + directionVec.x
+            chunkPos.y = chunkPos.y + directionVec.y
 
---         -- Found a possible ungenerated area
---         else
+        -- Found a possible ungenerated area
+        else
 
---             chunkPos.x = chunkPos.x + directionVec.x
---             chunkPos.y = chunkPos.y + directionVec.y
+            chunkPos.x = chunkPos.x + directionVec.x
+            chunkPos.y = chunkPos.y + directionVec.y
 
---             -- Check there are no generated chunks in a 10x10 area.
---             if IsChunkAreaUngenerated(chunkPos, 10, surface) then
---                 position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
---                 position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
---                 break
---             end
---         end
---     end
+            -- Check there are no generated chunks in a 10x10 area.
+            if IsChunkAreaUngenerated(chunkPos, 10, surface) then
+                position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
+                position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
+                break
+            end
+        end
+    end
 
---     -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
---     return position
--- end
+    -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
+    return position
+end
 
--- -- Find random coordinates within a given distance away
--- -- maxTries is the recursion limit basically.
--- function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
---     local position = {x=0,y=0}
---     local chunkPos = {x=0,y=0}
+---Find random coordinates within a given distance away maxTries is the recursion limit basically.
+---@param minDistChunks integer
+---@param maxDistChunks integer
+---@param surface LuaSurface
+---@return MapPosition
+function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
+    local position = {x=0,y=0}
+    local chunkPos = {x=0,y=0}
 
---     local maxTries = 100
---     local tryCounter = 0
+    local maxTries = 100
+    local tryCounter = 0
 
---     local minDistSqr = minDistChunks^2
---     local maxDistSqr = maxDistChunks^2
+    local minDistSqr = minDistChunks^2
+    local maxDistSqr = maxDistChunks^2
 
---     while(true) do
---         chunkPos.x = math.random(0,maxDistChunks) * RandomNegPos()
---         chunkPos.y = math.random(0,maxDistChunks) * RandomNegPos()
+    while(true) do
+        chunkPos.x = math.random(0,maxDistChunks) * RandomNegPos()
+        chunkPos.y = math.random(0,maxDistChunks) * RandomNegPos()
 
---         local distSqrd = chunkPos.x^2 + chunkPos.y^2
+        local distSqrd = chunkPos.x^2 + chunkPos.y^2
 
---         -- Enforce a max number of tries
---         tryCounter = tryCounter + 1
---         if (tryCounter > maxTries) then
---             log("FindUngeneratedCoordinates - Max Tries Hit!")
---             break
+        -- Enforce a max number of tries
+        tryCounter = tryCounter + 1
+        if (tryCounter > maxTries) then
+            log("FindUngeneratedCoordinates - Max Tries Hit!")
+            break
 
---         -- Check that the distance is within the min,max specified
---         elseif ((distSqrd < minDistSqr) or (distSqrd > maxDistSqr)) then
---             -- Keep searching!
+        -- Check that the distance is within the min,max specified
+        elseif ((distSqrd < minDistSqr) or (distSqrd > maxDistSqr)) then
+            -- Keep searching!
 
---         -- Check there are no generated chunks in a 10x10 area.
---         elseif IsChunkAreaUngenerated(chunkPos, CHECK_SPAWN_UNGENERATED_CHUNKS_RADIUS, surface) then
---             position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
---             position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
---             break -- SUCCESS
---         end
---     end
+        -- Check there are no generated chunks in a 10x10 area.
+        elseif IsChunkAreaUngenerated(chunkPos, global.ocfg.mod_overlap.minimum_distance_to_existing_chunks, surface) then
+            position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
+            position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
+            break -- SUCCESS
+        end
+    end
 
---     log("spawn: x=" .. position.x .. ", y=" .. position.y)
---     return position
--- end
+    log("spawn: x=" .. position.x .. ", y=" .. position.y)
+    return position
+end
 
 -- -- General purpose function for removing a particular recipe
 -- function RemoveRecipe(force, recipeName)
@@ -650,13 +668,18 @@ end
 ---@param dist number
 ---@return BoundingBox
 function GetAreaAroundPos(pos, dist)
-
-    return {left_top=
-                    {x=pos.x-dist,
-                     y=pos.y-dist},
-            right_bottom=
-                    {x=pos.x+dist,
-                     y=pos.y+dist}}
+    return {
+        left_top =
+        {
+            x = pos.x - dist,
+            y = pos.y - dist
+        },
+        right_bottom =
+        {
+            x = pos.x + dist,
+            y = pos.y + dist
+        }
+    }
 end
 
 -- -- Gets chunk position of a tile.
@@ -696,9 +719,9 @@ end
 ---@param dist number
 ---@return nil
 function RemoveInCircle(surface, area, type, pos, dist)
-    for key, entity in pairs(surface.find_entities_filtered{area=area, type= type}) do
+    for key, entity in pairs(surface.find_entities_filtered { area = area, type = type }) do
         if entity.valid and entity and entity.position then
-            if ((pos.x - entity.position.x)^2 + (pos.y - entity.position.y)^2 < dist^2) then
+            if ((pos.x - entity.position.x) ^ 2 + (pos.y - entity.position.y) ^ 2 < dist ^ 2) then
                 entity.destroy()
             end
         end
@@ -809,7 +832,7 @@ end
 --         table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+2, pos.y+1}})
 --         table.insert(tiles, {name = "hazard-concrete-left", position = {pos.x+3, pos.y+1}})
 --     end
-    
+
 --     surface.set_tiles(tiles, true)
 -- end
 
@@ -852,7 +875,7 @@ end
 ---@param area BoundingBox
 ---@return nil
 function RemoveAliensInArea(surface, area)
-    for _, entity in pairs(surface.find_entities_filtered{area = area, force = "enemy"}) do
+    for _, entity in pairs(surface.find_entities_filtered { area = area, force = "enemy" }) do
         entity.destroy()
     end
 end
@@ -863,8 +886,8 @@ end
 ---@param reductionFactor integer Reduction factor divides the enemy spawns by that number. 2 = half, 3 = third, etc...
 ---@return nil
 function ReduceAliensInArea(surface, area, reductionFactor)
-    for _, entity in pairs(surface.find_entities_filtered{area = area, force = "enemy"}) do
-        if (math.random(0,reductionFactor) > 0) then
+    for _, entity in pairs(surface.find_entities_filtered { area = area, force = "enemy" }) do
+        if (math.random(0, reductionFactor) > 0) then
             entity.destroy()
         end
     end
@@ -878,14 +901,12 @@ end
 ---@param big_percent integer
 ---@return nil
 function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_percent)
-
     -- Leave out "small-worm-turret" as it's the lowest.
-    local worm_types = {"medium-worm-turret", "big-worm-turret", "behemoth-worm-turret"}
+    local worm_types = { "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret" }
 
-    for _, entity in pairs(surface.find_entities_filtered{area = area, name = worm_types}) do
-
+    for _, entity in pairs(surface.find_entities_filtered { area = area, name = worm_types }) do
         -- Roll a number between 0-100
-        local rand_percent = math.random(0,100)
+        local rand_percent = math.random(0, 100)
         local worm_pos = entity.position
         local worm_name = entity.name
 
@@ -893,35 +914,34 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
         if (rand_percent <= small_percent) then
             if (not (worm_name == "small-worm-turret")) then
                 entity.destroy()
-                surface.create_entity{name = "small-worm-turret", position = worm_pos, force = game.forces.enemy}
+                surface.create_entity { name = "small-worm-turret", position = worm_pos, force = game.forces.enemy }
             end
 
-        -- ELSE If number is less than medium percent, change to small
+            -- ELSE If number is less than medium percent, change to small
         elseif (rand_percent <= medium_percent) then
             if (not (worm_name == "medium-worm-turret")) then
                 entity.destroy()
-                surface.create_entity{name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy}
+                surface.create_entity { name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy }
             end
 
-        -- ELSE If number is less than big percent, change to small
+            -- ELSE If number is less than big percent, change to small
         elseif (rand_percent <= big_percent) then
             if (not (worm_name == "big-worm-turret")) then
                 entity.destroy()
-                surface.create_entity{name = "big-worm-turret", position = worm_pos, force = game.forces.enemy}
+                surface.create_entity { name = "big-worm-turret", position = worm_pos, force = game.forces.enemy }
             end
 
-        -- ELSE ignore it.
+            -- ELSE ignore it.
         end
     end
 end
 
-
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
-    if (util.distance({x=0,y=0}, event.area.left_top) < (global.ocfg.near_dist_end*CHUNK_SIZE)) then
+    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (global.ocfg.near_dist_end * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (util.distance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_start*CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (global.ocfg.far_dist_start * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (util.distance({x=0,y=0}, event.area.left_top) < (global.ocfg.far_dist_end*CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (global.ocfg.far_dist_end * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
         DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)
@@ -954,8 +974,8 @@ function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
 
     -- Destroy
     if (TableLength(worm_types) > 0) then
-        for _, entity in pairs(surface.find_entities_filtered{area = area, name = worm_types}) do
-                entity.destroy()
+        for _, entity in pairs(surface.find_entities_filtered { area = area, name = worm_types }) do
+            entity.destroy()
         end
     else
         log("RemoveWormsInArea had empty worm_types list!")
@@ -1214,29 +1234,27 @@ end
 ---@param fillTile string
 ---@return nil
 function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile)
-
-    local tileRadSqr = tileRadius^2
+    local tileRadSqr = tileRadius ^ 2
 
     local dirtTiles = {}
-    for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
-        for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
-
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
             -- This ( X^2 + Y^2 ) is used to calculate if something
             -- is inside a circle area.
-            local distSqr = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
+            local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
             -- Fill in all unexpected water in a circle
             if (distSqr < tileRadSqr) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or
-                    global.ocfg.spawn_config.general.force_grass) then
-                    table.insert(dirtTiles, {name = fillTile, position ={i,j}})
+                if (surface.get_tile(i, j).collides_with("water-tile") or
+                        global.ocfg.spawn_config.general.force_grass) then
+                    table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
 
             -- Create a circle of trees around the spawn point.
-            if ((distSqr < tileRadSqr-100) and
-                (distSqr > tileRadSqr-500)) then
-                surface.create_entity({name="tree-02", amount=1, position={i, j}})
+            if ((distSqr < tileRadSqr - 100) and
+                    (distSqr > tileRadSqr - 500)) then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
             end
         end
     end
@@ -1252,28 +1270,26 @@ end
 ---@param fillTile string
 ---@return nil
 function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile)
-
     local dirtTiles = {}
-    for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
-        for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
-
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
             local distVar1 = math.floor(math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j)))
             local distVar2 = math.floor(math.abs(centerPos.x - i) + math.abs(centerPos.y - j))
-            local distVar = math.max(distVar1*1.1, distVar2 * 0.707*1.1);
+            local distVar = math.max(distVar1 * 1.1, distVar2 * 0.707 * 1.1);
 
             -- Fill in all unexpected water in a circle
-            if (distVar < tileRadius+2) then
-                if (surface.get_tile(i,j).collides_with("water-tile") or
-                    global.ocfg.spawn_config.general.force_grass or
-                    (game.active_mods["oarc-restricted-build"])) then
-                    table.insert(dirtTiles, {name = fillTile, position ={i,j}})
+            if (distVar < tileRadius + 2) then
+                if (surface.get_tile(i, j).collides_with("water-tile") or
+                        global.ocfg.spawn_config.general.force_grass or
+                        (game.active_mods["oarc-restricted-build"])) then
+                    table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
 
             -- Create a tree ring
             if ((distVar < tileRadius) and
-                (distVar > tileRadius-2)) then
-                surface.create_entity({name="tree-01", amount=1, position={i, j}})
+                    (distVar > tileRadius - 2)) then
+                surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
             end
         end
     end
@@ -1289,26 +1305,23 @@ end
 ---@param bridge boolean
 ---@return nil
 function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
-
-    local tileRadSqr = tileRadius^2
+    local tileRadSqr = tileRadius ^ 2
 
     local tiles = {}
-    for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
-        for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
-
-            if (bridge and ((j == centerPos.y-1) or (j == centerPos.y) or (j == centerPos.y+1))) then
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            if (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
                 -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
                 -- land connections if the spawn is on or near land.
             else
-
                 -- This ( X^2 + Y^2 ) is used to calculate if something
                 -- is inside a circle area.
-                local distVar = math.floor((centerPos.x - i)^2 + (centerPos.y - j)^2)
+                local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
                 -- Create a circle of water
-                if ((distVar < tileRadSqr+(1500*global.ocfg.spawn_config.general.moat_size_modifier)) and
-                    (distVar > tileRadSqr)) then
-                    table.insert(tiles, {name = moatTile, position ={i,j}})
+                if ((distVar < tileRadSqr + (1500 * global.ocfg.spawn_config.general.moat_size_modifier)) and
+                        (distVar > tileRadSqr)) then
+                    table.insert(tiles, { name = moatTile, position = { i, j } })
                 end
             end
         end
@@ -1323,8 +1336,8 @@ end
 ---@param length integer
 function CreateWaterStrip(surface, leftPos, length)
     local waterTiles = {}
-    for i=0,length,1 do
-        table.insert(waterTiles, {name = "water", position={leftPos.x+i,leftPos.y}})
+    for i = 0, length, 1 do
+        table.insert(waterTiles, { name = "water", position = { leftPos.x + i, leftPos.y } })
     end
     surface.set_tiles(waterTiles)
 end
@@ -1336,22 +1349,22 @@ end
 ---@param position TilePosition
 ---@param amount integer
 function GenerateResourcePatch(surface, resourceName, diameter, position, amount)
-    local midPoint = math.floor(diameter/2)
+    local midPoint = math.floor(diameter / 2)
     if (diameter == 0) then
         return
     end
-    for y=-midPoint, midPoint do
-        for x=-midPoint, midPoint do
-            if (not global.ocfg.spawn_config.general.resources_circle_shape or ((x)^2 + (y)^2 < midPoint^2)) then
-                surface.create_entity({name=resourceName, amount=amount,
-                    position={position.x+x, position.y+y}})
+    for y = -midPoint, midPoint do
+        for x = -midPoint, midPoint do
+            if (not global.ocfg.spawn_config.general.resources_circle_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+                surface.create_entity({
+                    name = resourceName,
+                    amount = amount,
+                    position = { position.x + x, position.y + y }
+                })
             end
         end
     end
 end
-
-
-
 
 -- --------------------------------------------------------------------------------
 -- -- Holding pen for new players joining the map

@@ -1,7 +1,7 @@
 -- separate_spawns_guis.lua
 -- Nov 2016
 
--- I made a separate file for all the GUI related functions
+-- I made a separate file for all the GUI related functions. Yay me.
 
 require("lib/separate_spawns")
 
@@ -23,8 +23,9 @@ local SPAWN_GUI_MAX_HEIGHT = 1000
 --                        Oarc=sharedSpawnExample3}
 
 
--- A display gui message
--- Meant to be display the first time a player joins.
+---A display gui message. Meant to be display the first time a player joins.
+---@param player LuaPlayer
+---@return boolean
 function DisplayWelcomeTextGui(player)
     if ((player.gui.screen["welcome_msg"] ~= nil) or
         (player.gui.screen["spawn_opts"] ~= nil) or
@@ -73,7 +74,9 @@ function DisplayWelcomeTextGui(player)
 end
 
 
--- Handle the gui click of the welcome msg
+---Handle the gui click of the welcome msg
+---@param event EventData.on_gui_click
+---@return nil
 function WelcomeTextGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
@@ -93,7 +96,9 @@ function WelcomeTextGuiClick(event)
 end
 
 
--- Display the spawn options and explanation
+---Display the spawn options and explanation
+---@param player LuaPlayer
+---@return nil
 function DisplaySpawnOptions(player)
     if (player == nil) then
         log("DisplaySpawnOptions with no valid player...")
@@ -104,6 +109,9 @@ function DisplaySpawnOptions(player)
         log("Tried to display spawn options when it was already displayed!")
         return
     end
+
+    local mod_overlap = global.ocfg.mod_overlap
+
     player.gui.screen.add{name = "spawn_opts",
                             type = "frame",
                             direction = "vertical",
@@ -116,7 +124,9 @@ function DisplaySpawnOptions(player)
     -- Warnings and explanations...
     local warn_msg = {"oarc-click-info-btn-help"}
     AddLabel(sGui, "warning_lbl1", warn_msg, my_warning_style)
-    AddLabel(sGui, "spawn_msg_lbl1", SPAWN_MSG1, my_label_style)
+
+    -- TODO: Not sure what this is for...? SPAWN_MSG1 is not defined anywhere.
+    -- AddLabel(sGui, "spawn_msg_lbl1", SPAWN_MSG1, my_label_style)
 
     -- Button and message about the regular vanilla spawn
     -- if ENABLE_DEFAULT_SPAWN then
@@ -136,7 +146,7 @@ function DisplaySpawnOptions(player)
                                     style = "bordered_frame"}
 
     -- Radio buttons to pick your team.
-    if (global.ocfg.enable_separate_teams) then
+    if (mod_overlap.enable_separate_teams) then
         soloSpawnFlow.add{name = "isolated_spawn_main_team_radio",
                         type = "radiobutton",
                         caption={"oarc-join-main-team-radio"},
@@ -152,7 +162,9 @@ function DisplaySpawnOptions(player)
     --     "Additional spawn options can be selected here. Not all are compatible with each other.", my_label_style)
 
     -- Allow players to spawn with a moat around their area.
-    if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled and not global.ocfg.enable_vanilla_spawns) then
+    --TODO: Vanilla spawn points are not implemented yet.
+    -- and not global.ocfg.enable_vanilla_spawns
+    if (mod_overlap.enable_allow_moats_around_spawns) then
         soloSpawnFlow.add{name = "isolated_spawn_moat_option_checkbox",
                         type = "checkbox",
                         caption={"oarc-moat-option"},
@@ -180,22 +192,22 @@ function DisplaySpawnOptions(player)
                     caption={"oarc-solo-spawn-far"},
                     style = "confirm_button"}
 
-    if (global.ocfg.enable_vanilla_spawns) then
-        AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
-            {"oarc-starting-area-vanilla"}, my_label_style)
-        AddLabel(soloSpawnFlow, "vanilla_spawn_lbl2",
-            {"oarc-vanilla-spawns-available", #global.vanillaSpawns}, my_label_style)
-    else
+    -- if (global.ocfg.enable_vanilla_spawns) then
+    --     AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
+    --         {"oarc-starting-area-vanilla"}, my_label_style)
+    --     AddLabel(soloSpawnFlow, "vanilla_spawn_lbl2",
+    --         {"oarc-vanilla-spawns-available", #global.vanillaSpawns}, my_label_style)
+    -- else
         AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
             {"oarc-starting-area-normal"}, my_label_style)
-    end
+    -- end
 
     -- Spawn options to join another player's base.
     local sharedSpawnFrame = sGui.add{name = "spawn_shared_flow",
                                     type = "frame",
                                     direction="vertical",
                                     style = "bordered_frame"}
-    if global.ocfg.enable_shared_spawns then
+    if mod_overlap.enable_shared_spawns then
         local numAvailSpawns = GetNumberOfAvailableSharedSpawns()
         if (numAvailSpawns > 0) then
             sharedSpawnFrame.add{name = "join_other_spawn",
@@ -215,8 +227,9 @@ function DisplaySpawnOptions(player)
     end
 
     -- Awesome buddy spawning system
-    if (not global.ocfg.enable_vanilla_spawns) then
-        if global.ocfg.enable_shared_spawns and global.ocfg.enable_buddy_spawn then
+    ---TODO: Vanilla spawn points are not implemented yet.
+    -- if (not global.ocfg.enable_vanilla_spawns) then
+        if mod_overlap.enable_shared_spawns and mod_overlap.enable_buddy_spawn then
             local buddySpawnFrame = sGui.add{name = "spawn_buddy_flow",
                                             type = "frame",
                                             direction="vertical",
@@ -229,21 +242,27 @@ function DisplaySpawnOptions(player)
             AddLabel(buddySpawnFrame, "buddy_spawn_lbl1",
                 {"oarc-buddy-spawn-info"} , my_label_style)
         end
-    end
+    -- end
 
     -- Some final notes
-    if (global.ocfg.max_players_shared_spawn > 0) then
+    if (mod_overlap.number_of_players_per_shared_spawn > 0) then
         AddLabel(sGui, "max_players_lbl2",
-                {"oarc-max-players-shared-spawn", global.ocfg.max_players_shared_spawn-1},
+                {"oarc-max-players-shared-spawn", mod_overlap.number_of_players_per_shared_spawn-1},
                 my_note_style)
     end
-    local spawn_distance_notes={"oarc-spawn-dist-notes", global.ocfg.near_dist_start, global.ocfg.near_dist_end, global.ocfg.far_dist_start, global.ocfg.far_dist_end}
+
+    local spawn_distance_notes={"oarc-spawn-dist-notes",
+                                mod_overlap.near_spawn_min_distance,
+                                mod_overlap.near_spawn_max_distance,
+                                mod_overlap.far_spawn_min_distance,
+                                mod_overlap.far_spawn_max_distance}
     AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
 
 ---This just updates the radio buttons/checkboxes when players click them.
 ---@param event EventData.on_gui_checked_state_changed
+---@return nil
 function SpawnOptsRadioSelect(event)
     if not (event and event.element and event.element.valid) then return end
     local elemName = event.element.name
@@ -267,7 +286,9 @@ function SpawnOptsRadioSelect(event)
 end
 
 
--- Handle the gui click of the spawn options
+---Handle the gui click of the spawn options
+---@param event EventData.on_gui_click
+---@return nil
 function SpawnOptsGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
@@ -284,7 +305,7 @@ function SpawnOptsGuiClick(event)
 
     local pgcs = player.gui.screen.spawn_opts
 
-    local joinMainTeamRadio, joinOwnTeamRadio, moatChoice, vanillaChoice = false
+    local joinMainTeamRadio, joinOwnTeamRadio, moatChoice, vanillaChoice = false, false, false, false
 
     -- Check if a valid button on the gui was pressed
     -- and delete the GUI
@@ -295,7 +316,7 @@ function SpawnOptsGuiClick(event)
         (elemName == "buddy_spawn") or
         (elemName == "join_other_spawn_check")) then
 
-        if (global.ocfg.enable_separate_teams) then
+        if (global.ocfg.mod_overlap.enable_separate_teams) then
             joinMainTeamRadio =
                 pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
             joinOwnTeamRadio =
@@ -304,7 +325,8 @@ function SpawnOptsGuiClick(event)
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
         end
-        if (global.ocfg.spawn_config.gen_settings.moat_choice_enabled and not global.ocfg.enable_vanilla_spawns and
+        ---TODO: Vanilla spawn points are not implemented yet.  and not global.ocfg.enable_vanilla_spawns
+        if (global.ocfg.mod_overlap.enable_allow_moats_around_spawns and
             (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
             moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
@@ -319,9 +341,9 @@ function SpawnOptsGuiClick(event)
 
     if (elemName == "default_spawn_btn") then
         GivePlayerStarterItems(player)
-        ChangePlayerSpawn(player, player.force.get_spawn_position(GAME_SURFACE_NAME))
+        ChangePlayerSpawn(player, player.force.get_spawn_position(global.ocfg.gameplay.main_force_surface))
         SendBroadcastMsg({"oarc-player-is-joining-main-force", player.name})
-        ChartArea(player.force, player.position, math.ceil(global.ocfg.spawn_config.gen_settings.land_area_tiles/CHUNK_SIZE), player.surface)
+        ChartArea(player.force, player.position, math.ceil(global.ocfg.spawn_config.general.land_area_tiles/CHUNK_SIZE), player.surface)
         -- Unlock spawn control gui tab
         SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
 
@@ -330,35 +352,40 @@ function SpawnOptsGuiClick(event)
         -- Create a new spawn point
         local newSpawn = {x=0,y=0}
 
+        local mod_overlap = global.ocfg.mod_overlap
+
         -- Create a new force for player if they choose that radio button
-        if global.ocfg.enable_separate_teams and joinOwnTeamRadio then
+        if mod_overlap.enable_separate_teams and joinOwnTeamRadio then
             local newForce = CreatePlayerCustomForce(player)
         end
 
-        -- Find an unused vanilla spawn
-        -- if (vanillaChoice) then
-        if (global.ocfg.enable_vanilla_spawns) then
-            if (elemName == "isolated_spawn_far") then
-                newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
-                                                            global.ocfg.far_dist_end*CHUNK_SIZE)
-            elseif (elemName == "isolated_spawn_near") then
-                newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
-                                                            global.ocfg.near_dist_start*CHUNK_SIZE)
-            end
+        ---TODO: Vanilla spawn points are not implemented yet.
+        -- -- Find an unused vanilla spawn
+        -- -- if (vanillaChoice) then
+        -- if (global.ocfg.enable_vanilla_spawns) then
+        --     if (elemName == "isolated_spawn_far") then
+        --         newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
+        --                                                     global.ocfg.far_dist_end*CHUNK_SIZE)
+        --     elseif (elemName == "isolated_spawn_near") then
+        --         newSpawn = FindUnusedVanillaSpawn(game.surfaces[GAME_SURFACE_NAME],
+        --                                                     global.ocfg.near_dist_start*CHUNK_SIZE)
+        --     end
 
-        -- Default OARC-type pre-set layout spawn.
-        else
+
+        -- -- Default OARC-type pre-set layout spawn.
+        -- else
             -- Find coordinates of a good place to spawn
             if (elemName == "isolated_spawn_far") then
-                newSpawn = FindUngeneratedCoordinates(global.ocfg.far_dist_start,global.ocfg.far_dist_end, player.surface)
+                newSpawn = FindUngeneratedCoordinates(mod_overlap.far_spawn_min_distance, mod_overlap.far_spawn_max_distance, player.surface)
             elseif (elemName == "isolated_spawn_near") then
-                newSpawn = FindUngeneratedCoordinates(global.ocfg.near_dist_start,global.ocfg.near_dist_end, player.surface)
+                newSpawn = FindUngeneratedCoordinates(mod_overlap.near_spawn_min_distance, mod_overlap.near_spawn_max_distance, player.surface)
             end
-        end
+        -- end
 
         -- If that fails, find a random map edge in a rand direction.
+        ---TODO: Add support for multiple surfaces.
         if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
-            newSpawn = FindMapEdge(GetRandomVector(), player.surface)
+            newSpawn = FindMapEdge(GetRandomVector(), game.surfaces[global.ocfg.gameplay.main_force_surface]) ---TODO: Add support for multiple surfaces.
             log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
@@ -366,7 +393,12 @@ function SpawnOptsGuiClick(event)
         ChangePlayerSpawn(player, newSpawn)
 
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, newSpawn, moatChoice, global.ocfg.enable_vanilla_spawns)
+        ---TODO: Add support for multiple surfaces.
+        QueuePlayerForDelayedSpawn(player.name,
+                                    game.surfaces[global.ocfg.gameplay.main_force_surface],
+                                    newSpawn,
+                                    moatChoice,
+                                    false) -- global.ocfg.enable_vanilla_spawns --TODO: Vanilla spawn points are not implemented yet.
         if (elemName == "isolated_spawn_near") then
             SendBroadcastMsg({"oarc-player-is-joining-near", player.name})
         elseif (elemName == "isolated_spawn_far") then
@@ -398,7 +430,9 @@ function SpawnOptsGuiClick(event)
 end
 
 
--- Display the spawn options and explanation
+---Display the spawn options and explanation
+---@param player LuaPlayer
+---@return nil
 function DisplaySharedSpawnOptions(player)
     player.gui.screen.add{name = "shared_spawn_opts",
                             type = "frame",
@@ -418,8 +452,8 @@ function DisplaySharedSpawnOptions(player)
         if (sharedSpawn.openAccess and
             (game.players[spawnName] ~= nil) and
             game.players[spawnName].connected) then
-            local spotsRemaining = global.ocfg.max_players_shared_spawn - #global.ocore.sharedSpawns[spawnName].players
-            if (global.ocfg.max_players_shared_spawn == 0) then
+            local spotsRemaining = global.ocfg.mod_overlap.number_of_players_per_shared_spawn - #global.ocore.sharedSpawns[spawnName].players
+            if (global.ocfg.mod_overlap.number_of_players_per_shared_spawn == 0) then
                 shGui.add{type="button", caption=spawnName, name=spawnName}
             elseif (spotsRemaining > 0) then
                 shGui.add{type="button", caption={"oarc-spawn-spots-remaining", spawnName, spotsRemaining}, name=spawnName}
@@ -438,7 +472,9 @@ function DisplaySharedSpawnOptions(player)
                     style = "back_button"}
 end
 
--- Handle the gui click of the shared spawn options
+---Handle the gui click of the shared spawn options
+---@param event EventData.on_gui_click
+---@return nil
 function SharedSpwnOptsGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
@@ -465,15 +501,12 @@ function SharedSpwnOptsGuiClick(event)
     -- Else check for which spawn was selected
     -- If a spawn is removed during this time, the button will not do anything
     else
-        for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
+        for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
             if ((buttonClicked == spawnName) and
                 (game.players[spawnName] ~= nil) and
                 (game.players[spawnName].connected)) then
 
                 -- Add the player to that shared spawns join queue.
-                if (global.ocore.sharedSpawns[spawnName].joinQueue == nil) then
-                    global.ocore.sharedSpawns[spawnName].joinQueue = {}
-                end
                 table.insert(global.ocore.sharedSpawns[spawnName].joinQueue, player.name)
 
                 -- Clear the shared spawn options gui.
@@ -492,6 +525,9 @@ function SharedSpwnOptsGuiClick(event)
     end
 end
 
+---Display shared spawn join wait menu
+---@param player LuaPlayer
+---@return nil
 function DisplaySharedSpawnJoinWaitMenu(player)
 
     local sGui = player.gui.screen.add{name = "join_shared_spawn_wait_menu",
@@ -511,7 +547,9 @@ function DisplaySharedSpawnJoinWaitMenu(player)
                     style = "back_button"}
 end
 
--- Handle the gui click of the buddy wait menu
+---Handle the gui click of the shared spawn join wait menu
+---@param event EventData.on_gui_click
+---@return nil
 function SharedSpawnJoinWaitMenuClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
@@ -532,16 +570,14 @@ function SharedSpawnJoinWaitMenuClick(event)
         DisplaySpawnOptions(player)
 
         -- Find and remove the player from the joinQueue they were in.
-        for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns) do
-            if (sharedSpawn.joinQueue ~= nil) then
+        for spawnName,sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
                 for index,requestingPlayer in pairs(sharedSpawn.joinQueue) do
                     if (requestingPlayer == player.name) then
-                        global.ocore.sharedSpawns[spawnName].joinQueue[index] = false
+                        global.ocore.sharedSpawns[spawnName].joinQueue[index] = nil
                         game.players[spawnName].print({"oarc-player-cancel-join-request", player.name})
                         return
                     end
                 end
-            end
         end
 
         log("ERROR! Failed to remove player from joinQueue!")
@@ -615,8 +651,7 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
 
     -- Display a list of people in the join queue for your base.
     if (global.ocfg.enable_shared_spawns and IsSharedSpawnActive(player)) then
-        if ((global.ocore.sharedSpawns[player.name].joinQueue ~= nil) and
-            (#global.ocore.sharedSpawns[player.name].joinQueue > 0)) then
+        if (#global.ocore.sharedSpawns[player.name].joinQueue > 0) then
 
 
             AddLabel(spwnCtrls, "drop_down_msg_lbl1", {"oarc-select-player-join-queue"}, my_label_style)

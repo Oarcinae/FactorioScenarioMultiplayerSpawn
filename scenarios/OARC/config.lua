@@ -259,6 +259,8 @@ OCFG = {
     spawn_config = {
 
         general = {
+
+            ---TODO: Rename land_area_tiles to spawn_circle_size or something more descriptive.
             -- THIS IS WHAT SETS THE SPAWN CIRCLE SIZE!
             -- Create a circle of land area for the spawn
             -- If you make this much bigger than a few chunks, good luck.

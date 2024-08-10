@@ -103,6 +103,21 @@ script.on_event(defines.events.on_chunk_generated, function(event)
 end)
 
 ----------------------------------------
+-- On Entity Spawned and On Biter Base Built
+-- This is where I modify biter spawning based on location and other factors.
+----------------------------------------
+script.on_event(defines.events.on_entity_spawned, function(event)
+    if (global.ocfg.gameplay.oarc_modified_enemy_spawning) then
+        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+script.on_event(defines.events.on_biter_base_built, function(event)
+    if (global.ocfg.gameplay.oarc_modified_enemy_spawning) then
+        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+
+----------------------------------------
 -- Gui Events
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
