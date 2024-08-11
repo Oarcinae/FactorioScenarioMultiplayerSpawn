@@ -25,17 +25,17 @@ BUDDY_SPAWN_CHOICE = {
 --]]
 
 ---Contains the respawn point for a player. Usually this is their home base but it can be changed.
----@alias OarcPlayerSpawn { surface: LuaSurface, position: MapPosition }
+---@alias OarcPlayerSpawn { surface: string, position: MapPosition }
 ---Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by player name.
 ---@alias OarcPlayerSpawnsTable table<string, OarcPlayerSpawn>
 
 ---A unique spawn point. This is what chunk generation checks against.
----@alias OarcUniqueSpawn { surface: LuaSurface, position: MapPosition, moat: boolean }
+---@alias OarcUniqueSpawn { surface: string, position: MapPosition, moat: boolean }
 ---Table of [OarcUniqueSpawn](lua://OarcUniqueSpawn) indexed by a unique name.
 ---@alias OarcUniqueSpawnsTable table<string, OarcUniqueSpawn>
 
 ---A shared spawn point. This is a spawn point that multiple players can share.
----@alias OarcSharedSpawn { surface: LuaSurface, position: MapPosition, openAccess: boolean, players: string[], joinQueue: string[] }
+---@alias OarcSharedSpawn { surface: string, position: MapPosition, openAccess: boolean, players: string[], joinQueue: string[] }
 ---Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by a unique name.
 ---@alias OarcSharedSpawnsTable table<string, OarcSharedSpawn>
 
@@ -45,7 +45,7 @@ BUDDY_SPAWN_CHOICE = {
 ---@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
 
 ---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
----@alias OarcDelayedSpawn { playerName: string, surface: LuaSurface, position: MapPosition, moat: boolean, delayedTick: number }
+---@alias OarcDelayedSpawn { playerName: string, surface: string, position: MapPosition, moat: boolean, delayedTick: number }
 ---Table of [OarcDelayedSpawn](lua://OarcDelayedSpawn) indexed by player name.
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 
@@ -53,6 +53,9 @@ BUDDY_SPAWN_CHOICE = {
 ---@alias OarcBuddySpawnOpts { teamRadioSelection: BuddySpawnChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
 ---Table of [OarcBuddySpawnOpts](lua://OarcBuddySpawnOpts) indexed by player name.
 ---@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
+
+---Table of players in the "waiting room" for a buddy spawn.
+---@alias OarcWaitingBuddiesTable table<string>
 
 --[[
   ___  _  _  ___  _____
@@ -106,7 +109,7 @@ function InitSpawnGlobalsAndForces()
     -- List of players in the "waiting room" for a buddy spawn.
     -- They show up in the list to select when doing a buddy spawn.
     if (global.ocore.waitingBuddies == nil) then
-        global.ocore.waitingBuddies --[[@as table<string, string>]] = {}
+        global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]] = {}
     end
 
     -- Players who have made a spawn choice get put into this list while waiting.
@@ -225,7 +228,7 @@ function GenerateStartingResources(surface, position)
 
     -- Generate all resource tile patches
     if (not rand_settings.enabled) then
-        for r_name, r_data in pairs(global.ocfg.spawn_config.resource_tiles) do
+        for r_name, r_data in pairs(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]]) do
             local pos = { x = position.x + r_data.x_offset, y = position.y + r_data.y_offset }
             GenerateResourcePatch(surface, r_name, r_data.size, pos, r_data.amount)
         end
@@ -233,21 +236,23 @@ function GenerateStartingResources(surface, position)
         -- Generate resources in random order around the spawn point. Tweak in config.lua
     else
         -- Create list of resource tiles
+        ---@type table<string>
         local r_list = {}
-        for k, _ in pairs(global.ocfg.spawn_config.resource_tiles) do
-            if (k ~= "") then
-                table.insert(r_list, k)
+        for r_name,_ in pairs(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]]) do
+            if (r_name ~= "") then
+                table.insert(r_list, r_name)
             end
         end
+        ---@type table<string>
         local shuffled_list = FYShuffle(r_list)
 
         -- This places resources in a semi-circle
         local angle_offset = rand_settings.angle_offset
-        local num_resources = TableLength(global.ocfg.spawn_config.resource_tiles)
+        local num_resources = TableLength(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]])
         local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
         local count = 0
 
-        for _, resource_name in pairs(shuffled_list) do
+        for _,r_name in pairs(shuffled_list) do
             local angle = (theta * count) + angle_offset;
 
             local tx = (rand_settings.radius * math.cos(angle)) + position.x
@@ -255,14 +260,14 @@ function GenerateStartingResources(surface, position)
 
             local pos = { x = math.floor(tx), y = math.floor(ty) }
 
-            local resourceConfig = global.ocfg.spawn_config.resource_tiles[resource_name]
-            GenerateResourcePatch(surface, resource_name, resourceConfig.size, pos, resourceConfig.amount)
+            local resourceConfig = global.ocfg.spawn_config.resource_tiles[r_name]
+            GenerateResourcePatch(surface, r_name, resourceConfig.size, pos, resourceConfig.amount)
             count = count + 1
         end
     end
 
     -- Generate special fluid resource patches (oil)
-    for r_name, r_data in pairs(global.ocfg.spawn_config.resource_patches) do
+    for r_name, r_data in pairs(global.ocfg.spawn_config.resource_patches --[[@as table<string, OarcConfigResourcePatches>]]) do
         local oil_patch_x = position.x + r_data.x_offset_start
         local oil_patch_y = position.y + r_data.y_offset_start
         for i = 1, r_data.num_patches do
@@ -284,7 +289,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     local ocfg --[[@as OarcConfig]] = global.ocfg
 
     -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(delayedSpawn.position, ocfg.spawn_config.safe_area.safe_radius, delayedSpawn.surface)
+    ClearNearbyEnemies(delayedSpawn.position, ocfg.spawn_config.safe_area.safe_radius, game.surfaces[delayedSpawn.surface])
 
     -- TODO: Vanilla spawn point are not implemented yet.
     -- if (not delayedSpawn.vanilla) then
@@ -292,26 +297,26 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     -- Generate water strip only if we don't have a moat.
     if (not delayedSpawn.moat) then
         local water_data = ocfg.spawn_config.water
-        CreateWaterStrip(delayedSpawn.surface,
+        CreateWaterStrip(game.surfaces[delayedSpawn.surface],
             { x = delayedSpawn.position.x + water_data.x_offset, y = delayedSpawn.position.y + water_data.y_offset },
             water_data.length)
-        CreateWaterStrip(delayedSpawn.surface,
+        CreateWaterStrip(game.surfaces[delayedSpawn.surface],
             { x = delayedSpawn.position.x + water_data.x_offset, y = delayedSpawn.position.y + water_data.y_offset + 1 },
             water_data.length)
     end
 
     -- Create the spawn resources here
-    GenerateStartingResources(delayedSpawn.surface, delayedSpawn.position)
+    GenerateStartingResources(game.surfaces[delayedSpawn.surface], delayedSpawn.position)
 
     -- end -- Vanilla spawn point are not implemented yet.
 
     -- Send the player to that position
     local player = game.players[delayedSpawn.playerName]
-    SafeTeleport(player, delayedSpawn.surface, delayedSpawn.position)
+    SafeTeleport(player, game.surfaces[delayedSpawn.surface], delayedSpawn.position)
     GivePlayerStarterItems(player)
 
     -- Render some welcoming text...
-    DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn)
+    DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn.surface, delayedSpawn.position)
 
     -- Chart the area.
     ChartArea(player.force, delayedSpawn.position, math.ceil(ocfg.spawn_config.general.land_area_tiles / CHUNK_SIZE),
@@ -322,7 +327,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     end
 
     if (ocfg.starting_items.crashed_ship) then
-        crash_site.create_crash_site(delayedSpawn.surface,
+        crash_site.create_crash_site(game.surfaces[delayedSpawn.surface],
             { x = delayedSpawn.position.x + 15, y = delayedSpawn.position.y - 25 },
             ocfg.starting_items.crashed_ship_resources,
             ocfg.starting_items.crashed_ship_wreakage)
@@ -331,15 +336,16 @@ end
 
 ---Displays some welcoming text at the spawn point on the ground. Fades out over time.
 ---@param player LuaPlayer
----@param delayedSpawn OarcDelayedSpawn
+---@param surface LuaSurface|string
+---@param position MapPosition
 ---@return nil
-function DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn)
+function DisplayWelcomeGroundTextAtSpawn(player, surface, position)
     -- Render some welcoming text...
     local tcolor = { 0.9, 0.7, 0.3, 0.8 }
     local ttl = 2000
     local rid1 = rendering.draw_text { text = "Welcome",
-        surface = delayedSpawn.surface,
-        target = { x = delayedSpawn.position.x - 21, y = delayedSpawn.position.y - 15 },
+        surface = surface,
+        target = { x = position.x - 21, y = position.y - 15 },
         color = tcolor,
         scale = 20,
         font = "compi",
@@ -351,8 +357,8 @@ function DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn)
         scale_with_zoom = false,
         only_in_alt_mode = false }
     local rid2 = rendering.draw_text { text = "Home",
-        surface = delayedSpawn.surface,
-        target = { x = delayedSpawn.position.x - 14, y = delayedSpawn.position.y - 5 },
+        surface = surface,
+        target = { x = position.x - 14, y = position.y - 5 },
         color = tcolor,
         scale = 20,
         font = "compi",
@@ -386,7 +392,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.spawn_config
 
     for name, spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
-        if (spawn.surface ~= surface) then
+        if (spawn.surface ~= surface.name) then
             return
         end
 
@@ -732,9 +738,9 @@ function CleanupPlayerGlobals(playerName)
     end
 
     -- Remove them from the buddy waiting list
-    for idx, name in pairs(global.ocore.waitingBuddies) do
+    for index, name in pairs(global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]]) do
         if (name == playerName) then
-            table.remove(global.ocore.waitingBuddies, idx)
+            global.ocore.waitingBuddies[index] = nil
             break
         end
     end
@@ -827,12 +833,12 @@ function GetClosestUniqueSpawn(surface, pos)
     local closest_dist = nil
     local closest_key = nil
 
-    for k, s in pairs(global.ocore.uniqueSpawns) do
-        if (s.surface ~= surface) then
+    for k, s in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
+        if (s.surface ~= surface.name) then
             goto CONTINUE
         end
 
-        local new_dist = util.distance(pos, s.pos)
+        local new_dist = util.distance(pos, s.position)
         if (closest_dist == nil) then
             closest_dist = new_dist
             closest_key = k
@@ -951,19 +957,25 @@ function GetPlayerCustomSpawn(player)
     return nil
 end
 
---TODO: Add support for multiple surfaces
 ---Sets the custom spawn point for a player.
 ---@param player LuaPlayer
+---@param surface string
 ---@param position MapPosition
 ---@return nil
-function ChangePlayerSpawn(player, position)
-    global.ocore.playerSpawns[player.name] = position
+function ChangePlayerSpawn(player, surface, position)
+
+    ---@type OarcPlayerSpawn
+    local updatedPlayerSpawn = {}
+    updatedPlayerSpawn.surface = surface
+    updatedPlayerSpawn.position = position
+
+    global.ocore.playerSpawns[player.name] = updatedPlayerSpawn
     global.ocore.playerCooldowns[player.name] = { setRespawn = game.tick }
 end
 
 ---Queue a player for a delayed spawn.
 ---@param playerName string
----@param surface LuaSurface
+---@param surface string
 ---@param spawnPosition MapPosition
 ---@param moatEnabled boolean
 ---@param vanillaSpawn boolean
@@ -1042,12 +1054,12 @@ function SendPlayerToSpawn(player)
     local playerSpawn = GetPlayerCustomSpawn(player)
     if (playerSpawn ~= nil) then
         SafeTeleport(player,
-            playerSpawn.surface,
+            game.surfaces[playerSpawn.surface],
             playerSpawn.position)
     else
         local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
         SafeTeleport(player,
-            gameplayConfig.main_force_surface,
+        game.surfaces[gameplayConfig.main_force_surface],
             game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface))
     end
 end
@@ -1065,9 +1077,9 @@ function SendPlayerToRandomSpawn(player)
         player.teleport(game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface), gameplayConfig.main_force_surface)
     else
         counter = counter + 1
-        for name, spawn in pairs(global.ocore.uniqueSpawns) do
+        for name, spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
             if (counter == rndSpawn) then
-                player.teleport(spawn.pos)
+                player.teleport(spawn.position)
                 break
             end
             counter = counter + 1

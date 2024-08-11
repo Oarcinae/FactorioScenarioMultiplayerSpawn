@@ -55,7 +55,7 @@ function ReadModSettings()
     global.ocfg.mod_overlap.number_of_players_per_shared_spawn = settings.global["oarc-mod-number-of-players-per-shared-spawn"].value --[[@as integer]]
     global.ocfg.mod_overlap.enable_abandoned_base_cleanup = settings.global["oarc-mod-enable-abandoned-base-cleanup"].value --[[@as boolean]]
     global.ocfg.mod_overlap.enable_friendly_fire = settings.global["oarc-mod-enable-friendly-fire"].value --[[@as boolean]]
-    global.ocfg.mod_overlap.enable_allow_moats_around_spawns = settings.global["oarc-mod-enable-allow-moats-around-spawns"].value --[[@as boolean]]
+    global.ocfg.mod_overlap.allow_moats_around_spawns = settings.global["oarc-mod-enable-allow-moats-around-spawns"].value --[[@as boolean]]
     global.ocfg.mod_overlap.enable_moat_bridging = settings.global["oarc-mod-enable-force-bridges-next-to-moats"].value --[[@as boolean]]
     global.ocfg.mod_overlap.minimum_distance_to_existing_chunks = settings.global["oarc-mod-minimum-distance-to-existing-chunks"].value --[[@as integer]]
     global.ocfg.mod_overlap.near_spawn_min_distance = settings.global["oarc-mod-near-spawn-min-distance"].value --[[@as integer]]

@@ -141,12 +141,15 @@ function SendBroadcastMsg(msg)
     end
 end
 
--- -- Send a message to a player, safely checks if they exist and are online.
--- function SendMsg(playerName, msg)
---     if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
---         game.players[playerName].print(msg)
---     end
--- end
+---Send a message to a player, safely checks if they exist and are online.
+---@param playerName string
+---@param msg LocalisedString
+---@return nil
+function SendMsg(playerName, msg)
+    if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
+        game.players[playerName].print(msg)
+    end
+end
 
 -- -- Simple way to write to a file. Always appends. Only server.
 -- -- Has a global setting for enable/disable
@@ -156,22 +159,26 @@ end
 --     end
 -- end
 
--- -- Useful for displaying game time in mins:secs format
--- function formattime(ticks)
---   local seconds = ticks / 60
---   local minutes = math.floor((seconds)/60)
---   local seconds = math.floor(seconds - 60*minutes)
---   return string.format("%dm:%02ds", minutes, seconds)
--- end
+---Useful for displaying game time in mins:secs format
+---@param ticks number
+---@return string
+function FormatTime(ticks)
+  local seconds = ticks / 60
+  local minutes = math.floor((seconds)/60)
+  local seconds = math.floor(seconds - 60*minutes)
+  return string.format("%dm:%02ds", minutes, seconds)
+end
 
--- -- Useful for displaying game time in mins:secs format
--- function formattime_hours_mins(ticks)
---   local seconds = ticks / 60
---   local minutes = math.floor((seconds)/60)
---   local hours   = math.floor((minutes)/60)
---   local minutes = math.floor(minutes - 60*hours)
---   return string.format("%dh:%02dm", hours, minutes)
--- end
+---Useful for displaying game time in hrs:mins format
+---@param ticks number
+---@return string
+function FormatTimeHoursSecs(ticks)
+  local seconds = ticks / 60
+  local minutes = math.floor((seconds)/60)
+  local hours   = math.floor((minutes)/60)
+  local minutes = math.floor(minutes - 60*hours)
+  return string.format("%dh:%02dm", hours, minutes)
+end
 
 -- -- Simple math clamp
 -- function clamp(val, min, max)
@@ -364,7 +371,7 @@ end
 
 -- Safer teleport
 ---@param player LuaPlayer
----@param surface string|LuaSurface
+---@param surface LuaSurface
 ---@param target_pos MapPosition
 function SafeTeleport(player, surface, target_pos)
     local safe_pos = surface.find_non_colliding_position("character", target_pos, 15, 1)
@@ -682,10 +689,12 @@ function GetAreaAroundPos(pos, dist)
     }
 end
 
--- -- Gets chunk position of a tile.
--- function GetChunkPosFromTilePos(tile_pos)
---     return {x=math.floor(tile_pos.x/32), y=math.floor(tile_pos.y/32)}
--- end
+---Gets chunk position of a tile.
+---@param tile_pos TilePosition
+---@return ChunkPosition
+function GetChunkPosFromTilePos(tile_pos)
+    return {x=math.floor(tile_pos.x/32), y=math.floor(tile_pos.y/32)}
+end
 
 -- function GetCenterTilePosFromChunkPos(c_pos)
 --     return {x=c_pos.x*32 + 16, y=c_pos.y*32 + 16}
@@ -937,11 +946,15 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
 end
 
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
-    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (global.ocfg.near_dist_end * CHUNK_SIZE)) then
+
+    ---@type OarcConfigModSettings
+    local mod_overlap = global.ocfg.mod_overlap
+
+    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (mod_overlap.near_spawn_min_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (global.ocfg.far_dist_start * CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (mod_overlap.far_spawn_min_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (global.ocfg.far_dist_end * CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (mod_overlap.far_spawn_max_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
         DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)

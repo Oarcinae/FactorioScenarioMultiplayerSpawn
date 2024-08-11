@@ -23,7 +23,7 @@
 ---@field number_of_players_per_shared_spawn number Number of players allowed to join a shared spawn.
 ---@field enable_abandoned_base_cleanup boolean Removes player bases when they leave shortly after joining.
 ---@field enable_friendly_fire boolean Set to true if you want to shoot your own chests and stuff.
----@field enable_allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
+---@field allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
 ---@field enable_moat_bridging boolean If there is a moat, this makes a small path to land to avoid "turtling", but if the spawn is in the middle of water, it won't do anything.
 ---@field minimum_distance_to_existing_chunks number The radius, in chunks, that a spawn area is from any other generated chunks. It ensures the spawn area isn't too near generated/explored/existing area.
 ---@field near_spawn_min_distance number When a player selects "near" spawn, they will be within or as close to this range as possible.
@@ -42,6 +42,7 @@
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field oarc_modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.
 ---@field minimum_online_time number Require playes to be online for at least X minutes Else their character is removed and their spawn point is freed up for use
+---@field respawn_cooldown_min number Respawn cooldown in minutes.
 
 ---@class OarcConfigStartingItems
 ---@field crashed_ship boolean Add a crashed ship like a vanilla game (create_crash_site) Resources go in the ship itself. (5 slots max!) Wreakage is distributed in small pieces. (I recommend only 1 item type.)
@@ -219,6 +220,9 @@ OCFG = {
         -- Else their character is removed and their spawn point is freed up for use
         -- TODO: Move this to mod settings?
         minimum_online_time = 15,
+
+        -- Respawn cooldown in minutes.
+        respawn_cooldown_min = 15,
     },
 
     -- Starting ITEMS given to the player or placed near the player spawn point.

@@ -41,6 +41,9 @@
 require("lib/oarc_utils")
 require("config")
 require("lib/config_parser")
+require("lib/game_opts")
+require("lib/regrowth_map")
+
 require("lib/holding_pen")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
@@ -54,6 +57,7 @@ require("lib/oarc_gui_tabs")
 script.on_init(function(event)
     ValidateAndLoadConfig()
     CreateHoldingPenSurface()
+    RegrowthInit()
     InitSpawnGlobalsAndForces()
 end)
 
@@ -91,7 +95,13 @@ end)
 -- Delayed events, delayed spawns, ...
 ----------------------------------------
 script.on_event(defines.events.on_tick, function(event)
+    DelayedSpawnOnTick()
     FadeoutRenderOnTick()
+
+    if global.ocfg.mod_overlap.enable_regrowth then
+        RegrowthOnTick()
+        RegrowthForceRemovalOnTick()
+    end
 end)
 
 ----------------------------------------
@@ -100,6 +110,59 @@ end)
 script.on_event(defines.events.on_chunk_generated, function(event)
     CreateHoldingPenChunks(event.surface, event.area)
     SeparateSpawnsGenerateChunk(event)
+
+    if global.ocfg.mod_overlap.enable_regrowth then
+        RegrowthChunkGenerate(event)
+    end
+end)
+
+script.on_event(defines.events.on_sector_scanned, function (event)   
+    if global.ocfg.mod_overlap.enable_regrowth then
+        RegrowthSectorScan(event)
+    end
+end)
+
+----------------------------------------
+-- Various on "built" events
+----------------------------------------
+script.on_event(defines.events.on_built_entity, function(event)
+    if global.ocfg.mod_overlap.enable_regrowth then
+        -- if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.position, 2, false)
+    end
+
+    -- if global.ocfg.enable_anti_grief then
+    --     SetItemBlueprintTimeToLive(event)
+    -- end
+end)
+
+script.on_event(defines.events.on_robot_built_entity, function (event)
+    if global.ocfg.mod_overlap.enable_regrowth then
+        -- if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.position, 2, false)
+    end
+end)
+
+script.on_event(defines.events.on_player_built_tile, function (event)
+    if global.ocfg.mod_overlap.enable_regrowth then
+        -- if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
+
+        for k,v in pairs(event.tiles) do
+            RegrowthMarkAreaSafeGivenTilePos(v.position, 2, false)
+        end
+    end
+end)
+
+----------------------------------------
+-- On script_raised_built. This should help catch mods that
+-- place items that don't count as player_built and robot_built.
+-- Specifically FARL.
+----------------------------------------
+script.on_event(defines.events.script_raised_built, function(event)
+    if global.ocfg.mod_overlap.enable_regrowth then
+        -- if (event.entity.surface.name ~= GAME_SURFACE_NAME) then return end
+        RegrowthMarkAreaSafeGivenTilePos(event.entity.position, 2, false)
+    end
 end)
 
 ----------------------------------------
@@ -121,9 +184,19 @@ end)
 -- Gui Events
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
+    WelcomeTextGuiClick(event)
+    SpawnOptsGuiClick(event)
+    SpawnCtrlGuiClick(event)
+    SharedSpwnOptsGuiClick(event)
+    BuddySpawnOptsGuiClick(event)
+    BuddySpawnWaitMenuClick(event)
+    BuddySpawnRequestMenuClick(event)
+    SharedSpawnJoinWaitMenuClick(event)
     ClickOarcGuiButton(event)
+    GameOptionsGuiClick(event)
 end)
 
+--- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
     SpawnOptsRadioSelect(event)
     SpawnCtrlGuiOptionsSelect(event)

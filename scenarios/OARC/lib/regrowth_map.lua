@@ -18,6 +18,9 @@ require("config")
 -- TODO: Make this a mod startup setting?
 REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR -- TICKS_PER_HOUR TICKS_PER_MINUTE
 
+-- TODO: Add support for multiple surfaces!
+SURFACE_NAME_TEMP = "nauvis"
+
 -- Init globals and set player join area to be off limits.
 function RegrowthInit()
     global.rg = {}
@@ -176,7 +179,7 @@ end
 
 -- Refreshes timers on all chunks near an ACTIVE radar
 function RegrowthSectorScan(event)
-    if (event.radar.surface.name ~= GAME_SURFACE_NAME) then return end
+    if (event.radar.surface.name ~= SURFACE_NAME_TEMP) then return end
 
     RefreshArea(event.radar.position, 14, 0)
 end
@@ -188,7 +191,7 @@ function RefreshPlayerArea()
         local player = game.connected_players[player_index]
         
         if (not player.character) then return end
-        if (player.character.surface.name ~= GAME_SURFACE_NAME) then return end
+        if (player.character.surface.name ~= SURFACE_NAME_TEMP) then return end
 
         RefreshArea(player.position, 4, 0)
     end
@@ -200,14 +203,14 @@ function RegrowthSingleStepArray()
 
     -- Make sure we have a valid iterator!
     if (not global.rg.chunk_iter or not global.rg.chunk_iter.valid) then
-        global.rg.chunk_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
+        global.rg.chunk_iter = game.surfaces[SURFACE_NAME_TEMP].get_chunks()
     end
 
     local next_chunk = global.rg.chunk_iter()
 
     -- Check if we reached the end
     if (not next_chunk) then 
-        global.rg.chunk_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
+        global.rg.chunk_iter = game.surfaces[SURFACE_NAME_TEMP].get_chunks()
         next_chunk = global.rg.chunk_iter()
     end
 
@@ -221,7 +224,7 @@ function RegrowthSingleStepArray()
     if ((c_timer ~= nil) and (c_timer >= 0) and ((c_timer + global.rg.timeout_ticks) < game.tick)) then
 
         -- Check chunk actually exists
-        if (game.surfaces[GAME_SURFACE_NAME].is_chunk_generated({x=next_chunk.x, y=next_chunk.y})) then
+        if (game.surfaces[SURFACE_NAME_TEMP].is_chunk_generated({x=next_chunk.x, y=next_chunk.y})) then
             table.insert(global.rg.removal_list, {pos={x=next_chunk.x, y=next_chunk.y}, force=false})
             global.rg.map[next_chunk.x][next_chunk.y] = nil
         end
@@ -238,15 +241,15 @@ function OarcRegrowthRemoveAllChunks()
 
             -- If it is FORCE removal, then remove it regardless of pollution.
             if (c_remove.force) then
-                game.surfaces[GAME_SURFACE_NAME].delete_chunk(c_pos)
+                game.surfaces[SURFACE_NAME_TEMP].delete_chunk(c_pos)
 
             -- If it is a normal timeout removal, don't do it if there is pollution in the chunk.
-            elseif (game.surfaces[GAME_SURFACE_NAME].get_pollution({c_pos.x*32,c_pos.y*32}) > 0) then
+            elseif (game.surfaces[SURFACE_NAME_TEMP].get_pollution({c_pos.x*32,c_pos.y*32}) > 0) then
                 global.rg.map[c_pos.x][c_pos.y] = game.tick
 
             -- Else delete the chunk
             else
-                game.surfaces[GAME_SURFACE_NAME].delete_chunk(c_pos)
+                game.surfaces[SURFACE_NAME_TEMP].delete_chunk(c_pos)
             end
         end
 
@@ -317,14 +320,14 @@ function WorldEaterSingleStep()
 
     -- Make sure we have a valid iterator!
     if (not global.rg.world_eater_iter or not global.rg.world_eater_iter.valid) then
-        global.rg.world_eater_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
+        global.rg.world_eater_iter = game.surfaces[SURFACE_NAME_TEMP].get_chunks()
     end
 
     local next_chunk = global.rg.world_eater_iter()
 
     -- Check if we reached the end
     if (not next_chunk) then 
-        global.rg.world_eater_iter = game.surfaces[GAME_SURFACE_NAME].get_chunks()
+        global.rg.world_eater_iter = game.surfaces[SURFACE_NAME_TEMP].get_chunks()
         next_chunk = global.rg.world_eater_iter()
     end
 
@@ -334,7 +337,7 @@ function WorldEaterSingleStep()
     end 
 
     -- Search for any abandoned radars and destroy them?
-    local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=next_chunk.area,
+    local entities = game.surfaces[SURFACE_NAME_TEMP].find_entities_filtered{area=next_chunk.area,
                                                                                 force={global.ocore.abandoned_force},
                                                                                 name="radar"}
     for k,v in pairs(entities) do
@@ -342,7 +345,7 @@ function WorldEaterSingleStep()
     end
 
     -- Search for any entities with _DESTROYED_ force and kill them.
-    entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=next_chunk.area,
+    entities = game.surfaces[SURFACE_NAME_TEMP].find_entities_filtered{area=next_chunk.area,
                                                                                 force={global.ocore.destroyed_force}}
     for k,v in pairs(entities) do
         v.die(nil)
@@ -355,12 +358,14 @@ function WorldEaterSingleStep()
         local area = {left_top = {next_chunk.area.left_top.x-8, next_chunk.area.left_top.y-8},
                       right_bottom = {next_chunk.area.right_bottom.x+8, next_chunk.area.right_bottom.y+8}}
 
-        local entities = game.surfaces[GAME_SURFACE_NAME].find_entities_filtered{area=area, force={"enemy", "neutral"}, invert=true}
+        local entities = game.surfaces[SURFACE_NAME_TEMP].find_entities_filtered{area=area, force={"enemy", "neutral"}, invert=true}
         local total_count = #entities
         local has_last_user_set = false
 
         if (total_count > 0) then
             for k,v in pairs(entities) do
+                --string.contains is valid but not in the type definitions?
+                ---@diagnostic disable-next-line: undefined-field 
                 if (v.last_user or (v.type == "character") or string.contains(v.type, "robot")) then
                     has_last_user_set = true
                     return -- This means we're done checking this chunk.
