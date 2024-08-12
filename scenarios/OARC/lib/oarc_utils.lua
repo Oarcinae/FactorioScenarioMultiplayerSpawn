@@ -197,7 +197,7 @@ end
 --     return math.floor(num+0.5)
 -- end
 
--- Simple function to get total number of items in table
+---Simple function to get total number of items in table. # Only works for array style indexed tables!
 ---@param T table
 ---@return integer
 function TableLength(T)
@@ -619,14 +619,14 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
         -- Enforce a max number of tries
         tryCounter = tryCounter + 1
         if (tryCounter > maxTries) then
-            log("FindUngeneratedCoordinates - Max Tries Hit!")
+            log("WARNING -FindUngeneratedCoordinates - Max Tries Hit!")
             break
 
         -- Check that the distance is within the min,max specified
         elseif ((distSqrd < minDistSqr) or (distSqrd > maxDistSqr)) then
             -- Keep searching!
 
-        -- Check there are no generated chunks in a 10x10 area.
+        -- Check there are no generated chunks in a square area defined by the config:
         elseif IsChunkAreaUngenerated(chunkPos, global.ocfg.mod_overlap.minimum_distance_to_existing_chunks, surface) then
             position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
             position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
@@ -945,6 +945,10 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
     end
 end
 
+---Downgrades worms based on distance from origin and near/far spawn distances.
+---This helps make sure worms aren't too overwhelming even at these further spawn distances.
+---@param event EventData.on_chunk_generated
+---@return nil
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
 
     ---@type OarcConfigModSettings
@@ -986,7 +990,7 @@ function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
     end
 
     -- Destroy
-    if (TableLength(worm_types) > 0) then
+    if (#worm_types > 0) then
         for _, entity in pairs(surface.find_entities_filtered { area = area, name = worm_types }) do
             entity.destroy()
         end

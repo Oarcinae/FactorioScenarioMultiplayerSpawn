@@ -279,7 +279,7 @@ function RegrowthOnTick()
         RegrowthSingleStepArray()
     end
 
-    if (not global.world_eater_disable) then
+    if (global.ocfg.gameplay.enable_world_eater) then
         WorldEaterSingleStep()
     end
 

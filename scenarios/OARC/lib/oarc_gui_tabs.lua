@@ -20,7 +20,14 @@ OARC_GUI_TAB_CONTENT_FUNCTIONS["Spawn Controls"] = CreateSpawnCtrlGuiTab
 
 
 ---@param player LuaPlayer
+---@return nil
 function InitOarcGuiTabs(player)
+
+    -- Make safe to call multiple times
+    if (DoesOarcGuiExist(player)) then
+        return
+    end
+
     CreateOarcGuiButton(player)
 
     -- Add general info tab
@@ -34,6 +41,7 @@ function InitOarcGuiTabs(player)
 end
 
 ---@param player LuaPlayer
+---@return nil
 function CreateOarcGuiButton(player)
     if (mod_gui.get_button_flow(player).oarc_button == nil) then
         local b = mod_gui.get_button_flow(player).add{name="oarc_button",
@@ -47,18 +55,23 @@ function CreateOarcGuiButton(player)
 end
 
 ---@param player LuaPlayer
+---@return boolean
 function DoesOarcGuiExist(player)
     return (mod_gui.get_frame_flow(player)[OARC_GUI] ~= nil)
 end
 
 ---@param player LuaPlayer
+---@return boolean
 function IsOarcGuiVisible(player)
+    ---@type LuaGuiElement
     local of = mod_gui.get_frame_flow(player)[OARC_GUI]
     return (of.visible)
 end
 
 ---@param player LuaPlayer
+---@return nil
 function ShowOarcGui(player)
+    ---@type LuaGuiElement
     local of = mod_gui.get_frame_flow(player)[OARC_GUI]
     if (of == nil) then return end
     of.visible = true
@@ -66,7 +79,9 @@ function ShowOarcGui(player)
 end
 
 ---@param player LuaPlayer
+---@return nil
 function HideOarcGui(player)
+    ---@type LuaGuiElement
     local of = mod_gui.get_frame_flow(player)[OARC_GUI]
     if (of == nil) then return end
     of.visible = false
@@ -74,15 +89,19 @@ function HideOarcGui(player)
 end
 
 ---@param player LuaPlayer
+---@return LuaGuiElement?
 function GetOarcGuiTabsPane(player)
-    if (mod_gui.get_frame_flow(player)[OARC_GUI] == nil) then
+    ---@type LuaGuiElement
+    local of = mod_gui.get_frame_flow(player)[OARC_GUI]
+    if (of == nil) then
         return nil
     else
-        return mod_gui.get_frame_flow(player)[OARC_GUI].oarc_if.oarc_tabs
+        return of.oarc_if.oarc_tabs
     end
 end
 
 ---@param event EventData.on_gui_click
+---@return nil
 function ClickOarcGuiButton(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
@@ -109,6 +128,7 @@ function ClickOarcGuiButton(event)
 end
 
 ---@param event EventData.on_gui_selected_tab_changed
+---@return nil
 function TabChangeOarcGui(event)
     if (event.element.name ~= "oarc_tabs") then return end
 
@@ -125,6 +145,7 @@ function TabChangeOarcGui(event)
 end
 
 ---@param player LuaPlayer
+---@return nil
 function FakeTabChangeEventOarcGui(player)
     local event = {}
     event.element = GetOarcGuiTabsPane(player)
@@ -133,6 +154,7 @@ function FakeTabChangeEventOarcGui(player)
 end
 
 ---@param player LuaPlayer
+---@return nil
 function CreateOarcGuiTabsPane(player)
 
     if (mod_gui.get_frame_flow(player)[OARC_GUI] == nil) then

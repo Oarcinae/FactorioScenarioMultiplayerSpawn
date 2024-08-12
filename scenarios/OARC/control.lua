@@ -56,9 +56,9 @@ require("lib/oarc_gui_tabs")
 --------------------------------------------------------------------------------
 script.on_init(function(event)
     ValidateAndLoadConfig()
-    CreateHoldingPenSurface()
     RegrowthInit()
     InitSpawnGlobalsAndForces()
+    CreateHoldingPenSurface() -- Must be after init spawn globals?
 end)
 
 ----------------------------------------
@@ -66,28 +66,17 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_player_created, function(event)
     local player = game.players[event.player_index]
-
     player.teleport({x=0,y=0}, HOLDING_PEN_SURFACE_NAME)
 
-    SeparateSpawnsPlayerCreated(event.player_index, true)
-    InitOarcGuiTabs(player)
+    SeparateSpawnsInitPlayer(event.player_index, true)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
     SeparateSpawnsPlayerRespawned(event)
-
-    GivePlayerRespawnItems(game.players[event.player_index])
 end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
-    local player = game.players[event.player_index]
-
-    -- If players leave early, say goodbye.
-    if (player and (player.online_time < (global.ocfg.gameplay.minimum_online_time * TICKS_PER_MINUTE))) then
-        log("Player left early: " .. player.name)
-        SendBroadcastMsg(player.name .. "'s base was marked for immediate clean up because they left within "..global.ocfg.gameplay.minimum_online_time.." minutes of joining.")
-        RemoveOrResetPlayer(player, true, true, true, true)
-    end
+    SeparateSpawnsPlayerLeft(event)
 end)
 
 ----------------------------------------
@@ -111,6 +100,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     CreateHoldingPenChunks(event.surface, event.area)
     SeparateSpawnsGenerateChunk(event)
 
+    -- TODO: Decide if this should always be enabled (to track chunks).
     if global.ocfg.mod_overlap.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
@@ -120,6 +110,22 @@ script.on_event(defines.events.on_sector_scanned, function (event)
     if global.ocfg.mod_overlap.enable_regrowth then
         RegrowthSectorScan(event)
     end
+end)
+
+----------------------------------------
+-- Surface Generation
+----------------------------------------
+-- This is not called when the default surface "nauvis" is created as it will always exist!
+script.on_event(defines.events.on_surface_created, function(event)
+    log("Surface created: " .. game.surfaces[event.surface_index].name)
+    SeparateSpawnsSurfaceCreated(event)
+    -- RegrowthSurfaceCreated(event)
+end)
+
+script.on_event(defines.events.on_surface_deleted, function(event)
+    log("Surface deleted: " .. game.surfaces[event.surface_index].name)
+    SeparateSpawnsSurfaceDeleted(event)
+    -- RegrowthSurfaceDeleted(event)
 end)
 
 ----------------------------------------
@@ -174,6 +180,7 @@ script.on_event(defines.events.on_entity_spawned, function(event)
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 end)
+
 script.on_event(defines.events.on_biter_base_built, function(event)
     if (global.ocfg.gameplay.oarc_modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
@@ -205,10 +212,8 @@ end)
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
     TabChangeOarcGui(event)
 end)
-----------------------------------------
--- On Gui Closed
+
 -- For capturing player escaping custom GUI so we can close it using ESC key.
-----------------------------------------
 script.on_event(defines.events.on_gui_closed, function(event)
     OarcGuiOnGuiClosedEvent(event)
 end)

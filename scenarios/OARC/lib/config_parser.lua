@@ -10,11 +10,11 @@ function ValidateAndLoadConfig()
 
     ReadModSettings()
 
-    -- Validate enable_main_force and enable_separate_teams.
-    -- Force enable_main_force if both are disabled.
-    if (not global.ocfg.mod_overlap.enable_main_force and not global.ocfg.mod_overlap.enable_separate_teams) then
+    -- Validate enable_main_team and enable_separate_teams.
+    -- Force enable_main_team if both are disabled.
+    if (not global.ocfg.mod_overlap.enable_main_team and not global.ocfg.mod_overlap.enable_separate_teams) then
         log("Both main force and separate teams are disabled! Enabling main force. Please check your mod settings or config!")
-        global.ocfg.mod_overlap.enable_main_force = true
+        global.ocfg.mod_overlap.enable_main_team = true
     end
 
     -- TODO: Vanilla spawn point are not implemented yet.
@@ -34,20 +34,16 @@ function ReadModSettings()
 
     log("Copying mod settings to OCFG table...")
 
-    -- Copy in the startup settings from the mod settings.
-    global.ocfg.mod_overlap.enable_main_force = settings.startup["oarc-mod-enable-main-force"].value --[[@as boolean]]
-    global.ocfg.mod_overlap.enable_separate_teams = settings.startup["oarc-mod-enable-separate-teams"].value --[[@as boolean]]
-    global.ocfg.mod_overlap.enable_spawning_on_other_surfaces = settings.startup["oarc-mod-enable-spawning-on-other-surfaces"].value --[[@as boolean]]
-    global.ocfg.mod_overlap.enable_buddy_spawn = settings.startup["oarc-mod-enable-buddy-spawn"].value --[[@as boolean]]
-
-    -- TODO: Vanilla spawn point are not implemented yet.
-    -- settings.startup["oarc-mod-enable-vanilla-spawn-points"].value   
-    -- settings.startup["oarc-mod-number-of-vanilla-spawn-points"].value
-    -- settings.startup["oarc-mod-vanilla-spawn-point-spacing"].value
-
     -- Copy in the global settings from the mod settings.
+    global.ocfg.mod_overlap.enable_main_team = settings.global["oarc-mod-enable-main-team"].value --[[@as boolean]]
+    global.ocfg.mod_overlap.enable_separate_teams = settings.global["oarc-mod-enable-separate-teams"].value --[[@as boolean]]
+    global.ocfg.mod_overlap.enable_spawning_on_other_surfaces = settings.global["oarc-mod-enable-spawning-on-other-surfaces"].value --[[@as boolean]]
+    global.ocfg.mod_overlap.enable_buddy_spawn = settings.global["oarc-mod-enable-buddy-spawn"].value --[[@as boolean]]
+    -- TODO: Vanilla spawn point are not implemented yet.
+    -- settings.global["oarc-mod-enable-vanilla-spawn-points"].value   
+    -- settings.global["oarc-mod-number-of-vanilla-spawn-points"].value
+    -- settings.global["oarc-mod-vanilla-spawn-point-spacing"].value
     global.ocfg.mod_overlap.enable_regrowth = settings.global["oarc-mod-enable-regrowth"].value --[[@as boolean]]
-    global.ocfg.mod_overlap.enable_world_eater = settings.global["oarc-mod-enable-world-eater"].value --[[@as boolean]]
     global.ocfg.mod_overlap.enable_offline_protection = settings.global["oarc-mod-enable-offline-protection"].value --[[@as boolean]]
     global.ocfg.mod_overlap.enable_shared_team_vision = settings.global["oarc-mod-enable-shared-team-vision"].value --[[@as boolean]]
     global.ocfg.mod_overlap.enable_shared_team_chat = settings.global["oarc-mod-enable-shared-team-chat"].value --[[@as boolean]]

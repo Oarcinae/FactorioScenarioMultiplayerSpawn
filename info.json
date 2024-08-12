@@ -6,6 +6,6 @@
   "author": "Oarcinae",
   "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
   "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn",
-  "description": "This mod provides a scenario that overhauls multiplayer spawning.\n[color=red][font=default-bold]Please check out the github page and discord for more information and support.[/font][/color]",
+  "description": "[[Description is in locale file!]]",
   "dependencies": ["base >= 1.1.0"]
 }

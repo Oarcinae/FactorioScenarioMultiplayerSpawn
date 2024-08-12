@@ -10,53 +10,6 @@ require("config")
 local util = require("util")
 local crash_site = require("crash-site")
 
----@enum BuddySpawnChoice
-BUDDY_SPAWN_CHOICE = {
-    join_main_team = 1,
-    join_own_team = 2,
-    join_buddy_team = 3,
-}
-
---[[
- _   _   _  _     _______   _____ ___ ___
-| | | | | |/_\   |_   _\ \ / / _ \ __/ __|
-| |_| |_| / _ \    | |  \ V /|  _/ _|\__ \
-|____\___/_/ \_\   |_|   |_| |_| |___|___/
---]]
-
----Contains the respawn point for a player. Usually this is their home base but it can be changed.
----@alias OarcPlayerSpawn { surface: string, position: MapPosition }
----Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by player name.
----@alias OarcPlayerSpawnsTable table<string, OarcPlayerSpawn>
-
----A unique spawn point. This is what chunk generation checks against.
----@alias OarcUniqueSpawn { surface: string, position: MapPosition, moat: boolean }
----Table of [OarcUniqueSpawn](lua://OarcUniqueSpawn) indexed by a unique name.
----@alias OarcUniqueSpawnsTable table<string, OarcUniqueSpawn>
-
----A shared spawn point. This is a spawn point that multiple players can share.
----@alias OarcSharedSpawn { surface: string, position: MapPosition, openAccess: boolean, players: string[], joinQueue: string[] }
----Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by a unique name.
----@alias OarcSharedSpawnsTable table<string, OarcSharedSpawn>
-
----Contains player ability cooldowns. Right now this only tracks changing the respawn ability.
----@alias OarcPlayerCooldown { setRespawn: number }
----Table of [OarcPlayerCooldown](lua://OarcPlayerCooldown) indexed by player name.
----@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
-
----Temporary data used when spawning a player. Player needs to wait while the area is prepared.
----@alias OarcDelayedSpawn { playerName: string, surface: string, position: MapPosition, moat: boolean, delayedTick: number }
----Table of [OarcDelayedSpawn](lua://OarcDelayedSpawn) indexed by player name.
----@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
-
----This contains information of who is being asked to buddy spawn, and what options were selected.
----@alias OarcBuddySpawnOpts { teamRadioSelection: BuddySpawnChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
----Table of [OarcBuddySpawnOpts](lua://OarcBuddySpawnOpts) indexed by player name.
----@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
-
----Table of players in the "waiting room" for a buddy spawn.
----@alias OarcWaitingBuddiesTable table<string>
-
 --[[
   ___  _  _  ___  _____
  |_ _|| \| ||_ _||_   _|
@@ -73,7 +26,18 @@ function InitSpawnGlobalsAndForces()
         global.ocore = {}
     end
 
-    -- TODO: Add a global for which surfaces allow spawns.
+    -- Contains a table of entries for each surface. This tracks which surfaces allow spawning?
+    if (global.ocore.surfaces == nil) then
+        global.ocore.surfaces --[[@as table<string, boolean>]]= {}
+        for _, surface in pairs(game.surfaces) do
+            -- TODO: create a blacklist of surfaces that shouldn't be tracked?
+            if (surface.name == HOLDING_PEN_SURFACE_NAME) then
+                global.ocore.surfaces[surface.name] = false
+            else
+                global.ocore.surfaces[surface.name] = global.ocfg.mod_overlap.enable_spawning_on_other_surfaces
+            end
+        end
+    end
 
     -- This contains each player's spawn point. Literally where they will respawn.
     -- There is a way in game to change this under one of the little menu features I added.
@@ -150,6 +114,38 @@ function InitSpawnGlobalsAndForces()
     game.create_force(global.ocore.destroyed_force)
 end
 
+---Detects when new surfaces are created and adds them to the list of surfaces that allow spawns
+---depending on the config. Does not trigger during on_init?
+---@param event EventData.on_surface_created
+---@return nil
+function SeparateSpawnsSurfaceCreated(event)
+    local surface = game.surfaces[event.surface_index]
+
+    -- Shouldn't happen because surface created isn't triggered during on_init.
+    if (global.ocore.surfaces == nil) then
+        log("ERROR - global.ocore.surfaces not initialized! " .. surface.name)
+    end
+
+    if (global.ocore.surfaces[surface.name] ~= nil) then
+        log("Surface already exists in global.ocore.surfaces! " .. surface.name)
+    end
+
+    -- Add the surface to the list of surfaces that allow spawns with value from config.
+    global.ocore.surfaces[surface.name] = global.ocfg.mod_overlap.enable_spawning_on_other_surfaces
+end
+
+---Detects when surfaces are deleted and removes them from the list of surfaces that allow spawns.
+---@param event EventData.on_surface_deleted
+---@return nil
+function SeparateSpawnsSurfaceDeleted(event)
+    log("ERROR - Surface deleted event not implemented yet!")
+
+    -- local surface = game.surfaces[event.surface_index]
+
+    -- -- Remove the surface from the list of surfaces that allow spawns?
+    -- global.ocore.surfaces[surface.name] = nil
+end
+
 --[[
   ___  _       _ __   __ ___  ___     ___  ___  ___  ___  ___  ___  ___  ___
  | _ \| |     /_\\ \ / /| __|| _ \   / __|| _ \| __|/ __||_ _|| __||_ _|/ __|
@@ -158,13 +154,13 @@ end
 
 --]]
 
--- When a new player is created, present the spawn options
--- Assign them to the main force so they can communicate with the team
--- without shouting.
+-- When a player is newly created or just reset, present the spawn options to them.
+-- If new player, assign them to the main force so they can communicate with the team without shouting (/s).
+-- TODO: Possibly change this to a holding_pen force?
 ---@param player_index integer
 ---@param clear_inv boolean If true, clear the player's inventory.
 ---@return nil
-function SeparateSpawnsPlayerCreated(player_index, clear_inv)
+function SeparateSpawnsInitPlayer(player_index, clear_inv)
     local player = game.players[player_index]
 
     -- Make sure spawn control tab is disabled
@@ -185,6 +181,7 @@ function SeparateSpawnsPlayerCreated(player_index, clear_inv)
     --     player.get_inventory(defines.inventory.character_trash).clear()
     -- end
 
+    InitOarcGuiTabs(player)
     HideOarcGui(player)
     DisplayWelcomeTextGui(player)
 end
@@ -196,6 +193,23 @@ end
 function SeparateSpawnsPlayerRespawned(event)
     local player = game.players[event.player_index]
     SendPlayerToSpawn(player)
+    GivePlayerRespawnItems(player)
+end
+
+---If the player leaves early, remove their base.
+---@param event EventData.on_player_left_game
+---@return nil
+function SeparateSpawnsPlayerLeft(event)
+    local player = game.players[event.player_index]
+
+    -- If players leave early, say goodbye.
+    if (player and (player.online_time < (global.ocfg.gameplay.minimum_online_time * TICKS_PER_MINUTE))) then
+        log("Player left early: " .. player.name)
+        SendBroadcastMsg(player.name ..
+        "'s base was marked for immediate clean up because they left within " ..
+        global.ocfg.gameplay.minimum_online_time .. " minutes of joining.")
+        RemoveOrResetPlayer(player, true, true, true, true)
+    end
 end
 
 --[[
@@ -238,7 +252,7 @@ function GenerateStartingResources(surface, position)
         -- Create list of resource tiles
         ---@type table<string>
         local r_list = {}
-        for r_name,_ in pairs(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]]) do
+        for r_name, _ in pairs(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]]) do
             if (r_name ~= "") then
                 table.insert(r_list, r_name)
             end
@@ -248,11 +262,11 @@ function GenerateStartingResources(surface, position)
 
         -- This places resources in a semi-circle
         local angle_offset = rand_settings.angle_offset
-        local num_resources = TableLength(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]])
+        local num_resources = TableLength(global.ocfg.spawn_config.resource_tiles)
         local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
         local count = 0
 
-        for _,r_name in pairs(shuffled_list) do
+        for _, r_name in pairs(shuffled_list) do
             local angle = (theta * count) + angle_offset;
 
             local tx = (rand_settings.radius * math.cos(angle)) + position.x
@@ -289,7 +303,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     local ocfg --[[@as OarcConfig]] = global.ocfg
 
     -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(delayedSpawn.position, ocfg.spawn_config.safe_area.safe_radius, game.surfaces[delayedSpawn.surface])
+    ClearNearbyEnemies(delayedSpawn.position, ocfg.spawn_config.safe_area.safe_radius,
+        game.surfaces[delayedSpawn.surface])
 
     -- TODO: Vanilla spawn point are not implemented yet.
     -- if (not delayedSpawn.vanilla) then
@@ -469,7 +484,9 @@ function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
     local chunkArea = event.area
 
-    -- Modify enemies first.
+    if (!global.ocore.surfaces[surface.name]) then return end
+
+    -- Helps scale worm sizes to not be unreasonable when far from the origin.
     if global.ocfg.gameplay.oarc_modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
     end
@@ -602,7 +619,7 @@ function ResetPlayerAndDestroyForce(player)
     end
 
     RemoveOrResetPlayer(player, false, false, true, true)
-    SeparateSpawnsPlayerCreated(player.index, false)
+    SeparateSpawnsInitPlayer(player.index, false)
 end
 
 ---Resets the player and merges their force into the abandoned_force.
@@ -620,7 +637,7 @@ function ResetPlayerAndAbandonForce(player)
     end
 
     RemoveOrResetPlayer(player, false, false, false, false)
-    SeparateSpawnsPlayerCreated(player.index, false)
+    SeparateSpawnsInitPlayer(player.index, false)
 end
 
 ---Reset player and merge their force to neutral
@@ -628,7 +645,7 @@ end
 ---@return nil
 function ResetPlayerAndMergeForceToNeutral(player)
     RemoveOrResetPlayer(player, false, true, true, true)
-    SeparateSpawnsPlayerCreated(player.index, true)
+    SeparateSpawnsInitPlayer(player.index, true)
 end
 
 ---Kicks player from game and marks player for removal from globals.
@@ -924,7 +941,7 @@ function GetNumberOfAvailableSharedSpawns()
                 (game.players[ownerName] ~= nil) and
                 game.players[ownerName].connected) then
             if ((number_of_players_per_shared_spawn == 0) or
-                    (#global.ocore.sharedSpawns[ownerName].players < number_of_players_per_shared_spawn)) then
+                    (TableLength(global.ocore.sharedSpawns[ownerName].players) < number_of_players_per_shared_spawn)) then
                 count = count + 1
             end
         end
@@ -963,7 +980,6 @@ end
 ---@param position MapPosition
 ---@return nil
 function ChangePlayerSpawn(player, surface, position)
-
     ---@type OarcPlayerSpawn
     local updatedPlayerSpawn = {}
     updatedPlayerSpawn.surface = surface
@@ -1029,7 +1045,6 @@ end
 function DelayedSpawnOnTick()
     if ((game.tick % (30)) == 1) then
         if ((global.ocore.delayedSpawns ~= nil) and (#global.ocore.delayedSpawns > 0)) then
-
             --TODO: Investigate this magic indexing with ints and keys?
             -- I think this loop removes from the back of the table to the front??
             for i = #global.ocore.delayedSpawns, 1, -1 do
@@ -1059,7 +1074,7 @@ function SendPlayerToSpawn(player)
     else
         local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
         SafeTeleport(player,
-        game.surfaces[gameplayConfig.main_force_surface],
+            game.surfaces[gameplayConfig.main_force_surface],
             game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface))
     end
 end
@@ -1068,13 +1083,15 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function SendPlayerToRandomSpawn(player)
-    local numSpawns = TableLength(global.ocore.uniqueSpawns)
+    local numSpawns = #global.ocore.uniqueSpawns
     local rndSpawn = math.random(0, numSpawns)
     local counter = 0
 
     if (rndSpawn == 0) then
         local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
-        player.teleport(game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface), gameplayConfig.main_force_surface)
+        player.teleport(
+        game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface),
+            gameplayConfig.main_force_surface)
     else
         counter = counter + 1
         for name, spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
@@ -1108,7 +1125,7 @@ function CreateForce(force_name)
         return CreateForce(force_name .. "_") -- Append a character to make the force name unique.
 
         -- Create a new force
-    elseif (TableLength(game.forces) < MAX_FORCES) then
+    elseif (#game.forces < MAX_FORCES) then
         newForce = game.create_force(force_name)
         if global.ocfg.mod_overlap.enable_shared_team_vision then
             newForce.share_chart = true
@@ -1128,7 +1145,6 @@ function CreateForce(force_name)
         -- if (global.ocfg.enable_anti_grief) then
         --     AntiGriefing(newForce)
         -- end
-
     else
         log("TOO MANY FORCES!!! - CreateForce()")
         return game.forces[global.ocfg.gameplay.main_force_name]
@@ -1278,3 +1294,54 @@ end
 --         end
 --     end
 -- end
+
+--[[
+
+  _   _   _  _     _______   _____ ___     _   _  _ _  _  ___ _____ _ _____ ___ ___  _  _ ___
+ | | | | | |/_\   |_   _\ \ / / _ \ __|   /_\ | \| | \| |/ _ \_   _/_\_   _|_ _/ _ \| \| / __|
+ | |_| |_| / _ \    | |  \ V /|  _/ _|   / _ \| .` | .` | (_) || |/ _ \| |  | | (_) | .` \__ \
+ |____\___/_/ \_\   |_|   |_| |_| |___| /_/ \_\_|\_|_|\_|\___/ |_/_/ \_\_| |___\___/|_|\_|___/
+
+ These are LUA type annotations for development and editor support.
+ You can ignore this unless you're making changes to the mod, in which case it might be helpful.
+]]
+
+---@enum BuddySpawnChoice
+BUDDY_SPAWN_CHOICE = {
+    join_main_team = 1,
+    join_own_team = 2,
+    join_buddy_team = 3,
+}
+
+---Contains the respawn point for a player. Usually this is their home base but it can be changed.
+---@alias OarcPlayerSpawn { surface: string, position: MapPosition }
+---Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by player name.
+---@alias OarcPlayerSpawnsTable table<string, OarcPlayerSpawn>
+
+---A unique spawn point. This is what chunk generation checks against.
+---@alias OarcUniqueSpawn { surface: string, position: MapPosition, moat: boolean }
+---Table of [OarcUniqueSpawn](lua://OarcUniqueSpawn) indexed by a unique name.
+---@alias OarcUniqueSpawnsTable table<string, OarcUniqueSpawn>
+
+---A shared spawn point. This is a spawn point that multiple players can share.
+---@alias OarcSharedSpawn { surface: string, position: MapPosition, openAccess: boolean, players: string[], joinQueue: string[] }
+---Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by a unique name.
+---@alias OarcSharedSpawnsTable table<string, OarcSharedSpawn>
+
+---Contains player ability cooldowns. Right now this only tracks changing the respawn ability.
+---@alias OarcPlayerCooldown { setRespawn: number }
+---Table of [OarcPlayerCooldown](lua://OarcPlayerCooldown) indexed by player name.
+---@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
+
+---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
+---@alias OarcDelayedSpawn { playerName: string, surface: string, position: MapPosition, moat: boolean, delayedTick: number }
+---Table of [OarcDelayedSpawn](lua://OarcDelayedSpawn) indexed by player name.
+---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
+
+---This contains information of who is being asked to buddy spawn, and what options were selected.
+---@alias OarcBuddySpawnOpts { teamRadioSelection: BuddySpawnChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
+---Table of [OarcBuddySpawnOpts](lua://OarcBuddySpawnOpts) indexed by player name.
+---@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
+
+---Table of players in the "waiting room" for a buddy spawn.
+---@alias OarcWaitingBuddiesTable table<string>

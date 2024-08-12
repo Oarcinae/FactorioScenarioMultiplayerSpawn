@@ -168,10 +168,10 @@ function DisplaySpawnOptions(player)
             caption = { "oarc-moat-option" },
             state = false }
     end
-    -- if (global.ocfg.enable_vanilla_spawns and (#global.vanillaSpawns > 0)) then
+    -- if (global.ocfg.enable_vanilla_spawns and (TableLength(global.vanillaSpawns) > 0)) then
     --     soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
     --                     type = "checkbox",
-    --                     caption="Use a pre-set vanilla spawn point. " .. #global.vanillaSpawns .. " available.",
+    --                     caption="Use a pre-set vanilla spawn point. " .. TableLengthglobal.vanillaSpawns .. " available.",
     --                     state=false}
     -- end
 
@@ -194,7 +194,7 @@ function DisplaySpawnOptions(player)
     --     AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
     --         {"oarc-starting-area-vanilla"}, my_label_style)
     --     AddLabel(soloSpawnFlow, "vanilla_spawn_lbl2",
-    --         {"oarc-vanilla-spawns-available", #global.vanillaSpawns}, my_label_style)
+    --         {"oarc-vanilla-spawns-available", TableLength(global.vanillaSpawns)}, my_label_style)
     -- else
     AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
         { "oarc-starting-area-normal" }, my_label_style)
@@ -452,8 +452,7 @@ function DisplaySharedSpawnOptions(player)
         if (sharedSpawn.openAccess and
                 (game.players[spawnName] ~= nil) and
                 game.players[spawnName].connected) then
-            local spotsRemaining = global.ocfg.mod_overlap.number_of_players_per_shared_spawn -
-                #global.ocore.sharedSpawns[spawnName].players
+            local spotsRemaining = global.ocfg.mod_overlap.number_of_players_per_shared_spawn - TableLength(global.ocore.sharedSpawns[spawnName].players)
             if (global.ocfg.mod_overlap.number_of_players_per_shared_spawn == 0) then
                 shGui.add { type = "button", caption = spawnName, name = spawnName }
             elseif (spotsRemaining > 0) then
@@ -658,7 +657,7 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
 
     -- Display a list of people in the join queue for your base.
     if (global.ocfg.mod_overlap.enable_shared_spawns and IsSharedSpawnActive(player)) then
-        if (#global.ocore.sharedSpawns[player.name].joinQueue > 0) then
+        if (TableLength(global.ocore.sharedSpawns[player.name].joinQueue) > 0) then
             AddLabel(spwnCtrls, "drop_down_msg_lbl1", { "oarc-select-player-join-queue" }, my_label_style)
             spwnCtrls.add { name = "join_queue_dropdown",
                 type = "drop-down",
