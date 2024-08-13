@@ -8,21 +8,6 @@ require("lib/separate_spawns")
 local SPAWN_GUI_MAX_WIDTH = 500
 local SPAWN_GUI_MAX_HEIGHT = 1000
 
--- Use this for testing shared spawns...
--- local sharedSpawnExample1 = {openAccess=true,
---                             position={x=50,y=50},
---                             players={"ABC", "DEF"}}
--- local sharedSpawnExample2 = {openAccess=false,
---                             position={x=200,y=200},
---                             players={"ABC", "DEF"}}
--- local sharedSpawnExample3 = {openAccess=true,
---                             position={x=400,y=400},
---                             players={"A", "B", "C", "D"}}
--- global.ocore.sharedSpawns = {testName1=sharedSpawnExample1,
---                        testName2=sharedSpawnExample2,
---                        Oarc=sharedSpawnExample3}
-
-
 ---A display gui message. Meant to be display the first time a player joins.
 ---@param player LuaPlayer
 ---@return boolean
@@ -142,6 +127,29 @@ function DisplaySpawnOptions(player)
         type = "frame",
         direction = "vertical",
         style = "bordered_frame" }
+
+
+    -- Pick surface
+    if (mod_overlap.enable_spawning_on_other_surfaces) then
+        
+        local surfacesHorizontalFlow = soloSpawnFlow.add { name = "surfaces_horizontal_flow",
+            type = "flow",
+            direction = "horizontal" }
+
+        ---@type string[]
+        local surfaceList = {}
+        for surfaceName,allowed in pairs(global.ocore.surfaces) do
+            if allowed then
+                table.insert(surfaceList, surfaceName)
+            end
+        end
+
+        AddLabel(surfacesHorizontalFlow, "surfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
+        surfacesHorizontalFlow.add { name = "surface_select_dropdown",
+            type = "drop-down",
+            items = surfaceList,
+            selected_index = 0}
+    end
 
     -- Radio buttons to pick your team.
     if (mod_overlap.enable_separate_teams) then
@@ -449,9 +457,11 @@ function DisplaySharedSpawnOptions(player)
 
 
     for spawnName, sharedSpawn in pairs(global.ocore.sharedSpawns) do
-        if (sharedSpawn.openAccess and
-                (game.players[spawnName] ~= nil) and
-                game.players[spawnName].connected) then
+        -- Disabled for testing. TODO: Renable this later!
+        -- if (sharedSpawn.openAccess and
+        --         (game.players[spawnName] ~= nil) and
+        --         game.players[spawnName].connected) then
+        if sharedSpawn.openAccess then
             local spotsRemaining = global.ocfg.mod_overlap.number_of_players_per_shared_spawn - TableLength(global.ocore.sharedSpawns[spawnName].players)
             if (global.ocfg.mod_overlap.number_of_players_per_shared_spawn == 0) then
                 shGui.add { type = "button", caption = spawnName, name = spawnName }

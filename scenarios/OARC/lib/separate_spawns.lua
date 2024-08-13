@@ -62,6 +62,28 @@ function InitSpawnGlobalsAndForces()
     -- Each entry contains information about if it's open, spawn pos, and players in the group.
     if (global.ocore.sharedSpawns == nil) then
         global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]] = {}
+
+        -- Use this for testing shared spawns...
+        local sharedSpawnExample1 = {
+            surface="nauvis",
+            openAccess=true,
+            position={x=50,y=50},
+            players={"ABC", "DEF"}}
+        local sharedSpawnExample2 = {
+            surface="vulcanus",
+            openAccess=false,
+            position={x=200,y=200},
+            players={"ABC", "DEF"}}
+        local sharedSpawnExample3 = {
+            surface="fulgora",
+            openAccess=true,
+            position={x=400,y=400},
+            players={"A", "B", "C", "D"}}
+        global.ocore.sharedSpawns = {
+            testName1=sharedSpawnExample1,
+            testName2=sharedSpawnExample2,
+            Oarc=sharedSpawnExample3
+        }
     end
 
     -- Each player has an option to change their respawn which has a cooldown when used.
@@ -937,9 +959,11 @@ function GetNumberOfAvailableSharedSpawns()
     local number_of_players_per_shared_spawn = global.ocfg.mod_overlap.number_of_players_per_shared_spawn
 
     for ownerName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-        if (sharedSpawn.openAccess and
-                (game.players[ownerName] ~= nil) and
-                game.players[ownerName].connected) then
+        -- Disabled only for testing. TODO: Re-enable this!
+        -- if (sharedSpawn.openAccess and
+        --         (game.players[ownerName] ~= nil) and
+        --         game.players[ownerName].connected) then
+        if (sharedSpawn.openAccess) then
             if ((number_of_players_per_shared_spawn == 0) or
                     (TableLength(global.ocore.sharedSpawns[ownerName].players) < number_of_players_per_shared_spawn)) then
                 count = count + 1

@@ -57,6 +57,14 @@ require("lib/oarc_gui_tabs")
 script.on_init(function(event)
     ValidateAndLoadConfig()
     RegrowthInit()
+
+    -- Test create some other surfaces
+    -- TODO: Remove this later.
+    game.create_surface("vulcanus")
+    game.create_surface("fulgora")
+    game.create_surface("gleba")
+    game.create_surface("aquilo")
+
     InitSpawnGlobalsAndForces()
     CreateHoldingPenSurface() -- Must be after init spawn globals?
 end)
