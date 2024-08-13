@@ -4,6 +4,7 @@
 9. Add multiple surfaces to all core code
 10. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
 11. Expose more config options in admin GUI
+12. Tooltips for GUI elements in spawn menu options!
 
 Random Notes:
 Configurable welcome message in admin GUI.
@@ -11,6 +12,7 @@ Add option to spawn on existing chunks (look for chunks with any entities in the
 Add option for spawn pen to be on a specified surface
 Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
 Make players join a "holding_pen" force instead of the main force? Might cause issues with chat and vision?
+Separate chest sharing and electricity ()
 
 1. (DONE) First setup the mod settings and lua global settings.
 2. (DONE) Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.

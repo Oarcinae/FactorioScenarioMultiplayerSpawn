@@ -313,6 +313,16 @@ function GivePlayerStarterItems(player)
     end
 end
 
+--- Delete all chunks on a surface
+--- @param surface LuaSurface
+--- @return nil
+function DeleteAllChunks(surface)
+    for chunk in surface.get_chunks() do
+        surface.delete_chunk({chunk.x, chunk.y})
+    end
+end
+
+
 -- -- Modular armor quick start
 -- function GiveQuickStartModularArmor(player)
 --     player.insert{name="modular-armor", count = 1}

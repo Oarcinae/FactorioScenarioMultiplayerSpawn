@@ -7,6 +7,8 @@ HOLDING_PEN_SURFACE_NAME = "oarc_holding_pen"
 
 function CreateHoldingPenSurface()
 
+    ---@type MapGenSettings
+    ---@diagnostic disable-next-line: missing-fields
     local map_settings = {}
     map_settings.terrain_segmentation = "none"
     map_settings.water = "none"
@@ -28,10 +30,17 @@ function CreateHoldingPenSurface()
     if game.surfaces[HOLDING_PEN_SURFACE_NAME] == nil then
         local holding_pen_surface = game.create_surface(HOLDING_PEN_SURFACE_NAME, map_settings)
         holding_pen_surface.always_day = true
-        RenderPermanentGroundText(holding_pen_surface, {x=-29,y=-37}, 30, "OARC", {0.9, 0.7, 0.3, 0.8})
+        holding_pen_surface.show_clouds = false
+        holding_pen_surface.generate_with_lab_tiles = true
 
-        holding_pen_surface.request_to_generate_chunks({0,0}, 2)
-        holding_pen_surface.force_generate_chunk_requests()
+        RenderPermanentGroundText(holding_pen_surface, {x=-15,y=-24}, 20, "OARC", {0.9, 0.7, 0.3, 0.8})
+
+        -- This doesn't work if loading map data. TODO: Revert this later?
+        -- Disabling this let's me launch the scenario directly from the editor while using an empty blueprint.zip as 
+        -- a workaround since there's a bug with the "--load-scenario" launch argument.
+        -- https://forums.factorio.com/110708
+        -- holding_pen_surface.request_to_generate_chunks({0,0}, 2)
+        -- holding_pen_surface.force_generate_chunk_requests()
     else
         log("Holding pen surface already exists!?")
     end
@@ -59,7 +68,7 @@ function CreateHoldingPenChunks(surface, chunkArea)
         for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
             local distance = math.floor(i^2 + j^2)
             if (distance < 10^2) then
-                table.insert(tiles, {name="grass-1", position={i, j}})
+                table.insert(tiles, {name="tutorial-grid", position={i, j}})
             else
                 table.insert(tiles, {name="out-of-map", position={i, j}})
             end

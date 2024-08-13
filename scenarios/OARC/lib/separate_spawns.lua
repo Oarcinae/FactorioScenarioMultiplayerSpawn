@@ -484,7 +484,7 @@ function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
     local chunkArea = event.area
 
-    if (!global.ocore.surfaces[surface.name]) then return end
+    if (not global.ocore.surfaces[surface.name]) then return end
 
     -- Helps scale worm sizes to not be unreasonable when far from the origin.
     if global.ocfg.gameplay.oarc_modified_enemy_spawning then
