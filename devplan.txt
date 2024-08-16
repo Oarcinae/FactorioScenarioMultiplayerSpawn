@@ -1,12 +1,13 @@
 
-4. Go through separate spawns code carefully and make sure it can support MULTIPLE SURFACES!
-8. Add multiple surfaces to Spawn GUI (Drop down selection?)
-9. Add multiple surfaces to all core code
-10. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
-11. Expose more config options in admin GUI
-12. Tooltips for GUI elements in spawn menu options!
-13. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
-14. Configurable welcome/server messages in admin GUI.
+
+8. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
+9. Expose more config options in admin GUI
+10. Tooltips for GUI elements in spawn menu options!
+11. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
+
+13. 
+14. 
+
 
 Other Ideas, Not Committed:
 Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
@@ -22,5 +23,8 @@ Separate chest sharing and electricity ()
 5. (DONE) Document config and mod settings using Lua annotation as a custom class
 6. (DONE) Document global ocore as a custom class (with subclasses/types as needed)
 7. (DONE) Add multiple surfaces to options/settings [As a single boolean.]
+15. (DONE) Convert scenario to a mod.
+4. (DONE) Add multiple surfaces to Spawn GUI (Drop down selection?)
+12. (DONE) Configurable welcome/server messages in mod settings.
 
 (DONE) Figure out how to define custom lua table/data structs to make syntax/linting work?

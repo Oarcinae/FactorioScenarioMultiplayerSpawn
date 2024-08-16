@@ -4,9 +4,6 @@
 -- Code that handles everything regarding giving each player a separate spawn
 -- Includes the GUI stuff
 
-require("lib/oarc_utils")
-require("config")
-
 local util = require("util")
 local crash_site = require("crash-site")
 
@@ -34,7 +31,7 @@ function InitSpawnGlobalsAndForces()
             if (surface.name == HOLDING_PEN_SURFACE_NAME) then
                 global.ocore.surfaces[surface.name] = false
             else
-                global.ocore.surfaces[surface.name] = global.ocfg.mod_overlap.enable_spawning_on_other_surfaces
+                global.ocore.surfaces[surface.name] = global.ocfg.gameplay.enable_spawning_on_other_surfaces
             end
         end
     end
@@ -64,26 +61,26 @@ function InitSpawnGlobalsAndForces()
         global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]] = {}
 
         -- Use this for testing shared spawns...
-        local sharedSpawnExample1 = {
-            surface="nauvis",
-            openAccess=true,
-            position={x=50,y=50},
-            players={"ABC", "DEF"}}
-        local sharedSpawnExample2 = {
-            surface="vulcanus",
-            openAccess=false,
-            position={x=200,y=200},
-            players={"ABC", "DEF"}}
-        local sharedSpawnExample3 = {
-            surface="fulgora",
-            openAccess=true,
-            position={x=400,y=400},
-            players={"A", "B", "C", "D"}}
-        global.ocore.sharedSpawns = {
-            testName1=sharedSpawnExample1,
-            testName2=sharedSpawnExample2,
-            Oarc=sharedSpawnExample3
-        }
+        -- local sharedSpawnExample1 = {
+        --     surface="nauvis",
+        --     openAccess=true,
+        --     position={x=50,y=50},
+        --     players={"ABC", "DEF"}}
+        -- local sharedSpawnExample2 = {
+        --     surface="vulcanus",
+        --     openAccess=false,
+        --     position={x=200,y=200},
+        --     players={"ABC", "DEF"}}
+        -- local sharedSpawnExample3 = {
+        --     surface="fulgora",
+        --     openAccess=true,
+        --     position={x=400,y=400},
+        --     players={"A", "B", "C", "D"}}
+        -- global.ocore.sharedSpawns = {
+        --     testName1=sharedSpawnExample1,
+        --     testName2=sharedSpawnExample2,
+        --     Oarc=sharedSpawnExample3
+        -- }
     end
 
     -- Each player has an option to change their respawn which has a cooldown when used.
@@ -127,7 +124,7 @@ function InitSpawnGlobalsAndForces()
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreateForce(global.ocfg.gameplay.main_force_name)
-    main_force.set_spawn_position({ x = 0, y = 0 }, global.ocfg.gameplay.main_force_surface)
+    main_force.set_spawn_position({ x = 0, y = 0 }, global.ocfg.gameplay.default_surface)
 
     -- Special forces for when players with their own force want a reset.
     global.ocore.abandoned_force = "_ABANDONED_"
@@ -153,7 +150,7 @@ function SeparateSpawnsSurfaceCreated(event)
     end
 
     -- Add the surface to the list of surfaces that allow spawns with value from config.
-    global.ocore.surfaces[surface.name] = global.ocfg.mod_overlap.enable_spawning_on_other_surfaces
+    global.ocore.surfaces[surface.name] = global.ocfg.gameplay.enable_spawning_on_other_surfaces
 end
 
 ---Detects when surfaces are deleted and removes them from the list of surfaces that allow spawns.
@@ -260,11 +257,11 @@ end
 ---@param position TilePosition
 ---@return nil
 function GenerateStartingResources(surface, position)
-    local rand_settings = global.ocfg.spawn_config.resource_rand_pos_settings
+    local rand_settings = global.ocfg.surfaces_config[surface.name].spawn_config.resource_rand_pos_settings
 
     -- Generate all resource tile patches
     if (not rand_settings.enabled) then
-        for r_name, r_data in pairs(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]]) do
+        for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
             local pos = { x = position.x + r_data.x_offset, y = position.y + r_data.y_offset }
             GenerateResourcePatch(surface, r_name, r_data.size, pos, r_data.amount)
         end
@@ -274,7 +271,7 @@ function GenerateStartingResources(surface, position)
         -- Create list of resource tiles
         ---@type table<string>
         local r_list = {}
-        for r_name, _ in pairs(global.ocfg.spawn_config.resource_tiles --[[@as table<string, OarcConfigResourceTiles>]]) do
+        for r_name, _ in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
             if (r_name ~= "") then
                 table.insert(r_list, r_name)
             end
@@ -284,7 +281,7 @@ function GenerateStartingResources(surface, position)
 
         -- This places resources in a semi-circle
         local angle_offset = rand_settings.angle_offset
-        local num_resources = TableLength(global.ocfg.spawn_config.resource_tiles)
+        local num_resources = TableLength(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
         local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
         local count = 0
 
@@ -296,14 +293,14 @@ function GenerateStartingResources(surface, position)
 
             local pos = { x = math.floor(tx), y = math.floor(ty) }
 
-            local resourceConfig = global.ocfg.spawn_config.resource_tiles[r_name]
+            local resourceConfig = global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
             GenerateResourcePatch(surface, r_name, resourceConfig.size, pos, resourceConfig.amount)
             count = count + 1
         end
     end
 
     -- Generate special fluid resource patches (oil)
-    for r_name, r_data in pairs(global.ocfg.spawn_config.resource_patches --[[@as table<string, OarcConfigResourcePatches>]]) do
+    for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
         local oil_patch_x = position.x + r_data.x_offset_start
         local oil_patch_y = position.y + r_data.y_offset_start
         for i = 1, r_data.num_patches do
@@ -325,7 +322,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     local ocfg --[[@as OarcConfig]] = global.ocfg
 
     -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(delayedSpawn.position, ocfg.spawn_config.safe_area.safe_radius,
+    ClearNearbyEnemies(delayedSpawn.position, ocfg.surfaces_config[delayedSpawn.surface].spawn_config.safe_area.safe_radius,
         game.surfaces[delayedSpawn.surface])
 
     -- TODO: Vanilla spawn point are not implemented yet.
@@ -333,7 +330,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     -- Generate water strip only if we don't have a moat.
     if (not delayedSpawn.moat) then
-        local water_data = ocfg.spawn_config.water
+        local water_data = ocfg.surfaces_config[delayedSpawn.surface].spawn_config.water
         CreateWaterStrip(game.surfaces[delayedSpawn.surface],
             { x = delayedSpawn.position.x + water_data.x_offset, y = delayedSpawn.position.y + water_data.y_offset },
             water_data.length)
@@ -356,18 +353,18 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
     DisplayWelcomeGroundTextAtSpawn(player, delayedSpawn.surface, delayedSpawn.position)
 
     -- Chart the area.
-    ChartArea(player.force, delayedSpawn.position, math.ceil(ocfg.spawn_config.general.land_area_tiles / CHUNK_SIZE),
+    ChartArea(player.force, delayedSpawn.position, math.ceil(ocfg.surfaces_config[delayedSpawn.surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
         player.surface)
 
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then
         player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 
-    if (ocfg.starting_items.crashed_ship) then
+    if (ocfg.surfaces_config[delayedSpawn.surface].starting_items.crashed_ship) then
         crash_site.create_crash_site(game.surfaces[delayedSpawn.surface],
             { x = delayedSpawn.position.x + 15, y = delayedSpawn.position.y - 25 },
-            ocfg.starting_items.crashed_ship_resources,
-            ocfg.starting_items.crashed_ship_wreakage)
+            ocfg.surfaces_config[delayedSpawn.surface].starting_items.crashed_ship_resources,
+            ocfg.surfaces_config[delayedSpawn.surface].starting_items.crashed_ship_wreakage)
     end
 end
 
@@ -426,7 +423,7 @@ end
 ---@param chunkArea BoundingBox
 ---@return nil
 function SetupAndClearSpawnAreas(surface, chunkArea)
-    local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.spawn_config
+    local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.surfaces_config[surface.name].spawn_config
 
     for name, spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
         if (spawn.surface ~= surface.name) then
@@ -434,7 +431,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         end
 
         -- Create a bunch of useful area and position variables
-        local landArea = GetAreaAroundPos(spawn.position, spawn_config.general.land_area_tiles + CHUNK_SIZE)
+        local landArea = GetAreaAroundPos(spawn.position, spawn_config.general.spawn_radius_tiles + CHUNK_SIZE)
         -- local safeArea = GetAreaAroundPos(spawn.position, spawn_config.safe_area.safe_radius)
         -- local warningArea = GetAreaAroundPos(spawn.position, spawn_config.safe_area.warn_radius)
         -- local reducedArea = GetAreaAroundPos(spawn.position, spawn_config.safe_area.danger_radius)
@@ -443,8 +440,8 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             y = chunkArea.left_top.y + (CHUNK_SIZE / 2)
         }
         local spawnPosOffset = {
-            x = spawn.position.x + spawn_config.general.land_area_tiles,
-            y = spawn.position.y + spawn_config.general.land_area_tiles
+            x = spawn.position.x + spawn_config.general.spawn_radius_tiles,
+            y = spawn.position.y + spawn_config.general.spawn_radius_tiles
         }
 
         -- Make chunks near a spawn safe by removing enemies
@@ -467,31 +464,31 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         -- TODO: Vanilla spawn point are not implemented yet.
         -- if (not spawn.vanilla) then
 
-        local enable_test = global.ocfg.mod_overlap.enable_moat_bridging
+        local enable_test = global.ocfg.gameplay.enable_moat_bridging
 
         -- If the chunk is within the main land area, then clear trees/resources
         -- and create the land spawn areas (guaranteed land with a circle of trees)
         if CheckIfInArea(chunkAreaCenter, landArea) then
             -- Remove trees/resources inside the spawn area
-            RemoveInCircle(surface, chunkArea, "tree", spawn.position, spawn_config.general.land_area_tiles)
-            RemoveInCircle(surface, chunkArea, "resource", spawn.position, spawn_config.general.land_area_tiles + 5)
-            RemoveInCircle(surface, chunkArea, "cliff", spawn.position, spawn_config.general.land_area_tiles + 5)
+            RemoveInCircle(surface, chunkArea, "tree", spawn.position, spawn_config.general.spawn_radius_tiles)
+            RemoveInCircle(surface, chunkArea, "resource", spawn.position, spawn_config.general.spawn_radius_tiles + 5)
+            RemoveInCircle(surface, chunkArea, "cliff", spawn.position, spawn_config.general.spawn_radius_tiles + 5)
 
             local fill_tile = "landfill"
             if (spawn_config.general.tree_circle) then
-                CreateCropCircle(surface, spawn.position, chunkArea, spawn_config.general.land_area_tiles, fill_tile)
+                CreateCropCircle(surface, spawn.position, chunkArea, spawn_config.general.spawn_radius_tiles, fill_tile)
             end
             if (spawn_config.general.tree_octagon) then
-                CreateCropOctagon(surface, spawn.position, chunkArea, spawn_config.general.land_area_tiles, fill_tile)
+                CreateCropOctagon(surface, spawn.position, chunkArea, spawn_config.general.spawn_radius_tiles, fill_tile)
             end
             -- TODO: Confirm removal of global setting check of enable_allow_moats_around_spawns is okay?
             if (spawn.moat) then
                 CreateMoat(surface,
                     spawn.position,
                     chunkArea,
-                    spawn_config.general.land_area_tiles,
+                    spawn_config.general.spawn_radius_tiles,
                     "water",
-                    global.ocfg.mod_overlap.enable_moat_bridging)
+                    global.ocfg.gameplay.enable_moat_bridging)
             end
         end
 
@@ -509,7 +506,7 @@ function SeparateSpawnsGenerateChunk(event)
     if (not global.ocore.surfaces[surface.name]) then return end
 
     -- Helps scale worm sizes to not be unreasonable when far from the origin.
-    if global.ocfg.gameplay.oarc_modified_enemy_spawning then
+    if global.ocfg.gameplay.modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
     end
 
@@ -535,7 +532,7 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
 
     local distance = util.distance(chunkArea.left_top, closestSpawn.position)
     -- Adjust multiplier to bring it in or out
-    local modifier = (distance / (global.ocfg.spawn_config.safe_area.danger_radius * 1)) ^ 3
+    local modifier = (distance / (global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * 1)) ^ 3
     if modifier < 0.1 then modifier = 0.1 end
     if modifier > 1 then return end
 
@@ -580,11 +577,11 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 
     -- No enemies inside safe radius!
-    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.spawn_config.safe_area.safe_radius) then
+    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.safe_radius) then
         event.entity.destroy()
 
         -- Warn distance is all SMALL only.
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.spawn_config.safe_area.warn_radius) then
+    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius) then
         if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
             event.entity.destroy()
             surface.create_entity { name = "small-biter", position = enemy_pos, force = game.forces.enemy }
@@ -600,7 +597,7 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
         end
 
         -- Danger distance is MEDIUM max.
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.spawn_config.safe_area.danger_radius) then
+    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius) then
         if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
             event.entity.destroy()
             surface.create_entity { name = "medium-biter", position = enemy_pos, force = game.forces.enemy }
@@ -695,7 +692,7 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, i
 
     -- If this player is staying in the game, lets make sure we don't delete them along with the map chunks being
     -- cleared.
-    player.teleport({ x = 0, y = 0 }, global.ocfg.gameplay.main_force_surface)
+    player.teleport({ x = 0, y = 0 }, global.ocfg.gameplay.default_surface)
     local player_old_force = player.force
     player.force = global.ocfg.gameplay.main_force_name
 
@@ -729,22 +726,24 @@ function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
     if (global.ocore.uniqueSpawns[playerName] == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. playerName)
 
-    local spawnPos = global.ocore.uniqueSpawns[playerName].pos
-    local land_area_tiles = global.ocfg.spawn_config.general.land_area_tiles
+    ---@type OarcUniqueSpawn
+    local spawn = global.ocore.uniqueSpawns[playerName]
+    local spawnPos = spawn.position
+    local spawn_radius_tiles = global.ocfg.surfaces_config[spawn.surface].spawn_config.general.spawn_radius_tiles
 
     -- Check if it was near someone else's base. (Really just buddy base is possible I think.)
     nearOtherSpawn = false
     for spawnPlayerName, otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
         if ((spawnPlayerName ~= playerName) and
-                (util.distance(spawnPos, otherSpawnPos.pos) < (land_area_tiles * 3))) then
+                (util.distance(spawnPos, otherSpawnPos.pos) < (spawn_radius_tiles * 3))) then
             log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
             nearOtherSpawn = true
         end
     end
 
     -- Unused Chunk Removal mod (aka regrowth)
-    if (cleanup and global.ocfg.mod_overlap.enable_abandoned_base_cleanup and
-            (not nearOtherSpawn) and global.ocfg.mod_overlap.enable_regrowth) then
+    if (cleanup and global.ocfg.regrowth.enable_abandoned_base_cleanup and
+            (not nearOtherSpawn) and global.ocfg.regrowth.enable_regrowth) then
         -- TODO: Vanilla spawn point are not implemented yet.
         -- if (global.ocore.uniqueSpawns[playerName].vanilla) then
         --     log("Returning a vanilla spawn back to available.")
@@ -753,12 +752,12 @@ function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
 
         if (immediate) then
             log("IMMEDIATE Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-            RegrowthMarkAreaForRemoval(spawnPos, math.ceil(land_area_tiles / CHUNK_SIZE))
+            RegrowthMarkAreaForRemoval(spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
             TriggerCleanup()
         else
             log("Removing permanent flags on base: " .. spawnPos.x .. "," .. spawnPos.y)
             RegrowthMarkAreaNotPermanentOVERWRITE(spawnPos,
-                math.ceil(land_area_tiles / CHUNK_SIZE))
+                math.ceil(spawn_radius_tiles / CHUNK_SIZE))
         end
     end
 
@@ -956,14 +955,12 @@ end
 function GetNumberOfAvailableSharedSpawns()
     local count = 0
 
-    local number_of_players_per_shared_spawn = global.ocfg.mod_overlap.number_of_players_per_shared_spawn
+    local number_of_players_per_shared_spawn = global.ocfg.gameplay.number_of_players_per_shared_spawn
 
     for ownerName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-        -- Disabled only for testing. TODO: Re-enable this!
-        -- if (sharedSpawn.openAccess and
-        --         (game.players[ownerName] ~= nil) and
-        --         game.players[ownerName].connected) then
-        if (sharedSpawn.openAccess) then
+        if (sharedSpawn.openAccess and
+                (game.players[ownerName] ~= nil) and
+                game.players[ownerName].connected) then
             if ((number_of_players_per_shared_spawn == 0) or
                     (TableLength(global.ocore.sharedSpawns[ownerName].players) < number_of_players_per_shared_spawn)) then
                 count = count + 1
@@ -1033,7 +1030,7 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         -- newUniqueSpawn.vanilla = vanillaSpawn
         global.ocore.uniqueSpawns[playerName] = newUniqueSpawn
 
-        local delay_spawn_seconds = 5 * (math.ceil(global.ocfg.spawn_config.general.land_area_tiles / CHUNK_SIZE))
+        local delay_spawn_seconds = 5 * (math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE))
 
         ---TODO: Move text to locale.
         game.players[playerName].print("Generating your spawn now, please wait for at least " ..
@@ -1055,7 +1052,7 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
         RegrowthMarkAreaSafeGivenTilePos(spawnPosition,
-            math.ceil(global.ocfg.spawn_config.general.land_area_tiles / CHUNK_SIZE), true)
+            math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE), true)
     else
         log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
         SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
@@ -1098,8 +1095,8 @@ function SendPlayerToSpawn(player)
     else
         local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
         SafeTeleport(player,
-            game.surfaces[gameplayConfig.main_force_surface],
-            game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface))
+            game.surfaces[gameplayConfig.default_surface],
+            game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.default_surface))
     end
 end
 
@@ -1114,8 +1111,8 @@ function SendPlayerToRandomSpawn(player)
     if (rndSpawn == 0) then
         local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
         player.teleport(
-        game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.main_force_surface),
-            gameplayConfig.main_force_surface)
+        game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.default_surface),
+            gameplayConfig.default_surface)
     else
         counter = counter + 1
         for name, spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
@@ -1151,7 +1148,7 @@ function CreateForce(force_name)
         -- Create a new force
     elseif (#game.forces < MAX_FORCES) then
         newForce = game.create_force(force_name)
-        if global.ocfg.mod_overlap.enable_shared_team_vision then
+        if global.ocfg.gameplay.enable_shared_team_vision then
             newForce.share_chart = true
         end
 
@@ -1164,7 +1161,7 @@ function CreateForce(force_name)
         SetCeaseFireBetweenAllForces()
         SetFriendlyBetweenAllForces()
 
-        newForce.friendly_fire = global.ocfg.mod_overlap.enable_friendly_fire
+        newForce.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
 
         -- if (global.ocfg.enable_anti_grief) then
         --     AntiGriefing(newForce)

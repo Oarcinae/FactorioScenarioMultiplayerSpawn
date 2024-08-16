@@ -2,11 +2,6 @@
 -- Jan 2018
 -- Display current game options, maybe have some admin controls here
 
--- Main Configuration File
-require("config")
-require("lib/oarc_utils")
-require("lib/separate_spawns")
-
 function GameOptionsGuiClick(event)
     if not (event and event.element and event.element.valid) then return end
     local player = game.players[event.player_index]
@@ -73,35 +68,35 @@ function CreateGameOptionsTab(tab_container, player)
     -- Soft Mods:
     local soft_mods_string = "Oarc Core"
 
-    if (global.ocfg.mod_overlap.enable_regrowth) then
+    if (global.ocfg.regrowth.enable_regrowth) then
         soft_mods_string = soft_mods_string .. ", Regrowth"
     end
-    if (global.ocfg.mod_overlap.enable_offline_protect) then
+    if (global.ocfg.gameplay.enable_offline_protection) then
         soft_mods_string = soft_mods_string .. ", Offline Attack Inhibitor"
     end
 
     local game_info_str = "Soft Mods: " .. soft_mods_string
 
     -- Spawn options:
-    if (global.ocfg.mod_overlap.enable_separate_teams) then
+    if (global.ocfg.gameplay.enable_separate_teams) then
         game_info_str = game_info_str.."\n".."You are allowed to spawn on your own team (have your own research tree). All teams are friendly!"
     end
     -- if (global.ocfg.enable_vanilla_spawns) then
     --     game_info_str = game_info_str.."\n".."You are spawned in a default style starting area."
     -- else
         game_info_str = game_info_str.."\n".."You are spawned with a fix set of starting resources."
-        if (global.ocfg.mod_overlap.enable_buddy_spawn) then
+        if (global.ocfg.gameplay.enable_buddy_spawn) then
             game_info_str = game_info_str.."\n".."You can chose to spawn alongside a buddy if you spawn together at the same time."
         end
     -- end
-    if (global.ocfg.mod_overlap.enable_shared_spawns) then
+    if (global.ocfg.gameplay.enable_shared_spawns) then
         game_info_str = game_info_str.."\n".."Spawn hosts may choose to share their spawn and allow other players to join them."
     end
-    if (global.ocfg.mod_overlap.enable_separate_teams and global.ocfg.mod_overlap.enable_shared_team_vision) then
+    if (global.ocfg.gameplay.enable_separate_teams and global.ocfg.gameplay.enable_shared_team_vision) then
         game_info_str = game_info_str.."\n".."Everyone (all teams) have shared vision."
     end
 
-    if (global.ocfg.mod_overlap.enable_regrowth) then
+    if (global.ocfg.gameplay.enable_regrowth) then
         game_info_str = game_info_str.."\n".."Old parts of the map will slowly be deleted over time (chunks without any player buildings)."
     end
     -- if (global.ocfg.enable_power_armor_start or global.ocfg.enable_modular_armor_start) then
@@ -115,7 +110,7 @@ function CreateGameOptionsTab(tab_container, player)
 
     AddLabel(tab_container, "game_info_label", game_info_str, my_longer_label_style)
 
-    if (global.ocfg.mod_overlap.enable_abandoned_base_removal) then
+    if (global.ocfg.gameplay.enable_abandoned_base_removal) then
         AddLabel(tab_container, "leave_warning_msg", "If you leave within " .. global.ocfg.gameplay.minimum_online_time .. " minutes of joining, your base and character will be deleted.", my_longer_label_style)
         tab_container.leave_warning_msg.style.font_color=my_color_red
     end

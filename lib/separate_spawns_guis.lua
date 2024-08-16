@@ -3,8 +3,6 @@
 
 -- I made a separate file for all the GUI related functions. Yay me.
 
-require("lib/separate_spawns")
-
 local SPAWN_GUI_MAX_WIDTH = 500
 local SPAWN_GUI_MAX_HEIGHT = 1000
 
@@ -34,13 +32,13 @@ function DisplayWelcomeTextGui(player)
     wGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
     -- Start with server message.
-    -- AddLabel(wGui, "server_msg_lbl1", global.ocfg.server_rules, my_label_style)
+    AddLabel(wGui, "server_msg_lbl1", global.ocfg.server_info.server_msg, my_label_style)
     -- AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
-    -- AddSpacer(wGui)
+    AddSpacer(wGui)
 
     -- Informational message about the scenario
-    -- AddLabel(wGui, "scenario_info_msg_lbl1", SCENARIO_INFO_MSG, my_label_style)
-    -- AddSpacer(wGui)
+    AddLabel(wGui, "scenario_info_msg_lbl1", global.ocfg.server_info.welcome_msg, my_label_style)
+    AddSpacer(wGui)
 
     -- Warning about spawn creation time
     AddLabel(wGui, "spawn_time_msg_lbl1", { "oarc-spawn-time-warning-msg" }, my_warning_style)
@@ -93,7 +91,7 @@ function DisplaySpawnOptions(player)
         return
     end
 
-    local mod_overlap = global.ocfg.mod_overlap
+    local gameplay = global.ocfg.gameplay
 
     player.gui.screen.add { name = "spawn_opts",
         type = "frame",
@@ -130,8 +128,8 @@ function DisplaySpawnOptions(player)
 
 
     -- Pick surface
-    if (mod_overlap.enable_spawning_on_other_surfaces) then
-        
+    if (gameplay.enable_spawning_on_other_surfaces) then
+
         local surfacesHorizontalFlow = soloSpawnFlow.add { name = "surfaces_horizontal_flow",
             type = "flow",
             direction = "horizontal" }
@@ -152,7 +150,7 @@ function DisplaySpawnOptions(player)
     end
 
     -- Radio buttons to pick your team.
-    if (mod_overlap.enable_separate_teams) then
+    if (gameplay.enable_separate_teams) then
         soloSpawnFlow.add { name = "isolated_spawn_main_team_radio",
             type = "radiobutton",
             caption = { "oarc-join-main-team-radio" },
@@ -170,7 +168,7 @@ function DisplaySpawnOptions(player)
     -- Allow players to spawn with a moat around their area.
     --TODO: Vanilla spawn points are not implemented yet.
     -- and not global.ocfg.enable_vanilla_spawns
-    if (mod_overlap.allow_moats_around_spawns) then
+    if (gameplay.allow_moats_around_spawns) then
         soloSpawnFlow.add { name = "isolated_spawn_moat_option_checkbox",
             type = "checkbox",
             caption = { "oarc-moat-option" },
@@ -213,7 +211,7 @@ function DisplaySpawnOptions(player)
         type = "frame",
         direction = "vertical",
         style = "bordered_frame" }
-    if mod_overlap.enable_shared_spawns then
+    if gameplay.enable_shared_spawns then
         local numAvailSpawns = GetNumberOfAvailableSharedSpawns()
         if (numAvailSpawns > 0) then
             sharedSpawnFrame.add { name = "join_other_spawn",
@@ -235,7 +233,7 @@ function DisplaySpawnOptions(player)
     -- Awesome buddy spawning system
     ---TODO: Vanilla spawn points are not implemented yet.
     -- if (not global.ocfg.enable_vanilla_spawns) then
-    if mod_overlap.enable_shared_spawns and mod_overlap.enable_buddy_spawn then
+    if gameplay.enable_shared_spawns and gameplay.enable_buddy_spawn then
         local buddySpawnFrame = sGui.add { name = "spawn_buddy_flow",
             type = "frame",
             direction = "vertical",
@@ -251,17 +249,17 @@ function DisplaySpawnOptions(player)
     -- end
 
     -- Some final notes
-    if (mod_overlap.number_of_players_per_shared_spawn > 0) then
+    if (gameplay.number_of_players_per_shared_spawn > 0) then
         AddLabel(sGui, "max_players_lbl2",
-            { "oarc-max-players-shared-spawn", mod_overlap.number_of_players_per_shared_spawn - 1 },
+            { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 },
             my_note_style)
     end
 
     local spawn_distance_notes = { "oarc-spawn-dist-notes",
-        mod_overlap.near_spawn_min_distance,
-        mod_overlap.near_spawn_max_distance,
-        mod_overlap.far_spawn_min_distance,
-        mod_overlap.far_spawn_max_distance }
+        gameplay.near_spawn_min_distance,
+        gameplay.near_spawn_max_distance,
+        gameplay.far_spawn_min_distance,
+        gameplay.far_spawn_max_distance }
     AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
@@ -309,8 +307,10 @@ function SpawnOptsGuiClick(event)
 
     local pgcs = player.gui.screen.spawn_opts
 
-    local joinMainTeamRadio, joinOwnTeamRadio, moatChoice, vanillaChoice = false, false, false, false
-
+    local joinOwnTeamRadio, moatChoice = false, false
+    local surfaceName = global.ocfg.gameplay.default_surface
+    local surface = game.surfaces[surfaceName]
+    
     -- Check if a valid button on the gui was pressed
     -- and delete the GUI
     if ((elemName == "default_spawn_btn") or
@@ -319,20 +319,23 @@ function SpawnOptsGuiClick(event)
             (elemName == "join_other_spawn") or
             (elemName == "buddy_spawn") or
             (elemName == "join_other_spawn_check")) then
-        if (global.ocfg.mod_overlap.enable_separate_teams) then
-            joinMainTeamRadio =
-                pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
-            joinOwnTeamRadio =
-                pgcs.spawn_solo_flow.isolated_spawn_new_team_radio.state
+        if (global.ocfg.gameplay.enable_separate_teams) then
+            joinMainTeamRadio = pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
+            joinOwnTeamRadio = pgcs.spawn_solo_flow.isolated_spawn_new_team_radio.state
         else
             joinMainTeamRadio = true
             joinOwnTeamRadio = false
         end
         ---TODO: Vanilla spawn points are not implemented yet.  and not global.ocfg.enable_vanilla_spawns
-        if (global.ocfg.mod_overlap.allow_moats_around_spawns and
+        if (global.ocfg.gameplay.allow_moats_around_spawns and
                 (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
             moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
+
+        surfaceDropdownIndex = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.selected_index
+        surfaceName = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.get_item(surfaceDropdownIndex) --[[@as string]]
+        surface = game.surfaces[surfaceName]
+
         -- if (global.ocfg.enable_vanilla_spawns and
         --     (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
         --     vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state
@@ -346,23 +349,27 @@ function SpawnOptsGuiClick(event)
     if (elemName == "default_spawn_btn") then
         GivePlayerStarterItems(player)
 
-        local surface = game.surfaces[global.ocfg.gameplay.main_force_surface]-- TODO: Add support for multiple surfaces?
+        local surface = game.surfaces[global.ocfg.gameplay.default_surface]-- TODO: Add support for multiple surfaces?
         local spawnPosition = player.force.get_spawn_position(surface)
 
-        ChangePlayerSpawn(player, global.ocfg.gameplay.main_force_surface, spawnPosition)-- TODO: Add support for multiple surfaces?
+        ChangePlayerSpawn(player, global.ocfg.gameplay.default_surface, spawnPosition)-- TODO: Add support for multiple surfaces?
         SendBroadcastMsg({ "oarc-player-is-joining-main-force", player.name })
-        ChartArea(player.force, player.position, math.ceil(global.ocfg.spawn_config.general.land_area_tiles / CHUNK_SIZE),
+        ChartArea(player.force, player.position, math.ceil(global.ocfg.surfaces_config[surface.name].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
             player.surface)
         -- Unlock spawn control gui tab
         SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
-        -- Create a new spawn point
+        
+
+
+        local surface = game.surfaces[surfaceName]
+
         local newSpawn = { x = 0, y = 0 }
 
-        local mod_overlap = global.ocfg.mod_overlap
+        local gameplay = global.ocfg.gameplay
 
         -- Create a new force for player if they choose that radio button
-        if mod_overlap.enable_separate_teams and joinOwnTeamRadio then
+        if gameplay.enable_separate_teams and joinOwnTeamRadio then
             local newForce = CreatePlayerCustomForce(player)
         end
 
@@ -383,29 +390,26 @@ function SpawnOptsGuiClick(event)
         -- else
         -- Find coordinates of a good place to spawn
         if (elemName == "isolated_spawn_far") then
-            newSpawn = FindUngeneratedCoordinates(mod_overlap.far_spawn_min_distance, mod_overlap.far_spawn_max_distance,
-                player.surface)
+            newSpawn = FindUngeneratedCoordinates(gameplay.far_spawn_min_distance, gameplay.far_spawn_max_distance, surface)
         elseif (elemName == "isolated_spawn_near") then
-            newSpawn = FindUngeneratedCoordinates(mod_overlap.near_spawn_min_distance,
-                mod_overlap.near_spawn_max_distance, player.surface)
+            newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_min_distance, gameplay.near_spawn_max_distance, surface)
         end
         -- end
 
         -- If that fails, find a random map edge in a rand direction.
         ---TODO: Add support for multiple surfaces.
         if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
-            newSpawn = FindMapEdge(GetRandomVector(), game.surfaces[global.ocfg.gameplay.main_force_surface]) ---TODO: Add support for multiple surfaces.
+            newSpawn = FindMapEdge(GetRandomVector(), surface) ---TODO: Add support for multiple surfaces.
             log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
         -- Create that player's spawn in the global vars
         ---TODO: Add support for multiple surfaces.
-        local temporarySurface = game.surfaces[global.ocfg.gameplay.main_force_surface]
-        ChangePlayerSpawn(player, global.ocfg.gameplay.main_force_surface, newSpawn)
+        ChangePlayerSpawn(player, surfaceName, newSpawn)
 
         -- Send the player there
         QueuePlayerForDelayedSpawn(player.name,
-            global.ocfg.gameplay.main_force_surface, ---TODO: Add support for multiple surfaces.
+            global.ocfg.gameplay.default_surface, ---TODO: Add support for multiple surfaces.
             newSpawn,
             moatChoice,
             false) -- global.ocfg.enable_vanilla_spawns --TODO: Vanilla spawn points are not implemented yet.
@@ -457,13 +461,11 @@ function DisplaySharedSpawnOptions(player)
 
 
     for spawnName, sharedSpawn in pairs(global.ocore.sharedSpawns) do
-        -- Disabled for testing. TODO: Renable this later!
-        -- if (sharedSpawn.openAccess and
-        --         (game.players[spawnName] ~= nil) and
-        --         game.players[spawnName].connected) then
-        if sharedSpawn.openAccess then
-            local spotsRemaining = global.ocfg.mod_overlap.number_of_players_per_shared_spawn - TableLength(global.ocore.sharedSpawns[spawnName].players)
-            if (global.ocfg.mod_overlap.number_of_players_per_shared_spawn == 0) then
+        if (sharedSpawn.openAccess and
+                (game.players[spawnName] ~= nil) and
+                game.players[spawnName].connected) then
+            local spotsRemaining = global.ocfg.gameplay.number_of_players_per_shared_spawn - TableLength(global.ocore.sharedSpawns[spawnName].players)
+            if (global.ocfg.gameplay.number_of_players_per_shared_spawn == 0) then
                 shGui.add { type = "button", caption = spawnName, name = spawnName }
             elseif (spotsRemaining > 0) then
                 shGui.add { type = "button", caption = { "oarc-spawn-spots-remaining", spawnName, spotsRemaining }, name = spawnName }
@@ -604,25 +606,6 @@ local function IsSharedSpawnActive(player)
     end
 end
 
-
--- ---Get a random shared spawn point to go to
--- --- TODO: Add support for multiple surfaces. Useful function for testing.
--- function GetRandomSpawnPoint()
---     local numSpawnPoints = TableLength(global.ocore.sharedSpawns)
---     if (numSpawnPoints > 0) then
---         local randSpawnNum = math.random(1,numSpawnPoints)
---         local counter = 1
---         for _,sharedSpawn in pairs(global.ocore.sharedSpawns) do
---             if (randSpawnNum == counter) then
---                 return sharedSpawn.position
---             end
---             counter = counter + 1
---         end
---     end
-
---     return {x=0,y=0}
--- end
-
 ---Provides the content of the spawn control tab in the Oarc GUI.
 ---@param tab_container LuaGuiElement
 ---@param player LuaPlayer
@@ -636,7 +619,7 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
     spwnCtrls.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
     spwnCtrls.horizontal_scroll_policy = "never"
 
-    if global.ocfg.mod_overlap.enable_shared_spawns then
+    if global.ocfg.gameplay.enable_shared_spawns then
         if (global.ocore.uniqueSpawns[player.name] ~= nil) then
             -- This checkbox allows people to join your base when they first
             -- start the game.
@@ -666,7 +649,7 @@ function CreateSpawnCtrlGuiTab(tab_container, player)
     AddLabel(spwnCtrls, "respawn_cooldown_note2", { "oarc-set-respawn-note" }, my_note_style)
 
     -- Display a list of people in the join queue for your base.
-    if (global.ocfg.mod_overlap.enable_shared_spawns and IsSharedSpawnActive(player)) then
+    if (global.ocfg.gameplay.enable_shared_spawns and IsSharedSpawnActive(player)) then
         if (TableLength(global.ocore.sharedSpawns[player.name].joinQueue) > 0) then
             AddLabel(spwnCtrls, "drop_down_msg_lbl1", { "oarc-select-player-join-queue" }, my_label_style)
             spwnCtrls.add { name = "join_queue_dropdown",
@@ -844,8 +827,8 @@ function DisplayBuddySpawnOptions(player)
     buddyGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     buddyGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
-    ---@type OarcConfigModSettings
-    local mod_overlap = global.ocfg.mod_overlap
+    ---@type OarcConfigGameplaySettings
+    local gameplay = global.ocfg.gameplay
 
     -- Warnings and explanations...
     AddLabel(buddyGui, "buddy_info_msg", { "oarc-buddy-spawn-instructions" }, my_label_style)
@@ -875,7 +858,7 @@ function DisplayBuddySpawnOptions(player)
     -- AddSpacerLine(buddySpawnFlow)
 
     -- Allow picking of teams
-    if (mod_overlap.enable_separate_teams) then
+    if (gameplay.enable_separate_teams) then
         buddySpawnFlow.add { name = "buddy_spawn_main_team_radio",
             type = "radiobutton",
             caption = { "oarc-join-main-team-radio" },
@@ -889,7 +872,7 @@ function DisplayBuddySpawnOptions(player)
             caption = { "oarc-create-buddy-team" },
             state = false }
     end
-    if (mod_overlap.allow_moats_around_spawns) then
+    if (gameplay.allow_moats_around_spawns) then
         buddySpawnFlow.add { name = "buddy_spawn_moat_option_checkbox",
             type = "checkbox",
             caption = { "oarc-moat-option" },
@@ -914,17 +897,17 @@ function DisplayBuddySpawnOptions(player)
 
     -- Some final notes
     AddSpacerLine(buddyGui)
-    if (mod_overlap.number_of_players_per_shared_spawn > 0) then
+    if (gameplay.number_of_players_per_shared_spawn > 0) then
         AddLabel(buddyGui, "buddy_max_players_lbl1",
-            { "oarc-max-players-shared-spawn", mod_overlap.number_of_players_per_shared_spawn - 1 },
+            { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 },
             my_note_style)
     end
     local spawn_distance_notes = {
         "oarc-spawn-dist-notes",
-        mod_overlap.near_spawn_min_distance,
-        mod_overlap.near_spawn_max_distance,
-        mod_overlap.far_spawn_min_distance,
-        mod_overlap.far_spawn_max_distance
+        gameplay.near_spawn_min_distance,
+        gameplay.near_spawn_max_distance,
+        gameplay.far_spawn_min_distance,
+        gameplay.far_spawn_max_distance
     }
     AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
@@ -1007,7 +990,7 @@ function BuddySpawnOptsGuiClick(event)
 
         ---@type BuddySpawnChoice
         local buddyTeamRadioSelection = nil
-        if (global.ocfg.mod_overlap.enable_separate_teams) then
+        if (global.ocfg.gameplay.enable_separate_teams) then
             if buddySpawnGui.buddy_spawn_main_team_radio.state then
                 buddyTeamRadioSelection = BUDDY_SPAWN_CHOICE.join_main_team
             elseif buddySpawnGui.buddy_spawn_new_team_radio.state then
@@ -1019,7 +1002,7 @@ function BuddySpawnOptsGuiClick(event)
             buddyTeamRadioSelection = BUDDY_SPAWN_CHOICE.join_main_team
         end
 
-        if (global.ocfg.mod_overlap.allow_moats_around_spawns) then
+        if (global.ocfg.gameplay.allow_moats_around_spawns) then
             moatChoice = buddySpawnGui.buddy_spawn_moat_option_checkbox.state
         end
 
@@ -1248,21 +1231,21 @@ function BuddySpawnRequestMenuClick(event)
             player.force = buddyForce
         end
 
-        ---@type OarcConfigModSettings
-        local mod_overlap = global.ocfg.mod_overlap
+        ---@type OarcConfigGameplaySettings
+        local gameplay = global.ocfg.gameplay
 
-        local tempSurface = game.surfaces[global.ocfg.gameplay.main_force_surface]
+        local tempSurface = game.surfaces[global.ocfg.gameplay.default_surface]
 
         -- Find coordinates of a good place to spawn
         ---TODO: Add support for multiple surfaces.
         if (requesterOptions.distChoice == "buddy_spawn_request_far") then
-            newSpawn = FindUngeneratedCoordinates(mod_overlap.far_spawn_min_distance,
-                mod_overlap.far_spawn_max_distance,
+            newSpawn = FindUngeneratedCoordinates(gameplay.far_spawn_min_distance,
+                gameplay.far_spawn_max_distance,
                 tempSurface)
         elseif (requesterOptions.distChoice == "buddy_spawn_request_near") then
             newSpawn = FindUngeneratedCoordinates(
-                mod_overlap.near_spawn_min_distance,
-                mod_overlap.near_spawn_max_distance,
+                gameplay.near_spawn_min_distance,
+                gameplay.near_spawn_max_distance,
                 tempSurface)
         end
 
@@ -1276,18 +1259,18 @@ function BuddySpawnRequestMenuClick(event)
         local buddySpawn = { x = 0, y = 0 }
         if (requesterOptions.moatChoice) then
             buddySpawn = {
-                x = newSpawn.x + (global.ocfg.spawn_config.general.land_area_tiles * 2) + 10,
+                x = newSpawn.x + (global.ocfg.surfaces_config[tempSurface.name].spawn_config.general.spawn_radius_tiles * 2) + 10,
                 y = newSpawn.y
             }
         else
-            buddySpawn = { x = newSpawn.x + (global.ocfg.spawn_config.general.land_area_tiles * 2), y = newSpawn.y }
+            buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[tempSurface.name].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
         end
-        ChangePlayerSpawn(player, global.ocfg.gameplay.main_force_surface, newSpawn) --TODO: Add support for multiple surfaces
-        ChangePlayerSpawn(game.players[requesterName], global.ocfg.gameplay.main_force_surface, buddySpawn)
+        ChangePlayerSpawn(player, global.ocfg.gameplay.default_surface, newSpawn) --TODO: Add support for multiple surfaces
+        ChangePlayerSpawn(game.players[requesterName], global.ocfg.gameplay.default_surface, buddySpawn)
 
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, global.ocfg.gameplay.main_force_surface, newSpawn, requesterOptions.moatChoice, false)
-        QueuePlayerForDelayedSpawn(requesterName, global.ocfg.gameplay.main_force_surface, buddySpawn, requesterOptions.moatChoice, false)
+        QueuePlayerForDelayedSpawn(player.name, global.ocfg.gameplay.default_surface, newSpawn, requesterOptions.moatChoice, false)
+        QueuePlayerForDelayedSpawn(requesterName, global.ocfg.gameplay.default_surface, buddySpawn, requesterOptions.moatChoice, false)
         SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
 
         -- Unlock spawn control gui tab

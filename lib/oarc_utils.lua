@@ -297,7 +297,15 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerRespawnItems(player)
-    for name, count in pairs(global.ocfg.starting_items.player_respawn_start_items) do
+    local playerSpawn = global.ocore.playerSpawns[player.name]
+    if (playerSpawn == nil) then
+        error("ERROR - GivePlayerRespawnItems - No player spawn found for player: " .. player.name)
+        return
+    end
+
+    local respawnItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_respawn_items
+
+    for name, count in pairs(respawnItems) do
         player.insert({ name = name, count = count })
     end
 end
@@ -308,7 +316,15 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerStarterItems(player)
-    for name, count in pairs(global.ocfg.starting_items.player_spawn_start_items) do
+    local playerSpawn = global.ocore.playerSpawns[player.name]
+    if (playerSpawn == nil) then
+        error("ERROR - GivePlayerStarterItems - No player spawn found for player: " .. player.name)
+        return
+    end
+
+    local respawnItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
+
+    for name, count in pairs(respawnItems) do
         player.insert({ name = name, count = count })
     end
 end
@@ -637,7 +653,7 @@ function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
             -- Keep searching!
 
         -- Check there are no generated chunks in a square area defined by the config:
-        elseif IsChunkAreaUngenerated(chunkPos, global.ocfg.mod_overlap.minimum_distance_to_existing_chunks, surface) then
+        elseif IsChunkAreaUngenerated(chunkPos, global.ocfg.gameplay.minimum_distance_to_existing_chunks, surface) then
             position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
             position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
             break -- SUCCESS
@@ -961,14 +977,14 @@ end
 ---@return nil
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
 
-    ---@type OarcConfigModSettings
-    local mod_overlap = global.ocfg.mod_overlap
+    ---@type OarcConfigGameplaySettings
+    local gameplay = global.ocfg.gameplay
 
-    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (mod_overlap.near_spawn_min_distance * CHUNK_SIZE)) then
+    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.near_spawn_min_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (mod_overlap.far_spawn_min_distance * CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_min_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (mod_overlap.far_spawn_max_distance * CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_max_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
         DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)
@@ -1273,7 +1289,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile)
             -- Fill in all unexpected water in a circle
             if (distSqr < tileRadSqr) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.spawn_config.general.force_grass) then
+                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1307,7 +1323,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile)
             -- Fill in all unexpected water in a circle
             if (distVar < tileRadius + 2) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.spawn_config.general.force_grass or
+                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass or
                         (game.active_mods["oarc-restricted-build"])) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
@@ -1346,7 +1362,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
                 local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
                 -- Create a circle of water
-                if ((distVar < tileRadSqr + (1500 * global.ocfg.spawn_config.general.moat_size_modifier)) and
+                if ((distVar < tileRadSqr + (1500 * global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_size_modifier)) and
                         (distVar > tileRadSqr)) then
                     table.insert(tiles, { name = moatTile, position = { i, j } })
                 end
@@ -1382,7 +1398,7 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     end
     for y = -midPoint, midPoint do
         for x = -midPoint, midPoint do
-            if (not global.ocfg.spawn_config.general.resources_circle_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+            if (not global.ocfg.surfaces_config[surface.name].spawn_config.general.resources_circle_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
                 surface.create_entity({
                     name = resourceName,
                     amount = amount,
@@ -1405,7 +1421,7 @@ end
 -- end
 
 -- function CreateHoldingPen(surface, chunkArea)
---     local radiusTiles = global.ocfg.spawn_config.general.land_area_tiles-10
+--     local radiusTiles = global.ocfg.spawn_config.general.spawn_radius_tiles-10
 --     if (((chunkArea.left_top.x >= -(radiusTiles+2*CHUNK_SIZE)) and (chunkArea.left_top.x <= (radiusTiles+2*CHUNK_SIZE))) and
 --         ((chunkArea.left_top.y >= -(radiusTiles+2*CHUNK_SIZE)) and (chunkArea.left_top.y <= (radiusTiles+2*CHUNK_SIZE)))) then
 

@@ -39,7 +39,7 @@
 --          tree_circle_enabled (bool)
 --          tree_octagon_enabled (bool)
 --          crashed_ship_enabled (bool)
---          PLAYER_SPAWN_START_ITEMS = {
+--          player_start_items = {
 --              ["pistol"]=1,
 --              ["firearm-magazine"]=200,
 --              ["iron-plate"]=100,
@@ -48,7 +48,7 @@
 --              ["coal"] = 50,
 --              ["stone"] = 50,
 --          }
---          PLAYER_RESPAWN_START_ITEMS = {
+--          player_respawn_items = {
 --              ["pistol"]=1,
 --              ["firearm-magazine"]=100,
 --          }
@@ -79,7 +79,7 @@
 --              angle_offset = 2.32
 --              angle_final = 4.46
 --          }
---          resource_tiles = {
+--          solid_resources = {
 --              ["iron-ore"] = {
 --                  amount = 1500
 --                  size = 18
@@ -105,7 +105,7 @@
 --                  y_offset = -20
 --              }
 --          }
---          resource_patches =
+--          fluid_resources =
 --          {
 --              ["crude-oil"] =
 --              {

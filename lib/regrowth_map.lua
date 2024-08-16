@@ -12,9 +12,6 @@
 --      the on_sector_scanned event.
 -- 5. Chunks timeout after 1 hour-ish, configurable
 
-require("lib/oarc_utils")
-require("config")
-
 -- TODO: Make this a mod startup setting?
 REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR -- TICKS_PER_HOUR TICKS_PER_MINUTE
 

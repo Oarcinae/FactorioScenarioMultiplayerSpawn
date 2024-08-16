@@ -7,5 +7,5 @@
   "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
   "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn",
   "description": "[[Description is in locale file!]]",
-  "dependencies": ["base >= 1.1.0"]
+  "dependencies": ["base >= 1.1.0", "? dangOreus"]
 }

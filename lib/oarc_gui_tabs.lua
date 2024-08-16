@@ -1,6 +1,7 @@
 -- oarc_gui_tabs.lua
 
 local mod_gui = require("mod-gui")
+require("lib/game_opts")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
