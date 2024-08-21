@@ -154,7 +154,7 @@ function SeparateSpawnsSurfaceCreated(event)
 end
 
 ---Detects when surfaces are deleted and removes them from the list of surfaces that allow spawns.
----@param event EventData.on_surface_deleted
+---@param event EventData.on_pre_surface_deleted
 ---@return nil
 function SeparateSpawnsSurfaceDeleted(event)
     log("ERROR - Surface deleted event not implemented yet!")
@@ -192,13 +192,13 @@ function SeparateSpawnsInitPlayer(player_index, clear_inv)
     end
 
     -- Ensure cleared inventory!
-    -- if (clear_inv) then
-    --     player.get_inventory(defines.inventory.character_main ).clear()
-    --     player.get_inventory(defines.inventory.character_guns).clear()
-    --     player.get_inventory(defines.inventory.character_ammo).clear()
-    --     player.get_inventory(defines.inventory.character_armor).clear()
-    --     player.get_inventory(defines.inventory.character_trash).clear()
-    -- end
+    if (clear_inv) then
+        player.get_inventory(defines.inventory.character_main ).clear()
+        player.get_inventory(defines.inventory.character_guns).clear()
+        player.get_inventory(defines.inventory.character_ammo).clear()
+        player.get_inventory(defines.inventory.character_armor).clear()
+        player.get_inventory(defines.inventory.character_trash).clear()
+    end
 
     InitOarcGuiTabs(player)
     HideOarcGui(player)
@@ -692,7 +692,7 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, i
 
     -- If this player is staying in the game, lets make sure we don't delete them along with the map chunks being
     -- cleared.
-    player.teleport({ x = 0, y = 0 }, global.ocfg.gameplay.default_surface)
+    player.teleport({x=0,y=0}, HOLDING_PEN_SURFACE_NAME)
     local player_old_force = player.force
     player.force = global.ocfg.gameplay.main_force_name
 
@@ -752,12 +752,11 @@ function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
 
         if (immediate) then
             log("IMMEDIATE Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-            RegrowthMarkAreaForRemoval(spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
+            RegrowthMarkAreaForRemoval(spawn.surface, spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
             TriggerCleanup()
         else
             log("Removing permanent flags on base: " .. spawnPos.x .. "," .. spawnPos.y)
-            RegrowthMarkAreaNotPermanentOVERWRITE(spawnPos,
-                math.ceil(spawn_radius_tiles / CHUNK_SIZE))
+            RegrowthMarkAreaNotPermanentOVERWRITE(spawn.surface, spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
         end
     end
 
@@ -1051,7 +1050,7 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         HideOarcGui(game.players[playerName])
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
-        RegrowthMarkAreaSafeGivenTilePos(spawnPosition,
+        RegrowthMarkAreaSafeGivenTilePos(surface, spawnPosition,
             math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE), true)
     else
         log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
@@ -1355,12 +1354,12 @@ BUDDY_SPAWN_CHOICE = {
 ---@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
 
 ---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
----@alias OarcDelayedSpawn { playerName: string, surface: string, position: MapPosition, moat: boolean, delayedTick: number }
+---@alias OarcDelayedSpawn { surface: string, playerName: string, position: MapPosition, moat: boolean, delayedTick: number }
 ---Table of [OarcDelayedSpawn](lua://OarcDelayedSpawn) indexed by player name.
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 
 ---This contains information of who is being asked to buddy spawn, and what options were selected.
----@alias OarcBuddySpawnOpts { teamRadioSelection: BuddySpawnChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
+---@alias OarcBuddySpawnOpts { surface: string, teamRadioSelection: BuddySpawnChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
 ---Table of [OarcBuddySpawnOpts](lua://OarcBuddySpawnOpts) indexed by player name.
 ---@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
 

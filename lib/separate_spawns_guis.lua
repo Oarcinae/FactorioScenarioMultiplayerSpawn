@@ -146,7 +146,7 @@ function DisplaySpawnOptions(player)
         surfacesHorizontalFlow.add { name = "surface_select_dropdown",
             type = "drop-down",
             items = surfaceList,
-            selected_index = 0}
+            selected_index = 1}
     end
 
     -- Radio buttons to pick your team.
@@ -308,7 +308,7 @@ function SpawnOptsGuiClick(event)
     local pgcs = player.gui.screen.spawn_opts
 
     local joinOwnTeamRadio, moatChoice = false, false
-    local surfaceName = global.ocfg.gameplay.default_surface
+    local surfaceName = global.ocfg.gameplay.default_surface -- Default to default surface
     local surface = game.surfaces[surfaceName]
     
     -- Check if a valid button on the gui was pressed
@@ -332,9 +332,14 @@ function SpawnOptsGuiClick(event)
             moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
         end
 
-        surfaceDropdownIndex = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.selected_index
-        surfaceName = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.get_item(surfaceDropdownIndex) --[[@as string]]
-        surface = game.surfaces[surfaceName]
+        -- Override the default surface if the player selected a different one.
+        local surfaceDropdownIndex = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.selected_index
+
+        -- Index 0 means nothing was selected!
+        if (surfaceDropdownIndex ~= 0) then
+            surfaceName = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.get_item(surfaceDropdownIndex) --[[@as string]]
+            surface = game.surfaces[surfaceName]
+        end
 
         -- if (global.ocfg.enable_vanilla_spawns and
         --     (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
@@ -345,27 +350,25 @@ function SpawnOptsGuiClick(event)
         return -- Do nothing, no valid element item was clicked.
     end
 
-    -- TODO: Add support for multiple surfaces?
+    -- Default spawn should always spawn on a default surface I think?
     if (elemName == "default_spawn_btn") then
         GivePlayerStarterItems(player)
 
-        local surface = game.surfaces[global.ocfg.gameplay.default_surface]-- TODO: Add support for multiple surfaces?
-        local spawnPosition = player.force.get_spawn_position(surface)
+        local defaultSurfaceName = global.ocfg.gameplay.default_surface
+        local defaultSurface = game.surfaces[defaultSurfaceName]
+        local spawnPosition = player.force.get_spawn_position(defaultSurface)
 
-        ChangePlayerSpawn(player, global.ocfg.gameplay.default_surface, spawnPosition)-- TODO: Add support for multiple surfaces?
-        SendBroadcastMsg({ "oarc-player-is-joining-main-force", player.name })
-        ChartArea(player.force, player.position, math.ceil(global.ocfg.surfaces_config[surface.name].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
-            player.surface)
+        ChangePlayerSpawn(player, defaultSurfaceName, spawnPosition)
+        SendBroadcastMsg({ "oarc-player-is-joining-main-force", player.name, defaultSurfaceName })
+        ChartArea(player.force, player.position,
+            math.ceil(global.ocfg.surfaces_config[defaultSurfaceName].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
+            defaultSurface)
         -- Unlock spawn control gui tab
         SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, true)
+    
     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
-        
-
-
-        local surface = game.surfaces[surfaceName]
 
         local newSpawn = { x = 0, y = 0 }
-
         local gameplay = global.ocfg.gameplay
 
         -- Create a new force for player if they choose that radio button
@@ -397,26 +400,24 @@ function SpawnOptsGuiClick(event)
         -- end
 
         -- If that fails, find a random map edge in a rand direction.
-        ---TODO: Add support for multiple surfaces.
         if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
-            newSpawn = FindMapEdge(GetRandomVector(), surface) ---TODO: Add support for multiple surfaces.
+            newSpawn = FindMapEdge(GetRandomVector(), surface)
             log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
         -- Create that player's spawn in the global vars
-        ---TODO: Add support for multiple surfaces.
         ChangePlayerSpawn(player, surfaceName, newSpawn)
 
         -- Send the player there
         QueuePlayerForDelayedSpawn(player.name,
-            global.ocfg.gameplay.default_surface, ---TODO: Add support for multiple surfaces.
+            surfaceName,
             newSpawn,
             moatChoice,
             false) -- global.ocfg.enable_vanilla_spawns --TODO: Vanilla spawn points are not implemented yet.
         if (elemName == "isolated_spawn_near") then
-            SendBroadcastMsg({ "oarc-player-is-joining-near", player.name })
+            SendBroadcastMsg({ "oarc-player-is-joining-near", player.name, surfaceName })
         elseif (elemName == "isolated_spawn_far") then
-            SendBroadcastMsg({ "oarc-player-is-joining-far", player.name })
+            SendBroadcastMsg({ "oarc-player-is-joining-far", player.name, surfaceName })
         end
 
         -- Unlock spawn control gui tab
@@ -857,6 +858,28 @@ function DisplayBuddySpawnOptions(player)
         caption = { "oarc-buddy-refresh" } }
     -- AddSpacerLine(buddySpawnFlow)
 
+    -- Pick surface
+    if (gameplay.enable_spawning_on_other_surfaces) then
+
+        local surfacesHorizontalFlow = buddySpawnFlow.add { name = "buddy_surfaces_horizontal_flow",
+            type = "flow",
+            direction = "horizontal" }
+
+        ---@type string[]
+        local surfaceList = {}
+        for surfaceName,allowed in pairs(global.ocore.surfaces) do
+            if allowed then
+                table.insert(surfaceList, surfaceName)
+            end
+        end
+
+        AddLabel(surfacesHorizontalFlow, "buddySurfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
+        surfacesHorizontalFlow.add { name = "buddy_surface_select_dropdown",
+            type = "drop-down",
+            items = surfaceList,
+            selected_index = 1}
+    end
+
     -- Allow picking of teams
     if (gameplay.enable_separate_teams) then
         buddySpawnFlow.add { name = "buddy_spawn_main_team_radio",
@@ -988,6 +1011,15 @@ function BuddySpawnOptsGuiClick(event)
             return
         end
 
+        -- Override the default surface if the player selected a different one.
+        local surfaceDropdownIndex = buddySpawnGui.surfaces_horizontal_flow.surface_select_dropdown.selected_index
+        local surfaceName = global.ocfg.gameplay.default_surface
+
+        -- Index 0 means nothing was selected!
+        if (surfaceDropdownIndex ~= 0) then
+            surfaceName = buddySpawnGui.surfaces_horizontal_flow.surface_select_dropdown.get_item(surfaceDropdownIndex) --[[@as string]]
+        end
+
         ---@type BuddySpawnChoice
         local buddyTeamRadioSelection = nil
         if (global.ocfg.gameplay.enable_separate_teams) then
@@ -1013,6 +1045,7 @@ function BuddySpawnOptsGuiClick(event)
         buddySpawnOpts.moatChoice = moatChoice
         buddySpawnOpts.buddyChoice = buddyChoice
         buddySpawnOpts.distChoice = elemName
+        buddySpawnOpts.surface = surfaceName
         global.ocore.buddySpawnOpts[player.name] = buddySpawnOpts
 
         player.gui.screen.buddy_spawn_opts.destroy()
@@ -1175,6 +1208,7 @@ function BuddySpawnRequestMenuClick(event)
 
     ---@type OarcBuddySpawnOpts
     local requesterOptions = {}
+    requesterOptions.surface = global.ocfg.gameplay.default_surface
 
     if not player then
         log("Another gui click happened with no valid player...")
@@ -1233,25 +1267,24 @@ function BuddySpawnRequestMenuClick(event)
 
         ---@type OarcConfigGameplaySettings
         local gameplay = global.ocfg.gameplay
-
-        local tempSurface = game.surfaces[global.ocfg.gameplay.default_surface]
+        local surface = game.surfaces[requesterOptions.surface]
 
         -- Find coordinates of a good place to spawn
         ---TODO: Add support for multiple surfaces.
         if (requesterOptions.distChoice == "buddy_spawn_request_far") then
             newSpawn = FindUngeneratedCoordinates(gameplay.far_spawn_min_distance,
                 gameplay.far_spawn_max_distance,
-                tempSurface)
+                surface)
         elseif (requesterOptions.distChoice == "buddy_spawn_request_near") then
             newSpawn = FindUngeneratedCoordinates(
                 gameplay.near_spawn_min_distance,
                 gameplay.near_spawn_max_distance,
-                tempSurface)
+                surface)
         end
 
         -- If that fails, find a random map edge in a rand direction.
         if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
-            newSpawn = FindMapEdge(GetRandomVector(), tempSurface)
+            newSpawn = FindMapEdge(GetRandomVector(), surface)
             log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
         end
 
@@ -1259,18 +1292,18 @@ function BuddySpawnRequestMenuClick(event)
         local buddySpawn = { x = 0, y = 0 }
         if (requesterOptions.moatChoice) then
             buddySpawn = {
-                x = newSpawn.x + (global.ocfg.surfaces_config[tempSurface.name].spawn_config.general.spawn_radius_tiles * 2) + 10,
+                x = newSpawn.x + (global.ocfg.surfaces_config[requesterOptions.surface].spawn_config.general.spawn_radius_tiles * 2) + 10,
                 y = newSpawn.y
             }
         else
-            buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[tempSurface.name].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
+            buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[requesterOptions.surface].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
         end
-        ChangePlayerSpawn(player, global.ocfg.gameplay.default_surface, newSpawn) --TODO: Add support for multiple surfaces
-        ChangePlayerSpawn(game.players[requesterName], global.ocfg.gameplay.default_surface, buddySpawn)
+        ChangePlayerSpawn(player, requesterOptions.surface, newSpawn) --TODO: Add support for multiple surfaces
+        ChangePlayerSpawn(game.players[requesterName], requesterOptions.surface, buddySpawn)
 
         -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, global.ocfg.gameplay.default_surface, newSpawn, requesterOptions.moatChoice, false)
-        QueuePlayerForDelayedSpawn(requesterName, global.ocfg.gameplay.default_surface, buddySpawn, requesterOptions.moatChoice, false)
+        QueuePlayerForDelayedSpawn(player.name, requesterOptions.surface, newSpawn, requesterOptions.moatChoice, false)
+        QueuePlayerForDelayedSpawn(requesterName, requesterOptions.surface, buddySpawn, requesterOptions.moatChoice, false)
         SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
 
         -- Unlock spawn control gui tab
@@ -1326,4 +1359,26 @@ function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
     local wait_warning_text = { "oarc-wait-text", delay_seconds }
 
     AddLabel(pleaseWaitGui, "warning_lbl1", wait_warning_text, my_warning_style)
+end
+
+---Gui click event handlers
+---@param event EventData.on_gui_click
+---@return nil
+function SeparateSpawnsGuiClick(event)
+    WelcomeTextGuiClick(event)
+    SpawnOptsGuiClick(event)
+    SpawnCtrlGuiClick(event)
+    SharedSpwnOptsGuiClick(event)
+    BuddySpawnOptsGuiClick(event)
+    BuddySpawnWaitMenuClick(event)
+    BuddySpawnRequestMenuClick(event)
+    SharedSpawnJoinWaitMenuClick(event)
+end
+
+---Gui checked state changed event handlers
+---@param event EventData.on_gui_checked_state_changed
+---@return nil
+function SeparateSpawnsGuiCheckedStateChanged(event)
+    SpawnOptsRadioSelect(event)
+    SpawnCtrlGuiOptionsSelect(event)
 end

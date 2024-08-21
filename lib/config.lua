@@ -289,6 +289,8 @@ OCFG = {
         -- This removes player bases when they leave shortly after joining.
         -- TODO: verify if this requires regrowth to be enabled!
         enable_abandoned_base_cleanup = true,
+
+        surface_blacklist = {"oarc_holding_pen"},
     },
 
     -- Spawn configuration (starting items and spawn area config) for each surface.
@@ -374,6 +376,7 @@ OCFG = {
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.
 ---@field enable_world_eater boolean Checks inactive chunks to see if they are empty of entities and deletes them periodically.
 ---@field enable_abandoned_base_cleanup boolean Removes player bases when they leave shortly after joining.
+---@field surface_blacklist table<string> List of surfaces to ignore automatically.
 
 ---@class OarcConfigSurface
 ---@field starting_items OarcConfigStartingItems Starting items for players on this surface (including crashed ship items)

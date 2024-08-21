@@ -1,7 +1,7 @@
 -- oarc_gui_tabs.lua
 
 local mod_gui = require("mod-gui")
-require("lib/game_opts")
+require("lib/gui_tabs/game_opts")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -130,7 +130,7 @@ end
 
 ---@param event EventData.on_gui_selected_tab_changed
 ---@return nil
-function TabChangeOarcGui(event)
+function OarcGuiSelectedTabChanged(event)
     if (event.element.name ~= "oarc_tabs") then return end
 
     local player = game.players[event.player_index]
@@ -151,7 +151,7 @@ function FakeTabChangeEventOarcGui(player)
     local event = {}
     event.element = GetOarcGuiTabsPane(player)
     event.player_index = player.index
-    TabChangeOarcGui(event)
+    OarcGuiSelectedTabChanged(event)
 end
 
 ---@param player LuaPlayer
@@ -288,7 +288,7 @@ function SwitchOarcGuiTab(player, tab_name)
 end
 
 --@param event EventData.on_gui_closed
-function OarcGuiOnGuiClosedEvent(event)
+function OarcGuiClosed(event)
     if (event.element and (event.element.name == "oarc_gui")) then
         HideOarcGui(game.players[event.player_index])
     end

@@ -1,30 +1,32 @@
 
 
-8. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
-9. Expose more config options in admin GUI
+
+9. Create server settings admin GUI tab
 10. Tooltips for GUI elements in spawn menu options!
 11. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
-
-13. 
+13. Add regrowth GUI tab
 14. 
-
+15. 
 
 Other Ideas, Not Committed:
-Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
-Add option for spawn pen to be on a specified surface
-Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
-Make players join a "holding_pen" force instead of the main force? Might cause issues with chat and vision?
-Separate chest sharing and electricity ()
+- Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
+- Add option for spawn pen to be on a specified surface
+- Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
+- Make players join a "holding_pen" force instead of the main force? Might cause issues with chat and vision?
+- Separate chest sharing and electricity ()
+- If this is their first spawn, give them items. Otherwise don't give new items and don't clear items either?
 
+--------------------------------------------------------DONE------------------------------------------------------------
 
-1. (DONE) First setup the mod settings and lua global settings.
-2. (DONE) Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.
-3. (DONE) Start copying in the core pieces required for the primary spawning mechanic.
-5. (DONE) Document config and mod settings using Lua annotation as a custom class
-6. (DONE) Document global ocore as a custom class (with subclasses/types as needed)
-7. (DONE) Add multiple surfaces to options/settings [As a single boolean.]
-15. (DONE) Convert scenario to a mod.
-4. (DONE) Add multiple surfaces to Spawn GUI (Drop down selection?)
-12. (DONE) Configurable welcome/server messages in mod settings.
+1. First setup the mod settings and lua global settings.
+2. Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.
+3. Start copying in the core pieces required for the primary spawning mechanic.
+5. Document config and mod settings using Lua annotation as a custom class
+6. Document global ocore as a custom class (with subclasses/types as needed)
+7. Add multiple surfaces to options/settings [As a single boolean.]
+15. Convert scenario to a mod.
+4. Add multiple surfaces to Spawn GUI (Drop down selection?)
+12. Configurable welcome/server messages in mod settings.
+8. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
 
-(DONE) Figure out how to define custom lua table/data structs to make syntax/linting work?
+Figure out how to define custom lua table/data structs to make syntax/linting work?

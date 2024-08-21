@@ -1,5 +1,4 @@
 -- game_opts.lua
--- Jan 2018
 -- Display current game options, maybe have some admin controls here
 
 function GameOptionsGuiClick(event)

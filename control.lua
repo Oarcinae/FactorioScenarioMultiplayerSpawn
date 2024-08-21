@@ -41,7 +41,6 @@
 require("lib/oarc_utils")
 require("lib/config")
 require("lib/config_parser")
-require("lib/game_opts")
 require("lib/regrowth_map")
 require("lib/holding_pen")
 require("lib/separate_spawns")
@@ -54,15 +53,15 @@ require("lib/oarc_gui_tabs")
 -- On Init - Only runs once the first time the game starts
 --------------------------------------------------------------------------------
 script.on_init(function(event)
-    ValidateAndLoadConfig()
-    RegrowthInit()
-
     -- Test create some other surfaces
     -- TODO: Remove this later.
     game.create_surface("vulcanus")
     game.create_surface("fulgora")
     game.create_surface("gleba")
     game.create_surface("aquilo")
+
+    ValidateAndLoadConfig()
+    RegrowthInit()
 
     InitSpawnGlobalsAndForces()
     CreateHoldingPenSurface() -- Must be after init spawn globals?
@@ -75,6 +74,22 @@ script.on_init(function(event)
         remote.call("freeplay", "set_created_items", {})
         remote.call("freeplay", "set_respawn_items", {})
     end
+end)
+
+--------------------------------------------------------------------------------
+-- On Configuration Changed - Only runs when the mod configuration changes
+--------------------------------------------------------------------------------
+-- oarc_new_spawn_created = script.generate_event_name()
+
+-- script.on_configuration_changed(function(data)
+--     -- Regenerate event ID:
+-- end)
+
+script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
+     if (event.mod_name == "oarc-mod") then
+        log("on_runtime_mod_setting_changed" .. serpent.block(event))
+        -- TODO: Update config settings as needed to allow player to change runtime settings and have them take effect.
+     end
 end)
 
 ----------------------------------------
@@ -113,13 +128,13 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
-    CreateHoldingPenChunks(event.surface, event.area)
-    SeparateSpawnsGenerateChunk(event)
-
     -- TODO: Decide if this should always be enabled (to track chunks).
     if global.ocfg.regrowth.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
+    
+    CreateHoldingPenChunks(event.surface, event.area)
+    SeparateSpawnsGenerateChunk(event)
 end)
 
 script.on_event(defines.events.on_sector_scanned, function (event)   
@@ -135,13 +150,13 @@ end)
 script.on_event(defines.events.on_surface_created, function(event)
     log("Surface created: " .. game.surfaces[event.surface_index].name)
     SeparateSpawnsSurfaceCreated(event)
-    -- RegrowthSurfaceCreated(event)
+    RegrowthSurfaceCreated(event)
 end)
 
-script.on_event(defines.events.on_surface_deleted, function(event)
+script.on_event(defines.events.on_pre_surface_deleted, function(event)
     log("Surface deleted: " .. game.surfaces[event.surface_index].name)
     SeparateSpawnsSurfaceDeleted(event)
-    -- RegrowthSurfaceDeleted(event)
+    RegrowthSurfaceDeleted(event)
 end)
 
 ----------------------------------------
@@ -150,7 +165,7 @@ end)
 script.on_event(defines.events.on_built_entity, function(event)
     if global.ocfg.regrowth.enable_regrowth then
         -- if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
-        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.position, 2, false)
+        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 
     -- if global.ocfg.enable_anti_grief then
@@ -161,7 +176,7 @@ end)
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.regrowth.enable_regrowth then
         -- if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
-        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.position, 2, false)
+        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 end)
 
@@ -170,7 +185,7 @@ script.on_event(defines.events.on_player_built_tile, function (event)
         -- if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
 
         for k,v in pairs(event.tiles) do
-            RegrowthMarkAreaSafeGivenTilePos(v.position, 2, false)
+            RegrowthMarkAreaSafeGivenTilePos(game.surfaces[event.surface_index].name, v.position, 2, false)
         end
     end
 end)
@@ -183,7 +198,7 @@ end)
 script.on_event(defines.events.script_raised_built, function(event)
     if global.ocfg.regrowth.enable_regrowth then
         -- if (event.entity.surface.name ~= GAME_SURFACE_NAME) then return end
-        RegrowthMarkAreaSafeGivenTilePos(event.entity.position, 2, false)
+        RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 2, false)
     end
 end)
 
@@ -207,33 +222,30 @@ end)
 -- Gui Events
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
-    WelcomeTextGuiClick(event)
-    SpawnOptsGuiClick(event)
-    SpawnCtrlGuiClick(event)
-    SharedSpwnOptsGuiClick(event)
-    BuddySpawnOptsGuiClick(event)
-    BuddySpawnWaitMenuClick(event)
-    BuddySpawnRequestMenuClick(event)
-    SharedSpawnJoinWaitMenuClick(event)
+    SeparateSpawnsGuiClick(event)
     ClickOarcGuiButton(event)
     GameOptionsGuiClick(event)
 end)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
-    SpawnOptsRadioSelect(event)
-    SpawnCtrlGuiOptionsSelect(event)
+    SeparateSpawnsGuiCheckedStateChanged(event)
 end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
-    TabChangeOarcGui(event)
+    OarcGuiSelectedTabChanged(event)
 end)
 
 -- For capturing player escaping custom GUI so we can close it using ESC key.
 script.on_event(defines.events.on_gui_closed, function(event)
-    OarcGuiOnGuiClosedEvent(event)
+    OarcGuiClosed(event)
 end)
 
+
+
+----------------------------------------
+-- Remote Interface
+----------------------------------------
 local oarc_mod_interface =
 {
   get_mod_settings = function()
