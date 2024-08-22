@@ -1,5 +1,3 @@
--- config_parser.lua
--- Aug 2024
 -- This file is used to validate the config.lua file and handle any mod conflicts.
 
 function ValidateAndLoadConfig()

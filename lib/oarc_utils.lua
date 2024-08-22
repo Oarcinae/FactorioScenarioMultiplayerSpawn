@@ -1,6 +1,3 @@
--- oarc_utils.lua
--- Aug 2024
-
 -- My general purpose utility functions and constants for factorio
 -- Also contains some constants
 

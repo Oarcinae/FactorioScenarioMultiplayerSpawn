@@ -1,7 +1,10 @@
--- oarc_gui_tabs.lua
+-- A nice way to organize the GUI tabs.
 
 local mod_gui = require("mod-gui")
-require("lib/gui_tabs/game_opts")
+require("lib/gui_tabs/server_info")
+require("lib/gui_tabs/spawn_controls")
+require("lib/gui_tabs/regrowth_controls")
+require("lib/gui_tabs/settings_controls")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -11,13 +14,17 @@ require("lib/gui_tabs/game_opts")
 OARC_GUI = "oarc_gui"
 
 -- LIST of all implemented tabs and their content Functions
-OARC_GAME_OPTS_GUI_TAB_NAME = "Server Info"
-OARC_SPAWN_CTRL_GUI_NAME = "Spawn Controls"
+OARC_SERVER_INFO_TAB_NAME = "Server Info"
+OARC_SPAWN_CTRL_TAB_NAME = "Spawn Controls"
+OARC_REGROWTH_CTRL_TAB_NAME = "Regrowth"
+OARC_CONFIG_CTRL_TAB_NAME = "Settings"
 
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {}
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Server Info"] = CreateGameOptionsTab
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Spawn Controls"] = CreateSpawnCtrlGuiTab
+OARC_GUI_TAB_CONTENT_FUNCTIONS["Spawn Controls"] = CreateSpawnControlsTab
+OARC_GUI_TAB_CONTENT_FUNCTIONS["Regrowth"] = CreateRegrowthControlsTab
+OARC_GUI_TAB_CONTENT_FUNCTIONS["Settings"] = CreateSettingsControlsTab
 
 
 ---@param player LuaPlayer
@@ -32,11 +39,21 @@ function InitOarcGuiTabs(player)
     CreateOarcGuiButton(player)
 
     -- Add general info tab
-    AddOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME)
-    SetOarcGuiTabEnabled(player, OARC_GAME_OPTS_GUI_TAB_NAME, true)
+    AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_SERVER_INFO_TAB_NAME, true)
 
     -- Spawn control tab, disabled by default
-    AddOarcGuiTab(player, OARC_SPAWN_CTRL_GUI_NAME)
+    AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
+
+    -- Regrowth control tab
+    AddOarcGuiTab(player, OARC_REGROWTH_CTRL_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_REGROWTH_CTRL_TAB_NAME, true)
+
+    -- Settings control tab
+    if (player.admin) then
+        AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
+        SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
+    end
 
     HideOarcGui(player)
 end

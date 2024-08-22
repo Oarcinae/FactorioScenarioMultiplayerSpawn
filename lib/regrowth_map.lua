@@ -1,6 +1,3 @@
--- regrowth_map.lua
--- Aug 2024
-
 -- Code tracks all chunks generated and allows for deleting of inactive chunks.
 --
 -- Basic rules of regrowth:

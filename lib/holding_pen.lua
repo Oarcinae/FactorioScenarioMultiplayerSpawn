@@ -1,6 +1,3 @@
--- holding_pen.lua
--- Aug 2024
-
 -- This file is used to create the holding pen area where players spawn in before being teleported to their own area.
 
 HOLDING_PEN_SURFACE_NAME = "oarc_holding_pen"

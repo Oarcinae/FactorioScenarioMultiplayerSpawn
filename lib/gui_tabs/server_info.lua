@@ -1,8 +1,7 @@
--- game_opts.lua
--- Display current game options, maybe have some admin controls here
+-- Display current game options and server info, maybe have some admin controls here
 
 function GameOptionsGuiClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not (event and event.element and event.element.valid) then return end --TODO: Check if this is necessary
     local player = game.players[event.player_index]
     local name = event.element.name
 

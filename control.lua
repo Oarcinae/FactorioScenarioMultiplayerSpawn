@@ -1,4 +1,3 @@
--- control.lua
 -- Aug 2024
 --   ____          _____   _____ 
 --  / __ \   /\   |  __ \ / ____|
@@ -223,13 +222,17 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
     SeparateSpawnsGuiClick(event)
+
     ClickOarcGuiButton(event)
     GameOptionsGuiClick(event)
+    SpawnCtrlGuiClick(event)
 end)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
     SeparateSpawnsGuiCheckedStateChanged(event)
+
+    SpawnCtrlGuiOptionsSelect(event)
 end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)

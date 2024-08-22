@@ -1,6 +1,3 @@
--- oarc_gui_utils.lua
--- Mar 2019
-
 -- Generic GUI stuff goes here.
 
 --------------------------------------------------------------------------------
@@ -124,17 +121,24 @@ my_notepad_fixed_width_style = {
 -- GUI Functions
 --------------------------------------------------------------------------------
 
--- Apply a style option to a GUI
-function ApplyStyle (guiIn, styleIn)
-    for k,v in pairs(styleIn) do
-        guiIn.style[k]=v
+---Apply a style option to a GUI
+---@param gui_element LuaGuiElement
+---@param style_in table
+---@return nil
+function ApplyStyle (gui_element, style_in)
+    for k,v in pairs(style_in) do
+        gui_element.style[k]=v
     end
 end
 
--- Shorter way to add a label with a style
-function AddLabel(guiIn, name, message, style)
-    local g = guiIn.add{name = name, type = "label",
-                    caption=message}
+---Shorter way to add a label with a style
+---@param gui_element LuaGuiElement
+---@param name string?
+---@param message LocalisedString
+---@param style table|string
+---@return nil
+function AddLabel(gui_element, name, message, style)
+    local g = gui_element.add{name = name, type = "label", caption=message}
     if (type(style) == "table") then
         ApplyStyle(g, style)
     else
@@ -142,11 +146,16 @@ function AddLabel(guiIn, name, message, style)
     end
 end
 
--- Shorter way to add a spacer
-function AddSpacer(guiIn)
-    ApplyStyle(guiIn.add{type = "label", caption=" "}, my_spacer_style)
+---Shorter way to add a spacer
+---@param gui_element LuaGuiElement
+---@return nil
+function AddSpacer(gui_element)
+    ApplyStyle(gui_element.add{type = "label", caption=" "}, my_spacer_style)
 end
 
-function AddSpacerLine(guiIn)
-    ApplyStyle(guiIn.add{type = "line", direction="horizontal"}, my_spacer_style)
+---Shorter way to add a spacer line
+---@param gui_element LuaGuiElement
+---@return nil
+function AddSpacerLine(gui_element)
+    ApplyStyle(gui_element.add{type = "line", direction="horizontal"}, my_spacer_style)
 end

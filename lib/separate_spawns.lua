@@ -1,8 +1,4 @@
--- separate_spawns.lua
--- Nov 2016
---
 -- Code that handles everything regarding giving each player a separate spawn
--- Includes the GUI stuff
 
 local util = require("util")
 local crash_site = require("crash-site")
@@ -183,8 +179,8 @@ function SeparateSpawnsInitPlayer(player_index, clear_inv)
     local player = game.players[player_index]
 
     -- Make sure spawn control tab is disabled
-    SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_GUI_NAME, false)
-    SwitchOarcGuiTab(player, OARC_GAME_OPTS_GUI_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, false)
+    SwitchOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME)
 
     -- If they are a new player, put them on the main force.
     if (player.force.name == "player") then
