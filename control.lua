@@ -85,10 +85,8 @@ end)
 -- end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
-     if (event.mod_name == "oarc-mod") then
-        log("on_runtime_mod_setting_changed" .. serpent.block(event))
-        -- TODO: Update config settings as needed to allow player to change runtime settings and have them take effect.
-     end
+    if (not StringStarsWith(event.setting, "oarc-mod")) then return end
+    RuntimeModSettingChanged(event)
 end)
 
 ----------------------------------------
@@ -221,21 +219,28 @@ end)
 -- Gui Events
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
     SeparateSpawnsGuiClick(event)
 
     ClickOarcGuiButton(event)
-    GameOptionsGuiClick(event)
+    ServerInfoGuiClick(event)
     SpawnCtrlGuiClick(event)
+    SettingsControlsTabGuiClick(event)
 end)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
     SeparateSpawnsGuiCheckedStateChanged(event)
 
     SpawnCtrlGuiOptionsSelect(event)
 end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
     OarcGuiSelectedTabChanged(event)
 end)
 
@@ -245,6 +250,20 @@ script.on_event(defines.events.on_gui_closed, function(event)
 end)
 
 
+--on_gui_checked_state_changed	 Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
+--on_gui_click	 Called when LuaGuiElement is clicked.
+--on_gui_closed	 Called when the player closes the GUI they have open. [...]
+--on_gui_confirmed	 Called when a LuaGuiElement is confirmed, for example by pressing Enter in a textfield.
+--on_gui_elem_changed	 Called when LuaGuiElement element value is changed (related to choose element buttons).
+--on_gui_hover	 Called when LuaGuiElement is hovered by the mouse.
+--on_gui_leave	 Called when the player's cursor leaves a LuaGuiElement that was previously hovered.
+--on_gui_location_changed	 Called when LuaGuiElement element location is changed (related to frames in player.gui.screen).
+--on_gui_opened	 Called when the player opens a GUI.
+--on_gui_selected_tab_changed	 Called when LuaGuiElement selected tab is changed (related to tabbed-panes).
+--on_gui_selection_state_changed	 Called when LuaGuiElement selection state is changed (related to drop-downs and listboxes).
+--on_gui_switch_state_changed	 Called when LuaGuiElement switch state is changed (related to switches).
+--on_gui_text_changed	 Called when LuaGuiElement text is changed by the player.
+--on_gui_value_changed	 Called when LuaGuiElement slider value is changed (related to the slider element).
 
 ----------------------------------------
 -- Remote Interface

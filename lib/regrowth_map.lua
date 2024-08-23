@@ -375,7 +375,7 @@ function RegrowthSingleStepArray()
         global.rg.current_surface = next_surface_info.surface
         global.rg.current_surface_index = next_surface_info.index
 
-        log("RegrowthSingleStepArray: Switching to next surface: " .. global.rg.current_surface)
+        -- log("RegrowthSingleStepArray: Switching to next surface: " .. global.rg.current_surface)
 
         current_surface = global.rg.current_surface
         global.rg.chunk_iter = game.surfaces[current_surface].get_chunks()

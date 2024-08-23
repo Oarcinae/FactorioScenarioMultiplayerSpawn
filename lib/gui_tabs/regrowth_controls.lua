@@ -1,6 +1,9 @@
 -- Contains the GUI for the regrowth controls tab.
 
--- Used by AddOarcGuiTab
+---Used by AddOarcGuiTab
+---@param tab_container LuaGuiElement
+---@param player LuaPlayer
+---@return nil
 function CreateRegrowthControlsTab(tab_container, player)
     AddLabel(tab_container, nil, "test regrowth message my_label_style", my_label_style)
     AddLabel(tab_container, nil, "test regrowth message my_label_header_style", my_label_header_style)

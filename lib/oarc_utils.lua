@@ -148,6 +148,13 @@ function SendMsg(playerName, msg)
     end
 end
 
+---Checks if a string starts with another string
+---@param string string The string to check
+---@param start string The starting string to look for
+function StringStarsWith(string, start)
+    return string:sub(1, #start) == start
+end
+
 -- -- Simple way to write to a file. Always appends. Only server.
 -- -- Has a global setting for enable/disable
 -- function ServerWriteFile(filename, msg)
@@ -281,7 +288,7 @@ end
 ---@param force string|integer|LuaForce
 ---@param position MapPosition
 ---@param chunkDist number
----@param surface LuaSurface
+---@param surface LuaSurface|string|integer
 function ChartArea(force, position, chunkDist, surface)
     force.chart(surface,
         { { position.x - (CHUNK_SIZE * chunkDist),

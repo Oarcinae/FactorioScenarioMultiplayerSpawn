@@ -57,7 +57,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function WelcomeTextGuiClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name
 
@@ -264,7 +264,7 @@ end
 ---@param event EventData.on_gui_checked_state_changed
 ---@return nil
 function SpawnOptsRadioSelect(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local elemName = event.element.name
 
     if (elemName == "isolated_spawn_main_team_radio") then
@@ -289,7 +289,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function SpawnOptsGuiClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
 
@@ -486,7 +486,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function SharedSpwnOptsGuiClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local buttonClicked = event.element.name
 
@@ -559,7 +559,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function SharedSpawnJoinWaitMenuClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
 
@@ -715,7 +715,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function BuddySpawnOptsGuiClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
 
@@ -870,7 +870,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function BuddySpawnWaitMenuClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
 
@@ -977,7 +977,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function BuddySpawnRequestMenuClick(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local elemName = event.element.name
     local requesterName = nil
@@ -1130,11 +1130,21 @@ function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
     pleaseWaitGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
     pleaseWaitGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
-
     -- Warnings and explanations...
     local wait_warning_text = { "oarc-wait-text", delay_seconds }
 
     AddLabel(pleaseWaitGui, "warning_lbl1", wait_warning_text, my_warning_style)
+
+    -- Show a minimap of the spawn location :)
+    ---@type OarcPlayerSpawn
+    local player_spawn = global.ocore.playerSpawns[player.name]
+
+    pleaseWaitGui.add {
+        type = "minimap",
+        position = player_spawn.position,
+        surface_index = game.surfaces[player_spawn.surface].index,
+        force = player.force.name
+    }
 end
 
 ---Gui click event handlers

@@ -172,7 +172,7 @@ end
 -- When a player is newly created or just reset, present the spawn options to them.
 -- If new player, assign them to the main force so they can communicate with the team without shouting (/s).
 -- TODO: Possibly change this to a holding_pen force?
----@param player_index integer
+---@param player_index integer|string
 ---@param clear_inv boolean If true, clear the player's inventory.
 ---@return nil
 function SeparateSpawnsInitPlayer(player_index, clear_inv)
@@ -1025,13 +1025,18 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         -- newUniqueSpawn.vanilla = vanillaSpawn
         global.ocore.uniqueSpawns[playerName] = newUniqueSpawn
 
-        local delay_spawn_seconds = 5 * (math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE))
+        -- Add a 1 chunk buffer to be safe
+        local spawn_chunk_radius = math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE) + 1
+        local delay_spawn_seconds = 5 * spawn_chunk_radius
 
         ---TODO: Move text to locale.
         game.players[playerName].print("Generating your spawn now, please wait for at least " ..
             delay_spawn_seconds .. " seconds...")
-        game.surfaces[surface].request_to_generate_chunks(spawnPosition, 4)
+        game.surfaces[surface].request_to_generate_chunks(spawnPosition, spawn_chunk_radius)
 
+        local final_chunk = GetChunkPosFromTilePos(spawnPosition)
+        final_chunk.x = final_chunk.x + spawn_chunk_radius
+        final_chunk.y = final_chunk.y + spawn_chunk_radius
 
         ---@type OarcDelayedSpawn
         local delayedSpawn = {}
@@ -1040,14 +1045,22 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         delayedSpawn.position = spawnPosition
         delayedSpawn.moat = moatEnabled
         delayedSpawn.delayedTick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND
+        delayedSpawn.final_chunk_generated = final_chunk
 
         table.insert(global.ocore.delayedSpawns, delayedSpawn)
 
-        HideOarcGui(game.players[playerName])
+    HideOarcGui(game.players[playerName])
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
         RegrowthMarkAreaSafeGivenTilePos(surface, spawnPosition,
             math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE), true)
+
+        -- Chart the area to be able to display the minimap while the player waits.
+        ChartArea(game.players[playerName].force,
+            delayedSpawn.position,
+            spawn_chunk_radius,
+            surface
+        )
     else
         log("THIS SHOULD NOT EVER HAPPEN! Spawn failed!")
         SendBroadcastMsg("ERROR!! Failed to create spawn point for: " .. playerName)
@@ -1066,7 +1079,9 @@ function DelayedSpawnOnTick()
             for i = #global.ocore.delayedSpawns, 1, -1 do
                 delayedSpawn = global.ocore.delayedSpawns[i] --[[@as OarcDelayedSpawn]]
 
-                if (delayedSpawn.delayedTick < game.tick) then
+                local surface = game.surfaces[delayedSpawn.surface]
+                
+                if ((delayedSpawn.delayedTick < game.tick) or surface.is_chunk_generated(delayedSpawn.final_chunk_generated) ) then
                     -- TODO: add check here for if chunks around spawn are generated surface.is_chunk_generated(chunkPos)
                     if (game.players[delayedSpawn.playerName] ~= nil) then
                         SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
@@ -1118,6 +1133,18 @@ function SendPlayerToRandomSpawn(player)
             counter = counter + 1
         end
     end
+end
+
+---Check if a player has a delayed spawn
+---@param player_name string
+---@return boolean
+function PlayerHasDelayedSpawn(player_name)
+    for _,delayedSpawn in pairs(global.ocore.delayedSpawns --[[@as OarcDelayedSpawnsTable]]) do
+        if (delayedSpawn.playerName == player_name) then
+            return true
+        end
+    end
+    return false
 end
 
 --[[
@@ -1350,7 +1377,7 @@ BUDDY_SPAWN_CHOICE = {
 ---@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
 
 ---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
----@alias OarcDelayedSpawn { surface: string, playerName: string, position: MapPosition, moat: boolean, delayedTick: number }
+---@alias OarcDelayedSpawn { surface: string, playerName: string, position: MapPosition, moat: boolean, delayedTick: number, final_chunk_generated: ChunkPosition }
 ---Table of [OarcDelayedSpawn](lua://OarcDelayedSpawn) indexed by player name.
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 

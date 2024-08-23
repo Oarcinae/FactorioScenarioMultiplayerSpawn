@@ -21,7 +21,7 @@ OARC_CONFIG_CTRL_TAB_NAME = "Settings"
 
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {}
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Server Info"] = CreateGameOptionsTab
+OARC_GUI_TAB_CONTENT_FUNCTIONS["Server Info"] = CreateServerInfoTab
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Spawn Controls"] = CreateSpawnControlsTab
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Regrowth"] = CreateRegrowthControlsTab
 OARC_GUI_TAB_CONTENT_FUNCTIONS["Settings"] = CreateSettingsControlsTab
@@ -121,7 +121,7 @@ end
 ---@param event EventData.on_gui_click
 ---@return nil
 function ClickOarcGuiButton(event)
-    if not (event and event.element and event.element.valid) then return end
+    if not event.element.valid then return end
     local player = game.players[event.player_index]
     local name = event.element.name
 
