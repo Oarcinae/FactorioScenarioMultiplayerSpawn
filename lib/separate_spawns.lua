@@ -1387,4 +1387,4 @@ BUDDY_SPAWN_CHOICE = {
 ---@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
 
 ---Table of players in the "waiting room" for a buddy spawn.
----@alias OarcWaitingBuddiesTable table<string>
+---@alias OarcWaitingBuddiesTable table<integer, string>

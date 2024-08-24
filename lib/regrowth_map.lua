@@ -25,8 +25,7 @@ REGROWTH_FLAG_PERMANENT = -2
 REGROWTH_ACTIVE_AREA_AROUND_PLAYER = 4
 
 ---The removal list contains chunks that are marked for removal. Each entry is a table with the following fields:
----{ pos = { x = number, y = number }, force = boolean, surface = string }
----@class RemovalListEntry : table<ChunkPosition, boolean, string>
+---@alias RemovalListEntry { pos : ChunkPosition, force: boolean, surface: string }
 
 
 ---Init globals for regrowth
@@ -38,7 +37,7 @@ function RegrowthInit()
     global.rg.force_removal_flag = -2000 -- Set to a negative number to disable it by default
     global.rg.timeout_ticks = REGROWTH_TIMEOUT_TICKS
 
-    global.rrent_surface = nil -- The current surface we are iterating through
+    global.rg.current_surface = nil -- The current surface we are iterating through
     global.rg.current_surface_index = 1
     global.rg.active_surfaces = {} -- List of all surfaces with regrowth enabled
     global.rg.chunk_iter = nil -- We only iterate through onface at a time
@@ -48,7 +47,7 @@ function RegrowthInit()
     global.rg.we_current_surface = nil
     global.rg.we_current_surface_index = 1
 
-    ---@type table<RemovalListEntry>
+    ---@type table<integer, RemovalListEntry>
     global.rg.removal_list = {}
 
     for surface_name,_ in pairs(game.surfaces) do
@@ -98,9 +97,10 @@ function InitSurface(surface_name)
         -- This is a 2D array of chunk positions and their last tick updated / status
         global.rg[surface_name].map = {}
 
-        -- Set the current surface to the first one found
+        -- Set the current surface tone found
         if (global.rg.current_surface == nil) then
             global.rg.current_surface = surface_name
+            global.rg.we_current_surface = surface_name
         end
 
         table.insert(global.rg.active_surfaces, surface_name)
@@ -137,9 +137,11 @@ function GetNextPlayerIndex()
     return global.rg.player_refresh_index
 end
 
+---@alias ActiveSurfaceInfo { surface : string, index : integer }
+
 ---Sets the current surface to the next active surface. This is used to loop through surfaces.
 ---@param current_index integer - The current index in the active surfaces list
----@return table<string, integer> - The new current surface name and index
+---@return ActiveSurfaceInfo - The new current surface name and index
 function GetNextActiveSurface(current_index)
 
     local count = #(global.rg.active_surfaces)
@@ -495,8 +497,6 @@ end
 function WorldEaterSingleStep()
     local current_surface = global.rg.we_current_surface
 
-    log("RegrowthSingleStepArray: Switching to next surface: " .. global.rg.current_surface)
-
     -- Make sure we have a valid iterator!
     if (not global.rg.world_eater_iter or not global.rg.world_eater_iter.valid) then
         global.rg.world_eater_iter = game.surfaces[current_surface].get_chunks()
@@ -514,10 +514,15 @@ function WorldEaterSingleStep()
         global.rg.we_current_surface_index = next_surface_info.index
         current_surface = global.rg.we_current_surface
 
-        log("WorldEaterSingleStep: Switching to next surface: " .. global.rg.we_current_surface)
+        -- log("WorldEaterSingleStep: Switching to next surface: " .. global.rg.we_current_surface)
 
         global.rg.world_eater_iter = game.surfaces[current_surface].get_chunks()
         next_chunk = global.rg.world_eater_iter()
+
+        -- Possible that there are no chunks in this surface?
+        if (not next_chunk) then
+            return
+        end
     end
 
     -- Do we have it in our map?

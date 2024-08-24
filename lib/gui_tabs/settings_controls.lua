@@ -10,12 +10,15 @@ function CreateSettingsControlsTab(tab_container, player)
         AddLabel(tab_container, nil, { "oarc-settings-tab-admin-warning" }, my_warning_style)
     end
 
-    AddTextfieldSetting(tab_container, "welcome_msg_title", { "mod-setting-name.oarc-mod-welcome-msg-title" },
-        global.ocfg.server_info.welcome_msg_title, player.admin, { "mod-setting-description.oarc-mod-welcome-msg-title" })
-
-    AddCheckboxSetting(tab_container, "enable_main_team", { "mod-setting-name.oarc-mod-enable-main-team" },
-        global.ocfg.gameplay.enable_main_team, player.admin, { "mod-setting-description.oarc-mod-enable-main-team" })
-
+    for index,entry in pairs(OCFG_KEYS) do
+        if (entry.type == "boolean") then
+            AddCheckboxSetting(tab_container, index, entry, player.admin)
+        elseif (entry.type == "string") then
+            AddTextfieldSetting(tab_container, index, entry, player.admin)
+        elseif (entry.type == "integer") then
+            AddIntegerSetting(tab_container, index, entry, player.admin)
+        end
+    end
 end
 
 ---Handles the click event for the tab used by AddOarcGuiTab
@@ -23,54 +26,107 @@ end
 ---@return nil
 function SettingsControlsTabGuiClick(event)
     if not (event.element.valid) then return end
+
     local gui_elem = event.element
-    -- local player = game.players[event.player_index]
-
     if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
-
     local setting_name = gui_elem.tags.setting
 
-    if (setting_name == "enable_main_team") then
-        log("enable_main_team: " .. tostring(gui_elem.state))
-        global.ocfg.gameplay.enable_main_team = gui_elem.state
-        settings.global["oarc-mod-enable-main-team"] = { value = gui_elem.state }
+    for index,entry in pairs(OCFG_KEYS) do
+        if (index == setting_name) then
+            if (entry.type == "boolean") then
+                SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, gui_elem.state)
+                settings.global[entry.mod_key] = { value = gui_elem.state }
+            end
+        end
     end
 end
 
----Creates a checkbox setting in the tab used by AddOarcGuiTab
----@param tab_container LuaGuiElement
----@param setting_name string
----@param setting_caption LocalisedString
----@param setting_state boolean
----@param enabled boolean
----@param tooltip LocalisedString
+---Handles the text entry event for the tab used by AddOarcGuiTab
+---@param event EventData.on_gui_text_changed
 ---@return nil
-function AddCheckboxSetting(tab_container, setting_name, setting_caption, setting_state, enabled, tooltip)
-    tab_container.add {
+function SettingsControlsTabGuiTextChanged(event)
+    if not (event.element.valid) then return end
+
+    local gui_elem = event.element
+    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    local setting_name = gui_elem.tags.setting
+
+    for index,entry in pairs(OCFG_KEYS) do
+        if (index == setting_name) then
+            if (entry.type == "string") or (entry.type == "integer") then
+                SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, gui_elem.text)
+                settings.global[entry.mod_key] = { value = gui_elem.text }
+            end
+        end
+    end
+end
+
+---Creates a checkbox setting
+---@param tab_container LuaGuiElement
+---@param index string
+---@param entry OarcSettingsLookup
+---@param enabled boolean
+---@return nil
+function AddCheckboxSetting(tab_container, index, entry, enabled)
+    tab_container.add{
         type = "checkbox",
-        caption = setting_caption,
-        state = setting_state,
+        caption = { "mod-setting-name."..entry.mod_key },
+        state = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
-        tooltip = tooltip,
-        tags = { action = "oarc_settings_tab", setting = setting_name },
+        tooltip = { "mod-setting-description."..entry.mod_key },
+        tags = { action = "oarc_settings_tab", setting = index },
     }
 end
 
----Creates a textfield setting in the tab used by AddOarcGuiTab
+---Creates a textfield setting
 ---@param tab_container LuaGuiElement
----@param setting_name string
----@param setting_caption LocalisedString
----@param setting_string string
+---@param index string
+---@param entry OarcSettingsLookup
 ---@param enabled boolean
----@param tooltip LocalisedString
 ---@return nil
-function AddTextfieldSetting(tab_container, setting_name, setting_caption, setting_string, enabled, tooltip)
-    tab_container.add {
+function AddTextfieldSetting(tab_container, index, entry, enabled)
+    local horizontal_flow = tab_container.add {
+        type = "flow",
+        direction = "horizontal",
+    }
+    horizontal_flow.add {
+        type = "label",
+        caption = { "mod-setting-name."..entry.mod_key },
+        tooltip = { "mod-setting-description."..entry.mod_key },
+    }
+    horizontal_flow.add {
         type = "textfield",
-        caption = setting_caption,
-        text = setting_string,
+        caption = { "mod-setting-name."..entry.mod_key },
+        text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
-        tooltip = tooltip,
-        tags = { action = "oarc_settings_tab", setting = setting_name },
+        tooltip = { "mod-setting-description."..entry.mod_key },
+        tags = { action = "oarc_settings_tab", setting = index },
+    }
+end
+
+---Creates an integer setting
+---@param tab_container LuaGuiElement
+---@param index string
+---@param entry OarcSettingsLookup
+---@param enabled boolean
+---@return nil
+function AddIntegerSetting(tab_container, index, entry, enabled)
+    local horizontal_flow = tab_container.add {
+        type = "flow",
+        direction = "horizontal",
+    }
+    horizontal_flow.add {
+        type = "label",
+        caption = { "mod-setting-name."..entry.mod_key },
+        tooltip = { "mod-setting-description."..entry.mod_key },
+    }
+    horizontal_flow.add {
+        type = "textfield",
+        numeric = true,
+        caption = { "mod-setting-name."..entry.mod_key },
+        text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
+        enabled = enabled,
+        tooltip = { "mod-setting-description."..entry.mod_key },
+        tags = { action = "oarc_settings_tab", setting = index },
     }
 end

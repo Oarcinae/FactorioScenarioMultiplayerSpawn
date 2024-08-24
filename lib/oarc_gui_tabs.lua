@@ -20,12 +20,12 @@ OARC_REGROWTH_CTRL_TAB_NAME = "Regrowth"
 OARC_CONFIG_CTRL_TAB_NAME = "Settings"
 
 
-local OARC_GUI_TAB_CONTENT_FUNCTIONS = {}
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Server Info"] = CreateServerInfoTab
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Spawn Controls"] = CreateSpawnControlsTab
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Regrowth"] = CreateRegrowthControlsTab
-OARC_GUI_TAB_CONTENT_FUNCTIONS["Settings"] = CreateSettingsControlsTab
-
+local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
+    ["Server Info"] = CreateServerInfoTab,
+    ["Spawn Controls"] = CreateSpawnControlsTab,
+    ["Regrowth"] = CreateRegrowthControlsTab,
+    ["Settings"] = CreateSettingsControlsTab,
+}
 
 ---@param player LuaPlayer
 ---@return nil
