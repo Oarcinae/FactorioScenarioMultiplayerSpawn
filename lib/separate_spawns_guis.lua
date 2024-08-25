@@ -178,6 +178,30 @@ function DisplaySpawnOptions(player)
     --                     state=false}
     -- end
 
+    local sliderFlow = soloSpawnFlow.add { name = "spawn_distance_slider_flow",
+        type = "flow",
+        direction = "horizontal",
+        style = "player_input_horizontal_flow"
+    }
+    sliderFlow.style.horizontal_align = "center"
+    sliderFlow.add { name = "spawn_distance_slider_label",
+        type = "label",
+        caption = "test" }
+    sliderFlow.add { name = "spawn_distance_slider",
+        type = "slider",
+        minimum_value = global.ocfg.gameplay.near_spawn_distance,
+        maximum_value = global.ocfg.gameplay.far_spawn_distance,
+        value = global.ocfg.gameplay.near_spawn_distance,
+        discrete_slider = true,
+        value_step = 1
+    }
+    sliderFlow.add { name = "spawn_distance_slider_value",
+        type = "textfield",
+        ignored_by_interaction = true,
+        caption = global.ocfg.gameplay.near_spawn_distance,
+        style = "slider_value_textfield"
+    }
+
     -- Isolated spawn options. The core gameplay of this scenario.
     local soloSpawnbuttons = soloSpawnFlow.add { name = "spawn_solo_flow",
         type = "flow",
@@ -252,11 +276,7 @@ function DisplaySpawnOptions(player)
             my_note_style)
     end
 
-    local spawn_distance_notes = { "oarc-spawn-dist-notes",
-        gameplay.near_spawn_min_distance,
-        gameplay.near_spawn_max_distance,
-        gameplay.far_spawn_min_distance,
-        gameplay.far_spawn_max_distance }
+    local spawn_distance_notes = { "oarc-spawn-dist-notes" }
     AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
@@ -390,9 +410,9 @@ function SpawnOptsGuiClick(event)
         -- else
         -- Find coordinates of a good place to spawn
         if (elemName == "isolated_spawn_far") then
-            newSpawn = FindUngeneratedCoordinates(gameplay.far_spawn_min_distance, gameplay.far_spawn_max_distance, surface)
+            newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_distance, gameplay.far_spawn_distance, surface)
         elseif (elemName == "isolated_spawn_near") then
-            newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_min_distance, gameplay.near_spawn_max_distance, surface)
+            newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_distance, gameplay.far_spawn_distance, surface)
         end
         -- end
 
@@ -701,13 +721,7 @@ function DisplayBuddySpawnOptions(player)
             { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 },
             my_note_style)
     end
-    local spawn_distance_notes = {
-        "oarc-spawn-dist-notes",
-        gameplay.near_spawn_min_distance,
-        gameplay.near_spawn_max_distance,
-        gameplay.far_spawn_min_distance,
-        gameplay.far_spawn_max_distance
-    }
+    local spawn_distance_notes = { "oarc-spawn-dist-notes" }
     AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
 end
 
@@ -1048,13 +1062,13 @@ function BuddySpawnRequestMenuClick(event)
         -- Find coordinates of a good place to spawn
         ---TODO: Add support for multiple surfaces.
         if (requesterOptions.distChoice == "buddy_spawn_request_far") then
-            newSpawn = FindUngeneratedCoordinates(gameplay.far_spawn_min_distance,
-                gameplay.far_spawn_max_distance,
+            newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_distance,
+                gameplay.far_spawn_distance,
                 surface)
         elseif (requesterOptions.distChoice == "buddy_spawn_request_near") then
             newSpawn = FindUngeneratedCoordinates(
-                gameplay.near_spawn_min_distance,
-                gameplay.near_spawn_max_distance,
+                gameplay.near_spawn_distance,
+                gameplay.far_spawn_distance,
                 surface)
         end
 

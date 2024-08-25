@@ -465,19 +465,22 @@ function SetFriendlyBetweenAllForces()
     end
 end
 
--- -- For each other player force, share a chat msg.
--- function ShareChatBetweenForces(player, msg)
---     for _,force in pairs(game.forces) do
---         if (force ~= nil) then
---             if ((force.name ~= enemy) and
---                 (force.name ~= neutral) and
---                 (force.name ~= player) and
---                 (force ~= player.force)) then
---                 force.print(player.name..": "..msg)
---             end
---         end
---     end
--- end
+---For each other player force, share a chat msg.
+---@param player LuaPlayer
+---@param msg LocalisedString
+---@return nil
+function ShareChatBetweenForces(player, msg)
+    for _,force in pairs(game.forces) do
+        if (force ~= nil) then
+            if ((force.name ~= "enemy") and
+                (force.name ~= "neutral") and
+                (force.name ~= "player") and
+                (force ~= player.force)) then
+                force.print(player.name..": "..msg)
+            end
+        end
+    end
+end
 
 -- -- Merges force2 INTO force1 but keeps all research between both forces.
 -- function MergeForcesKeepResearch(force1, force2)
@@ -984,11 +987,11 @@ function DowngradeWormsDistanceBasedOnChunkGenerate(event)
     ---@type OarcConfigGameplaySettings
     local gameplay = global.ocfg.gameplay
 
-    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.near_spawn_min_distance * CHUNK_SIZE)) then
+    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.near_spawn_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_min_distance * CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_max_distance * CHUNK_SIZE)) then
+    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_distance * CHUNK_SIZE * 2)) then
         DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
     else
         DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)

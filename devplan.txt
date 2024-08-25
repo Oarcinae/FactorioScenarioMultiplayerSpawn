@@ -1,12 +1,15 @@
 
-
-
-9. Create server settings admin GUI tab
-10. Tooltips for GUI elements in spawn menu options!
+ACTIVE ITEM:
 11. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
-13. Add regrowth GUI tab
-14. 
-15. 
+
+10. Tooltips for GUI elements in spawn menu options!
+13. Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
+14. Check all settings to see which CAN'T be changed during runtime. Possibly move these to startup.
+16. Support run time toggling of enable_spawning_on_other_surfaces
+17. Support run time toggling of enable_shared_team_vision
+18. Support run time toggling of enable_friendly_fire
+19. Support run time toggling of main_force_name
+20. Force enable_world_eater to require enable_regrowth
 
 Other Ideas, Not Committed:
 - Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
@@ -17,6 +20,8 @@ Other Ideas, Not Committed:
 - If this is their first spawn, give them items. Otherwise don't give new items and don't clear items either?
 - Watch for chunks being generated to be able to move the player to their spawn as soon as it is done with the last chunk.
 - Consider scrapping any overlapping mod settings from the config. ONLY keep the part that can't easily be done in the mod settings menu... NOT SURE about this.
+- Change enable_shared_team_vision to allow players to change this per player (like BNO)
+- Change enable_friendly_fire to be per team?
 
 --------------------------------------------------------DONE------------------------------------------------------------
 
@@ -30,5 +35,5 @@ Other Ideas, Not Committed:
 4. Add multiple surfaces to Spawn GUI (Drop down selection?)
 12. Configurable welcome/server messages in mod settings.
 8. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
-
-Figure out how to define custom lua table/data structs to make syntax/linting work?
+9. Create server settings admin GUI tab
+15. Figure out how to define custom lua table/data structs to make syntax/linting work?

@@ -69,39 +69,21 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-near-spawn-min-distance",
+        name = "oarc-mod-near-spawn-distance",
         setting_type = "runtime-global",
         default_value = 100,
         minimum_value = 50,
-        maximum_value = 200,
+        maximum_value = 250,
         order = "c2"
     },
     {
         type = "int-setting",
-        name = "oarc-mod-near-spawn-max-distance",
-        setting_type = "runtime-global",
-        default_value = 200,
-        minimum_value = 100,
-        maximum_value = 300,
-        order = "c3"
-    },
-    {
-        type = "int-setting",
-        name = "oarc-mod-far-spawn-min-distance",
+        name = "oarc-mod-far-spawn-distance",
         setting_type = "runtime-global",
         default_value = 500,
-        minimum_value = 300,
-        maximum_value = 700,
-        order = "c4"
-    },
-    {
-        type = "int-setting",
-        name = "oarc-mod-far-spawn-max-distance",
-        setting_type = "runtime-global",
-        default_value = 700,
-        minimum_value = 500,
-        maximum_value = 900,
-        order = "c5"
+        minimum_value = 250,
+        maximum_value = 5000,
+        order = "c3"
     },
 
     {

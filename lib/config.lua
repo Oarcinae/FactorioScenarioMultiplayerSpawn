@@ -170,10 +170,10 @@ OCFG = {
     -- Server Info - This stuff is shown in the welcome GUI and Info panel.
     ---@type OarcConfigServerInfo
     server_info = {
+        server_msg = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
+        "This server is running a custom mod that allows individual starting areas on the map.",
         welcome_msg_title = "OARC V2 - TEST SERVER",
         welcome_msg = "TEMPORARY BETA TESTING OF V2 MOD!", -- Printed to player on join as well.
-        server_msg = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
-        "This server is running a custom mod that allows individual starting areas on the map."
     },
 
     -- General gameplay related settings that I didn't want to expose in the mod settings since these should
@@ -205,15 +205,9 @@ OCFG = {
         -- generated map area (even if it is not visible on the map!).
         minimum_distance_to_existing_chunks = 10,
 
-        -- When a player selects "near" spawn, they will be within or as close to this range as possible.
-        -- This is the distance in chunks to the origin.
-        near_spawn_min_distance = 100,
-        near_spawn_max_distance = 200,
-
-        -- When a player selects "far" spawn, they will be AT LEAST this distance away.
-        -- This is the distance in chunks to the origin.
-        far_spawn_min_distance = 500,
-        far_spawn_max_distance = 1000,
+        -- The range in which a player can select how close to the center of the map they want to spawn.
+        near_spawn_distance = 100,
+        far_spawn_distance = 1000,
 
         -- This allows 2 players to spawn next to each other, each with their own starting area.
         enable_buddy_spawn = true,
@@ -267,8 +261,6 @@ OCFG = {
 
         -- Respawn cooldown in minutes.
         respawn_cooldown_min = 15,
-
-
     },
 
     -- This is a separate feature that is part of the mod that helps keep the map size down. Not required but useful.
@@ -350,10 +342,8 @@ OCFG = {
 ---@field allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
 ---@field enable_moat_bridging boolean If there is a moat, this makes a small path to land to avoid "turtling", but if the spawn is in the middle of water, it won't do anything.
 ---@field minimum_distance_to_existing_chunks number The radius, in chunks, that a spawn area is from any other generated chunks. It ensures the spawn area isn't too near generated/explored/existing area.
----@field near_spawn_min_distance number When a player selects "near" spawn, they will be within or as close to this range as possible.
----@field near_spawn_max_distance number When a player selects "near" spawn, they will be within or as close to this range as possible.
----@field far_spawn_min_distance number When a player selects "far" spawn, they will be AT LEAST this distance away.
----@field far_spawn_max_distance number When a player selects "far" spawn, they will be AT LEAST this distance away.
+---@field near_spawn_distance number The closest a player can spawn to the origin. (Not exact, but close).
+---@field far_spawn_distance number The furthest a player can spawn from the origin. (Not exact, but close).
 ---@field enable_buddy_spawn boolean Allow 2 players to spawn next to each other, each with their own starting area.
 ---@field enable_offline_protection boolean Inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
 ---@field enable_shared_team_vision boolean Enable shared vision between teams (all teams are COOP regardless)

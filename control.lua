@@ -108,6 +108,18 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 ----------------------------------------
+-- Shared chat, so you don't have to type /s
+-- But you do lose your player colors across forces.
+----------------------------------------
+script.on_event(defines.events.on_console_chat, function(event)
+    if (global.ocfg.gameplay.enable_shared_team_chat) then
+        if (event.player_index ~= nil) then
+            ShareChatBetweenForces(game.players[event.player_index], event.message)
+        end
+    end
+end)
+
+----------------------------------------
 -- On tick events. Stuff that needs to happen at regular intervals.
 -- Delayed events, delayed spawns, ...
 ----------------------------------------
