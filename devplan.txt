@@ -1,6 +1,9 @@
 
-ACTIVE ITEM:
-11. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
+ACTIVE ITEMS:
+22. Remove separate buddy spawn menu?
+23. Refresh the spawn controls GUI when player accepts/rejects
+24. Remove the shared spawn separate GUI window?
+
 
 10. Tooltips for GUI elements in spawn menu options!
 13. Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
@@ -10,6 +13,7 @@ ACTIVE ITEM:
 18. Support run time toggling of enable_friendly_fire
 19. Support run time toggling of main_force_name
 20. Force enable_world_eater to require enable_regrowth
+
 
 Other Ideas, Not Committed:
 - Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
@@ -37,3 +41,6 @@ Other Ideas, Not Committed:
 8. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
 9. Create server settings admin GUI tab
 15. Figure out how to define custom lua table/data structs to make syntax/linting work?
+23. Setup multiplayer testing using multiple instances and some batch files.
+11. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
+21. Refactor the spawn menu GUI (don't destroy the menu unless we need to, refresh only the elements we need to, save data to a global using tags?)

@@ -262,6 +262,20 @@ script.on_event(defines.events.on_gui_closed, function(event)
 end)
 
 
+--- For sliders and other value changing elements.
+script.on_event(defines.events.on_gui_value_changed, function(event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
+    SeparateSpawnsGuiValueChanged(event)
+end)
+
+--- For dropdowns and listboxes.
+script.on_event(defines.events.on_gui_selection_state_changed, function(event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
+    SeparateSpawnsGuiSelectionStateChanged(event)
+end)
+
 --on_gui_checked_state_changed	 Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 --on_gui_click	 Called when LuaGuiElement is clicked.
 --on_gui_closed	 Called when the player closes the GUI they have open. [...]

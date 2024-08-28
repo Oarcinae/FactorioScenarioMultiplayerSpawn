@@ -111,6 +111,11 @@ function SpawnCtrlGuiOptionsSelect(event)
             end
         end
         FakeTabChangeEventOarcGui(player)
+
+        -- Refresh the shared spawn spawn gui for all players
+        for _,p in pairs(game.connected_players) do
+            RefreshSharedSpawnFrameIfExist(p)
+        end
     end
 end
 

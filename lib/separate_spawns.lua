@@ -98,6 +98,11 @@ function InitSpawnGlobalsAndForces()
         global.ocore.delayedSpawns --[[@as OarcDelayedSpawnsTable]] = {}
     end
 
+    -- This temporarily stores the spawn choices that a player makes from the GUI interactions.
+    if (global.ocore.spawnChoices == nil) then
+        global.ocore.spawnChoices --[[@as OarcSpawnChoicesTable]] = {}
+    end
+
     -- This is what I use to communicate a buddy spawn request between the buddies.
     -- This contains information of who is asking, and what options were selected.
     if (global.ocore.buddySpawnOpts == nil) then
@@ -715,7 +720,7 @@ end
 ---Cleans up a player's unique spawn point.
 ---TODO: Move relevant stuff to regrowth?
 ---@param playerName string
----@param cleanup boolean
+---@param cleanup boolean Marks the chunks for cleanup by the regrowth mod.
 ---@param immediate boolean Trrigger cleanup immediately.
 ---@return nil
 function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
@@ -727,11 +732,12 @@ function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
     local spawnPos = spawn.position
     local spawn_radius_tiles = global.ocfg.surfaces_config[spawn.surface].spawn_config.general.spawn_radius_tiles
 
-    -- Check if it was near someone else's base. (Really just buddy base is possible I think.)
+    -- Check if it was near someone else's base. (Really just buddy base is possible I think?)
     nearOtherSpawn = false
-    for spawnPlayerName, otherSpawnPos in pairs(global.ocore.uniqueSpawns) do
-        if ((spawnPlayerName ~= playerName) and
-                (util.distance(spawnPos, otherSpawnPos.pos) < (spawn_radius_tiles * 3))) then
+    for spawnPlayerName, otherSpawnPos in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
+        if ((spawn.surface == otherSpawnPos.surface) and
+                (spawnPlayerName ~= playerName) and
+                (util.distance(spawnPos, otherSpawnPos.position) < (spawn_radius_tiles * 3))) then
             log("Won't remove base as it's close to another spawn: " .. spawnPlayerName)
             nearOtherSpawn = true
         end
@@ -1147,6 +1153,19 @@ function PlayerHasDelayedSpawn(player_name)
     return false
 end
 
+---Get the list of surfaces that are allowed for spawning.
+---@return string[]
+function GetAllowedSurfaces()
+    ---@type string[]
+    local surfaceList = {}
+    for surfaceName,allowed in pairs(global.ocore.surfaces --[[@as table<string, boolean>]]) do
+        if allowed then
+            table.insert(surfaceList, surfaceName)
+        end
+    end
+    return surfaceList
+end
+
 --[[
   ___  ___   ___   ___  ___     ___  ___  ___  ___  ___  ___  ___  ___
  | __|/ _ \ | _ \ / __|| __|   / __|| _ \| __|/ __||_ _|| __||_ _|/ __|
@@ -1349,8 +1368,8 @@ end
  You can ignore this unless you're making changes to the mod, in which case it might be helpful.
 ]]
 
----@enum BuddySpawnChoice
-BUDDY_SPAWN_CHOICE = {
+---@enum SpawnTeamChoice
+SPAWN_TEAM_CHOICE = {
     join_main_team = 1,
     join_own_team = 2,
     join_buddy_team = 3,
@@ -1382,9 +1401,14 @@ BUDDY_SPAWN_CHOICE = {
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 
 ---This contains information of who is being asked to buddy spawn, and what options were selected.
----@alias OarcBuddySpawnOpts { surface: string, teamRadioSelection: BuddySpawnChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
+---@alias OarcBuddySpawnOpts { surface: string, teamRadioSelection: SpawnTeamChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
 ---Table of [OarcBuddySpawnOpts](lua://OarcBuddySpawnOpts) indexed by player name.
 ---@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
+
+---This contains the spawn choices for a player in the spawn menu.
+---@alias OarcSpawnChoices { surface: string, team: SpawnTeamChoice, moat: boolean, buddy: string?, distance: integer }
+---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.
+---@alias OarcSpawnChoicesTable table<string, OarcSpawnChoices>
 
 ---Table of players in the "waiting room" for a buddy spawn.
 ---@alias OarcWaitingBuddiesTable table<integer, string>
