@@ -9,9 +9,9 @@ local SPAWN_GUI_MAX_HEIGHT = 1000
 function DisplayWelcomeTextGui(player)
     if ((player.gui.screen["welcome_msg"] ~= nil) or
             (player.gui.screen["spawn_opts"] ~= nil) or
-            (player.gui.screen["shared_spawn_opts"] ~= nil) or
+            -- (player.gui.screen["shared_spawn_opts"] ~= nil) or
             (player.gui.screen["join_shared_spawn_wait_menu"] ~= nil) or
-            (player.gui.screen["buddy_spawn_opts"] ~= nil) or
+            -- (player.gui.screen["buddy_spawn_opts"] ~= nil) or
             (player.gui.screen["buddy_wait_menu"] ~= nil) or
             (player.gui.screen["buddy_request_menu"] ~= nil) or
             (player.gui.screen["wait_for_spawn_dialog"] ~= nil)) then
@@ -19,36 +19,47 @@ function DisplayWelcomeTextGui(player)
         return false
     end
 
-    local wGui = player.gui.screen.add { name = "welcome_msg",
+    local welcome_gui = player.gui.screen.add {
+        name = "welcome_msg",
         type = "frame",
         direction = "vertical",
-        caption = global.ocfg.server_info.welcome_msg_title }
-    wGui.auto_center = true
+        caption = global.ocfg.server_info.welcome_msg_title
+    }
+    welcome_gui.auto_center = true
+    welcome_gui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    welcome_gui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+    welcome_gui.style.padding = 5
 
-    wGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
-    wGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+    local welcome_gui_if = welcome_gui.add {
+        type = "frame",
+        style = "inside_shallow_frame_with_padding",
+        direction = "vertical"
+    }
 
     -- Start with server message.
-    AddLabel(wGui, "server_msg_lbl1", global.ocfg.server_info.server_msg, my_label_style)
+    AddLabel(welcome_gui_if, nil, global.ocfg.server_info.server_msg, my_label_style)
     -- AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
-    AddSpacer(wGui)
+    AddSpacer(welcome_gui_if)
 
     -- Informational message about the scenario
-    AddLabel(wGui, "scenario_info_msg_lbl1", global.ocfg.server_info.welcome_msg, my_label_style)
-    AddSpacer(wGui)
+    AddLabel(welcome_gui_if, nil, global.ocfg.server_info.welcome_msg, my_label_style)
+    AddSpacer(welcome_gui_if)
 
-    -- Warning about spawn creation time
-    AddLabel(wGui, "spawn_time_msg_lbl1", { "oarc-spawn-time-warning-msg" }, my_warning_style)
+    -- Warnings about the scenario
+    AddLabel(welcome_gui_if, nil, { "oarc-scenario-warning-msg" }, my_warning_style)
 
     -- Confirm button
-    AddSpacerLine(wGui)
-    local button_flow = wGui.add { type = "flow" }
+    AddSpacerLine(welcome_gui_if)
+    local button_flow = welcome_gui_if.add { type = "flow" }
     button_flow.style.horizontal_align = "right"
     button_flow.style.horizontally_stretchable = true
-    button_flow.add { name = "welcome_okay_btn",
+    button_flow.add {
+        name = "welcome_okay_btn",
+        tags = { action = "oarc_spawn_options", setting = "welcome_okay" },
         type = "button",
         caption = { "oarc-i-understand" },
-        style = "confirm_button" }
+        style = "confirm_button"
+    }
 
     return true
 end
@@ -74,20 +85,29 @@ function WelcomeTextGuiClick(event)
     end
 end
 
----Creates the spawn options gui frame to hold all the spawn options.
+---Creates the spawn menu gui frame to hold all the spawn options.
 ---@param player LuaPlayer
 ---@return LuaGuiElement
-function CreateSpawnOptionsGuiFrame(player)
-    local spawn_opts_gui = player.gui.screen.add {
+function CreateSpawnMenuGuiFrame(player)
+    local spawn_opts_frame = player.gui.screen.add {
         name = "spawn_opts",
         type = "frame",
         direction = "vertical",
         caption = { "oarc-spawn-options" }
     }
-    spawn_opts_gui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
-    spawn_opts_gui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
-    spawn_opts_gui.auto_center = true
-    return spawn_opts_gui
+    spawn_opts_frame.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    spawn_opts_frame.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+    spawn_opts_frame.auto_center = true
+    spawn_opts_frame.style.padding = 5
+
+    local inside_frame = spawn_opts_frame.add {
+        name = "spawn_opts_if",
+        type = "frame",
+        style = "inside_shallow_frame_with_padding",
+        direction = "vertical"
+    }
+
+    return inside_frame
 end
 
 ---Show the surface select dropdown
@@ -156,16 +176,20 @@ end
 ---@param maximum_distance number
 ---@return nil
 function CreateDistanceSelectSlider(parent_flow, minimum_distance, maximum_distance)
-    local sliderFlow = parent_flow.add { name = "spawn_distance_slider_flow",
+    
+    local slider_flow = parent_flow.add {
         type = "flow",
         direction = "horizontal",
         style = "player_input_horizontal_flow"
     }
-    sliderFlow.style.horizontal_align = "center"
-    sliderFlow.add { name = "spawn_distance_slider_label",
+    slider_flow.style.horizontal_align = "center"
+
+    slider_flow.add {
         type = "label",
-        caption = "test" }
-    sliderFlow.add { name = "spawn_distance_slider",
+        caption = { "oarc-spawn-distance-slider-label" }
+    }
+    slider_flow.add {
+        name = "spawn_distance_slider",
         type = "slider",
         tags = { action = "oarc_spawn_options", setting = "distance_select" },
         minimum_value = minimum_distance,
@@ -174,7 +198,8 @@ function CreateDistanceSelectSlider(parent_flow, minimum_distance, maximum_dista
         discrete_slider = true,
         value_step = 1,
     }
-    sliderFlow.add { name = "spawn_distance_slider_value",
+    slider_flow.add {
+        name = "spawn_distance_slider_value",
         type = "textfield",
         ignored_by_interaction = true,
         caption = minimum_distance,
@@ -183,22 +208,103 @@ function CreateDistanceSelectSlider(parent_flow, minimum_distance, maximum_dista
     }
 end
 
----Create a confim button for player to request spawn creation
+---Create the spawn settings frame
 ---@param parent_flow LuaGuiElement
+---@param gameplay OarcConfigGameplaySettings
 ---@return nil
-function CreateSpawnRequestButton(parent_flow)
-    local spawnRequestFlow = parent_flow.add {
-        name = "spawn_request_flow",
+function CreateSpawnSettingsFrame(parent_flow, gameplay)
+
+    local spawn_settings_frame = parent_flow.add {
+        name = "spawn_settings_frame",
+        type = "frame",
+        direction = "vertical",
+        style = "bordered_frame",
+    }
+    spawn_settings_frame.style.horizontally_stretchable = true
+    spawn_settings_frame.style.padding = 5
+
+    AddLabel(spawn_settings_frame, nil, { "oarc-spawn-menu-settings-header" }, my_label_header_style)
+    AddLabel(spawn_settings_frame, nil, { "oarc-spawn-menu-settings-info" }, my_label_style)
+
+    -- Pick surface
+    if (gameplay.enable_spawning_on_other_surfaces) then
+        ShowSurfaceSelectDropdown(spawn_settings_frame)
+    end
+
+    -- Radio buttons to pick your team.
+    DisplayTeamSelectRadioButtons(spawn_settings_frame, gameplay.enable_separate_teams, gameplay.enable_buddy_spawn)
+
+    -- Allow players to spawn with a moat around their area.
+    if (gameplay.allow_moats_around_spawns) then
+        spawn_settings_frame.add {
+            name = "isolated_spawn_moat_option_checkbox",
+            tags = { action = "oarc_spawn_options", setting = "moat_option" },
+            type = "checkbox",
+            caption = { "oarc-moat-option" },
+            state = false
+        }
+    end
+
+    CreateDistanceSelectSlider(spawn_settings_frame, gameplay.near_spawn_distance, gameplay.far_spawn_distance)
+end
+
+---Create a frame and a confim button for player to request SOLO spawn creation
+---@param parent_flow LuaGuiElement
+---@param enable_shared_spawns boolean
+---@param max_shared_players integer
+---@return nil
+function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_players)
+
+    solo_spawn_frame = parent_flow.add {
+        name = "solo_spawn_frame",
+        type = "frame",
+        direction = "vertical",
+        style = "bordered_frame"
+    }
+    solo_spawn_frame.style.horizontally_stretchable = true
+    solo_spawn_frame.style.padding = 5
+
+    AddLabel(solo_spawn_frame, nil, { "oarc-spawn-menu-solo-header" }, my_label_header_style)
+    AddLabel(solo_spawn_frame, nil, { "oarc-starting-area-normal" }, my_label_style)
+
+    local button_flow = solo_spawn_frame.add {
+        -- name = "solo_spawn_button_flow",
         type = "flow",
         direction = "horizontal"
     }
-    spawnRequestFlow.style.horizontal_align = "right"
-    spawnRequestFlow.style.horizontally_stretchable = true
-    spawnRequestFlow.add {
+    button_flow.style.horizontal_align = "right"
+    button_flow.style.horizontally_stretchable = true
+    button_flow.add {
         name = "spawn_request",
         tags = { action = "oarc_spawn_options", setting = "spawn_request" },
         type = "button",
-        caption = { "oarc-solo-spawn-near" },
+        caption = { "oarc-solo-spawn" },
+        tooltip = { "oarc-solo-spawn-tooltip" },
+        style = "confirm_button"
+    }
+
+    -- A note about sharing spawns
+    if enable_shared_spawns and (max_shared_players > 1) then
+        AddLabel(solo_spawn_frame, nil, { "oarc-max-players-shared-spawn", max_shared_players - 1 },  my_note_style)
+    end
+end
+
+---Create a confirm button for player to request a BUDDY spawn
+---@param parent_flow LuaGuiElement
+---@return nil
+function CreateBuddySpawnRequestButton(parent_flow)
+    local buddySpawnRequestFlow = parent_flow.add {
+        name = "buddy_spawn_request_flow",
+        type = "flow",
+        direction = "horizontal"
+    }
+    buddySpawnRequestFlow.style.horizontal_align = "right"
+    buddySpawnRequestFlow.style.horizontally_stretchable = true
+    buddySpawnRequestFlow.add {
+        name = "buddy_spawn_request",
+        tags = { action = "oarc_spawn_options", setting = "buddy_spawn_request" },
+        type = "button",
+        caption = { "oarc-buddy-spawn" },
         style = "confirm_button"
     }
 end
@@ -209,42 +315,76 @@ end
 ---@return nil
 function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
 
-    local sharedSpawnFrame = parent_flow.spawn_shared_flow
-    if sharedSpawnFrame == nil then
-        sharedSpawnFrame = parent_flow.add {
-            name = "spawn_shared_flow",
+    local shared_spawn_frame = parent_flow.shared_spawn_frame
+    local selected_host = nil ---@type string?
+
+    -- Create the shared spawn frame if it doesn't exist
+    if shared_spawn_frame == nil then
+        shared_spawn_frame = parent_flow.add {
+            name = "shared_spawn_frame",
             type = "frame",
             direction = "vertical",
             style = "bordered_frame"
         }
-    --- Let's us refresh the frame if it already exists
+        shared_spawn_frame.style.horizontally_stretchable = true
+        shared_spawn_frame.style.padding = 5
+
+    --- Let's us refresh the frame if it already exists instead of recreating it
     else
-        for _,child in pairs(sharedSpawnFrame.children) do
+        -- Save the previous selected host so we can reselect it after the frame is recreated
+        if shared_spawn_frame.shared_spawn_select_dropdown ~= nil then
+            local index = shared_spawn_frame.shared_spawn_select_dropdown.selected_index
+            if index > 0 then
+                selected_host = shared_spawn_frame.shared_spawn_select_dropdown.get_item(index) --[[@as string]]
+            end
+        end
+
+        for _,child in pairs(shared_spawn_frame.children) do
             child.destroy()
         end
     end
 
-    if enable_shared_spawns then
-        local numAvailSpawns = GetNumberOfAvailableSharedSpawns()
-        if (numAvailSpawns > 0) then
-            sharedSpawnFrame.add {
-                name = "join_other_spawn",
-                tags = { action = "oarc_spawn_options", setting = "join_other_spawn" },
-                type = "button",
-                caption = { "oarc-join-someone-avail", numAvailSpawns }
-            }
-            local join_spawn_text = { "oarc-join-someone-info" }
-            AddLabel(sharedSpawnFrame, "join_other_spawn_lbl1", join_spawn_text, my_label_style)
-        else
-            AddLabel(sharedSpawnFrame, "join_other_spawn_lbl1", { "oarc-no-shared-avail" }, my_label_style)
-            sharedSpawnFrame.add {
-                name = "join_other_spawn_check",
-                type = "button",
-                caption = { "oarc-join-check-again" }
-            }
+    AddLabel(shared_spawn_frame, nil, { "oarc-spawn-menu-shared-header" }, my_label_header_style)
+
+    if not enable_shared_spawns then
+        AddLabel(shared_spawn_frame, nil, { "oarc-shared-spawn-disabled" }, my_warning_style)
+        return
+    end
+
+
+    local avail_hosts = GetAvailableSharedSpawns()
+    local num_avail_spawns = #avail_hosts
+
+    if (num_avail_spawns > 0) then
+
+        local previous_index = 0
+        if selected_host then
+            for i,host in ipairs(avail_hosts) do
+                if host == selected_host then
+                    previous_index = i
+                    break
+                end
+            end
         end
+
+        shared_spawn_frame.add {
+            name = "shared_spawn_select_dropdown",
+            tags = { action = "oarc_spawn_options", setting = "shared_spawn_select" },
+            type = "drop-down",
+            items = avail_hosts,
+            selected_index = previous_index
+        }
+
+        shared_spawn_frame.add {
+            name = "join_other_spawn",
+            tags = { action = "oarc_spawn_options", setting = "join_other_spawn" },
+            type = "button",
+            caption = { "oarc-join-someone-avail", num_avail_spawns }
+        }
+
+        AddLabel(shared_spawn_frame, "join_other_spawn_lbl1", { "oarc-join-someone-info" }, my_label_style)
     else
-        AddLabel(sharedSpawnFrame, "join_other_spawn_lbl1", { "oarc-shared-spawn-disabled" }, my_warning_style)
+        AddLabel(shared_spawn_frame, "join_other_spawn_lbl1", { "oarc-no-shared-avail" }, my_label_style)
     end
 end
 
@@ -254,31 +394,106 @@ end
 function RefreshSharedSpawnFrameIfExist(player)
     local spawn_opts = player.gui.screen.spawn_opts
     if spawn_opts == nil then return end
-    CreateSharedSpawnFrame(spawn_opts, global.ocfg.gameplay.enable_shared_spawns)
+    CreateSharedSpawnFrame(spawn_opts.spawn_opts_if, global.ocfg.gameplay.enable_shared_spawns)
 end
 
 ---Creates the buddy spawn frame for spawning with a buddy
 ---@param parent_flow LuaGuiElement
+---@param player LuaPlayer
 ---@return nil
-function CreateBuddySpawnFrame(parent_flow, enable_buddy_spawn)
-    if enable_buddy_spawn then -- TODO: Confirm if this must also require enable_shared_spawns!!
-        local buddySpawnFrame = parent_flow.add {
-            name = "spawn_buddy_flow",
+function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
+
+    local buddy_spawn_frame = parent_flow.buddy_spawn_frame
+    local selected_buddy = nil ---@type string?
+
+    -- Create the buddy spawn frame if it doesn't exist
+    if buddy_spawn_frame == nil then
+        buddy_spawn_frame = parent_flow.add {
+            name = "buddy_spawn_frame",
             type = "frame",
             direction = "vertical",
             style = "bordered_frame"
         }
+        buddy_spawn_frame.style.horizontally_stretchable = true
+        buddy_spawn_frame.style.padding = 5
 
-        -- AddSpacerLine(buddySpawnFrame, "buddy_spawn_msg_spacer")
-        buddySpawnFrame.add {
-            name = "buddy_spawn",
-            type = "button",
-            caption = { "oarc-buddy-spawn" }
-        }
-        AddLabel(buddySpawnFrame, "buddy_spawn_lbl1", { "oarc-buddy-spawn-info" }, my_label_style)
+    --- Let's us refresh the frame if it already exists instead of recreating it
+    else
+        -- Save the previous selected buddy so we can reselect it after the frame is recreated
+        if buddy_spawn_frame.waiting_buddies_dropdown ~= nil then
+            local index = buddy_spawn_frame.waiting_buddies_dropdown.selected_index
+            if index > 0 then
+                selected_buddy = buddy_spawn_frame.waiting_buddies_dropdown.get_item(index) --[[@as string]]
+                --- Make sure the buddy is still valid?
+                if game.players[selected_buddy] and game.players[selected_buddy].gui.screen.spawn_opts == nil then
+                    selected_buddy = nil
+                end
+            end
+        end
+
+        for _,child in pairs(buddy_spawn_frame.children) do
+            child.destroy()
+        end
     end
+
+    log("Creating buddy spawn frame for: " .. player.name)
+
+    AddLabel(buddy_spawn_frame, nil, { "oarc-spawn-menu-buddy-header" }, my_label_header_style)
+
+    if not enable_buddy_spawn then -- TODO: Confirm if this must also require enable_shared_spawns!!
+        -- Add some note about this being disabled?
+        AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-spawn-disabled" }, my_label_style)
+        return
+    end
+
+
+    -- Warnings and explanations...
+    AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-spawn-instructions" }, my_label_style)
+    AddSpacer(buddy_spawn_frame)
+
+    
+    ---@type string[]
+    local avail_buddies = GetOtherPlayersInSpawnMenu(player)
+
+    log("Available buddies: " .. serpent.block(avail_buddies))
+
+    local previous_index = 0
+    if selected_buddy then
+        for i,host in ipairs(avail_buddies) do
+            if host == selected_buddy then
+                previous_index = i
+                break
+            end
+        end
+    end
+
+    AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-select-info" }, my_label_style)
+    buddy_spawn_frame.add {
+        name = "waiting_buddies_dropdown",
+        tags = { action = "oarc_spawn_options", setting = "buddy_select" },
+        type = "drop-down",
+        items = avail_buddies,
+        selected_index = previous_index
+    }
+    -- buddySpawnFrame.add { name = "refresh_buddy_list",
+    --     type = "button",
+    --     caption = { "oarc-buddy-refresh" } }
+    -- AddSpacerLine(buddySpawnFlow)
+
+    CreateBuddySpawnRequestButton(buddy_spawn_frame)
+
+    AddLabel(buddy_spawn_frame, "buddy_spawn_lbl1", { "oarc-buddy-spawn-info" }, my_label_style)
+    
 end
 
+---Refresh the buddy list without recreating any GUI elements
+---@param player LuaPlayer
+---@param dropdown LuaGuiElement The buddy dropdown element
+---@return nil
+function RefreshBuddyList(player, dropdown)
+    log("Refreshing buddy list for: " .. player.name)
+    dropdown.items = GetOtherPlayersInSpawnMenu(player)
+end
 
 ---Display the spawn options and explanation
 ---@param player LuaPlayer
@@ -295,10 +510,11 @@ function DisplaySpawnOptions(player)
     end
 
     -- Get gameplay settings from config
+    ---@type OarcConfigGameplaySettings
     local gameplay = global.ocfg.gameplay
 
     -- Create the primary frame and a warning label
-    local sGui = CreateSpawnOptionsGuiFrame(player)
+    local sGui = CreateSpawnMenuGuiFrame(player)
     AddLabel(sGui, "warning_lbl1", { "oarc-click-info-btn-help" }, my_warning_style)
 
     -- Create the default settings entry for the OarcSpawnChoices table
@@ -308,77 +524,15 @@ function DisplaySpawnOptions(player)
         team = SPAWN_TEAM_CHOICE.join_main_team,
         moat = false,
         buddy = nil,
-        distance = global.ocfg.gameplay.near_spawn_distance
+        distance = global.ocfg.gameplay.near_spawn_distance,
+        host = nil
     }
     global.ocore.spawnChoices[player.name] = spawn_choices_entry
 
-    -- Holds the main spawn options
-    local soloSpawnFlow = sGui.add {
-        name = "spawn_solo_flow",
-        type = "frame",
-        direction = "vertical",
-        style = "bordered_frame"
-    }
-
-    -- Pick surface
-    if (gameplay.enable_spawning_on_other_surfaces) then
-        ShowSurfaceSelectDropdown(soloSpawnFlow)
-    end
-
-    -- Radio buttons to pick your team.
-    DisplayTeamSelectRadioButtons(soloSpawnFlow, gameplay.enable_separate_teams, gameplay.enable_buddy_spawn)
-
-    -- Allow players to spawn with a moat around their area.
-    --TODO: Vanilla spawn points are not implemented yet.
-    -- and not global.ocfg.enable_vanilla_spawns
-    if (gameplay.allow_moats_around_spawns) then
-        soloSpawnFlow.add {
-            name = "isolated_spawn_moat_option_checkbox",
-            type = "checkbox",
-            caption = { "oarc-moat-option" },
-            state = false
-        }
-    end
-    -- if (global.ocfg.enable_vanilla_spawns and (TableLength(global.vanillaSpawns) > 0)) then
-    --     soloSpawnFlow.add{name = "isolated_spawn_vanilla_option_checkbox",
-    --                     type = "checkbox",
-    --                     caption="Use a pre-set vanilla spawn point. " .. TableLengthglobal.vanillaSpawns .. " available.",
-    --                     state=false}
-    -- end
-
-    CreateDistanceSelectSlider(soloSpawnFlow, gameplay.near_spawn_distance, gameplay.far_spawn_distance)
-
-    -- The confirm button to request a spawn
-    CreateSpawnRequestButton(soloSpawnFlow)
-
-
-    -- if (global.ocfg.enable_vanilla_spawns) then
-    --     AddLabel(soloSpawnFlow, "isolated_spawn_lbl1",
-    --         {"oarc-starting-area-vanilla"}, my_label_style)
-    --     AddLabel(soloSpawnFlow, "vanilla_spawn_lbl2",
-    --         {"oarc-vanilla-spawns-available", TableLength(global.vanillaSpawns)}, my_label_style)
-    -- else
-    AddLabel(soloSpawnFlow, "isolated_spawn_lbl1", { "oarc-starting-area-normal" }, my_label_style)
-    -- end
-
-    -- Spawn options to join another player's base.
-    CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns)
-
-    -- Awesome buddy spawning system
-    ---TODO: Vanilla spawn points are not implemented yet.
-    -- if (not global.ocfg.enable_vanilla_spawns) then
-    CreateBuddySpawnFrame(sGui, gameplay.enable_buddy_spawn)
-    -- end
-
-    -- Some final notes
-    if (gameplay.number_of_players_per_shared_spawn > 0) then
-        AddLabel(sGui, "max_players_lbl2",
-            { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 },
-            my_note_style)
-    end
-
-    local spawn_distance_notes = { "oarc-spawn-dist-notes" }
-    AddLabel(sGui, "note_lbl1", spawn_distance_notes, my_note_style)
+    CreateSpawnSettingsFrame(sGui, gameplay) -- The settings for configuring a spawn
+    CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn) -- The primary method of spawning
+    CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns) -- Spawn options to join another player's base.
+    CreateBuddySpawnFrame(sGui, player, gameplay.enable_buddy_spawn) -- Awesome buddy spawning system
 end
 
 
@@ -415,6 +569,9 @@ function SpawnOptsRadioSelect(event)
             event.element.parent.isolated_spawn_main_team_radio.state = false
             event.element.parent.isolated_spawn_new_team_radio.state = false
         end
+
+    elseif (tags.setting == "moat_option") then
+        global.ocore.spawnChoices[player.name].moat = event.element.state
     end
 end
 
@@ -429,11 +586,128 @@ function SpawnChoicesGuiClickNew(event)
     if (tags.action ~= "oarc_spawn_options") then
         return
     end
-    local setting_name = tags.setting
 
-    if (tags.setting == "spawn_request") then
+    if (tags.setting == "welcome_okay") then
+        if (player.gui.screen.welcome_msg ~= nil) then
+            player.gui.screen.welcome_msg.destroy()
+        end
+        DisplaySpawnOptions(player)
+    elseif (tags.setting == "spawn_request") then
         SpawnRequest(player)
+    elseif (tags.setting == "join_other_spawn") then
+        RequestToJoinSharedSpawn(player)
+    elseif (tags.setting == "cancel_shared_spawn_wait_menu") then
+        CancelSharedSpawnRequest(player)
+    elseif (tags.setting == "buddy_select") then
+        RefreshBuddyList(player, event.element)
+    elseif (tags.setting == "buddy_spawn_request") then
+        RequestBuddySpawn(player)
+    elseif (tags.setting == "cancel_buddy_wait_menu") then
+        CancelBuddySpawnWaitMenu(player)
+    elseif (tags.setting == "accept_buddy_request") then
+        AcceptBuddyRequest(player, tags.requesting_buddy_name --[[@as string]])
+    elseif (tags.setting == "reject_buddy_request") then
+        RejectBuddyRequest(player, tags.requesting_buddy_name --[[@as string]])
     end
+end
+
+---Request a buddy spawn. Requires the buddy to accept or reject the request.
+---@param player LuaPlayer
+---@return nil
+function RequestBuddySpawn(player)
+    local buddy_choice = global.ocore.spawnChoices[player.name].buddy
+    if (buddy_choice == nil) then player.print({ "oarc-invalid-buddy" }) return end
+    local buddy = game.players[buddy_choice]
+    if (buddy == nil) then player.print({ "oarc-invalid-buddy" }) return end
+
+    DisplayBuddySpawnWaitMenu(player)
+    DisplayBuddySpawnRequestMenu(buddy, player.name)
+end
+
+---Handle buddy spawn wait menu cancel (waiting for buddy to accept or decline proposal)
+---@param player LuaPlayer
+---@return nil
+function CancelBuddySpawnWaitMenu(player)
+
+    ---@type OarcSpawnChoices
+    local spawn_choices = global.ocore.spawnChoices[player.name]
+    local buddy = game.players[spawn_choices.buddy]
+
+    player.gui.screen.buddy_wait_menu.destroy()
+    DisplaySpawnOptions(player)
+
+    -- Catch a case where the buddy has left the game early and no longer exists.
+    if (buddy == nil) then
+        return
+    end
+
+    if (buddy.gui.screen.buddy_request_menu ~= nil) then
+        buddy.gui.screen.buddy_request_menu.destroy()
+        DisplaySpawnOptions(buddy)
+    end
+
+    buddy.print({ "oarc-buddy-cancel-request", player.name })
+end
+
+---Request to join someone's shared spawn
+---@param player LuaPlayer
+---@return nil
+function RequestToJoinSharedSpawn(player)
+
+    if (player.gui.screen.spawn_opts ~= nil) then
+        player.gui.screen.spawn_opts.destroy()
+    end
+
+    local host_name = global.ocore.spawnChoices[player.name].host
+    if (host_name == nil) then player.print({ "oarc-no-shared-spawn-selected" }) return end
+
+    -- Clear the spawn options gui
+    if (player.gui.screen.spawn_opts ~= nil) then
+        player.gui.screen.spawn_opts.destroy()
+    end
+
+    if ((game.players[host_name] ~= nil) and (game.players[host_name].connected)) then
+        table.insert(global.ocore.sharedSpawns[host_name].joinQueue, player.name)
+
+        -- Display wait menu with cancel button.
+        DisplaySharedSpawnJoinWaitMenu(player)
+
+        -- Tell other player they are requesting a response.
+        game.players[host_name].print({ "oarc-player-requesting-join-you", player.name })
+        OarcGuiRefreshContent(game.players[host_name])
+    else
+        player.print({ "oarc-invalid-host-shared-spawn" })
+
+        DisplaySpawnOptions(player)
+    end
+end
+
+
+---Cancel shared spawn request from the waiting menu
+---@param player LuaPlayer
+---@return nil
+function CancelSharedSpawnRequest(player)
+
+    --- Destroy the waiting menu and display the spawn options again.
+    player.gui.screen.join_shared_spawn_wait_menu.destroy()
+    DisplaySpawnOptions(player)
+
+    -- Find and remove the player from the joinQueue they were in.
+    for host_name, shared_spawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
+        for index, requestor in pairs(shared_spawn.joinQueue) do
+            if (requestor == player.name) then
+                global.ocore.sharedSpawns[host_name].joinQueue[index] = nil
+                local host_player = game.players[host_name]
+                if (host_player ~= nil) and (host_player.connected) then
+                    game.players[host_name].print({ "oarc-player-cancel-join-request", player.name })
+                    OarcGuiRefreshContent(game.players[host_name])
+                end
+                return -- Found and removed player from joinQueue
+            end
+        end
+    end
+
+    log("ERROR! Failed to remove player from joinQueue?!")
 end
 
 ---Handle slider value changes
@@ -473,6 +747,26 @@ function SpawnOptsSelectionChanged(event)
         local surfaceName = event.element.get_item(index) --[[@as string]]
         global.ocore.spawnChoices[player.name].surface = surfaceName
         log("GUI DEBUG Selected surface: " .. surfaceName)
+
+    elseif (tags.setting == "shared_spawn_select") then
+        local index = event.element.selected_index
+        if (index > 0) then
+            local hostName = event.element.get_item(index) --[[@as string]]
+            global.ocore.spawnChoices[player.name].host = hostName
+            log("GUI DEBUG Selected host: " .. hostName)
+        else
+            global.ocore.spawnChoices[player.name].host = nil
+        end
+    
+    elseif (tags.setting == "buddy_select") then
+        local index = event.element.selected_index
+        if (index > 0) then
+            local buddyName = event.element.get_item(index) --[[@as string]]
+            global.ocore.spawnChoices[player.name].buddy = buddyName
+            log("GUI DEBUG Selected buddy: " .. buddyName)
+        else
+            global.ocore.spawnChoices[player.name].buddy = nil
+        end
     end
 end
 
@@ -482,21 +776,22 @@ end
 function SpawnRequest(player)
     -- Get the player's spawn choices
     ---@type OarcSpawnChoices
-    local spawnChoices = global.ocore.spawnChoices[player.name]
-    if (spawnChoices == nil) then error("ERROR! No spawn choices found for player!") return end
+    local spawn_choices = global.ocore.spawnChoices[player.name]
+    if (spawn_choices == nil) then error("ERROR! No spawn choices found for player!") return end
 
     -- Cache some useful variables
     local gameplay = global.ocfg.gameplay
-    local surface = game.surfaces[spawnChoices.surface]
+    local surface = game.surfaces[spawn_choices.surface]
 
     -- Create a new force for player if they choose that radio button
-    if spawnChoices.team ~= SPAWN_TEAM_CHOICE.join_main_team then
+    if spawn_choices.team ~= SPAWN_TEAM_CHOICE.join_main_team then
         CreatePlayerCustomForce(player)
     end
 
     -- Find coordinates of a good place to spawn
     local newSpawn = { x = 0, y = 0 }
-    newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_distance, gameplay.far_spawn_distance, surface)
+    -- TODO: Rewrite this function to make use of spawnChoices.distance!!
+    newSpawn = FindUngeneratedCoordinates(surface, spawn_choices.distance)
 
     -- If that fails, find a random map edge in a rand direction.
     if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
@@ -505,12 +800,12 @@ function SpawnRequest(player)
     end
 
     -- Create that player's spawn in the global vars
-    ChangePlayerSpawn(player, spawnChoices.surface, newSpawn)
+    ChangePlayerSpawn(player, spawn_choices.surface, newSpawn)
 
     -- Send the player there
      -- global.ocfg.enable_vanilla_spawns --TODO: Vanilla spawn points are not implemented yet.
-    QueuePlayerForDelayedSpawn(player.name, spawnChoices.surface, newSpawn, spawnChoices.moat, false)
-    SendBroadcastMsg({ "oarc-player-is-joining-far", player.name, spawnChoices.surface })
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, false)
+    SendBroadcastMsg({ "oarc-player-is-joining-far", player.name, spawn_choices.surface })
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
@@ -526,101 +821,101 @@ function SpawnRequest(player)
 end
 
 ---Handle the gui click of the spawn options
----@param event EventData.on_gui_click
----@return nil
-function SpawnOptsGuiClick(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local elemName = event.element.name
+-- ---@param event EventData.on_gui_click
+-- ---@return nil
+-- function SpawnOptsGuiClick(event)
+--     if not event.element.valid then return end
+--     local player = game.players[event.player_index]
+--     local elemName = event.element.name
 
-    if not player then
-        log("Another gui click happened with no valid player...")
-        return
-    end
+--     if not player then
+--         log("Another gui click happened with no valid player...")
+--         return
+--     end
 
-    if (player.gui.screen.spawn_opts == nil) then
-        return -- Gui event unrelated to this gui.
-    end
+--     if (player.gui.screen.spawn_opts == nil) then
+--         return -- Gui event unrelated to this gui.
+--     end
 
-    local pgcs = player.gui.screen.spawn_opts
+--     local pgcs = player.gui.screen.spawn_opts
 
-    local joinOwnTeamRadio, moatChoice = false, false
-    local surfaceName = global.ocfg.gameplay.default_surface -- Default to default surface
-    local surface = game.surfaces[surfaceName]
+--     local joinOwnTeamRadio, moatChoice = false, false
+--     local surfaceName = global.ocfg.gameplay.default_surface -- Default to default surface
+--     local surface = game.surfaces[surfaceName]
 
-    -- Check if a valid button on the gui was pressed
-    -- and delete the GUI
-    if ((elemName == "default_spawn_btn") or
-            (elemName == "isolated_spawn_near") or
-            (elemName == "isolated_spawn_far") or
-            (elemName == "join_other_spawn") or
-            (elemName == "buddy_spawn") or
-            (elemName == "join_other_spawn_check")) then
-        if (global.ocfg.gameplay.enable_separate_teams) then
-            joinMainTeamRadio = pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
-            joinOwnTeamRadio = pgcs.spawn_solo_flow.isolated_spawn_new_team_radio.state
-        else
-            joinMainTeamRadio = true
-            joinOwnTeamRadio = false
-        end
-        ---TODO: Vanilla spawn points are not implemented yet.  and not global.ocfg.enable_vanilla_spawns
-        if (global.ocfg.gameplay.allow_moats_around_spawns and
-                (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
-            moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
-        end
+--     -- Check if a valid button on the gui was pressed
+--     -- and delete the GUI
+--     if ((elemName == "default_spawn_btn") or
+--             (elemName == "isolated_spawn_near") or
+--             (elemName == "isolated_spawn_far") or
+--             (elemName == "join_other_spawn") or
+--             (elemName == "buddy_spawn") or
+--             (elemName == "join_other_spawn_check")) then
+--         if (global.ocfg.gameplay.enable_separate_teams) then
+--             joinMainTeamRadio = pgcs.spawn_solo_flow.isolated_spawn_main_team_radio.state
+--             joinOwnTeamRadio = pgcs.spawn_solo_flow.isolated_spawn_new_team_radio.state
+--         else
+--             joinMainTeamRadio = true
+--             joinOwnTeamRadio = false
+--         end
+--         ---TODO: Vanilla spawn points are not implemented yet.  and not global.ocfg.enable_vanilla_spawns
+--         if (global.ocfg.gameplay.allow_moats_around_spawns and
+--                 (pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox ~= nil)) then
+--             moatChoice = pgcs.spawn_solo_flow.isolated_spawn_moat_option_checkbox.state
+--         end
 
-        -- Override the default surface if the player selected a different one.
-        local surfaceDropdownIndex = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.selected_index
+--         -- Override the default surface if the player selected a different one.
+--         local surfaceDropdownIndex = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.selected_index
 
-        -- Index 0 means nothing was selected!
-        if (surfaceDropdownIndex ~= 0) then
-            surfaceName = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.get_item(surfaceDropdownIndex) --[[@as string]]
-            surface = game.surfaces[surfaceName]
-        end
+--         -- Index 0 means nothing was selected!
+--         if (surfaceDropdownIndex ~= 0) then
+--             surfaceName = pgcs.spawn_solo_flow.surfaces_horizontal_flow.surface_select_dropdown.get_item(surfaceDropdownIndex) --[[@as string]]
+--             surface = game.surfaces[surfaceName]
+--         end
 
-        -- if (global.ocfg.enable_vanilla_spawns and
-        --     (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
-        --     vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state
-        -- end
-        pgcs.destroy()
-    else
-        return -- Do nothing, no valid element item was clicked.
-    end
+--         -- if (global.ocfg.enable_vanilla_spawns and
+--         --     (pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox ~= nil)) then
+--         --     vanillaChoice = pgcs.spawn_solo_flow.isolated_spawn_vanilla_option_checkbox.state
+--         -- end
+--         pgcs.destroy()
+--     else
+--         return -- Do nothing, no valid element item was clicked.
+--     end
 
-    -- Default spawn should always spawn on a default surface I think?
-    if (elemName == "default_spawn_btn") then
-        GivePlayerStarterItems(player)
+--     -- Default spawn should always spawn on a default surface I think?
+--     if (elemName == "default_spawn_btn") then
+--         GivePlayerStarterItems(player)
 
-        local defaultSurfaceName = global.ocfg.gameplay.default_surface
-        local defaultSurface = game.surfaces[defaultSurfaceName]
-        local spawnPosition = player.force.get_spawn_position(defaultSurface)
+--         local defaultSurfaceName = global.ocfg.gameplay.default_surface
+--         local defaultSurface = game.surfaces[defaultSurfaceName]
+--         local spawnPosition = player.force.get_spawn_position(defaultSurface)
 
-        ChangePlayerSpawn(player, defaultSurfaceName, spawnPosition)
-        SendBroadcastMsg({ "oarc-player-is-joining-main-force", player.name, defaultSurfaceName })
-        ChartArea(player.force, player.position,
-            math.ceil(global.ocfg.surfaces_config[defaultSurfaceName].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
-            defaultSurface)
-        -- Unlock spawn control gui tab
-        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
+--         ChangePlayerSpawn(player, defaultSurfaceName, spawnPosition)
+--         SendBroadcastMsg({ "oarc-player-is-joining-main-force", player.name, defaultSurfaceName })
+--         ChartArea(player.force, player.position,
+--             math.ceil(global.ocfg.surfaces_config[defaultSurfaceName].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
+--             defaultSurface)
+--         -- Unlock spawn control gui tab
+--         SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
 
-    elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
-        --- MOVED
-    elseif (elemName == "join_other_spawn") then
-        DisplaySharedSpawnOptions(player)
+--     elseif ((elemName == "isolated_spawn_near") or (elemName == "isolated_spawn_far")) then
+--         --- MOVED
+--     elseif (elemName == "join_other_spawn") then
+--         DisplaySharedSpawnOptions(player)
 
-        -- Provide a way to refresh the gui to check if people have shared their
-        -- bases.
-    elseif (elemName == "join_other_spawn_check") then
-        DisplaySpawnOptions(player)
+--         -- Provide a way to refresh the gui to check if people have shared their
+--         -- bases.
+--     elseif (elemName == "join_other_spawn_check") then
+--         DisplaySpawnOptions(player)
 
-        -- Hacky buddy spawn system
-    elseif (elemName == "buddy_spawn") then
-        table.insert(global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]], player.name)
-        SendBroadcastMsg({ "oarc-looking-for-buddy", player.name })
+--         -- Hacky buddy spawn system
+--     elseif (elemName == "buddy_spawn") then
+--         table.insert(global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]], player.name)
+--         SendBroadcastMsg({ "oarc-looking-for-buddy", player.name })
 
-        DisplayBuddySpawnOptions(player)
-    end
-end
+--         DisplayBuddySpawnOptions(player)
+--     end
+-- end
 
 ---Display the spawn options and explanation
 ---@param player LuaPlayer
@@ -660,60 +955,8 @@ function DisplaySharedSpawnOptions(player)
 
     shGui.add { name = "shared_spawn_cancel",
         type = "button",
-        caption = { "oarc-cancel-return-to-previous" },
+        caption = { "oarc-cancel-button-caption" },
         style = "back_button" }
-end
-
----Handle the gui click of the shared spawn options
----@param event EventData.on_gui_click
----@return nil
-function SharedSpwnOptsGuiClick(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local buttonClicked = event.element.name
-
-    if not player then
-        log("Another gui click happened with no valid player...")
-        return
-    end
-
-    if (event.element.parent) then
-        if (event.element.parent.name ~= "spawns_scroll_pane") then
-            return
-        end
-    end
-
-    -- Check for cancel button, return to spawn options
-    if (buttonClicked == "shared_spawn_cancel") then
-        DisplaySpawnOptions(player)
-        if (player.gui.screen.shared_spawn_opts ~= nil) then
-            player.gui.screen.shared_spawn_opts.destroy()
-        end
-
-        -- Else check for which spawn was selected
-        -- If a spawn is removed during this time, the button will not do anything
-    else
-        for spawnName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-            if ((buttonClicked == spawnName) and
-                    (game.players[spawnName] ~= nil) and
-                    (game.players[spawnName].connected)) then
-                -- Add the player to that shared spawns join queue.
-                table.insert(global.ocore.sharedSpawns[spawnName].joinQueue, player.name)
-
-                -- Clear the shared spawn options gui.
-                if (player.gui.screen.shared_spawn_opts ~= nil) then
-                    player.gui.screen.shared_spawn_opts.destroy()
-                end
-
-                -- Display wait menu with cancel button.
-                DisplaySharedSpawnJoinWaitMenu(player)
-
-                -- Tell other player they are requesting a response.
-                game.players[spawnName].print({ "oarc-player-requesting-join-you", player.name })
-                break
-            end
-        end
-    end
 end
 
 ---Display shared spawn join wait menu
@@ -731,10 +974,24 @@ function DisplaySharedSpawnJoinWaitMenu(player)
 
     -- Warnings and explanations...
     AddLabel(sGui, "warning_lbl1", { "oarc-you-will-spawn-once-host" }, my_warning_style)
-    sGui.add { name = "cancel_shared_spawn_wait_menu",
+    
+
+    local button_flow = sGui.add {
+        type = "flow",
+        direction = "horizontal",
+        style = "dialog_buttons_horizontal_flow"
+    }
+    button_flow.style.horizontally_stretchable = true
+
+    local cancel_button = button_flow.add {
+        name = "cancel_shared_spawn_wait_menu",
         type = "button",
-        caption = { "oarc-cancel-return-to-previous" },
-        style = "back_button" }
+        tags = { action = "oarc_spawn_options", setting = "cancel_shared_spawn_wait_menu" },
+        caption = { "oarc-cancel-button-caption" },
+        tooltip = { "oarc-return-to-previous-tooltip" },
+        style = "back_button"
+    }
+    cancel_button.style.horizontal_align = "left"
 end
 
 ---Handle the gui click of the shared spawn join wait menu
@@ -743,7 +1000,7 @@ end
 function SharedSpawnJoinWaitMenuClick(event)
     if not event.element.valid then return end
     local player = game.players[event.player_index]
-    local elemName = event.element.name
+    local elem_name = event.element.name
 
     if not player then
         log("Another gui click happened with no valid player...")
@@ -755,16 +1012,20 @@ function SharedSpawnJoinWaitMenuClick(event)
     end
 
     -- Check if player is cancelling the request.
-    if (elemName == "cancel_shared_spawn_wait_menu") then
+    if (elem_name == "cancel_shared_spawn_wait_menu") then
         player.gui.screen.join_shared_spawn_wait_menu.destroy()
         DisplaySpawnOptions(player)
 
         -- Find and remove the player from the joinQueue they were in.
-        for spawnName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-            for index, requestingPlayer in pairs(sharedSpawn.joinQueue) do
-                if (requestingPlayer == player.name) then
-                    global.ocore.sharedSpawns[spawnName].joinQueue[index] = nil
-                    game.players[spawnName].print({ "oarc-player-cancel-join-request", player.name })
+        for host_name, shared_spawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
+            for index, requestor in pairs(shared_spawn.joinQueue) do
+                if (requestor == player.name) then
+                    global.ocore.sharedSpawns[host_name].joinQueue[index] = nil
+                    local host_player = game.players[host_name]
+                    if (host_player ~= nil) and (host_player.connected) then
+                        game.players[host_name].print({ "oarc-player-cancel-join-request", player.name })
+                        OarcGuiRefreshContent(game.players[host_name])
+                    end
                     return
                 end
             end
@@ -774,118 +1035,123 @@ function SharedSpawnJoinWaitMenuClick(event)
     end
 end
 
----Display the buddy spawn menu
----@param player LuaPlayer
----@return nil
-function DisplayBuddySpawnOptions(player)
-    local buddyGui = player.gui.screen.add { name = "buddy_spawn_opts",
-        type = "frame",
-        direction = "vertical",
-        caption = { "oarc-buddy-spawn-options" } }
-    buddyGui.auto_center = true
-    buddyGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
-    buddyGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+-- ---Display the buddy spawn menu
+-- ---@param player LuaPlayer
+-- ---@return nil
+-- function DisplayBuddySpawnOptions(player)
+--     local buddyGui = player.gui.screen.add { name = "buddy_spawn_opts",
+--         type = "frame",
+--         direction = "vertical",
+--         caption = { "oarc-buddy-spawn-options" } }
+--     buddyGui.auto_center = true
+--     buddyGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+--     buddyGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
 
-    ---@type OarcConfigGameplaySettings
-    local gameplay = global.ocfg.gameplay
+--     ---@type OarcConfigGameplaySettings
+--     local gameplay = global.ocfg.gameplay
 
-    -- Warnings and explanations...
-    AddLabel(buddyGui, "buddy_info_msg", { "oarc-buddy-spawn-instructions" }, my_label_style)
-    AddSpacer(buddyGui)
+--     -- Warnings and explanations...
+--     AddLabel(buddyGui, "buddy_info_msg", { "oarc-buddy-spawn-instructions" }, my_label_style)
+--     AddSpacer(buddyGui)
 
-    -- The buddy spawning options.
-    local buddySpawnFlow = buddyGui.add { name = "spawn_buddy_flow",
-        type = "frame",
-        direction = "vertical",
-        style = "bordered_frame" }
+--     -- The buddy spawning options.
+--     local buddySpawnFlow = buddyGui.add { name = "spawn_buddy_flow",
+--         type = "frame",
+--         direction = "vertical",
+--         style = "bordered_frame" }
 
-    ---@type string[]
-    local buddyList = {}
-    for _, buddyName in pairs(global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]]) do
-        if (buddyName ~= player.name) then
-            table.insert(buddyList, buddyName)
-        end
-    end
+--     ---@type string[]
+--     local buddyList = {}
+--     for _, buddyName in pairs(global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]]) do
+--         if (buddyName ~= player.name) then
+--             table.insert(buddyList, buddyName)
+--         end
+--     end
 
-    AddLabel(buddySpawnFlow, "drop_down_msg_lbl1", { "oarc-buddy-select-info" }, my_label_style)
-    buddySpawnFlow.add { name = "waiting_buddies_dropdown",
-        type = "drop-down",
-        items = buddyList }
-    buddySpawnFlow.add { name = "refresh_buddy_list",
-        type = "button",
-        caption = { "oarc-buddy-refresh" } }
-    -- AddSpacerLine(buddySpawnFlow)
+--     AddLabel(buddySpawnFlow, "drop_down_msg_lbl1", { "oarc-buddy-select-info" }, my_label_style)
+--     buddySpawnFlow.add {
+--         name = "waiting_buddies_dropdown",
+--         tags = { action = "oarc_spawn_options", setting = "buddy_select" },
+--         type = "drop-down",
+--         items = buddyList
+--     }
+--     buddySpawnFlow.add {
+--         name = "refresh_buddy_list",
+--         type = "button",
+--         caption = { "oarc-buddy-refresh" }
+--     }
+--     -- AddSpacerLine(buddySpawnFlow)
 
-    -- Pick surface
-    if (gameplay.enable_spawning_on_other_surfaces) then
+--     -- Pick surface
+--     if (gameplay.enable_spawning_on_other_surfaces) then
 
-        local surfacesHorizontalFlow = buddySpawnFlow.add { name = "buddy_surfaces_horizontal_flow",
-            type = "flow",
-            direction = "horizontal" }
+--         local surfacesHorizontalFlow = buddySpawnFlow.add { name = "buddy_surfaces_horizontal_flow",
+--             type = "flow",
+--             direction = "horizontal" }
 
-        ---@type string[]
-        local surfaceList = {}
-        for surfaceName,allowed in pairs(global.ocore.surfaces) do
-            if allowed then
-                table.insert(surfaceList, surfaceName)
-            end
-        end
+--         ---@type string[]
+--         local surfaceList = {}
+--         for surfaceName,allowed in pairs(global.ocore.surfaces) do
+--             if allowed then
+--                 table.insert(surfaceList, surfaceName)
+--             end
+--         end
 
-        AddLabel(surfacesHorizontalFlow, "buddySurfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
-        surfacesHorizontalFlow.add { name = "buddy_surface_select_dropdown",
-            type = "drop-down",
-            items = surfaceList,
-            selected_index = 1}
-    end
+--         AddLabel(surfacesHorizontalFlow, "buddySurfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
+--         surfacesHorizontalFlow.add { name = "buddy_surface_select_dropdown",
+--             type = "drop-down",
+--             items = surfaceList,
+--             selected_index = 1}
+--     end
 
-    -- Allow picking of teams
-    if (gameplay.enable_separate_teams) then
-        buddySpawnFlow.add { name = "buddy_spawn_main_team_radio",
-            type = "radiobutton",
-            caption = { "oarc-join-main-team-radio" },
-            state = true }
-        buddySpawnFlow.add { name = "buddy_spawn_new_team_radio",
-            type = "radiobutton",
-            caption = { "oarc-create-own-team-radio" },
-            state = false }
-        buddySpawnFlow.add { name = "buddy_spawn_buddy_team_radio",
-            type = "radiobutton",
-            caption = { "oarc-create-buddy-team" },
-            state = false }
-    end
-    if (gameplay.allow_moats_around_spawns) then
-        buddySpawnFlow.add { name = "buddy_spawn_moat_option_checkbox",
-            type = "checkbox",
-            caption = { "oarc-moat-option" },
-            state = false }
-    end
+--     -- Allow picking of teams
+--     if (gameplay.enable_separate_teams) then
+--         buddySpawnFlow.add { name = "buddy_spawn_main_team_radio",
+--             type = "radiobutton",
+--             caption = { "oarc-join-main-team-radio" },
+--             state = true }
+--         buddySpawnFlow.add { name = "buddy_spawn_new_team_radio",
+--             type = "radiobutton",
+--             caption = { "oarc-create-own-team-radio" },
+--             state = false }
+--         buddySpawnFlow.add { name = "buddy_spawn_buddy_team_radio",
+--             type = "radiobutton",
+--             caption = { "oarc-create-buddy-team" },
+--             state = false }
+--     end
+--     if (gameplay.allow_moats_around_spawns) then
+--         buddySpawnFlow.add { name = "buddy_spawn_moat_option_checkbox",
+--             type = "checkbox",
+--             caption = { "oarc-moat-option" },
+--             state = false }
+--     end
 
-    -- AddSpacerLine(buddySpawnFlow)
-    buddySpawnFlow.add { name = "buddy_spawn_request_near",
-        type = "button",
-        caption = { "oarc-buddy-spawn-near" },
-        style = "confirm_button" }
-    buddySpawnFlow.add { name = "buddy_spawn_request_far",
-        type = "button",
-        caption = { "oarc-buddy-spawn-far" },
-        style = "confirm_button" }
+--     -- AddSpacerLine(buddySpawnFlow)
+--     buddySpawnFlow.add { name = "buddy_spawn_request_near",
+--         type = "button",
+--         caption = { "oarc-buddy-spawn-near" },
+--         style = "confirm_button" }
+--     buddySpawnFlow.add { name = "buddy_spawn_request_far",
+--         type = "button",
+--         caption = { "oarc-buddy-spawn-far" },
+--         style = "confirm_button" }
 
-    AddSpacer(buddyGui)
-    buddyGui.add { name = "buddy_spawn_cancel",
-        type = "button",
-        caption = { "oarc-cancel-return-to-previous" },
-        style = "back_button" }
+--     AddSpacer(buddyGui)
+--     buddyGui.add { name = "buddy_spawn_cancel",
+--         type = "button",
+--         caption = { "oarc-cancel-button-caption" },
+--         style = "back_button" }
 
-    -- Some final notes
-    AddSpacerLine(buddyGui)
-    if (gameplay.number_of_players_per_shared_spawn > 0) then
-        AddLabel(buddyGui, "buddy_max_players_lbl1",
-            { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 },
-            my_note_style)
-    end
-    local spawn_distance_notes = { "oarc-spawn-dist-notes" }
-    AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
-end
+--     -- Some final notes
+--     AddSpacerLine(buddyGui)
+--     if (gameplay.number_of_players_per_shared_spawn > 0) then
+--         AddLabel(buddyGui, "buddy_max_players_lbl1",
+--             { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 },
+--             my_note_style)
+--     end
+--     local spawn_distance_notes = { "oarc-spawn-dist-notes" }
+--     AddLabel(buddyGui, "note_lbl1", spawn_distance_notes, my_note_style)
+-- end
 
 ---Handle the gui click of the buddy spawn options
 ---@param event EventData.on_gui_click
@@ -959,7 +1225,7 @@ function BuddySpawnOptsGuiClick(event)
         if (not buddyIsStillWaiting) then
             player.print({ "oarc-buddy-not-avail" })
             player.gui.screen.buddy_spawn_opts.destroy()
-            DisplayBuddySpawnOptions(player)
+            -- DisplayBuddySpawnOptions(player)
             return
         end
 
@@ -1025,273 +1291,241 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function DisplayBuddySpawnWaitMenu(player)
-    local sGui = player.gui.screen.add { name = "buddy_wait_menu",
+
+    if (player.gui.screen.spawn_opts ~= nil) then
+        player.gui.screen.spawn_opts.destroy()
+    end
+
+    local buddy_wait_menu = player.gui.screen.add {
+        name = "buddy_wait_menu",
         type = "frame",
         direction = "vertical",
-        caption = { "oarc-waiting-for-buddy" } }
-    sGui.auto_center = true
-    sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
-    sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+        caption = { "oarc-waiting-for-buddy" }
+    }
 
+    buddy_wait_menu.auto_center = true
+    buddy_wait_menu.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    buddy_wait_menu.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+    buddy_wait_menu.style.padding = 5
+
+    local buddy_wait_menu_if = buddy_wait_menu.add {
+        type = "frame",
+        direction = "vertical",
+        style = "inside_shallow_frame_with_padding"
+    }
 
     -- Warnings and explanations...
-    AddLabel(sGui, "warning_lbl1", { "oarc-wait-buddy-select-yes" }, my_warning_style)
-    AddSpacer(sGui)
-    sGui.add { name = "cancel_buddy_wait_menu",
+    AddLabel(buddy_wait_menu_if, nil, { "oarc-wait-buddy-select-yes" }, my_warning_style)
+    AddSpacer(buddy_wait_menu_if)
+
+    local button_flow = buddy_wait_menu_if.add {
+        type = "flow",
+        direction = "horizontal",
+        style = "dialog_buttons_horizontal_flow"
+    }
+    button_flow.style.horizontally_stretchable = true
+
+    local cancel_button = button_flow.add {
+        name = "cancel_buddy_wait_menu",
+        tags = { action = "oarc_spawn_options", setting = "cancel_buddy_wait_menu" },
         type = "button",
-        caption = { "oarc-cancel-return-to-previous" } }
+        style = "back_button",
+        caption = { "oarc-cancel-button-caption" },
+        tooltip = { "oarc-return-to-previous-tooltip" },
+    }
+    cancel_button.style.horizontal_align = "left"
 end
 
----Handle the gui click of the buddy wait menu
----@param event EventData.on_gui_click
----@return nil
-function BuddySpawnWaitMenuClick(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local elemName = event.element.name
-
-    if not player then
-        log("Another gui click happened with no valid player...")
-        return
-    end
-
-    if (player.gui.screen.buddy_wait_menu == nil) then
-        return -- Gui event unrelated to this gui.
-    end
-
-    -- Check if player is cancelling the request.
-    if (elemName == "cancel_buddy_wait_menu") then
-        player.gui.screen.buddy_wait_menu.destroy()
-        DisplaySpawnOptions(player)
-
-        ---@type OarcBuddySpawnOpts
-        local buddySpawnOpts = global.ocore.buddySpawnOpts[player.name]
-        local buddy = game.players[buddySpawnOpts.buddyChoice]
-
-        -- Catch a case where the buddy has left the game early and no longer exists.
-        if (buddy == nil) then
-            return
-        end
-
-        if (buddy.gui.screen.buddy_request_menu ~= nil) then
-            buddy.gui.screen.buddy_request_menu.destroy()
-        end
-        if (buddy.gui.screen.buddy_spawn ~= nil) then
-            buddy.gui.screen.buddy_spawn_opts.destroy()
-        end
-        DisplaySpawnOptions(buddy)
-
-        buddy.print({ "oarc-buddy-cancel-request", player.name })
-    end
-end
 
 ---Display the buddy spawn request menu
----@param player LuaPlayer
----@param requestingBuddyName string
+---@param player LuaPlayer The player that is receiving the buddy request
+---@param requesting_buddy_name string The name of the player that is requesting to buddy spawn
 ---@return nil
-function DisplayBuddySpawnRequestMenu(player, requestingBuddyName)
-    if not player then
-        log("Another gui click happened with no valid player...")
-        return
+function DisplayBuddySpawnRequestMenu(player, requesting_buddy_name)
+
+    if (player.gui.screen.spawn_opts ~= nil) then
+        player.gui.screen.spawn_opts.destroy()
     end
 
-    local sGui = player.gui.screen.add { name = "buddy_request_menu",
+    local buddy_request_gui = player.gui.screen.add {
+        name = "buddy_request_menu",
         type = "frame",
         direction = "vertical",
-        caption = "Buddy Request!" }
-    sGui.auto_center = true
-    sGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
-    sGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+        caption = { "oarc-buddy-spawn-request-header" }
+    }
+    buddy_request_gui.auto_center = true
+    buddy_request_gui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
+    buddy_request_gui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
+    buddy_request_gui.style.padding = 5
+
+    local buddy_request_gui_if = buddy_request_gui.add {
+        type = "frame",
+        direction = "vertical",
+        style = "inside_shallow_frame_with_padding"
+    }
 
 
     -- Warnings and explanations...
-    AddLabel(sGui, "warning_lbl1", { "oarc-buddy-requesting-from-you", requestingBuddyName }, my_warning_style)
+    AddLabel(buddy_request_gui_if, nil, { "oarc-buddy-requesting-from-you", requesting_buddy_name }, my_warning_style)
 
-    ---@type OarcBuddySpawnOpts
-    local buddySpawnOpts = global.ocore.buddySpawnOpts[requestingBuddyName]
+    ---@type OarcSpawnChoices
+    local spawn_choices = global.ocore.spawnChoices[requesting_buddy_name]
 
     ---@type LocalisedString
     local teamText = "error!"
-    if (buddySpawnOpts.teamRadioSelection == SPAWN_TEAM_CHOICE.join_main_team) then
+    if (spawn_choices.team == SPAWN_TEAM_CHOICE.join_main_team) then
         teamText = { "oarc-buddy-txt-main-team" }
-    elseif (buddySpawnOpts.teamRadioSelection == SPAWN_TEAM_CHOICE.join_own_team) then
+    elseif (spawn_choices.team == SPAWN_TEAM_CHOICE.join_own_team) then
         teamText = { "oarc-buddy-txt-new-teams" }
-    elseif (buddySpawnOpts.teamRadioSelection == SPAWN_TEAM_CHOICE.join_buddy_team) then
+    elseif (spawn_choices.team == SPAWN_TEAM_CHOICE.join_buddy_team) then
         teamText = { "oarc-buddy-txt-buddy-team" }
     end
 
     ---@type LocalisedString
     local moatText = " "
-    if (global.ocore.buddySpawnOpts[requestingBuddyName].moatChoice) then
+    if (spawn_choices.moat) then
         moatText = { "oarc-buddy-txt-moat" }
     end
 
     ---@type LocalisedString
-    local distText = "error!"
-    if (global.ocore.buddySpawnOpts[requestingBuddyName].distChoice == "buddy_spawn_request_near") then
-        distText = { "oarc-buddy-txt-near" }
-    elseif (global.ocore.buddySpawnOpts[requestingBuddyName].distChoice == "buddy_spawn_request_far") then
-        distText = { "oarc-buddy-txt-far" }
-    end
+    local surfaceText = { "oarc-buddy-txt-surface", spawn_choices.surface}
 
+    ---@type LocalisedString
+    local distText = { "oarc-buddy-txt-distance", spawn_choices.distance}
 
-    local requestText = { "", requestingBuddyName, { "oarc-buddy-txt-would-like" }, teamText, { "oarc-buddy-txt-next-to-you" },
-        moatText, distText }
-    AddLabel(sGui, "note_lbl1", requestText, my_warning_style)
-    AddSpacer(sGui)
+    local requestText = { "", requesting_buddy_name, { "oarc-buddy-txt-would-like" }, teamText, { "oarc-buddy-txt-next-to-you" },
+        moatText, surfaceText, distText }
+    AddLabel(buddy_request_gui_if, nil, requestText, my_warning_style)
+    AddSpacer(buddy_request_gui_if)
 
+    local button_flow = buddy_request_gui.add {
+        type = "flow",
+        direction = "horizontal",
+        style = "dialog_buttons_horizontal_flow"
+    }
+    button_flow.style.horizontally_stretchable = true
 
-    sGui.add { name = "accept_buddy_request",
+    local reject_button = button_flow.add {
+        name = "reject_buddy_request",
+        tags = { action = "oarc_spawn_options", setting = "reject_buddy_request", requesting_buddy_name = requesting_buddy_name },
         type = "button",
-        caption = { "oarc-accept" } }
-    sGui.add { name = "decline_buddy_request",
+        style = "red_back_button",
+        caption = { "oarc-reject" }
+    }
+    reject_button.style.horizontal_align = "left"
+
+    local dragger = button_flow.add{type="empty-widget", style="draggable_space"}
+    dragger.style.horizontally_stretchable = true
+    dragger.style.height = 30
+
+    local accept_button = button_flow.add {
+        name = "accept_buddy_request",
+        tags = { action = "oarc_spawn_options", setting = "accept_buddy_request", requesting_buddy_name = requesting_buddy_name },
         type = "button",
-        caption = { "oarc-reject" } }
+        style = "confirm_button",
+        caption = { "oarc-accept" }
+    }
+    accept_button.style.horizontal_align = "right"
+
 end
 
----Handle the gui click of the buddy request menu
----@param event EventData.on_gui_click
+
+function AcceptBuddyRequest(player, requesting_buddy_name)
+
+    ---@type OarcSpawnChoices
+    local spawn_choices = global.ocore.spawnChoices[requesting_buddy_name]
+    local requesting_buddy = game.players[requesting_buddy_name]
+
+    if (requesting_buddy.gui.screen.buddy_wait_menu ~= nil) then
+        requesting_buddy.gui.screen.buddy_wait_menu.destroy()
+    end
+    if (player.gui.screen.buddy_request_menu ~= nil) then
+        player.gui.screen.buddy_request_menu.destroy()
+    end
+
+    -- Create a new spawn point
+    local newSpawn = { x = 0, y = 0 }
+
+    -- Create a new force for each player if they chose that option
+    if spawn_choices.team == SPAWN_TEAM_CHOICE.join_own_team then
+        CreatePlayerCustomForce(player)
+        CreatePlayerCustomForce(requesting_buddy)
+
+    -- Create a new force for the combined players if they chose that option
+    elseif spawn_choices.team == SPAWN_TEAM_CHOICE.join_buddy_team then
+        local buddyForce = CreatePlayerCustomForce(requesting_buddy)
+        player.force = buddyForce
+    end
+
+    ---@type OarcConfigGameplaySettings
+    local gameplay = global.ocfg.gameplay
+    local surface = game.surfaces[spawn_choices.surface]
+
+    -- Find coordinates of a good place to spawn
+    newSpawn = FindUngeneratedCoordinates(surface, spawn_choices.distance)
+
+    -- If that fails, find a random map edge in a rand direction.
+    if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
+        newSpawn = FindMapEdge(GetRandomVector(), surface)
+        log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+    end
+
+    -- Create that spawn in the global vars
+    local buddySpawn = { x = 0, y = 0 }
+    if (spawn_choices.moat) then
+        buddySpawn = {
+            x = newSpawn.x + (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2) + 10,
+            y = newSpawn.y
+        }
+    else
+        buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
+    end
+    ChangePlayerSpawn(player, spawn_choices.surface, newSpawn) --TODO: Add support for multiple surfaces
+    ChangePlayerSpawn(requesting_buddy, spawn_choices.surface, buddySpawn)
+
+    -- Send the player there
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, false)
+    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat, false)
+    SendBroadcastMsg(requesting_buddy_name .. " and " .. player.name .. " are joining the game together!")
+
+    -- Unlock spawn control gui tab
+    SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
+    SetOarcGuiTabEnabled(requesting_buddy, OARC_SPAWN_CTRL_TAB_NAME, true)
+
+    player.print({ "oarc-please-wait" })
+    player.print({ "", { "oarc-please-wait" }, "!" })
+    player.print({ "", { "oarc-please-wait" }, "!!" })
+    requesting_buddy.print({ "oarc-please-wait" })
+    requesting_buddy.print({ "", { "oarc-please-wait" }, "!" })
+    requesting_buddy.print({ "", { "oarc-please-wait" }, "!!" })
+
+    global.ocore.buddyPairs[player.name] = requesting_buddy_name
+    global.ocore.buddyPairs[requesting_buddy_name] = player.name
+end
+
+---Rejects a buddy spawn request proposal
+---@param player LuaPlayer The player that is rejecting the buddy request
+---@param requesting_buddy_name string The name of the player that is requesting to buddy spawn
 ---@return nil
-function BuddySpawnRequestMenuClick(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local elemName = event.element.name
-    local requesterName = nil
+function RejectBuddyRequest(player, requesting_buddy_name)
 
-    ---@type OarcBuddySpawnOpts
-    local requesterOptions = {}
-    requesterOptions.surface = global.ocfg.gameplay.default_surface
+    player.gui.screen.buddy_request_menu.destroy()
+    DisplaySpawnOptions(player)
 
-    if not player then
-        log("Another gui click happened with no valid player...")
+    local requester_buddy = game.players[requesting_buddy_name]
+
+    if (requester_buddy == nil) then
         return
     end
 
-    if (player.gui.screen.buddy_request_menu == nil) then
-        return -- Gui event unrelated to this gui.
+    if (requester_buddy.gui.screen.buddy_wait_menu ~= nil) then
+        requester_buddy.gui.screen.buddy_wait_menu.destroy()
+        DisplaySpawnOptions(requester_buddy)
     end
 
-
-    -- Check if it's a button press and lookup the matching buddy info
-    if ((elemName == "accept_buddy_request") or (elemName == "decline_buddy_request")) then
-        for name, opts in pairs(global.ocore.buddySpawnOpts --[[@as OarcBuddySpawnOptsTable]]) do
-            if (opts.buddyChoice == player.name) then
-                requesterName = name
-                requesterOptions = opts
-            end
-        end
-
-        -- Not sure about this error condition...
-        if (requesterName == nil) then
-            SendBroadcastMsg("Error! Invalid buddy info???")
-            log("Error! Invalid buddy info...")
-
-            player.gui.screen.buddy_request_menu.destroy()
-            DisplaySpawnOptions(player)
-            return
-        end
-    else
-        return -- Not a button click
-    end
-
-    -- Handle player accepted
-    if (elemName == "accept_buddy_request") then
-        if (game.players[requesterName].gui.screen.buddy_wait_menu ~= nil) then
-            game.players[requesterName].gui.screen.buddy_wait_menu.destroy()
-        end
-        if (player.gui.screen.buddy_request_menu ~= nil) then
-            player.gui.screen.buddy_request_menu.destroy()
-        end
-
-        -- Create a new spawn point
-        local newSpawn = { x = 0, y = 0 }
-
-        -- Create a new force for each player if they chose that option
-        if requesterOptions.teamRadioSelection == SPAWN_TEAM_CHOICE.join_own_team then
-            CreatePlayerCustomForce(player)
-            CreatePlayerCustomForce(game.players[requesterName])
-
-            -- Create a new force for the combined players if they chose that option
-        elseif requesterOptions.teamRadioSelection == SPAWN_TEAM_CHOICE.join_buddy_team then
-            local buddyForce = CreatePlayerCustomForce(game.players[requesterName])
-            player.force = buddyForce
-        end
-
-        ---@type OarcConfigGameplaySettings
-        local gameplay = global.ocfg.gameplay
-        local surface = game.surfaces[requesterOptions.surface]
-
-        -- Find coordinates of a good place to spawn
-        ---TODO: Add support for multiple surfaces.
-        if (requesterOptions.distChoice == "buddy_spawn_request_far") then
-            newSpawn = FindUngeneratedCoordinates(gameplay.near_spawn_distance,
-                gameplay.far_spawn_distance,
-                surface)
-        elseif (requesterOptions.distChoice == "buddy_spawn_request_near") then
-            newSpawn = FindUngeneratedCoordinates(
-                gameplay.near_spawn_distance,
-                gameplay.far_spawn_distance,
-                surface)
-        end
-
-        -- If that fails, find a random map edge in a rand direction.
-        if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
-            newSpawn = FindMapEdge(GetRandomVector(), surface)
-            log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
-        end
-
-        -- Create that spawn in the global vars
-        local buddySpawn = { x = 0, y = 0 }
-        if (requesterOptions.moatChoice) then
-            buddySpawn = {
-                x = newSpawn.x + (global.ocfg.surfaces_config[requesterOptions.surface].spawn_config.general.spawn_radius_tiles * 2) + 10,
-                y = newSpawn.y
-            }
-        else
-            buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[requesterOptions.surface].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
-        end
-        ChangePlayerSpawn(player, requesterOptions.surface, newSpawn) --TODO: Add support for multiple surfaces
-        ChangePlayerSpawn(game.players[requesterName], requesterOptions.surface, buddySpawn)
-
-        -- Send the player there
-        QueuePlayerForDelayedSpawn(player.name, requesterOptions.surface, newSpawn, requesterOptions.moatChoice, false)
-        QueuePlayerForDelayedSpawn(requesterName, requesterOptions.surface, buddySpawn, requesterOptions.moatChoice, false)
-        SendBroadcastMsg(requesterName .. " and " .. player.name .. " are joining the game together!")
-
-        -- Unlock spawn control gui tab
-        SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
-        SetOarcGuiTabEnabled(game.players[requesterName], OARC_SPAWN_CTRL_TAB_NAME, true)
-
-        player.print({ "oarc-please-wait" })
-        player.print({ "", { "oarc-please-wait" }, "!" })
-        player.print({ "", { "oarc-please-wait" }, "!!" })
-        game.players[requesterName].print({ "oarc-please-wait" })
-        game.players[requesterName].print({ "", { "oarc-please-wait" }, "!" })
-        game.players[requesterName].print({ "", { "oarc-please-wait" }, "!!" })
-
-        global.ocore.buddyPairs[player.name] = requesterName
-        global.ocore.buddyPairs[requesterName] = player.name
-
-        -- Check if player is cancelling the request.
-    elseif (elemName == "decline_buddy_request") then
-        player.gui.screen.buddy_request_menu.destroy()
-        DisplaySpawnOptions(player)
-
-        local requesterBuddy = game.players[requesterName]
-
-        if (requesterBuddy.gui.screen.buddy_wait_menu ~= nil) then
-            requesterBuddy.gui.screen.buddy_wait_menu.destroy()
-        end
-        if (requesterBuddy.gui.screen.buddy_spawn ~= nil) then
-            requesterBuddy.gui.screen.buddy_spawn_opts.destroy()
-        end
-        DisplaySpawnOptions(requesterBuddy)
-
-        requesterBuddy.print({ "oarc-buddy-declined", player.name })
-    end
-
-    global.ocore.buddySpawnOpts[requesterName] = nil
+    requester_buddy.print({ "oarc-buddy-declined", player.name })
 end
+
 
 ---Display the please wait dialog
 ---@param player LuaPlayer
@@ -1323,6 +1557,20 @@ function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
     }
 end
 
+
+---Get a list of OTHER players currently in the spawn menu
+---@param self_player LuaPlayer
+---@return table
+function GetOtherPlayersInSpawnMenu(self_player)
+    local other_players_in_spawn_menu = {}
+    for _, player in pairs(game.connected_players) do
+        if (player.gui.screen.spawn_opts ~= nil) and (self_player ~= player) then
+            table.insert(other_players_in_spawn_menu, player.name)
+        end
+    end
+    return other_players_in_spawn_menu
+end
+
 ---Gui click event handlers
 ---@param event EventData.on_gui_click
 ---@return nil
@@ -1331,11 +1579,11 @@ function SeparateSpawnsGuiClick(event)
 
     SpawnChoicesGuiClickNew(event)
 
-    SpawnOptsGuiClick(event)
-    SharedSpwnOptsGuiClick(event)
-    BuddySpawnOptsGuiClick(event)
-    BuddySpawnWaitMenuClick(event)
-    BuddySpawnRequestMenuClick(event)
+    -- SpawnOptsGuiClick(event)
+    -- SharedSpwnOptsGuiClick(event)
+    -- BuddySpawnOptsGuiClick(event)
+    -- BuddySpawnWaitMenuClick(event)
+    -- BuddySpawnRequestMenuClick(event)
     SharedSpawnJoinWaitMenuClick(event)
 end
 

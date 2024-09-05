@@ -36,7 +36,7 @@ function CreateSpawnControlsTab(tab_container, player)
         end
     end
 
-    -- @todo Figure out why this case could be hit... Fix for error report in github.
+    -- TODO: Figure out why this case could be hit... Fix for error report in github.
     if (global.ocore.playerCooldowns[player.name] == nil) then
         log("ERROR! playerCooldowns[player.name] is nil!")
         global.ocore.playerCooldowns[player.name] = { setRespawn = game.tick }
@@ -110,7 +110,7 @@ function SpawnCtrlGuiOptionsSelect(event)
                 SendBroadcastMsg({ "oarc-stop-shared-base", player.name })
             end
         end
-        FakeTabChangeEventOarcGui(player)
+        OarcGuiRefreshContent(player)
 
         -- Refresh the shared spawn spawn gui for all players
         for _,p in pairs(game.connected_players) do
@@ -143,7 +143,7 @@ function SpawnCtrlGuiClick(event)
     if (elemName == "setRespawnLocation") then
         if DoesPlayerHaveCustomSpawn(player) then
             ChangePlayerSpawn(player, player.surface.name, player.position)
-            FakeTabChangeEventOarcGui(player)
+            OarcGuiRefreshContent(player)
             player.print({ "oarc-spawn-point-updated" })
         end
     end
@@ -153,7 +153,7 @@ function SpawnCtrlGuiClick(event)
         if ((event.element.parent.join_queue_dropdown == nil) or
                 (event.element.parent.join_queue_dropdown.selected_index == 0)) then
             player.print({ "oarc-selected-player-not-wait" })
-            FakeTabChangeEventOarcGui(player)
+            OarcGuiRefreshContent(player)
             return
         end
 
@@ -163,7 +163,7 @@ function SpawnCtrlGuiClick(event)
         if ((game.players[joinQueuePlayerChoice] == nil) or
                 (not game.players[joinQueuePlayerChoice].connected)) then
             player.print({ "oarc-selected-player-not-wait" })
-            FakeTabChangeEventOarcGui(player)
+            OarcGuiRefreshContent(player)
             return
         end
 
@@ -171,9 +171,11 @@ function SpawnCtrlGuiClick(event)
         local sharedSpawn = global.ocore.sharedSpawns[player.name]
 
         if (elemName == "reject_player_request") then
+
+            -- Inform the host that the player was rejected
             player.print({ "oarc-reject-joiner", joinQueuePlayerChoice })
+            -- Inform the player that their request was rejected
             SendMsg(joinQueuePlayerChoice, { "oarc-your-request-rejected" })
-            FakeTabChangeEventOarcGui(player)
 
             -- Close the waiting players menu
             if (game.players[joinQueuePlayerChoice].gui.screen.join_shared_spawn_wait_menu) then
@@ -185,9 +187,17 @@ function SpawnCtrlGuiClick(event)
             for index, requestingPlayer in pairs(sharedSpawn.joinQueue) do
                 if (requestingPlayer == joinQueuePlayerChoice) then
                     sharedSpawn.joinQueue[index] = nil
+
+                    ---Close the waiting players menu and display the spawn options
+                    -- requestingPlayer
+                    -- TODO: Nice to have if I can get this to work.
+
                     return
                 end
             end
+
+            OarcGuiRefreshContent(player)
+
         elseif (elemName == "accept_player_request") then
             -- Find and remove the player from the joinQueue they were in.
             for index, requestingPlayer in pairs(sharedSpawn.joinQueue) do
@@ -222,6 +232,8 @@ function SpawnCtrlGuiClick(event)
             else
                 SendBroadcastMsg({ "oarc-player-left-while-joining", joinQueuePlayerChoice })
             end
+
+            OarcGuiRefreshContent(player)
         end
     end
 end

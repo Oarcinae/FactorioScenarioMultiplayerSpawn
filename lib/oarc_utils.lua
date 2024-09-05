@@ -536,7 +536,7 @@ function RandomNegPos()
     end
 end
 
----Create a random direction vector to look in
+---Create a random direction vector to look in (values are integers between -3 and 3)
 ---@return MapPosition
 function GetRandomVector()
     local randVec = {x=0,y=0}
@@ -628,47 +628,55 @@ function FindMapEdge(directionVec, surface)
     return position
 end
 
----Find random coordinates within a given distance away maxTries is the recursion limit basically.
----@param minDistChunks integer
----@param maxDistChunks integer
+
+---Pick a random direction, go at least the minimum distance, and start looking for ungenerated chunks
 ---@param surface LuaSurface
+---@param minimum_distance number
 ---@return MapPosition
-function FindUngeneratedCoordinates(minDistChunks, maxDistChunks, surface)
-    local position = {x=0,y=0}
-    local chunkPos = {x=0,y=0}
+function FindUngeneratedCoordinates(surface, minimum_distance)
 
-    local maxTries = 100
-    local tryCounter = 0
+    --- Get a random vector, figure out how many times to multiply it to get the minimum distance
+    local direction_vector = GetRandomVector()
+    local direction_mag = math.sqrt((direction_vector.x^2) + (direction_vector.y^2))
+    local direction_multiple = math.ceil(minimum_distance / direction_mag)
+    
+    local final_position = {x=0,y=0}
+    local search_pos = {
+        x=direction_vector.x * direction_multiple,
+        y=direction_vector.y * direction_multiple
+    }
 
-    local minDistSqr = minDistChunks^2
-    local maxDistSqr = maxDistChunks^2
+    local MAX_CHUNK_DISTANCE = 1000
 
+    -- Keep checking chunks in the direction of the vector, assumes this terminates...
     while(true) do
-        chunkPos.x = math.random(0,maxDistChunks) * RandomNegPos()
-        chunkPos.y = math.random(0,maxDistChunks) * RandomNegPos()
 
-        local distSqrd = chunkPos.x^2 + chunkPos.y^2
-
-        -- Enforce a max number of tries
-        tryCounter = tryCounter + 1
-        if (tryCounter > maxTries) then
-            log("WARNING -FindUngeneratedCoordinates - Max Tries Hit!")
+        -- Set some absolute limits.
+        if ((math.abs(search_pos.x) > MAX_CHUNK_DISTANCE) or (math.abs(search_pos.y) > MAX_CHUNK_DISTANCE)) then
             break
 
-        -- Check that the distance is within the min,max specified
-        elseif ((distSqrd < minDistSqr) or (distSqrd > maxDistSqr)) then
-            -- Keep searching!
+        -- If chunk is already generated, keep looking
+        elseif (surface.is_chunk_generated(search_pos)) then
+            search_pos.x = search_pos.x + direction_vector.x
+            search_pos.y = search_pos.y + direction_vector.y
 
-        -- Check there are no generated chunks in a square area defined by the config:
-        elseif IsChunkAreaUngenerated(chunkPos, global.ocfg.gameplay.minimum_distance_to_existing_chunks, surface) then
-            position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
-            position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
-            break -- SUCCESS
+        -- Found a possible ungenerated area
+        else
+
+            search_pos.x = search_pos.x + direction_vector.x
+            search_pos.y = search_pos.y + direction_vector.y
+
+            -- Check there are no generated chunks in a 10x10 area.
+            if IsChunkAreaUngenerated(search_pos, 10, surface) then
+                final_position.x = (search_pos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
+                final_position.y = (search_pos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
+                break
+            end
         end
     end
 
-    log("spawn: x=" .. position.x .. ", y=" .. position.y)
-    return position
+    -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
+    return final_position
 end
 
 -- -- General purpose function for removing a particular recipe

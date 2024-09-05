@@ -21,10 +21,10 @@ OARC_CONFIG_CTRL_TAB_NAME = "Settings"
 
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
-    ["Server Info"] = CreateServerInfoTab,
-    ["Spawn Controls"] = CreateSpawnControlsTab,
-    ["Regrowth"] = CreateRegrowthControlsTab,
-    ["Settings"] = CreateSettingsControlsTab,
+    [OARC_SERVER_INFO_TAB_NAME] = CreateServerInfoTab,
+    [OARC_SPAWN_CTRL_TAB_NAME] = CreateSpawnControlsTab,
+    [OARC_REGROWTH_CTRL_TAB_NAME] = CreateRegrowthControlsTab,
+    [OARC_CONFIG_CTRL_TAB_NAME] = CreateSettingsControlsTab,
 }
 
 ---@param player LuaPlayer
@@ -140,7 +140,7 @@ function ClickOarcGuiButton(event)
             HideOarcGui(player)
         else
             ShowOarcGui(player)
-            FakeTabChangeEventOarcGui(player)
+            OarcGuiCreateContentOfTab(player)
         end
     end
 end
@@ -149,26 +149,36 @@ end
 ---@return nil
 function OarcGuiSelectedTabChanged(event)
     if (event.element.name ~= "oarc_tabs") then return end
-
-    local player = game.players[event.player_index]
-    local otabs = event.element
-    local selected_tab_name = otabs.tabs[otabs.selected_tab_index].tab.name
-
-    -- Clear all tab contents
-    for i,t in pairs(otabs.tabs) do
-        t.content.clear()
-    end
-
-    SetOarGuiTabContent(player, selected_tab_name)
+    OarcGuiCreateContentOfTab(game.players[event.player_index])
 end
 
+---Set tab content to currently selected tab, clears all other tab content and refreshes the selected tab content!
+---Safe to call just to refresh the current tab.
 ---@param player LuaPlayer
 ---@return nil
-function FakeTabChangeEventOarcGui(player)
-    local event = {}
-    event.element = GetOarcGuiTabsPane(player)
-    event.player_index = player.index
-    OarcGuiSelectedTabChanged(event)
+function OarcGuiCreateContentOfTab(player)
+    local otabs = GetOarcGuiTabsPane(player)
+    if (otabs == nil) then return end
+
+    local tab_name = otabs.tabs[otabs.selected_tab_index].tab.name
+
+    -- log("OarcGuiCreateContentOfTab: " .. tab_name)
+
+    for _,t in ipairs(otabs.tabs) do
+        t.content.clear()
+        if (t.tab.name == tab_name) then
+            OARC_GUI_TAB_CONTENT_FUNCTIONS[tab_name](t.content, player)
+            return
+        end
+    end
+end
+
+---Just an alias for OarcGuiCreateContentOfTab
+---@param player LuaPlayer
+---@return nil
+function OarcGuiRefreshContent(player)
+    -- log("Hit OarcGuiRefreshContent" .. player.name)
+    OarcGuiCreateContentOfTab(player)
 end
 
 ---@param player LuaPlayer
@@ -256,22 +266,7 @@ function AddOarcGuiTab(player, tab_name)
     end
 end
 
----@param player LuaPlayer
----@param tab_name string
-function SetOarGuiTabContent(player, tab_name)
-    if (not DoesOarcGuiExist(player)) then return end
-
-    local otabs = GetOarcGuiTabsPane(player)
-
-    for _,t in ipairs(otabs.tabs) do
-        if (t.tab.name == tab_name) then
-            t.content.clear()
-            OARC_GUI_TAB_CONTENT_FUNCTIONS[tab_name](t.content, player)
-            return
-        end
-    end
-end
-
+---This sets the enable state of a tab.
 ---@param player LuaPlayer
 ---@param tab_name string
 ---@param enable boolean
@@ -288,6 +283,7 @@ function SetOarcGuiTabEnabled(player, tab_name, enable)
     end
 end
 
+---Switches the tab to the one specified.
 ---@param player LuaPlayer
 ---@param tab_name string
 function SwitchOarcGuiTab(player, tab_name)
@@ -298,7 +294,7 @@ function SwitchOarcGuiTab(player, tab_name)
     for i,t in pairs(otabs.tabs) do
         if (t.tab.name == tab_name) then
             otabs.selected_tab_index = i
-            FakeTabChangeEventOarcGui(player)
+            OarcGuiCreateContentOfTab(player)
             return
         end
     end

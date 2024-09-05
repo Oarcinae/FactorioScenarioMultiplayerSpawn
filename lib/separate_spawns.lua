@@ -105,9 +105,9 @@ function InitSpawnGlobalsAndForces()
 
     -- This is what I use to communicate a buddy spawn request between the buddies.
     -- This contains information of who is asking, and what options were selected.
-    if (global.ocore.buddySpawnOpts == nil) then
-        global.ocore.buddySpawnOpts --[[@as OarcBuddySpawnOptsTable]] = {}
-    end
+    -- if (global.ocore.buddySpawnOpts == nil) then
+    --     global.ocore.buddySpawnOpts --[[@as OarcBuddySpawnOptsTable]] = {}
+    -- end
 
     -- Buddy info: The only real use is to check if one of a buddy pair is online to see if we should allow enemy
     -- attacks on the base.
@@ -227,7 +227,7 @@ function SeparateSpawnsPlayerLeft(event)
         log("Player left early: " .. player.name)
         SendBroadcastMsg(player.name ..
         "'s base was marked for immediate clean up because they left within " ..
-        global.ocfg.gameplay.minimum_online_time .. " minutes of joining.")
+        global.ocfg.gameplay.minimum_online_time .. " minutes of joining.") --TODO: localize
         RemoveOrResetPlayer(player, true, true, true, true)
     end
 end
@@ -426,9 +426,9 @@ end
 function SetupAndClearSpawnAreas(surface, chunkArea)
     local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.surfaces_config[surface.name].spawn_config
 
-    for name, spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
+    for _,spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
         if (spawn.surface ~= surface.name) then
-            return
+            goto CONTINUE
         end
 
         -- Create a bunch of useful area and position variables
@@ -440,10 +440,10 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             x = chunkArea.left_top.x + (CHUNK_SIZE / 2),
             y = chunkArea.left_top.y + (CHUNK_SIZE / 2)
         }
-        local spawnPosOffset = {
-            x = spawn.position.x + spawn_config.general.spawn_radius_tiles,
-            y = spawn.position.y + spawn_config.general.spawn_radius_tiles
-        }
+        -- local spawnPosOffset = {
+        --     x = spawn.position.x + spawn_config.general.spawn_radius_tiles,
+        --     y = spawn.position.y + spawn_config.general.spawn_radius_tiles
+        -- }
 
         -- Make chunks near a spawn safe by removing enemies
         if (util.distance(spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius) then
@@ -494,6 +494,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         end
 
         -- end -- Vanilla spawn point are not implemented yet.
+        ::CONTINUE:: -- Continue loop
     end
 end
 
@@ -633,7 +634,7 @@ function ResetPlayerAndDestroyForce(player)
 
     if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
         SendBroadcastMsg("Team " ..
-            player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.")
+            player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.") --TODO: localize
         log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
         game.merge_forces(player_old_force, global.ocore.destroyed_force)
     end
@@ -651,7 +652,7 @@ function ResetPlayerAndAbandonForce(player)
     player.force = global.ocfg.gameplay.main_force_name
 
     if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
-        SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!")
+        SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!") --TODO: localize
         log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
         game.merge_forces(player_old_force, global.ocore.abandoned_force)
     end
@@ -785,9 +786,9 @@ function CleanupPlayerGlobals(playerName)
     end
 
     -- Clear buddy spawn options (should already be cleared, but just in case it isn't)
-    if (global.ocore.buddySpawnOpts[playerName] ~= nil) then
-        global.ocore.buddySpawnOpts[playerName] = nil
-    end
+    -- if (global.ocore.buddySpawnOpts[playerName] ~= nil) then
+    --     global.ocore.buddySpawnOpts[playerName] = nil
+    -- end
 
     -- Transfer or remove a shared spawn if player is owner
     if (global.ocore.sharedSpawns[playerName] ~= nil) then
@@ -797,7 +798,7 @@ function CleanupPlayerGlobals(playerName)
         if (#teamMates >= 1) then
             local newOwnerName = table.remove(teamMates) -- Remove 1 to use as new owner.
             TransferOwnershipOfSharedSpawn(playerName, newOwnerName)
-            SendBroadcastMsg(playerName .. "has left so " .. newOwnerName .. " now owns their base.")
+            SendBroadcastMsg(playerName .. " has left so " .. newOwnerName .. " now owns their base.") -- TODO: Localize
         else
             global.ocore.sharedSpawns[playerName] = nil
         end
@@ -954,22 +955,27 @@ end
 -- is below the threshold.
 ---@return number
 function GetNumberOfAvailableSharedSpawns()
-    local count = 0
+    return #GetAvailableSharedSpawns()
+end
 
+---Get a list of available shared spawns.
+---@return table
+function GetAvailableSharedSpawns()
+    local list_of_spawns = {}
     local number_of_players_per_shared_spawn = global.ocfg.gameplay.number_of_players_per_shared_spawn
 
-    for ownerName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-        if (sharedSpawn.openAccess and
-                (game.players[ownerName] ~= nil) and
-                game.players[ownerName].connected) then
+    for owner_name, shared_spawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
+        if (shared_spawn.openAccess and
+                (game.players[owner_name] ~= nil) and
+                game.players[owner_name].connected) then
             if ((number_of_players_per_shared_spawn == 0) or
-                    (TableLength(global.ocore.sharedSpawns[ownerName].players) < number_of_players_per_shared_spawn)) then
-                count = count + 1
+                    (TableLength(global.ocore.sharedSpawns[owner_name].players) < number_of_players_per_shared_spawn)) then
+                table.insert(list_of_spawns, owner_name)
             end
         end
     end
 
-    return count
+    return list_of_spawns
 end
 
 ---Checks if player has a custom spawn point set.
@@ -1234,9 +1240,9 @@ function CreatePlayerCustomForce(player)
     player.force = newForce
 
     if (newForce.name == player.name) then
-        SendBroadcastMsg(player.name .. " has started their own team!")
+        SendBroadcastMsg(player.name .. " has started their own team!") -- TODO: Localize
     else
-        player.print("Sorry, no new teams can be created. You were assigned to the default team instead.")
+        player.print("Sorry, no new teams can be created. You were assigned to the default team instead.") -- TODO: Localize
     end
 
     return newForce
@@ -1406,7 +1412,7 @@ SPAWN_TEAM_CHOICE = {
 ---@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
 
 ---This contains the spawn choices for a player in the spawn menu.
----@alias OarcSpawnChoices { surface: string, team: SpawnTeamChoice, moat: boolean, buddy: string?, distance: integer }
+---@alias OarcSpawnChoices { surface: string, team: SpawnTeamChoice, moat: boolean, buddy: string?, distance: integer, host: string? }
 ---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.
 ---@alias OarcSpawnChoicesTable table<string, OarcSpawnChoices>
 
