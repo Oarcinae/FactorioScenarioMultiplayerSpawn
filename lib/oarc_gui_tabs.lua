@@ -168,7 +168,6 @@ function OarcGuiCreateContentOfTab(player)
         t.content.clear()
         if (t.tab.name == tab_name) then
             OARC_GUI_TAB_CONTENT_FUNCTIONS[tab_name](t.content, player)
-            return
         end
     end
 end
@@ -206,8 +205,9 @@ function CreateOarcGuiTabsPane(player)
         local subhead = inside_frame.add{
             type="frame",
             name="sub_header",
-            style = "changelog_subheader_frame"}
-        AddLabel(subhead, "scen_info", "Scenario Info and Controls", "subheader_caption_label")
+            style = "changelog_subheader_frame"
+        }
+        AddLabel(subhead, nil, "Scenario Info and Controls", "subheader_caption_label") --TODO: localize
 
         -- TABBED PANE
         local oarc_tabs = inside_frame.add{

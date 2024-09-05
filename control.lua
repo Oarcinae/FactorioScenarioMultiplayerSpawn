@@ -46,6 +46,8 @@ require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 require("lib/oarc_gui_tabs")
 
+require("lib/oarc_tests")
+
 
 
 --------------------------------------------------------------------------------

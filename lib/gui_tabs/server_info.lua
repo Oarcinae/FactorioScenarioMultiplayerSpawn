@@ -140,10 +140,41 @@ function CreateServerInfoTab(tab_container, player)
         for _,player in pairs(game.connected_players) do
             table.insert(player_list, player.name)
         end
-        tab_container.add{name = "ban_players_dropdown",
-                        type = "drop-down",
-                        items = player_list}
-        tab_container.add{name="ban_player", type="button", caption="Ban Player"}
-        tab_container.add{name="restart_player", type="button", caption="Restart Player"}
+
+        AddLabel(tab_container, nil, "Admin Controls:", my_label_header_style)
+
+        local horizontal_flow = tab_container.add{
+            type="flow", direction="horizontal"
+        }
+        horizontal_flow.style.horizontally_stretchable = true
+
+        local label = AddLabel(horizontal_flow, nil, "Select Player:", my_label_style) --TODO: localize
+        local dropdown = horizontal_flow.add{
+            name = "ban_players_dropdown",
+            type = "drop-down",
+            items = player_list
+        }
+        -- dropdown.style.horizontal_align = "left"
+
+        local dragger = horizontal_flow.add{
+            type="empty-widget",
+            style="draggable_space_header"
+        }
+        dragger.style.horizontally_stretchable = true
+
+        local ban_button = horizontal_flow.add{
+            name="ban_player",
+            type="button",
+            caption="Ban Player",
+            style = "red_button"
+        }
+        -- ban_button.style.horizontal_align = "right"
+        local reset_button = horizontal_flow.add{
+            name="restart_player",
+            type="button",
+            caption="Restart Player",
+            style = "red_button"
+        }
+        -- reset_button.style.horizontal_align = "right"
     end
 end

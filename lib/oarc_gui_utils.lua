@@ -3,11 +3,14 @@
 --------------------------------------------------------------------------------
 -- GUI Styles
 --------------------------------------------------------------------------------
-
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_fixed_width_style = {
     minimal_width = 450,
     maximal_width = 450
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_label_style = {
     -- minimal_width = 450,
     -- maximal_width = 50,
@@ -16,6 +19,8 @@ my_label_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_label_header_style = {
     single_line = false,
     font = "heading-1",
@@ -23,6 +28,8 @@ my_label_header_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_label_header_grey_style = {
     single_line = false,
     font = "heading-1",
@@ -30,14 +37,18 @@ my_label_header_grey_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_note_style = {
     -- minimal_width = 450,
     single_line = false,
-    font = "default-small-semibold",
+    font = "default-semibold",
     font_color = {r=1,g=0.5,b=0.5},
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_warning_style = {
     -- minimal_width = 450,
     -- maximal_width = 450,
@@ -46,24 +57,34 @@ my_warning_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_spacer_style = {
     minimal_height = 10,
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_small_button_style = {
     font = "default-small-semibold"
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_player_list_fixed_width_style = {
     minimal_width = 200,
     maximal_width = 400,
     maximal_height = 200
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_shared_item_list_fixed_width_style = {
     minimal_width = 200,
     maximal_width = 600,
     maximal_height = 600
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_player_list_admin_style = {
     font = "default-semibold",
     font_color = {r=1,g=0.5,b=0.5},
@@ -72,6 +93,8 @@ my_player_list_admin_style = {
     bottom_padding = 0,
     single_line = false,
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_player_list_style = {
     font = "default-semibold",
     minimal_width = 200,
@@ -79,6 +102,8 @@ my_player_list_style = {
     bottom_padding = 0,
     single_line = false,
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_player_list_offline_style = {
     -- font = "default-semibold",
     font_color = {r=0.5,g=0.5,b=0.5},
@@ -87,11 +112,16 @@ my_player_list_offline_style = {
     bottom_padding = 0,
     single_line = false,
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_player_list_style_spacer = {
     minimal_height = 20,
 }
+---@type Color
 my_color_red = {r=1,g=0.1,b=0.1}
 
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_longer_label_style = {
     maximal_width = 600,
     single_line = false,
@@ -99,6 +129,8 @@ my_longer_label_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_longer_warning_style = {
     maximal_width = 600,
     single_line = false,
@@ -106,6 +138,8 @@ my_longer_warning_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_notepad_fixed_width_style = {
     minimal_width = 600,
     maximal_width = 600,
@@ -136,7 +170,7 @@ end
 ---@param name string?
 ---@param message LocalisedString
 ---@param style table|string
----@return nil
+---@return LuaGuiElement
 function AddLabel(gui_element, name, message, style)
     local g = gui_element.add{name = name, type = "label", caption=message}
     if (type(style) == "table") then
@@ -144,6 +178,7 @@ function AddLabel(gui_element, name, message, style)
     else
         g.style = style
     end
+    return g
 end
 
 ---Shorter way to add a spacer

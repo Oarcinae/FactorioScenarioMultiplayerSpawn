@@ -1042,8 +1042,7 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         local delay_spawn_seconds = 5 * spawn_chunk_radius
 
         ---TODO: Move text to locale.
-        game.players[playerName].print("Generating your spawn now, please wait for at least " ..
-            delay_spawn_seconds .. " seconds...")
+        game.players[playerName].print("Generating your spawn now, please wait...") --TODO: localize
         game.surfaces[surface].request_to_generate_chunks(spawnPosition, spawn_chunk_radius)
 
         local final_chunk = GetChunkPosFromTilePos(spawnPosition)
@@ -1061,7 +1060,7 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
 
         table.insert(global.ocore.delayedSpawns, delayedSpawn)
 
-    HideOarcGui(game.players[playerName])
+        HideOarcGui(game.players[playerName])
         DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
 
         RegrowthMarkAreaSafeGivenTilePos(surface, spawnPosition,
@@ -1378,7 +1377,7 @@ end
 SPAWN_TEAM_CHOICE = {
     join_main_team = 1,
     join_own_team = 2,
-    join_buddy_team = 3,
+    -- join_buddy_team = 3, -- Removed in favor of separate override
 }
 
 ---Contains the respawn point for a player. Usually this is their home base but it can be changed.
@@ -1407,12 +1406,12 @@ SPAWN_TEAM_CHOICE = {
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 
 ---This contains information of who is being asked to buddy spawn, and what options were selected.
----@alias OarcBuddySpawnOpts { surface: string, teamRadioSelection: SpawnTeamChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
+----@alias OarcBuddySpawnOpts { surface: string, teamRadioSelection: SpawnTeamChoice, moatChoice: boolean, buddyChoice: string, distChoice: string }
 ---Table of [OarcBuddySpawnOpts](lua://OarcBuddySpawnOpts) indexed by player name.
----@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
+----@alias OarcBuddySpawnOptsTable table<string, OarcBuddySpawnOpts>
 
 ---This contains the spawn choices for a player in the spawn menu.
----@alias OarcSpawnChoices { surface: string, team: SpawnTeamChoice, moat: boolean, buddy: string?, distance: integer, host: string? }
+---@alias OarcSpawnChoices { surface: string, team: SpawnTeamChoice, moat: boolean, buddy: string?, distance: integer, host: string?, buddy_team: boolean }
 ---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.
 ---@alias OarcSpawnChoicesTable table<string, OarcSpawnChoices>
 

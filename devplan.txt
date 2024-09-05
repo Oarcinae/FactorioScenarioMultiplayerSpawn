@@ -28,6 +28,7 @@ Other Ideas, Not Committed:
 - Consider scrapping any overlapping mod settings from the config. ONLY keep the part that can't easily be done in the mod settings menu... NOT SURE about this.
 - Change enable_shared_team_vision to allow players to change this per player (like BNO)
 - Change enable_friendly_fire to be per team?
+- Allow players to spawn "near" an existing player (by request)
 
 --------------------------------------------------------DONE------------------------------------------------------------
 
