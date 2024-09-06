@@ -34,7 +34,6 @@ function InitSpawnGlobalsAndForces()
 
     -- This contains each player's spawn point. Literally where they will respawn.
     -- There is a way in game to change this under one of the little menu features I added.
-    ---TODO: Add support for multiple surfaces!
     if (global.ocore.playerSpawns == nil) then
         global.ocore.playerSpawns --[[@as OarcPlayerSpawnsTable]] = {}
     end
@@ -45,38 +44,11 @@ function InitSpawnGlobalsAndForces()
         global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]] = {}
     end
 
-    -- List of available vanilla spawns
-    -- TODO: Vanilla spawn point are not implemented yet.
-    -- if (global.vanillaSpawns == nil) then
-    --     global.vanillaSpawns = {}
-    -- end
 
     -- This keeps a list of any player that has shared their base.
     -- Each entry contains information about if it's open, spawn pos, and players in the group.
     if (global.ocore.sharedSpawns == nil) then
         global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]] = {}
-
-        -- Use this for testing shared spawns...
-        -- local sharedSpawnExample1 = {
-        --     surface="nauvis",
-        --     openAccess=true,
-        --     position={x=50,y=50},
-        --     players={"ABC", "DEF"}}
-        -- local sharedSpawnExample2 = {
-        --     surface="vulcanus",
-        --     openAccess=false,
-        --     position={x=200,y=200},
-        --     players={"ABC", "DEF"}}
-        -- local sharedSpawnExample3 = {
-        --     surface="fulgora",
-        --     openAccess=true,
-        --     position={x=400,y=400},
-        --     players={"A", "B", "C", "D"}}
-        -- global.ocore.sharedSpawns = {
-        --     testName1=sharedSpawnExample1,
-        --     testName2=sharedSpawnExample2,
-        --     Oarc=sharedSpawnExample3
-        -- }
     end
 
     -- Each player has an option to change their respawn which has a cooldown when used.
@@ -103,12 +75,6 @@ function InitSpawnGlobalsAndForces()
         global.ocore.spawnChoices --[[@as OarcSpawnChoicesTable]] = {}
     end
 
-    -- This is what I use to communicate a buddy spawn request between the buddies.
-    -- This contains information of who is asking, and what options were selected.
-    -- if (global.ocore.buddySpawnOpts == nil) then
-    --     global.ocore.buddySpawnOpts --[[@as OarcBuddySpawnOptsTable]] = {}
-    -- end
-
     -- Buddy info: The only real use is to check if one of a buddy pair is online to see if we should allow enemy
     -- attacks on the base.
     -- global.ocore.buddyPairs[player.name] = requesterName
@@ -132,6 +98,41 @@ function InitSpawnGlobalsAndForces()
     global.ocore.destroyed_force = "_DESTROYED_"
     game.create_force(global.ocore.abandoned_force)
     game.create_force(global.ocore.destroyed_force)
+
+    CreateHoldingPenPermissionsGroup()
+
+end
+
+function CreateHoldingPenPermissionsGroup()
+
+    -- Create a permission group for the holding pen players.
+    if (game.permissions.get_group("holding_pen") == nil) then
+        game.permissions.create_group("holding_pen")
+    end
+
+    local holding_pen_group = game.permissions.get_group("holding_pen")
+
+    -- Disable all permissions for the holding pen group.
+    for _,action in pairs(defines.input_action) do
+        holding_pen_group.set_allows_action(action, false)
+    end
+
+    -- Just allow the ones we want:
+    holding_pen_group.set_allows_action(defines.input_action.gui_checked_state_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_click, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_confirmed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_elem_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_hover, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_leave, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_location_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_selected_tab_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_switch_state_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_text_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.gui_value_changed, true)
+    holding_pen_group.set_allows_action(defines.input_action.start_walking, true)
+    -- holding_pen_group.set_allows_action(defines.input_action.write_to_console, true)
+
 end
 
 ---Detects when new surfaces are created and adds them to the list of surfaces that allow spawns
@@ -178,10 +179,11 @@ end
 -- If new player, assign them to the main force so they can communicate with the team without shouting (/s).
 -- TODO: Possibly change this to a holding_pen force?
 ---@param player_index integer|string
----@param clear_inv boolean If true, clear the player's inventory.
 ---@return nil
-function SeparateSpawnsInitPlayer(player_index, clear_inv)
+function SeparateSpawnsInitPlayer(player_index)
     local player = game.players[player_index]
+
+    SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], { x = 0, y = 0 })
 
     -- Make sure spawn control tab is disabled
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, false)
@@ -192,14 +194,7 @@ function SeparateSpawnsInitPlayer(player_index, clear_inv)
         player.force = global.ocfg.gameplay.main_force_name
     end
 
-    -- Ensure cleared inventory!
-    if (clear_inv) then
-        player.get_inventory(defines.inventory.character_main ).clear()
-        player.get_inventory(defines.inventory.character_guns).clear()
-        player.get_inventory(defines.inventory.character_ammo).clear()
-        player.get_inventory(defines.inventory.character_armor).clear()
-        player.get_inventory(defines.inventory.character_trash).clear()
-    end
+    player.permission_group = game.permissions.get_group("holding_pen")
 
     InitOarcGuiTabs(player)
     HideOarcGui(player)
@@ -347,7 +342,8 @@ function SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
 
     -- Send the player to that position
     local player = game.players[delayedSpawn.playerName]
-    SafeTeleport(player, game.surfaces[delayedSpawn.surface], delayedSpawn.position)
+    -- SafeTeleport(player, game.surfaces[delayedSpawn.surface], delayedSpawn.position)
+    SendPlayerToSpawn(player)
     GivePlayerStarterItems(player)
 
     -- Render some welcoming text...
@@ -640,7 +636,7 @@ function ResetPlayerAndDestroyForce(player)
     end
 
     RemoveOrResetPlayer(player, false, false, true, true)
-    SeparateSpawnsInitPlayer(player.index, false)
+    SeparateSpawnsInitPlayer(player.index)
 end
 
 ---Resets the player and merges their force into the abandoned_force.
@@ -658,7 +654,7 @@ function ResetPlayerAndAbandonForce(player)
     end
 
     RemoveOrResetPlayer(player, false, false, false, false)
-    SeparateSpawnsInitPlayer(player.index, false)
+    SeparateSpawnsInitPlayer(player.index)
 end
 
 ---Reset player and merge their force to neutral
@@ -666,7 +662,7 @@ end
 ---@return nil
 function ResetPlayerAndMergeForceToNeutral(player)
     RemoveOrResetPlayer(player, false, true, true, true)
-    SeparateSpawnsInitPlayer(player.index, true)
+    SeparateSpawnsInitPlayer(player.index)
 end
 
 ---Kicks player from game and marks player for removal from globals.
@@ -691,6 +687,8 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, i
         log("ERROR - CleanupPlayer on NIL Player!")
         return
     end
+
+    RemovePlayerStarterItems(player, player.surface.name) -- Remove any starting items they may have.
 
     -- If this player is staying in the game, lets make sure we don't delete them along with the map chunks being
     -- cleared.
@@ -785,11 +783,6 @@ function CleanupPlayerGlobals(playerName)
         end
     end
 
-    -- Clear buddy spawn options (should already be cleared, but just in case it isn't)
-    -- if (global.ocore.buddySpawnOpts[playerName] ~= nil) then
-    --     global.ocore.buddySpawnOpts[playerName] = nil
-    -- end
-
     -- Transfer or remove a shared spawn if player is owner
     if (global.ocore.sharedSpawns[playerName] ~= nil) then
         local sharedSpawn = global.ocore.sharedSpawns[playerName] --[[@as OarcSharedSpawn]]
@@ -835,6 +828,9 @@ function CleanupPlayerGlobals(playerName)
         end
     end
 
+    -- Remove them from any join queues they may be in:
+    RemovePlayerFromJoinQueue(playerName)
+
     if (global.ocore.playerCooldowns[playerName] ~= nil) then
         global.ocore.playerCooldowns[playerName] = nil
     end
@@ -864,6 +860,26 @@ end
  |_||_||___||____||_|  |___||_|_\   |___/  |_|   \___/ |_|  |_|
 
 --]]
+
+---Finds and removes a player from a shared spawn join queue, and refreshes the host's GUI.
+---@param player_name string
+---@return boolean
+function RemovePlayerFromJoinQueue(player_name)
+    for host_name, shared_spawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
+        for index, requestor in pairs(shared_spawn.joinQueue) do
+            if (requestor == player_name) then
+                global.ocore.sharedSpawns[host_name].joinQueue[index] = nil
+                local host_player = game.players[host_name]
+                if (host_player ~= nil) and (host_player.connected) then
+                    host_player.print({ "oarc-player-cancel-join-request", player_name })
+                    OarcGuiRefreshContent(host_player)
+                end
+                return true
+            end
+        end
+    end
+    return false
+end
 
 ---Same as GetClosestPosFromTable but specific to global.ocore.uniqueSpawns
 ---@param surface LuaSurface
@@ -1109,11 +1125,15 @@ end
 ---@return nil
 function SendPlayerToSpawn(player)
     local playerSpawn = GetPlayerCustomSpawn(player)
+
+    player.permission_group = game.permissions.get_group("default")
+
     if (playerSpawn ~= nil) then
         SafeTeleport(player,
             game.surfaces[playerSpawn.surface],
             playerSpawn.position)
     else
+        log("ERROR - SendPlayerToSpawn - No custom spawn point found for player: " .. player.name)
         local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
         SafeTeleport(player,
             game.surfaces[gameplayConfig.default_surface],

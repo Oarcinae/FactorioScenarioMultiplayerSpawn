@@ -95,10 +95,7 @@ end)
 -- Player Events
 ----------------------------------------
 script.on_event(defines.events.on_player_created, function(event)
-    local player = game.players[event.player_index]
-    player.teleport({x=0,y=0}, HOLDING_PEN_SURFACE_NAME)
-
-    SeparateSpawnsInitPlayer(event.player_index, true)
+    SeparateSpawnsInitPlayer(event.player_index)
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)

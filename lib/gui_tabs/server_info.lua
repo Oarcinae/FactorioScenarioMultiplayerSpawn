@@ -6,13 +6,19 @@
 function ServerInfoGuiClick(event)
     if not event.element.valid then return end
     local player = game.players[event.player_index]
-    local name = event.element.name
+    local tags = event.element.tags
 
-    if (name == "ban_player") then
-        local pIndex = event.element.parent.ban_players_dropdown.selected_index
+    if (tags.action ~= "oarc_server_info_tab") then
+        return
+    end
+
+    local player_dropdown = event.element.parent.ban_players_dropdown
+
+    if (tags.setting == "ban_player") then
+        local pIndex = player_dropdown.selected_index
 
         if (pIndex ~= 0) then
-            local banPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
+            local banPlayer = player_dropdown.get_item(pIndex)
             if (game.players[banPlayer]) then
                 game.ban_player(banPlayer --[[@as string]], "Banned from admin panel.")
                 log("Banning " .. banPlayer)
@@ -20,11 +26,11 @@ function ServerInfoGuiClick(event)
         end
     end
 
-    if (name == "restart_player") then
-        local pIndex = event.element.parent.ban_players_dropdown.selected_index
+    if (tags.setting == "restart_player") then
+        local pIndex = player_dropdown.selected_index
 
         if (pIndex ~= 0) then
-            local resetPlayer = event.element.parent.ban_players_dropdown.get_item(pIndex)
+            local resetPlayer = player_dropdown.get_item(pIndex)
 
             if not game.players[resetPlayer] or not game.players[resetPlayer].connected then
                 SendMsg(player.name, "Player " .. resetPlayer .. " is not found?")
@@ -36,9 +42,9 @@ function ServerInfoGuiClick(event)
                 return
             end
 
-            RemoveOrResetPlayer(player, false, true, true, true)
-            SeparateSpawnsInitPlayer(resetPlayer --[[@as string]], true)
             log("Resetting " .. resetPlayer)
+            RemoveOrResetPlayer(game.players[resetPlayer], false, true, true, true)
+            SeparateSpawnsInitPlayer(resetPlayer --[[@as string]])
         else
             SendMsg(player.name, "No player selected!")
             return
@@ -151,6 +157,7 @@ function CreateServerInfoTab(tab_container, player)
         local label = AddLabel(horizontal_flow, nil, "Select Player:", my_label_style) --TODO: localize
         local dropdown = horizontal_flow.add{
             name = "ban_players_dropdown",
+            tags = { action = "oarc_server_info_tab", setting = "ban_players_dropdown" },
             type = "drop-down",
             items = player_list
         }
@@ -164,6 +171,7 @@ function CreateServerInfoTab(tab_container, player)
 
         local ban_button = horizontal_flow.add{
             name="ban_player",
+            tags = { action = "oarc_server_info_tab", setting = "ban_player" },
             type="button",
             caption="Ban Player",
             style = "red_button"
@@ -171,6 +179,7 @@ function CreateServerInfoTab(tab_container, player)
         -- ban_button.style.horizontal_align = "right"
         local reset_button = horizontal_flow.add{
             name="restart_player",
+            tags = { action = "oarc_server_info_tab", setting = "restart_player" },
             type="button",
             caption="Restart Player",
             style = "red_button"

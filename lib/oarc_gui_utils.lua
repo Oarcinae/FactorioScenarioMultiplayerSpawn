@@ -53,7 +53,8 @@ my_warning_style = {
     -- minimal_width = 450,
     -- maximal_width = 450,
     single_line = false,
-    font_color = {r=1,g=0.1,b=0.1},
+    font = "default-bold",
+    font_color = {r=1,g=0.3,b=0.3},
     top_padding = 0,
     bottom_padding = 0
 }

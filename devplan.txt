@@ -12,7 +12,7 @@ ACTIVE ITEMS:
 20. Force enable_world_eater to require enable_regrowth
 26. Fix all GUI styling (buttons outside of content)
 
-27.
+27. Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
 28.
 29.
 30.

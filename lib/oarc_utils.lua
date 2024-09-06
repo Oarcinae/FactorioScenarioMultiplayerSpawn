@@ -309,9 +309,10 @@ function GivePlayerRespawnItems(player)
 
     local respawnItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_respawn_items
 
-    for name, count in pairs(respawnItems) do
-        player.insert({ name = name, count = count })
-    end
+    util.insert_safe(player, respawnItems)
+    -- for name, count in pairs(respawnItems) do
+    --     player.insert({ name = name, count = count })
+    -- end
 end
 
 -- TODO: Take advantage of util.insert_safe ??
@@ -326,11 +327,30 @@ function GivePlayerStarterItems(player)
         return
     end
 
-    local respawnItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
+    local startItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
 
-    for name, count in pairs(respawnItems) do
-        player.insert({ name = name, count = count })
+    util.insert_safe(player, startItems)
+    -- for name, count in pairs(startItems) do
+    --     player.insert({ name = name, count = count })
+    -- end
+end
+
+---Attempts to remove any starter items from the player
+---@param player LuaPlayer
+---@param surface_name string? Fallback surface name if player spawn is not found
+---@return nil
+function RemovePlayerStarterItems(player, surface_name)
+    local playerSpawn = global.ocore.playerSpawns[player.name]
+    local surface_override = surface_name
+    if (playerSpawn == nil) then
+        log("WARN - RemovePlayerStarterItems - No player spawn found for player: " .. player.name)
+    else
+        surface_override = playerSpawn.surface -- Use the player's spawn surface if we have it
     end
+
+    local startItems = global.ocfg.surfaces_config[surface_override].starting_items.player_start_items
+
+    util.remove_safe(player, startItems)
 end
 
 --- Delete all chunks on a surface
