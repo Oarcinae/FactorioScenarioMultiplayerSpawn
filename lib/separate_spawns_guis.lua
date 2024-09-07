@@ -41,16 +41,20 @@ function DisplayWelcomeTextGui(player)
     }
 
     -- Start with server message.
-    AddLabel(welcome_gui_if, nil, global.ocfg.server_info.server_msg, my_label_style)
-    -- AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
-    AddSpacer(welcome_gui_if)
+    if (global.ocfg.server_info.server_msg ~= "") then
+        AddLabel(welcome_gui_if, nil, global.ocfg.server_info.server_msg, my_label_style)
+        -- AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
+        AddSpacer(welcome_gui_if)
+    end
 
     -- Informational message about the scenario
-    AddLabel(welcome_gui_if, nil, global.ocfg.server_info.welcome_msg, my_label_style)
-    AddSpacer(welcome_gui_if)
+    if (global.ocfg.server_info.welcome_msg ~= "") then
+        AddLabel(welcome_gui_if, nil, global.ocfg.server_info.welcome_msg, my_label_style)
+        AddSpacer(welcome_gui_if)
+    end
 
     -- Warnings about the scenario
-    AddLabel(welcome_gui_if, nil, { "oarc-scenario-warning-msg" }, my_note_style)
+    AddLabel(welcome_gui_if, nil, { "oarc-scenario-info-warn-msg" }, my_note_style)
 
     -- Confirm button
     local button_flow = welcome_gui.add {
@@ -152,39 +156,38 @@ end
 
 ---Display the team select radio buttons
 ---@param parent_flow LuaGuiElement
+---@param enable_main_team boolean
 ---@param enable_separate_teams boolean
----@param enable_buddy_spawn boolean
 ---@return nil
-function DisplayTeamSelectRadioButtons(parent_flow, enable_separate_teams, enable_buddy_spawn)
-
-    local main_team_radio = parent_flow.add {
-        name = "isolated_spawn_main_team_radio",
-        tags = { action = "oarc_spawn_options", setting = "team_select", value = SPAWN_TEAM_CHOICE.join_main_team },
-        type = "radiobutton",
-        caption = { "oarc-join-main-team-radio" },
-        state = true
-    }
+function DisplayTeamSelectRadioButtons(parent_flow, enable_main_team, enable_separate_teams)
+    if enable_main_team then
+        local main_team_radio = parent_flow.add {
+            name = "isolated_spawn_main_team_radio",
+            tags = { action = "oarc_spawn_options", setting = "team_select", value = SPAWN_TEAM_CHOICE.join_main_team },
+            type = "radiobutton",
+            caption = { "oarc-join-main-team-radio" },
+            state = true
+        }
+        if not enable_separate_teams then
+            -- If separate teams are not enabled, default to joining the main team, and disable the radio buttons.
+            main_team_radio.ignored_by_interaction = true
+            main_team_radio.enabled = false
+        end
+    end
 
     if (enable_separate_teams) then
-        parent_flow.add {
+        local separate_teams_radio = parent_flow.add {
             name = "isolated_spawn_new_team_radio",
             tags = { action = "oarc_spawn_options", setting = "team_select", value = SPAWN_TEAM_CHOICE.join_own_team },
             type = "radiobutton",
             caption = { "oarc-create-own-team-radio" },
             state = false
         }
-        -- if (enable_buddy_spawn) then
-        --     parent_flow.add {
-        --         name = "isolated_spawn_buddy_team_radio",
-        --         tags = { action = "oarc_spawn_options", setting = "team_select", value = SPAWN_TEAM_CHOICE.join_buddy_team },
-        --         type = "radiobutton",
-        --         caption = { "oarc-create-buddy-team" },
-        --         state = false
-        --     }
-        -- end
-    else
-        -- If separate teams are not enabled, default to joining the main team, and disable the radio buttons.
-        main_team_radio.ignored_by_interaction = true
+        if not enable_main_team then
+            -- If main team is not enabled, default to joining the a separate team, and disable the radio buttons.
+            separate_teams_radio.ignored_by_interaction = true
+            separate_teams_radio.enabled = false
+        end
     end
 end
 
@@ -258,7 +261,7 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
     end
 
     -- Radio buttons to pick your team.
-    DisplayTeamSelectRadioButtons(spawn_settings_frame, gameplay.enable_separate_teams, gameplay.enable_buddy_spawn)
+    DisplayTeamSelectRadioButtons(spawn_settings_frame, gameplay.enable_main_team, gameplay.enable_separate_teams)
 
     -- Allow players to spawn with a moat around their area.
     if (gameplay.allow_moats_around_spawns) then
@@ -315,27 +318,6 @@ function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_play
         tooltip = { "oarc-solo-spawn-tooltip" },
         style = "green_button"
     }
-end
-
----Create a confirm button for player to request a BUDDY spawn
----@param parent_flow LuaGuiElement
----@return nil
-function CreateBuddySpawnRequestButton(parent_flow)
-    -- local buddySpawnRequestFlow = parent_flow.add {
-    --     name = "buddy_spawn_request_flow",
-    --     type = "flow",
-    --     direction = "horizontal"
-    -- }
-    -- buddySpawnRequestFlow.style.horizontal_align = "right"
-    -- buddySpawnRequestFlow.style.horizontally_stretchable = true
-    local button = parent_flow.add {
-        name = "buddy_spawn_request",
-        tags = { action = "oarc_spawn_options", setting = "buddy_spawn_request" },
-        type = "button",
-        caption = { "oarc-buddy-spawn" },
-        style = "green_button"
-    }
-    button.style.horizontal_align = "right"
 end
 
 ---Creates the shared spawn frame for joining another player's base
@@ -453,8 +435,10 @@ end
 ---Creates the buddy spawn frame for spawning with a buddy
 ---@param parent_flow LuaGuiElement
 ---@param player LuaPlayer
+---@param enable_buddy_spawn boolean
+---@param enable_separate_teams boolean
 ---@return nil
-function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
+function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn, enable_separate_teams)
 
     local buddy_spawn_frame = parent_flow.buddy_spawn_frame
     local selected_buddy = nil ---@type string?
@@ -494,25 +478,23 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
 
     AddLabel(buddy_spawn_frame, nil, { "oarc-spawn-menu-buddy-header" }, my_label_header_style)
 
-    if not enable_buddy_spawn then -- TODO: Confirm if this must also require enable_shared_spawns!!
-        -- Add some note about this being disabled?
+    if not enable_buddy_spawn then
         AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-spawn-disabled" }, my_warning_style)
         return
     end
 
-
     -- Warnings and explanations...
     AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-spawn-instructions" }, my_label_style)
-    -- AddSpacer(buddy_spawn_frame)
 
-    buddy_spawn_frame.add {
-        tags = { action = "oarc_spawn_options", setting = "buddy_team_select" },
-        type = "checkbox",
-        caption = { "oarc-create-buddy-team" },
-        state = false
-    }
+    if (enable_separate_teams) then
+        buddy_spawn_frame.add {
+            tags = { action = "oarc_spawn_options", setting = "buddy_team_select" },
+            type = "checkbox",
+            caption = { "oarc-create-buddy-team" },
+            state = false
+        }
+    end
 
-    
     ---@type string[]
     local avail_buddies = GetOtherPlayersInSpawnMenu(player)
 
@@ -538,7 +520,6 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
     local label = AddLabel(buddy_button_horizontal_flow, nil, { "oarc-buddy-select-label" }, my_label_style)
     label.style.horizontal_align = "left"
 
-    -- AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-select-info" }, my_label_style)
     local buddy_dropdown = buddy_button_horizontal_flow.add {
         name = "waiting_buddies_dropdown",
         tags = { action = "oarc_spawn_options", setting = "buddy_select" },
@@ -547,10 +528,6 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
         selected_index = previous_index
     }
     buddy_dropdown.style.horizontal_align = "left"
-    -- buddySpawnFrame.add { name = "refresh_buddy_list",
-    --     type = "button",
-    --     caption = { "oarc-buddy-refresh" } }
-    -- AddSpacerLine(buddySpawnFlow)
 
     local empty = buddy_button_horizontal_flow.add {
         type = "empty-widget",
@@ -566,11 +543,6 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
         style = "green_button"
     }
     button.style.horizontal_align = "right"
-
-    -- CreateBuddySpawnRequestButton(buddy_button_horizontal_flow)
-
-    -- AddLabel(buddy_spawn_frame, "buddy_spawn_lbl1", { "oarc-buddy-spawn-info" }, my_label_style)
-    
 end
 
 ---Refresh the buddy list without recreating any GUI elements
@@ -619,7 +591,7 @@ function DisplaySpawnOptions(player)
     CreateSpawnSettingsFrame(sGui, gameplay) -- The settings for configuring a spawn
     CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn) -- The primary method of spawning
     CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns) -- Spawn options to join another player's base.
-    CreateBuddySpawnFrame(sGui, player, gameplay.enable_buddy_spawn) -- Awesome buddy spawning system
+    CreateBuddySpawnFrame(sGui, player, gameplay.enable_buddy_spawn, gameplay.enable_separate_teams) -- Awesome buddy spawning system
 end
 
 

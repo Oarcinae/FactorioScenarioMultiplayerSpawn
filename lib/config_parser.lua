@@ -10,11 +10,12 @@ OCFG_KEYS =
     ["server_info.welcome_msg_title"] = {mod_key = "oarc-mod-welcome-msg-title" , ocfg_keys = {"server_info", "welcome_msg_title"}, type = "string"},
     ["server_info.server_msg"] = {mod_key = "oarc-mod-server-msg" , ocfg_keys = {"server_info", "server_msg"}, type = "string"},
     ["server_info.welcome_msg"] = {mod_key = "oarc-mod-welcome-msg" , ocfg_keys = {"server_info", "welcome_msg"}, type = "string"},
+    ["server_info.discord_invite"] = {mod_key = "oarc-mod-discord-invite" , ocfg_keys = {"server_info", "discord_invite"}, type = "string"},
 
     ["Gameplay"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
     ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
-    ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-enable-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
+    -- ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-enable-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
     ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-mod-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
     ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-mod-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
     ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-mod-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
@@ -120,7 +121,7 @@ end
 ---@return nil
 function RuntimeModSettingChanged(event)
 
-    log("on_runtime_mod_setting_changed" .. event.setting)
+    log("on_runtime_mod_setting_changed: " .. event.setting)
 
     -- Find the matching OARC setting and update it.
     local found_setting = false

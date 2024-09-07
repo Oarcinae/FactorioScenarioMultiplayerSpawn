@@ -3,8 +3,8 @@
 local mod_gui = require("mod-gui")
 require("lib/gui_tabs/server_info")
 require("lib/gui_tabs/spawn_controls")
-require("lib/gui_tabs/regrowth_controls")
 require("lib/gui_tabs/settings_controls")
+require("lib/gui_tabs/mod_info_faq")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -16,14 +16,14 @@ OARC_GUI = "oarc_gui"
 -- LIST of all implemented tabs and their content Functions
 OARC_SERVER_INFO_TAB_NAME = "Server Info"
 OARC_SPAWN_CTRL_TAB_NAME = "Spawn Controls"
-OARC_REGROWTH_CTRL_TAB_NAME = "Regrowth"
 OARC_CONFIG_CTRL_TAB_NAME = "Settings"
+OARC_MOD_INFO_CTRL_TAB_NAME = "Mod Info"
 
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
     [OARC_SERVER_INFO_TAB_NAME] = CreateServerInfoTab,
     [OARC_SPAWN_CTRL_TAB_NAME] = CreateSpawnControlsTab,
-    [OARC_REGROWTH_CTRL_TAB_NAME] = CreateRegrowthControlsTab,
+    [OARC_MOD_INFO_CTRL_TAB_NAME] = CreateModInfoTab,
     [OARC_CONFIG_CTRL_TAB_NAME] = CreateSettingsControlsTab,
 }
 
@@ -46,8 +46,8 @@ function InitOarcGuiTabs(player)
     AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
 
     -- Regrowth control tab
-    AddOarcGuiTab(player, OARC_REGROWTH_CTRL_TAB_NAME)
-    SetOarcGuiTabEnabled(player, OARC_REGROWTH_CTRL_TAB_NAME, true)
+    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_MOD_INFO_CTRL_TAB_NAME, true)
 
     -- Settings control tab
     if (player.admin) then

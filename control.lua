@@ -128,8 +128,8 @@ script.on_event(defines.events.on_tick, function(event)
 
     if global.ocfg.regrowth.enable_regrowth then
         RegrowthOnTick()
-        RegrowthForceRemovalOnTick()
     end
+    RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
 end)
 
 ----------------------------------------

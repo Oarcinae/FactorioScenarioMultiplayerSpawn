@@ -8,6 +8,9 @@ function CreateSettingsControlsTab(tab_container, player)
     if (player.admin) then
         local label = AddLabel(tab_container, nil, { "oarc-settings-tab-admin-warning" }, my_warning_style)
         label.style.padding = 5
+    else
+        local label = AddLabel(tab_container, nil, { "oarc-settings-tab-player-warning" }, my_warning_style)
+        label.style.padding = 5
     end
 
     local horizontal_flow = tab_container.add { type = "flow", direction = "horizontal", }
@@ -74,9 +77,9 @@ function CreateSurfaceSettingsSection(container, player)
     AddLabel(surface_table, nil, "Spawning Enabled", "caption_label")
 
     --- Add the rows
-    for name, enabled in pairs(global.ocore.surfaces --[[@as table<string, boolean>]]) do
+    for name, allowed in pairs(global.ocore.surfaces --[[@as table<string, boolean>]]) do
         AddLabel(surface_table, nil, name, my_label_style)
-        AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", enabled)
+        AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed, player.admin)
     end
 end
 
@@ -92,7 +95,6 @@ function SettingsControlsTabGuiClick(event)
 
     local entry = OCFG_KEYS[index]
     if (entry.type == "boolean") then
-        SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, gui_elem.state)
         settings.global[entry.mod_key] = { value = gui_elem.state }
     end
 end
@@ -109,7 +111,6 @@ function SettingsControlsTabGuiTextChanged(event)
 
     local entry = OCFG_KEYS[index]
     if (entry.type == "string") or (entry.type == "integer") then
-        SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, gui_elem.text)
         settings.global[entry.mod_key] = { value = gui_elem.text }
     end
 end
@@ -198,13 +199,15 @@ end
 ---@param surface_name string
 ---@param setting_name string
 ---@param state boolean
+---@param admin boolean
 ---@return nil
-function AddSurfaceCheckboxSetting(parent, surface_name, setting_name, state)
+function AddSurfaceCheckboxSetting(parent, surface_name, setting_name, state, admin)
     parent.add{
         name = surface_name.."_"..setting_name,
         type = "checkbox",
         state = state,
         tags = { action = "oarc_settings_tab_surfaces", setting = setting_name, surface = surface_name },
+        enabled = admin
     }
 end
 

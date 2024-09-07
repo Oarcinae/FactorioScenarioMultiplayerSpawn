@@ -170,10 +170,10 @@ OCFG = {
     -- Server Info - This stuff is shown in the welcome GUI and Info panel.
     ---@type OarcConfigServerInfo
     server_info = {
-        server_msg = "Rules: Be polite. Ask before changing other players's stuff. Have fun!\n"..
-        "This server is running a custom mod that allows individual starting areas on the map.",
-        welcome_msg_title = "OARC V2 - TEST SERVER",
-        welcome_msg = "TEMPORARY BETA TESTING OF V2 MOD!", -- Printed to player on join as well.
+        server_msg = "YOUR SERVER MSG HERE",
+        welcome_msg_title = "YOUR SERVER TITLE HERE",
+        welcome_msg = "YOUR WELCOME MSG HERE", -- Printed to player on join as well.
+        discord_invite = "YOUR DISCORD INVITE HERE"
     },
 
     -- General gameplay related settings that I didn't want to expose in the mod settings since these should
@@ -334,6 +334,7 @@ OCFG = {
 ---@field welcome_msg_title string  Title of welcome GUI window.
 ---@field welcome_msg string Main welcome message. (Should provide mod info.)
 ---@field server_msg string Server specific message. (Rules, etc.)
+---@field discord_invite string Discord invite for easy copy paste.
 
 ---@class OarcConfigGameplaySettings
 ---@field enable_main_team boolean Allows all players to join a primary force(team).

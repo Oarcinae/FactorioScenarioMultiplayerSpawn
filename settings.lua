@@ -20,6 +20,13 @@ data:extend({
         default_value = "Insert Server Info Message Here!",
         order = "a3"
     },
+    {
+        type = "string-setting",
+        name = "oarc-mod-discord-invite",
+        setting_type = "runtime-global",
+        default_value = "Insert Discord Invite Here!",
+        order = "a4"
+    },
 
 
     {
@@ -36,13 +43,13 @@ data:extend({
         default_value = true,
         order = "b2"
     },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-spawning-on-other-surfaces",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "b3"
-    },
+    -- {
+    --     type = "bool-setting",
+    --     name = "oarc-mod-enable-spawning-on-other-surfaces",
+    --     setting_type = "runtime-global",
+    --     default_value = true,
+    --     order = "b3"
+    -- },
     {
         type = "bool-setting",
         name = "oarc-mod-allow-moats-around-spawns",

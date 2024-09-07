@@ -2,7 +2,7 @@
 ACTIVE ITEMS:
 
 - Change regrowth to be list of surfaces indexed by surface name?
-- Add warning for modifying surface settings after gameplay has started
+
 - Ensure updates to regrowth surfaces don't cause errors (update indexes)
 - Make disable main team setting work (hide radio button)
 
@@ -10,7 +10,7 @@ ACTIVE ITEMS:
 10. Tooltips for GUI elements in spawn menu options!
 13. Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
 14. Check all settings to see which CAN'T be changed during runtime. Possibly move these to startup.
-16. Support run time toggling of enable_spawning_on_other_surfaces
+16. 
 17. Support run time toggling of enable_shared_team_vision
 18. Support run time toggling of enable_friendly_fire
 19. Support run time toggling of main_force_name
@@ -32,6 +32,15 @@ Other Ideas, Not Committed:
 - Change enable_shared_team_vision to allow players to change this per player (like BNO)
 - Change enable_friendly_fire to be per team?
 - Allow players to spawn "near" an existing player (by request)
+- Change enable_spawning_on_other_surfaces to a start up setting?
+
+------------------------------------------------------SPACE AGE---------------------------------------------------------
+
+- Map Settings changes?
+- Pollution changes (regrowth)?
+- Enemy changes?
+- Rocket silo locations per player? (Only allowed to build 1)?
+- Surface names for space ships?
 
 --------------------------------------------------------DONE------------------------------------------------------------
 
@@ -57,3 +66,4 @@ Other Ideas, Not Committed:
 15. Redo FindUngeneratedCoordinates to pick a random direction, and use the distance to get a starting point, instead of multiple tries.
 26. Fix all GUI styling (buttons outside of content)
 20. Force enable_world_eater to require enable_regrowth
+- Add warning for modifying surface settings after gameplay has started
