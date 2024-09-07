@@ -131,7 +131,7 @@ end
 ---Show the surface select dropdown
 ---@param parent_flow LuaGuiElement
 ---@return nil
-function ShowSurfaceSelectDropdown(parent_flow)
+function CreateSurfaceSelectDropdown(parent_flow)
     local surfacesHorizontalFlow = parent_flow.add {
         name = "surfaces_horizontal_flow",
         type = "flow",
@@ -254,7 +254,7 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
 
     -- Pick surface
     if (gameplay.enable_spawning_on_other_surfaces) then
-        ShowSurfaceSelectDropdown(spawn_settings_frame)
+        CreateSurfaceSelectDropdown(spawn_settings_frame)
     end
 
     -- Radio buttons to pick your team.
@@ -496,7 +496,7 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn)
 
     if not enable_buddy_spawn then -- TODO: Confirm if this must also require enable_shared_spawns!!
         -- Add some note about this being disabled?
-        AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-spawn-disabled" }, my_label_style)
+        AddLabel(buddy_spawn_frame, nil, { "oarc-buddy-spawn-disabled" }, my_warning_style)
         return
     end
 
@@ -698,6 +698,8 @@ function SpawnOptsGuiClick(event)
         AcceptBuddyRequest(player, tags.requesting_buddy_name --[[@as string]])
     elseif (tags.setting == "reject_buddy_request") then
         RejectBuddyRequest(player, tags.requesting_buddy_name --[[@as string]])
+    elseif (tags.setting == "surface_select") then
+        event.element.items = GetAllowedSurfaces()
     end
 end
 

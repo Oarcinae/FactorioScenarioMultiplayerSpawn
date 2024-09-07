@@ -238,6 +238,7 @@ script.on_event(defines.events.on_gui_click, function(event)
     ServerInfoGuiClick(event)
     SpawnCtrlGuiClick(event)
     SettingsControlsTabGuiClick(event)
+    SettingsSurfaceControlsTabGuiClick(event)
 end)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).

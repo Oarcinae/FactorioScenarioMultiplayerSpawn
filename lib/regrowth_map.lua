@@ -66,14 +66,16 @@ end
 ---@param event EventData.on_pre_surface_deleted
 ---@return nil
 function RegrowthSurfaceDeleted(event)
+    log("WARNING - RegrowthSurfaceDeleted: " .. game.surfaces[event.surface_index].name)
     local surface_name = game.surfaces[event.surface_index].name
     global.rg[surface_name] = nil
     for key,value in pairs(global.rg.active_surfaces) do
         if (value == surface_name) then
             table.remove(global.rg.active_surfaces, key)
-            return
+            break
         end
     end
+    --TODO: Check if we need to reset any of the indexes in use.
 end
 
 ---Initialize the new surface for regrowth

@@ -30,6 +30,15 @@ my_label_header_style = {
 }
 ---@type LuaStyle
 ---@diagnostic disable-next-line: missing-fields
+my_label_header2_style = {
+    single_line = false,
+    font = "heading-2",
+    font_color = {r=1,g=1,b=1},
+    top_padding = 0,
+    bottom_padding = 0
+}
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
 my_label_header_grey_style = {
     single_line = false,
     font = "heading-1",

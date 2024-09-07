@@ -1,6 +1,11 @@
 
 ACTIVE ITEMS:
 
+- Change regrowth to be list of surfaces indexed by surface name?
+- Add warning for modifying surface settings after gameplay has started
+- Ensure updates to regrowth surfaces don't cause errors (update indexes)
+- Make disable main team setting work (hide radio button)
+
 
 10. Tooltips for GUI elements in spawn menu options!
 13. Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
@@ -9,8 +14,6 @@ ACTIVE ITEMS:
 17. Support run time toggling of enable_shared_team_vision
 18. Support run time toggling of enable_friendly_fire
 19. Support run time toggling of main_force_name
-20. Force enable_world_eater to require enable_regrowth
-26. Fix all GUI styling (buttons outside of content)
 
 27. Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
 28.
@@ -52,3 +55,5 @@ Other Ideas, Not Committed:
 25. Redo DisplayBuddySpawnRequestMenu and DisplayBuddySpawnWaitMenu and move their events to the new event handlers
 23. Refresh the spawn controls GUI when player accepts/rejects
 15. Redo FindUngeneratedCoordinates to pick a random direction, and use the distance to get a starting point, instead of multiple tries.
+26. Fix all GUI styling (buttons outside of content)
+20. Force enable_world_eater to require enable_regrowth

@@ -224,6 +224,31 @@ function FYShuffle(T)
     return tReturn
 end
 
+---Check if a table contains a value
+---@param table table
+---@param val any
+---@return boolean
+function TableContains(table, val)
+    for _, value in pairs(table) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
+
+---Remove a value from a table
+---@param table table
+---@param val any
+---@return nil
+function TableRemove(table, val)
+    for i = #table, 1, -1 do
+        if table[i] == val then
+            table.remove(table, i)
+        end
+    end
+end
+
 -- -- Get a random KEY from a table.
 -- function GetRandomKeyFromTable(t)
 --     local keyset = {}
@@ -341,16 +366,10 @@ end
 ---@return nil
 function RemovePlayerStarterItems(player, surface_name)
     local playerSpawn = global.ocore.playerSpawns[player.name]
-    local surface_override = surface_name
-    if (playerSpawn == nil) then
-        log("WARN - RemovePlayerStarterItems - No player spawn found for player: " .. player.name)
-    else
-        surface_override = playerSpawn.surface -- Use the player's spawn surface if we have it
+    if (playerSpawn ~= nil) and (global.ocfg.surfaces_config[playerSpawn.surface]) ~= nil then
+        local startItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
+        util.remove_safe(player, startItems)
     end
-
-    local startItems = global.ocfg.surfaces_config[surface_override].starting_items.player_start_items
-
-    util.remove_safe(player, startItems)
 end
 
 --- Delete all chunks on a surface

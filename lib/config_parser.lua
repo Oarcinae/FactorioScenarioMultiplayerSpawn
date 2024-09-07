@@ -6,10 +6,12 @@
 ---@type table<string, OarcSettingsLookup>
 OCFG_KEYS =
 {
-    ["server_info.server_msg"] = {mod_key = "oarc-mod-server-msg" , ocfg_keys = {"server_info", "server_msg"}, type = "string"},
+    ["Server Info"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["server_info.welcome_msg_title"] = {mod_key = "oarc-mod-welcome-msg-title" , ocfg_keys = {"server_info", "welcome_msg_title"}, type = "string"},
+    ["server_info.server_msg"] = {mod_key = "oarc-mod-server-msg" , ocfg_keys = {"server_info", "server_msg"}, type = "string"},
     ["server_info.welcome_msg"] = {mod_key = "oarc-mod-welcome-msg" , ocfg_keys = {"server_info", "welcome_msg"}, type = "string"},
 
+    ["Gameplay"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
     ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
     ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-enable-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
@@ -36,6 +38,7 @@ OCFG_KEYS =
     ["gameplay.minimum_online_time"] = {mod_key = "oarc-mod-minimum-online-time" , ocfg_keys = {"gameplay", "minimum_online_time"}, type = "integer"},
     ["gameplay.respawn_cooldown_min"] = {mod_key = "oarc-mod-respawn-cooldown-min" , ocfg_keys = {"gameplay", "respawn_cooldown_min"}, type = "integer"},
 
+    ["Regrowth"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["regrowth.enable_regrowth"] = {mod_key = "oarc-mod-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
     ["regrowth.enable_world_eater"] = {mod_key = "oarc-mod-enable-world-eater" , ocfg_keys = {"regrowth", "enable_world_eater"}, type = "boolean"},
     ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-mod-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
@@ -51,31 +54,35 @@ function ValidateAndLoadConfig()
 
     GetScenarioOverrideSettings()
 
+    ValidateSettings()
+end
+
+function ValidateSettings()
+
     -- Validate enable_main_team and enable_separate_teams.
     -- Force enable_main_team if both are disabled.
     if (not global.ocfg.gameplay.enable_main_team and not global.ocfg.gameplay.enable_separate_teams) then
         log("Both main force and separate teams are disabled! Enabling main force. Please check your mod settings or config!")
         global.ocfg.gameplay.enable_main_team = true
+        settings.global["oarc-mod-enable-main-team"] = { value = true }
+        SendBroadcastMsg("Invalid setting! Both main force and separate teams are disabled! Enabling main force.")
     end
 
     -- Validate minimum is less than maximums
     if (global.ocfg.gameplay.near_spawn_distance >= global.ocfg.gameplay.far_spawn_distance) then
         log("Near spawn min distance is greater than or equal to near spawn max distance! Please check your mod settings or config!")
         global.ocfg.gameplay.far_spawn_distance = global.ocfg.gameplay.near_spawn_distance + 1
+        settings.global["oarc-mod-far-spawn-distance"] = { value = global.ocfg.gameplay.far_spawn_distance }
+        SendBroadcastMsg("Invalid setting! Near spawn min distance is greater than or equal to near spawn max distance!")
     end
 
     -- Validate that regrowth is enabled if world eater is enabled.
     if (global.ocfg.regrowth.enable_world_eater and not global.ocfg.regrowth.enable_regrowth) then
         log("World eater is enabled but regrowth is not! Disabling world eater. Please check your mod settings or config!")
         global.ocfg.regrowth.enable_world_eater = false
+        settings.global["oarc-mod-enable-world-eater"] = { value = false }
+        SendBroadcastMsg("Invalid setting! World eater is enabled but regrowth is not! Disabling world eater.")
     end
-
-    -- TODO: Vanilla spawn point are not implemented yet.
-    -- Validate enable_shared_spawns and enable_buddy_spawn.
-    -- if (global.ocfg.enable_vanilla_spawns) then
-    --     global.ocfg.enable_buddy_spawn = false
-    -- end
-
 end
 
 -- Read in the mod settings and copy them to the OARC_CFG table, overwriting the defaults in config.lua.
@@ -86,7 +93,9 @@ function CacheModSettings()
     -- Copy the global settings from the mod settings.
     -- Find the matching OARC setting and update it.
     for _,entry in pairs(OCFG_KEYS) do
-        SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, settings.global[entry.mod_key].value)
+        if (entry.type ~= "header") then
+            SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, settings.global[entry.mod_key].value)
+        end
     end
 end
 
@@ -127,6 +136,8 @@ function RuntimeModSettingChanged(event)
     if (not found_setting) then
         error("Unknown oarc-mod setting changed: " .. event.setting)
     end
+
+    ValidateSettings()
 end
 
 ---A probably quit stupid function to let me lookup and set the global.ocfg entries using a key table.

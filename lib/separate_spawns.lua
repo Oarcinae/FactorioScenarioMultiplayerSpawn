@@ -194,7 +194,9 @@ function SeparateSpawnsInitPlayer(player_index)
         player.force = global.ocfg.gameplay.main_force_name
     end
 
-    player.permission_group = game.permissions.get_group("holding_pen")
+    if (not player.admin) then
+        player.permission_group = game.permissions.get_group("holding_pen")
+    end
 
     InitOarcGuiTabs(player)
     HideOarcGui(player)
@@ -420,12 +422,12 @@ end
 ---@param chunkArea BoundingBox
 ---@return nil
 function SetupAndClearSpawnAreas(surface, chunkArea)
-    local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.surfaces_config[surface.name].spawn_config
-
     for _,spawn in pairs(global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]]) do
         if (spawn.surface ~= surface.name) then
             goto CONTINUE
         end
+
+        local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.surfaces_config[surface.name].spawn_config
 
         -- Create a bunch of useful area and position variables
         local landArea = GetAreaAroundPos(spawn.position, spawn_config.general.spawn_radius_tiles + CHUNK_SIZE)
@@ -442,6 +444,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         -- }
 
         -- Make chunks near a spawn safe by removing enemies
+        -- TODO: Space Age will change this!
         if (util.distance(spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius) then
             RemoveAliensInArea(surface, chunkArea)
 
@@ -457,11 +460,6 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
             RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
         end
-
-        -- TODO: Vanilla spawn point are not implemented yet.
-        -- if (not spawn.vanilla) then
-
-        local enable_test = global.ocfg.gameplay.enable_moat_bridging
 
         -- If the chunk is within the main land area, then clear trees/resources
         -- and create the land spawn areas (guaranteed land with a circle of trees)
@@ -489,7 +487,6 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             end
         end
 
-        -- end -- Vanilla spawn point are not implemented yet.
         ::CONTINUE:: -- Continue loop
     end
 end
@@ -501,14 +498,17 @@ function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
     local chunkArea = event.area
 
-    if (not global.ocore.surfaces[surface.name]) then return end
+    -- Don't block based on spawn enabled.
+    -- if (not global.ocore.surfaces[surface.name]) then return end
 
     -- Helps scale worm sizes to not be unreasonable when far from the origin.
+    -- TODO: Space Age will change this!
     if global.ocfg.gameplay.modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
     end
 
     -- Downgrade resources near to spawns
+    -- TODO: Space Age will change this!
     if global.ocfg.gameplay.scale_resources_around_spawns then
         DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
     end
