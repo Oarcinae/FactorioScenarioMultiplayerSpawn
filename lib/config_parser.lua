@@ -45,7 +45,61 @@ OCFG_KEYS =
     ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-mod-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
 }
 
+---Easy reverse lookup for mod settings keys.
+---@type table<string, string>
+OCFG_MOD_KEYS =
+{
+    ["oarc-mod-welcome-msg-title"] = "server_info.welcome_msg_title",
+    ["oarc-mod-server-msg"] = "server_info.server_msg",
+    ["oarc-mod-welcome-msg"] = "server_info.welcome_msg",
+    ["oarc-mod-discord-invite"] = "server_info.discord_invite",
+
+    ["oarc-mod-enable-main-team"] = "gameplay.enable_main_team",
+    ["oarc-mod-enable-separate-teams"] = "gameplay.enable_separate_teams",
+    --oarc-mod-enable-spawning-on-other-surfaces"] = " ["gameplay.enable_spawning_on_other_surfaces",
+    ["oarc-mod-allow-moats-around-spawns"] = "gameplay.allow_moats_around_spawns",
+    ["oarc-mod-enable-moat-bridging"] = "gameplay.enable_moat_bridging",
+    ["oarc-mod-minimum-distance-to-existing-chunks"] = "gameplay.minimum_distance_to_existing_chunks",
+    ["oarc-mod-near-spawn-distance"] = "gameplay.near_spawn_distance",
+    ["oarc-mod-far-spawn-distance"] = "gameplay.far_spawn_distance",
+
+    ["oarc-mod-enable-buddy-spawn"] = "gameplay.enable_buddy_spawn",
+    ["oarc-mod-enable-offline-protection"] = "gameplay.enable_offline_protection",
+    ["oarc-mod-enable-shared-team-vision"] = "gameplay.enable_shared_team_vision",
+    ["oarc-mod-enable-shared-team-chat"] = "gameplay.enable_shared_team_chat",
+    ["oarc-mod-enable-shared-spawns"] = "gameplay.enable_shared_spawns",
+    ["oarc-mod-number-of-players-per-shared-spawn"] = "gameplay.number_of_players_per_shared_spawn",
+    ["oarc-mod-enable-friendly-fire"] = "gameplay.enable_friendly_fire",
+
+    ["oarc-mod-main-force-name"] = "gameplay.main_force_name",
+    ["oarc-mod-default-surface"] = "gameplay.default_surface",
+
+    ["oarc-mod-scale-resources-around-spawns"] = "gameplay.scale_resources_around_spawns",
+    ["oarc-mod-modified-enemy-spawning"] = "gameplay.modified_enemy_spawning",
+
+    ["oarc-mod-minimum-online-time"] = "gameplay.minimum_online_time",
+    ["oarc-mod-respawn-cooldown-min"] = "gameplay.respawn_cooldown_min",
+
+    ["oarc-mod-enable-regrowth"] = "regrowth.enable_regrowth",
+    ["oarc-mod-enable-world-eater"] = "regrowth.enable_world_eater",
+    ["oarc-mod-enable-abandoned-base-cleanup"] = "regrowth.enable_abandoned_base_cleanup",
+}
+
+
 function ValidateAndLoadConfig()
+
+    -- Check that each of the OCFG_MOD_KEYS has a corresponding OCFG_KEYS entry.
+    for mod_key,ocfg_key in pairs(OCFG_MOD_KEYS) do
+        if (OCFG_KEYS[ocfg_key] == nil) then
+            error("OCFG_MOD_KEYS entry does not have a corresponding OCFG_KEYS entry: " .. mod_key .. " -> " .. ocfg_key)
+        end
+    end
+    -- And check the opposite.
+    for ocfg_key,entry in pairs(OCFG_KEYS) do
+        if (entry.type ~= "header") and (OCFG_MOD_KEYS[entry.mod_key] == nil) then
+            error("OCFG_KEYS entry does not have a corresponding OCFG_MOD_KEYS entry: " .. ocfg_key .. " -> " .. entry.mod_key)
+        end
+    end
 
     -- Save the config into the global table.
     ---@class OarcConfig
@@ -121,18 +175,21 @@ end
 ---@return nil
 function RuntimeModSettingChanged(event)
 
-    log("on_runtime_mod_setting_changed: " .. event.setting)
+    if (event.setting_type ~= "runtime-global") then
+        return
+    end
+
+    log("on_runtime_mod_setting_changed: " .. event.setting .. " = " .. tostring(settings.global[event.setting].value))
 
     -- Find the matching OARC setting and update it.
     local found_setting = false
-    for _,entry in pairs(OCFG_KEYS) do
-        if (event.setting == entry.mod_key) then
-            SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, settings.global[entry.mod_key].value)
-            found_setting = true
-            goto LOOP_BREAK
-        end
+
+    if (OCFG_MOD_KEYS[event.setting] ~= nil) then
+        local oarc_setting_index = OCFG_MOD_KEYS[event.setting]
+        local oarc_setting_table = OCFG_KEYS[oarc_setting_index]
+        SetGlobalOarcConfigUsingKeyTable(oarc_setting_table.ocfg_keys, settings.global[event.setting].value)
+        found_setting = true
     end
-    ::LOOP_BREAK::
 
     if (not found_setting) then
         error("Unknown oarc-mod setting changed: " .. event.setting)

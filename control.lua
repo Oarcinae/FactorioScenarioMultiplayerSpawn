@@ -267,6 +267,7 @@ script.on_event(defines.events.on_gui_value_changed, function(event)
     if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
 
     SeparateSpawnsGuiValueChanged(event)
+    SettingsControlsTabGuiValueChanged(event)
 end)
 
 --- For dropdowns and listboxes.
@@ -274,6 +275,18 @@ script.on_event(defines.events.on_gui_selection_state_changed, function(event)
     if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
 
     SeparateSpawnsGuiSelectionStateChanged(event)
+end)
+
+script.on_event(defines.events.on_gui_text_changed, function(event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
+    SettingsControlsTabGuiTextChanged(event)
+end)
+
+script.on_event(defines.events.on_gui_confirmed, function(event)
+    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+
+    SettingsControlsTabGuiTextconfirmed(event)
 end)
 
 --on_gui_checked_state_changed	 Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).

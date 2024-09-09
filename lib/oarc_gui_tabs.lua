@@ -50,10 +50,8 @@ function InitOarcGuiTabs(player)
     SetOarcGuiTabEnabled(player, OARC_MOD_INFO_CTRL_TAB_NAME, true)
 
     -- Settings control tab
-    if (player.admin) then
-        AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
-        SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
-    end
+    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
 
     HideOarcGui(player)
 end

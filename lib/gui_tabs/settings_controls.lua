@@ -13,24 +13,27 @@ function CreateSettingsControlsTab(tab_container, player)
         label.style.padding = 5
     end
 
-    local horizontal_flow = tab_container.add { type = "flow", direction = "horizontal", }
+    local label = AddLabel(tab_container, nil, { "oarc-settings-tab-description" }, my_label_style)
+    label.style.padding = 5
+
+    local flow = tab_container.add { type = "flow", direction = "horizontal", }
     
-    local scroll_pane_left = horizontal_flow.add {
+    local scroll_pane_left = flow.add {
         type = "scroll-pane",
         direction = "vertical",
         vertical_scroll_policy = "always",
     }
-    scroll_pane_left.style.maximal_height = 500
+    scroll_pane_left.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
     scroll_pane_left.style.padding = 5
     scroll_pane_left.style.right_margin = 2
     CreateModSettingsSection(scroll_pane_left, player)
 
-    local scroll_pane_right = horizontal_flow.add {
+    local scroll_pane_right = flow.add {
         type = "scroll-pane",
         direction = "vertical",
         vertical_scroll_policy = "always",
     }
-    scroll_pane_right.style.maximal_height = 500
+    scroll_pane_right.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
     scroll_pane_right.style.padding = 5
     scroll_pane_right.style.left_margin = 2
     CreateSurfaceSettingsSection(scroll_pane_right, player)
@@ -108,11 +111,91 @@ function SettingsControlsTabGuiTextChanged(event)
     local gui_elem = event.element
     if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
     local index = gui_elem.tags.setting
-
+    local value = gui_elem.text
     local entry = OCFG_KEYS[index]
-    if (entry.type == "string") or (entry.type == "integer") then
-        settings.global[entry.mod_key] = { value = gui_elem.text }
+    
+    if (entry.type == "string") then
+        gui_elem.style = "invalid_value_textfield"
+    elseif (entry.type == "integer") then
+        gui_elem.style = "invalid_value_textfield"
+        gui_elem.style.width = 50
     end
+end
+
+---Handles the confirmed text entry event
+---@param event EventData.on_gui_confirmed
+---@return nil
+function SettingsControlsTabGuiTextconfirmed(event)
+    if not (event.element.valid) then return end
+
+    local gui_elem = event.element
+    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    local index = gui_elem.tags.setting
+    local value = gui_elem.text
+    local entry = OCFG_KEYS[index]
+    
+    if (entry.type == "string") then
+        if value == "" then -- Force a non-empty string!
+            value = " "
+            gui_elem.text = " "
+        end
+        gui_elem.style = "textbox"
+        settings.global[entry.mod_key] = { value = gui_elem.text }
+    elseif (entry.type == "integer") then
+        local safe_value = GetSafeIntValueForModSetting(value, entry.mod_key)
+        if not pcall(function() settings.global[entry.mod_key] = { value = safe_value } end) then
+            settings.global[entry.mod_key] = { value = game.mod_setting_prototypes[entry.mod_key].default_value }
+            log("Error setting value for " .. entry.mod_key .. " to " .. safe_value)
+        end
+        gui_elem.text = tostring(settings.global[entry.mod_key].value)
+        gui_elem.style = "textbox"
+        gui_elem.style.width = 50
+
+        local slider = gui_elem.parent["slider"]
+        slider.slider_value = settings.global[entry.mod_key].value --[[@as integer]]
+    end
+end
+
+
+---Handles slider value changes
+---@param event EventData.on_gui_value_changed
+---@return nil
+function SettingsControlsTabGuiValueChanged(event)
+    if not (event.element.valid) then return end
+
+    local gui_elem = event.element
+    if (gui_elem.tags.action ~= "oarc_settings_tab_slider") then return end
+    local index = gui_elem.tags.setting
+    local value = gui_elem.slider_value
+    local entry = OCFG_KEYS[index]
+
+    if (entry.type == "integer") then
+        local textfield = gui_elem.parent["textfield"]
+        settings.global[entry.mod_key] = { value = value } -- Assumes that the slider can only produce valid inputs!
+        textfield.text = tostring(value)
+    end
+end
+
+---Makes sure a given value is within the min/max range of a mod setting
+---@param input string|number|integer
+---@param mod_key string
+---@return integer
+function GetSafeIntValueForModSetting(input, mod_key)
+    local value_num = tonumber(input)
+    if not value_num then
+        value_num = tonumber(game.mod_setting_prototypes[mod_key].default_value)
+    else
+        local minimum = game.mod_setting_prototypes[mod_key].minimum_value
+        local maximum = game.mod_setting_prototypes[mod_key].maximum_value
+        if minimum ~= nil then
+            value_num = math.max(value_num, minimum)
+        end
+        if maximum ~= nil then
+            value_num = math.min(value_num, maximum)
+        end
+        value_num = math.floor(value_num)
+    end
+    return value_num --[[@as integer]]
 end
 
 ---Creates a checkbox setting
@@ -152,13 +235,16 @@ function AddTextfieldSetting(tab_container, index, entry, enabled)
         type = "empty-widget",
     }
     dragger.style.horizontally_stretchable = true
+    
+    local tooltip = {"", {"mod-setting-description."..entry.mod_key }, " ", { "oarc-settings-tab-text-field-enter-tooltip" }}
+
     horizontal_flow.add {
         type = "textfield",
         caption = { "mod-setting-name."..entry.mod_key },
         text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
-        tooltip = { "mod-setting-description."..entry.mod_key },
-        tags = { action = "oarc_settings_tab", setting = index },
+        tooltip = tooltip,
+        tags = { action = "oarc_settings_tab", setting = index  },
     }
 end
 
@@ -182,16 +268,32 @@ function AddIntegerSetting(tab_container, index, entry, enabled)
         type = "empty-widget",
     }
     dragger.style.horizontally_stretchable = true
+
+    local slider = horizontal_flow.add {
+        name = "slider",
+        type = "slider",
+        minimum_value = game.mod_setting_prototypes[entry.mod_key].minimum_value,
+        maximum_value = game.mod_setting_prototypes[entry.mod_key].maximum_value,
+        value = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
+        enabled = enabled,
+        tooltip = { "mod-setting-description."..entry.mod_key },
+        tags = { action = "oarc_settings_tab_slider", setting = index },
+        discrete_values = true,
+        value_step = 1,
+    }
+
+    local tooltip = {"", {"mod-setting-description."..entry.mod_key }, " ", { "oarc-settings-tab-text-field-enter-tooltip" }}
     local textfield = horizontal_flow.add {
+        name = "textfield",
         type = "textfield",
         numeric = true,
         caption = { "mod-setting-name."..entry.mod_key },
         text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
-        tooltip = { "mod-setting-description."..entry.mod_key },
+        tooltip = tooltip,
         tags = { action = "oarc_settings_tab", setting = index },
     }
-    textfield.style.width = 100
+    textfield.style.width = 50
 end
 
 ---Creates a checkbox setting for surface related settings.

@@ -6,27 +6,34 @@
 ---@return nil
 function CreateModInfoTab(tab_container, player)
 
-    AddLabel(tab_container, nil, "Mod Info & FAQ", my_label_header2_style)
-    AddSpacerLine(tab_container)
+    local scroll_pane = tab_container.add {
+        type = "scroll-pane",
+        vertical_scroll_policy = "auto",
+    }
+    scroll_pane.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
+    scroll_pane.style.padding = 5
 
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-what-is-this-mod" }, { "oarc-mod-faq-what-is-this-mod-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-other-surfaces" }, { "oarc-mod-faq-other-surfaces-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-what-are-teams" }, { "oarc-mod-faq-what-are-teams-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-shared-spawn" }, { "oarc-mod-faq-shared-spawn-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-buddy-spawn" }, { "oarc-mod-faq-buddy-spawn-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-regrowth" }, { "oarc-mod-faq-regrowth-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-cleanup-abandoned" }, { "oarc-mod-faq-cleanup-abandoned-answer" })
-    CreateFAQEntry(tab_container, { "oarc-mod-faq-offline-protection" }, { "oarc-mod-faq-offline-protection-answer" })
+    AddLabel(scroll_pane, nil, "Mod Info & FAQ", my_label_header2_style)
+    AddSpacerLine(scroll_pane)
+
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-what-is-this-mod" }, { "oarc-mod-faq-what-is-this-mod-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-other-surfaces" }, { "oarc-mod-faq-other-surfaces-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-what-are-teams" }, { "oarc-mod-faq-what-are-teams-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-shared-spawn" }, { "oarc-mod-faq-shared-spawn-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-buddy-spawn" }, { "oarc-mod-faq-buddy-spawn-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-regrowth" }, { "oarc-mod-faq-regrowth-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-cleanup-abandoned" }, { "oarc-mod-faq-cleanup-abandoned-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-offline-protection" }, { "oarc-mod-faq-offline-protection-answer" })
 
 end
 
 ---Creates a FAQ entry in the tab
----@param tab_container LuaGuiElement
+---@param container LuaGuiElement
 ---@param question LocalisedString
 ---@param answer LocalisedString
 ---@return nil
-function CreateFAQEntry(tab_container, question, answer)
-    AddLabel(tab_container, nil, question, "caption_label")
-    AddLabel(tab_container, nil, answer, my_longer_label_style)
-    AddSpacerLine(tab_container)
+function CreateFAQEntry(container, question, answer)
+    AddLabel(container, nil, question, "caption_label")
+    AddLabel(container, nil, answer, my_longer_label_style)
+    AddSpacerLine(container)
 end
