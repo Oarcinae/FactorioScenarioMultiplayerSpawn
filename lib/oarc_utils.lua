@@ -151,7 +151,7 @@ end
 ---Checks if a string starts with another string
 ---@param string string The string to check
 ---@param start string The starting string to look for
-function StringStarsWith(string, start)
+function StringStartsWith(string, start)
     return string:sub(1, #start) == start
 end
 

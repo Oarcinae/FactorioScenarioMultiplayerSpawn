@@ -9,9 +9,6 @@
 --      the on_sector_scanned event.
 -- 5. Chunks timeout after 1 hour-ish, configurable
 
--- TODO: Make this a mod startup setting?
-REGROWTH_TIMEOUT_TICKS = TICKS_PER_HOUR -- TICKS_PER_HOUR TICKS_PER_MINUTE
-
 --- If a chunk is marked "active", then it will only be checked by the "world eater" system if that is enabled.
 --- World eater does more extensive checks to see if a chunk might be safe to delete. For example, if a player builds
 --- stuff in a chunk it will be marked as "active" and won't be checked by the regrowth system.
@@ -20,6 +17,9 @@ REGROWTH_FLAG_ACTIVE = -1
 --- These chunks will NEVER be deleted by the regrowth + world eater systems. However, they can be overwritten in some
 --- cases. Like when a player leaves the game early and their spawn is deleted.
 REGROWTH_FLAG_PERMANENT = -2
+
+--- These chunks are marked for removal. They will be deleted by the regrowth system.
+REGROWTH_FLAG_REMOVAL = -3
 
 --- Radius in chunks around a player to mark as safe.
 REGROWTH_ACTIVE_AREA_AROUND_PLAYER = 4
@@ -35,7 +35,6 @@ function RegrowthInit()
     global.rg.player_refresh_index = nil
 
     global.rg.force_removal_flag = -2000 -- Set to a negative number to disable it by default
-    global.rg.timeout_ticks = REGROWTH_TIMEOUT_TICKS
 
     global.rg.current_surface = nil -- The current surface we are iterating through
     global.rg.current_surface_index = 1
@@ -178,6 +177,7 @@ function RegrowthChunkGenerate(event)
     -- Only update it if it isn't already set!
     if (global.rg[surface_name].map[c_pos.x][c_pos.y] == nil) then
         global.rg[surface_name].map[c_pos.x][c_pos.y] = game.tick
+        -- log("RegrowthChunkGenerate: " .. c_pos.x .. "," .. c_pos.y .. " on surface: " .. surface_name)
     end
 end
 
@@ -194,16 +194,16 @@ function RegrowthMarkAreaForRemoval(surface_name, pos, chunk_radius)
             local y = c_pos.y + k
 
             if (global.rg[surface_name].map[x] ~= nil) then
-                global.rg[surface_name].map[x][y] = nil
+                global.rg[surface_name].map[x][y] = REGROWTH_FLAG_REMOVAL
             end
 
             ---@type RemovalListEntry
             local removal_entry = { pos = { x = x, y = y }, force = true, surface = surface_name }
             table.insert(global.rg.removal_list, removal_entry)
         end
-        if (table_size(global.rg[surface_name].map[x]) == 0) then
-            global.rg[surface_name].map[x] = nil
-        end
+        -- if (table_size(global.rg[surface_name].map[x]) == 0) then
+        --     global.rg[surface_name].map[x] = nil
+        -- end
     end
 end
 
@@ -374,7 +374,6 @@ function RegrowthSingleStepArray()
     if (not next_chunk) then
 
         -- Switch to the next active surface
-        -- TODO: Validate this
         local next_surface_info = GetNextActiveSurface(global.rg.current_surface_index)
         global.rg.current_surface = next_surface_info.surface
         global.rg.current_surface_index = next_surface_info.index
@@ -391,21 +390,30 @@ function RegrowthSingleStepArray()
         end
     end
 
-    -- Do we have it in our map?
-    if (not global.rg[current_surface].map[next_chunk.x] or not global.rg[current_surface].map[next_chunk.x][next_chunk.y]) then
-        --TODO: Confirm this is the right thing to do? What chunk should not be in our map at all?
-        return -- Chunk isn't in our map so we don't care?
+    -- It's possible that if regrowth is disabled/enabled during runtime we might miss on_chunk_generated.
+    -- This will catch that case and add the chunk to the map.
+    if (global.rg[current_surface].map[next_chunk.x] == nil) then
+        global.rg[current_surface].map[next_chunk.x] = {}
+    end
+    if (global.rg[current_surface].map[next_chunk.x][next_chunk.y] == nil and game.surfaces[current_surface].is_chunk_generated(next_chunk)) then
+        log("RegrowthSingleStepArray: Chunk not in map: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
+        global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick
+        return
     end
 
     -- If the chunk has timed out, add it to the removal list
     local c_timer = global.rg[current_surface].map[next_chunk.x][next_chunk.y]
-    if ((c_timer ~= nil) and (c_timer >= 0) and ((c_timer + global.rg.timeout_ticks) < game.tick)) then
+    local interval_ticks = global.ocfg.regrowth.cleanup_interval * TICKS_PER_MINUTE
+    if ((c_timer ~= nil) and (c_timer >= 0) and ((c_timer + interval_ticks) < game.tick)) then
         -- Check chunk actually exists
         if (game.surfaces[current_surface].is_chunk_generated({ x = next_chunk.x, y = next_chunk.y })) then
 
             ---@type RemovalListEntry
             local removal_entry = {pos = {x = next_chunk.x, y = next_chunk.y }, force = false, surface = current_surface}
             table.insert(global.rg.removal_list, removal_entry)
+            global.rg[current_surface].map[next_chunk.x][next_chunk.y] = REGROWTH_FLAG_REMOVAL
+        else
+            log("WARN - RegrowthSingleStepArray: Chunk not generated?: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
             global.rg[current_surface].map[next_chunk.x][next_chunk.y] = nil
         end
     end
@@ -431,6 +439,7 @@ function OarcRegrowthRemoveAllChunks()
             -- Else delete the chunk
             else
                 game.surfaces[surface_name].delete_chunk(c_pos)
+                global.rg[surface_name].map[c_pos.x][c_pos.y] = nil
             end
         end
 
@@ -465,7 +474,7 @@ function RegrowthOnTick()
     end
 
     -- Allow enable/disable of auto cleanup, can change during runtime.
-    local interval_ticks = global.rg.timeout_ticks
+    local interval_ticks = global.ocfg.regrowth.cleanup_interval * TICKS_PER_MINUTE
     -- Send a broadcast warning before it happens.
     if ((game.tick % interval_ticks) == interval_ticks - (60 * 30 + 1)) then
         if (#global.rg.removal_list > 100) then
@@ -550,9 +559,9 @@ function WorldEaterSingleStep()
 
     local c_timer = global.rg[current_surface].map[next_chunk.x][next_chunk.y]
 
-    -- Only check chunnks that are flagged as "safe".
+    -- Only check chunnks that are flagged as "active".
     -- Others are either permanent or will be handled by the default regrowth checks.
-    if (c_timer == -1) then
+    if (c_timer == REGROWTH_FLAG_ACTIVE) then
         local area = {
             left_top = { next_chunk.area.left_top.x - 8, next_chunk.area.left_top.y - 8 },
             right_bottom = { next_chunk.area.right_bottom.x + 8, next_chunk.area.right_bottom.y + 8 }

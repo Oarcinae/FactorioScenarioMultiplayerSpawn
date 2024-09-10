@@ -15,13 +15,6 @@ data:extend({
     },
     {
         type = "string-setting",
-        name = "oarc-mod-server-msg",
-        setting_type = "runtime-global",
-        default_value = "Insert Server Info Message Here!",
-        order = "a3"
-    },
-    {
-        type = "string-setting",
         name = "oarc-mod-discord-invite",
         setting_type = "runtime-global",
         default_value = "Insert Discord Invite Here!",
@@ -214,6 +207,15 @@ data:extend({
         setting_type = "runtime-global",
         default_value = true,
         order = "g3"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-regrowth-cleanup-interval-min",
+        setting_type = "runtime-global",
+        default_value = 60,
+        minimum_value = 15,
+        maximum_value = 180,
+        order = "g4"
     },
 
 

@@ -170,9 +170,8 @@ OCFG = {
     -- Server Info - This stuff is shown in the welcome GUI and Info panel.
     ---@type OarcConfigServerInfo
     server_info = {
-        server_msg = "YOUR SERVER MSG HERE",
         welcome_msg_title = "YOUR SERVER TITLE HERE",
-        welcome_msg = "YOUR WELCOME MSG HERE", -- Printed to player on join as well.
+        welcome_msg = "YOUR WELCOME MSG HERE",
         discord_invite = "YOUR DISCORD INVITE HERE"
     },
 
@@ -279,6 +278,9 @@ OCFG = {
         -- TODO: verify if this requires regrowth to be enabled!
         enable_abandoned_base_cleanup = true,
 
+        -- This is the interval in minutes that the regrowth cleanup will run.
+        cleanup_interval = 60,
+
         surface_blacklist = {"oarc_holding_pen"},
     },
 
@@ -333,7 +335,6 @@ OCFG = {
 ---@class OarcConfigServerInfo
 ---@field welcome_msg_title string  Title of welcome GUI window.
 ---@field welcome_msg string Main welcome message. (Should provide mod info.)
----@field server_msg string Server specific message. (Rules, etc.)
 ---@field discord_invite string Discord invite for easy copy paste.
 
 ---@class OarcConfigGameplaySettings
@@ -364,6 +365,7 @@ OCFG = {
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.
 ---@field enable_world_eater boolean Checks inactive chunks to see if they are empty of entities and deletes them periodically.
 ---@field enable_abandoned_base_cleanup boolean Removes player bases when they leave shortly after joining.
+---@field cleanup_interval number This is the interval in minutes that the regrowth cleanup will run.
 ---@field surface_blacklist table<string> List of surfaces to ignore automatically.
 
 ---@class OarcConfigSurface

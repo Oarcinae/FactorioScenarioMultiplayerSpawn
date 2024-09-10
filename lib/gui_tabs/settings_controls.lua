@@ -7,14 +7,14 @@ function CreateSettingsControlsTab(tab_container, player)
 
     if (player.admin) then
         local label = AddLabel(tab_container, nil, { "oarc-settings-tab-admin-warning" }, my_warning_style)
-        label.style.padding = 5
+
     else
         local label = AddLabel(tab_container, nil, { "oarc-settings-tab-player-warning" }, my_warning_style)
-        label.style.padding = 5
+
     end
 
     local label = AddLabel(tab_container, nil, { "oarc-settings-tab-description" }, my_label_style)
-    label.style.padding = 5
+    label.style.bottom_padding = 5
 
     local flow = tab_container.add { type = "flow", direction = "horizontal", }
     
@@ -309,7 +309,8 @@ function AddSurfaceCheckboxSetting(parent, surface_name, setting_name, state, ad
         type = "checkbox",
         state = state,
         tags = { action = "oarc_settings_tab_surfaces", setting = setting_name, surface = surface_name },
-        enabled = admin
+        enabled = admin,
+        tooltip = { "oarc-settings-tab-surface-checkbox-tooltip" },
     }
 end
 

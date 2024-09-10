@@ -40,15 +40,8 @@ function DisplayWelcomeTextGui(player)
         direction = "vertical"
     }
 
-    -- Start with server message.
-    if (global.ocfg.server_info.server_msg ~= "") then
-        AddLabel(welcome_gui_if, nil, global.ocfg.server_info.server_msg, my_label_style)
-        -- AddLabel(wGui, "contact_info_msg_lbl1", global.ocfg.server_contact, my_label_style)
-        AddSpacer(welcome_gui_if)
-    end
-
     -- Informational message about the scenario
-    if (global.ocfg.server_info.welcome_msg ~= "") then
+    if (global.ocfg.server_info.welcome_msg ~= " ") then
         AddLabel(welcome_gui_if, nil, global.ocfg.server_info.welcome_msg, my_label_style)
         AddSpacer(welcome_gui_if)
     end
@@ -150,7 +143,8 @@ function CreateSurfaceSelectDropdown(parent_flow)
         tags = { action = "oarc_spawn_options", setting = "surface_select" },
         type = "drop-down",
         items = surface_list,
-        selected_index = 1
+        selected_index = 1,
+        tooltip = { "oarc-surface-select-tooltip" }
     }
 end
 
@@ -161,33 +155,31 @@ end
 ---@return nil
 function DisplayTeamSelectRadioButtons(parent_flow, enable_main_team, enable_separate_teams)
     if enable_main_team then
-        local main_team_radio = parent_flow.add {
+        parent_flow.add {
             name = "isolated_spawn_main_team_radio",
             tags = { action = "oarc_spawn_options", setting = "team_select", value = SPAWN_TEAM_CHOICE.join_main_team },
             type = "radiobutton",
             caption = { "oarc-join-main-team-radio" },
-            state = true
-        }
-        if not enable_separate_teams then
+            tooltip = { "oarc-join-main-team-tooltip" },
             -- If separate teams are not enabled, default to joining the main team, and disable the radio buttons.
-            main_team_radio.ignored_by_interaction = true
-            main_team_radio.enabled = false
-        end
+            state = true,
+            -- ignored_by_interaction = not enable_separate_teams,
+            -- enabled = enable_separate_teams
+        }
     end
 
     if (enable_separate_teams) then
-        local separate_teams_radio = parent_flow.add {
+        parent_flow.add {
             name = "isolated_spawn_new_team_radio",
             tags = { action = "oarc_spawn_options", setting = "team_select", value = SPAWN_TEAM_CHOICE.join_own_team },
             type = "radiobutton",
             caption = { "oarc-create-own-team-radio" },
-            state = false
-        }
-        if not enable_main_team then
+            tooltip = { "oarc-create-own-team-tooltip" },
             -- If main team is not enabled, default to joining the a separate team, and disable the radio buttons.
-            separate_teams_radio.ignored_by_interaction = true
-            separate_teams_radio.enabled = false
-        end
+            state = not enable_main_team,
+            -- ignored_by_interaction = not enable_main_team,
+            -- enabled = enable_main_team
+        }
     end
 end
 
@@ -397,7 +389,8 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             tags = { action = "oarc_spawn_options", setting = "shared_spawn_select" },
             type = "drop-down",
             items = avail_hosts,
-            selected_index = previous_index
+            selected_index = previous_index,
+            tooltip = { "oarc-join-someone-dropdown-tooltip" }
         }
         dropdown.style.horizontal_align = "left"
 
@@ -413,7 +406,8 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             tags = { action = "oarc_spawn_options", setting = "join_other_spawn" },
             type = "button",
             caption = { "oarc-join-someone-avail", num_avail_spawns },
-            style = "green_button"
+            style = "green_button",
+            tooltip = { "oarc-join-someone-avail-tooltip", num_avail_spawns }
         }
         button.style.horizontal_align = "right"
 
@@ -491,7 +485,8 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn, enable_s
             tags = { action = "oarc_spawn_options", setting = "buddy_team_select" },
             type = "checkbox",
             caption = { "oarc-create-buddy-team" },
-            state = false
+            state = false,
+            tooltip = { "oarc-create-buddy-team-tooltip" }
         }
     end
 
@@ -525,7 +520,8 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn, enable_s
         tags = { action = "oarc_spawn_options", setting = "buddy_select" },
         type = "drop-down",
         items = avail_buddies,
-        selected_index = previous_index
+        selected_index = previous_index,
+        tooltip = { "oarc-buddy-select-tooltip" }
     }
     buddy_dropdown.style.horizontal_align = "left"
 
@@ -540,7 +536,8 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn, enable_s
         tags = { action = "oarc_spawn_options", setting = "buddy_spawn_request" },
         type = "button",
         caption = { "oarc-buddy-spawn" },
-        style = "green_button"
+        style = "green_button",
+        tooltip = { "oarc-buddy-spawn-tooltip" }
     }
     button.style.horizontal_align = "right"
 end
@@ -576,10 +573,14 @@ function DisplaySpawnOptions(player)
     local sGui = CreateSpawnMenuGuiFrame(player)
 
     -- Create the default settings entry for the OarcSpawnChoices table
+    local default_team = SPAWN_TEAM_CHOICE.join_main_team
+    if (not gameplay.enable_main_team and gameplay.enable_separate_teams) then
+        default_team = SPAWN_TEAM_CHOICE.join_own_team
+    end
     ---@type OarcSpawnChoices
     local spawn_choices_entry = {
         surface = global.ocfg.gameplay.default_surface,
-        team = SPAWN_TEAM_CHOICE.join_main_team,
+        team = default_team,
         moat = false,
         buddy = nil,
         distance = global.ocfg.gameplay.near_spawn_distance,
@@ -616,17 +617,8 @@ function SpawnOptsRadioSelect(event)
             if (event.element.parent.isolated_spawn_new_team_radio ~= nil) then
                 event.element.parent.isolated_spawn_new_team_radio.state = false
             end
-            -- if (event.element.parent.isolated_spawn_buddy_team_radio ~= nil) then
-            --     event.element.parent.isolated_spawn_buddy_team_radio.state = false
-            -- end
         elseif (elemName == "isolated_spawn_new_team_radio") then
             event.element.parent.isolated_spawn_main_team_radio.state = false
-            -- if (event.element.parent.isolated_spawn_buddy_team_radio ~= nil) then
-            --     event.element.parent.isolated_spawn_buddy_team_radio.state = false
-            -- end
-        -- elseif (elemName == "isolated_spawn_buddy_team_radio") then
-        --     event.element.parent.isolated_spawn_main_team_radio.state = false
-        --     event.element.parent.isolated_spawn_new_team_radio.state = false
         end
 
     elseif (tags.setting == "buddy_team_select") then
@@ -683,6 +675,8 @@ function RequestBuddySpawn(player)
     if (buddy_choice == nil) then player.print({ "oarc-invalid-buddy" }) return end
     local buddy = game.players[buddy_choice]
     if (buddy == nil) then player.print({ "oarc-invalid-buddy" }) return end
+    -- Confirm the buddy is still in the spawn menu!
+    if (buddy.gui.screen.spawn_opts == nil) then player.print({ "oarc-invalid-buddy", buddy.name }) return end
 
     DisplayBuddySpawnWaitMenu(player)
     DisplayBuddySpawnRequestMenu(buddy, player.name)
@@ -860,10 +854,6 @@ function SpawnRequest(player)
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
-
-    -- player.print({ "oarc-please-wait" })
-    -- player.print({ "", { "oarc-please-wait" }, "!" })
-    -- player.print({ "", { "oarc-please-wait" }, "!!" })
 
     -- Destroy the spawn options gui
     if (player.gui.screen.spawn_opts ~= nil) then
@@ -1176,13 +1166,6 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
     SetOarcGuiTabEnabled(requesting_buddy, OARC_SPAWN_CTRL_TAB_NAME, true)
-
-    -- player.print({ "oarc-please-wait" })
-    -- player.print({ "", { "oarc-please-wait" }, "!" })
-    -- player.print({ "", { "oarc-please-wait" }, "!!" })
-    -- requesting_buddy.print({ "oarc-please-wait" })
-    -- requesting_buddy.print({ "", { "oarc-please-wait" }, "!" })
-    -- requesting_buddy.print({ "", { "oarc-please-wait" }, "!!" })
 
     global.ocore.buddyPairs[player.name] = requesting_buddy_name
     global.ocore.buddyPairs[requesting_buddy_name] = player.name

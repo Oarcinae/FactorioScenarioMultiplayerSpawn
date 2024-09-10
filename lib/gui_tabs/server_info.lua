@@ -1,83 +1,19 @@
 ---Display current game options and server info, maybe have some admin controls here
 
----Server info gui click event handler
----@param event EventData.on_gui_click
----@return nil
-function ServerInfoGuiClick(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local tags = event.element.tags
-
-    if (tags.action ~= "oarc_server_info_tab") then
-        return
-    end
-
-    local player_dropdown = event.element.parent.ban_players_dropdown
-
-    if (tags.setting == "ban_player") then
-        local pIndex = player_dropdown.selected_index
-
-        if (pIndex ~= 0) then
-            local banPlayer = player_dropdown.get_item(pIndex)
-            if (game.players[banPlayer]) then
-                game.ban_player(banPlayer --[[@as string]], "Banned from admin panel.")
-                log("Banning " .. banPlayer)
-            end
-        end
-    end
-
-    if (tags.setting == "restart_player") then
-        local pIndex = player_dropdown.selected_index
-
-        if (pIndex ~= 0) then
-            local resetPlayer = player_dropdown.get_item(pIndex)
-
-            if not game.players[resetPlayer] or not game.players[resetPlayer].connected then
-                SendMsg(player.name, "Player " .. resetPlayer .. " is not found?")
-                return
-            end
-
-            if PlayerHasDelayedSpawn(resetPlayer--[[@as string]]) then
-                SendMsg(player.name, "Player " .. resetPlayer .. " is about to spawn, try again later.")
-                return
-            end
-
-            log("Resetting " .. resetPlayer)
-            RemoveOrResetPlayer(game.players[resetPlayer], false, true, true, true)
-            SeparateSpawnsInitPlayer(resetPlayer --[[@as string]])
-        else
-            SendMsg(player.name, "No player selected!")
-            return
-        end
-    end
-end
-
 ---Creates the content for the game settings used by AddOarcGuiTab
 ---@param tab_container LuaGuiElement
 ---@param player LuaPlayer
 ---@return nil
 function CreateServerInfoTab(tab_container, player)
 
-
-    -- if global.oarc_announcements ~= nil then
-    --     AddLabel(tab_container, "announcement_info_label", "Server announcements:", my_label_header_style)
-    --     AddLabel(tab_container, "announcement_info_txt", "global.oarc_announcements", my_longer_label_style)
-    --     AddSpacerLine(tab_container)
-    -- end
-
     -- General Server Info:
-    if (global.ocfg.server_info.welcome_msg ~= "") then
+    if (global.ocfg.server_info.welcome_msg ~= " ") then
         AddLabel(tab_container, nil, "Welcome Message", "caption_label")
         AddLabel(tab_container, nil, global.ocfg.server_info.welcome_msg, my_longer_label_style)
         AddSpacerLine(tab_container)
     end
-    if (global.ocfg.server_info.server_msg ~= "") then
-        AddLabel(tab_container, nil, "Server Message", "caption_label")
-        AddLabel(tab_container, nil, global.ocfg.server_info.server_msg, my_longer_label_style)
-        AddSpacerLine(tab_container)
-    end
 
-    if (global.ocfg.server_info.discord_invite ~= "") then
+    if (global.ocfg.server_info.discord_invite ~= " ") then
         local horizontal_flow = tab_container.add{
             type="flow", direction="horizontal"
         }
@@ -101,7 +37,7 @@ function CreateServerInfoTab(tab_container, player)
     -- game.map_settings.enemy_evolution.destroy_factor .. "\n" ..
     "Enemy expansion is " .. enemy_expansion_txt
 
-    AddLabel(tab_container, nil, "Map Info", my_label_header2_style)
+    AddLabel(tab_container, nil, "Map Info", "caption_label")
     AddLabel(tab_container, "enemy_info", enemy_text, my_longer_label_style)
     -- AddSpacerLine(tab_container)
 
@@ -162,7 +98,7 @@ function CreateServerInfoTab(tab_container, player)
             table.insert(player_list, player.name)
         end
 
-        AddLabel(tab_container, nil, "Admin Controls", my_label_header2_style)
+        AddLabel(tab_container, nil, "Admin Controls", "caption_label")
 
         local horizontal_flow = tab_container.add{
             type="flow", direction="horizontal"
@@ -197,5 +133,58 @@ function CreateServerInfoTab(tab_container, player)
             caption="Restart Player",
             style = "red_button"
         }
+    end
+end
+
+
+---Server info gui click event handler
+---@param event EventData.on_gui_click
+---@return nil
+function ServerInfoGuiClick(event)
+    if not event.element.valid then return end
+    local player = game.players[event.player_index]
+    local tags = event.element.tags
+
+    if (tags.action ~= "oarc_server_info_tab") then
+        return
+    end
+
+    local player_dropdown = event.element.parent.ban_players_dropdown
+
+    if (tags.setting == "ban_player") then
+        local pIndex = player_dropdown.selected_index
+
+        if (pIndex ~= 0) then
+            local banPlayer = player_dropdown.get_item(pIndex)
+            if (game.players[banPlayer]) then
+                game.ban_player(banPlayer --[[@as string]], "Banned from admin panel.")
+                log("Banning " .. banPlayer)
+            end
+        end
+    end
+
+    if (tags.setting == "restart_player") then
+        local pIndex = player_dropdown.selected_index
+
+        if (pIndex ~= 0) then
+            local resetPlayer = player_dropdown.get_item(pIndex)
+
+            if not game.players[resetPlayer] or not game.players[resetPlayer].connected then
+                SendMsg(player.name, "Player " .. resetPlayer .. " is not found?")
+                return
+            end
+
+            if PlayerHasDelayedSpawn(resetPlayer--[[@as string]]) then
+                SendMsg(player.name, "Player " .. resetPlayer .. " is about to spawn, try again later.")
+                return
+            end
+
+            log("Resetting " .. resetPlayer)
+            RemoveOrResetPlayer(game.players[resetPlayer], false, true, true, true)
+            SeparateSpawnsInitPlayer(resetPlayer --[[@as string]])
+        else
+            SendMsg(player.name, "No player selected!")
+            return
+        end
     end
 end

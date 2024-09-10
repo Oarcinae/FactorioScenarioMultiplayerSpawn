@@ -87,7 +87,7 @@ end)
 -- end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
-    if (not StringStarsWith(event.setting, "oarc-mod")) then return end
+    if (not StringStartsWith(event.setting, "oarc-mod")) then return end
     RuntimeModSettingChanged(event)
 end)
 

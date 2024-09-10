@@ -26,49 +26,79 @@ function CreateSpawnControlsTab(tab_container, player)
     spwnCtrls.style.maximal_height = 1000
     spwnCtrls.horizontal_scroll_policy = "never"
 
+    CreateSetRespawnLocationButton(player, spwnCtrls)
+    CreateSharedSpawnControls(player, spwnCtrls)
+    CreateJoinQueueControls(player, spwnCtrls)
+end
+
+---Display the shared spawn controls
+---@param player LuaPlayer
+---@param container LuaGuiElement
+---@return nil
+function CreateSharedSpawnControls(player, container)
     if global.ocfg.gameplay.enable_shared_spawns then
         if (global.ocore.uniqueSpawns[player.name] ~= nil) then
+
+            AddLabel(container, nil, { "oarc-shared-spawn-controls" }, "caption_label")
+
             -- This checkbox allows people to join your base when they first start the game.
-            local toggle = spwnCtrls.add {
+            local toggle = container.add {
                 type = "checkbox",
                 name = "accessToggle",
                 tags = { action = "oarc_spawn_ctrl_tab", setting = "shared_access_toggle" },
-                caption = { "oarc-spawn-allow-joiners" },
+                caption = { "oarc-shared-spawn-allow-joiners" },
                 state = IsSharedSpawnActive(player)
             }
             ApplyStyle(toggle, my_fixed_width_style)
         end
     end
+end
+
+---Display the set respawn location button in the spawn control tab.
+---@param player LuaPlayer
+---@param container LuaGuiElement
+---@return nil
+function CreateSetRespawnLocationButton(player, container)
+    AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
     -- TODO: Figure out why this case could be hit... Fix for error report in github.
     if (global.ocore.playerCooldowns[player.name] == nil) then
-        log("ERROR! playerCooldowns[player.name] is nil!")
+        error("ERROR! playerCooldowns[player.name] is nil!")
         global.ocore.playerCooldowns[player.name] = { setRespawn = game.tick }
     end
 
     -- Sets the player's custom spawn point to their current location
     if ((game.tick - global.ocore.playerCooldowns[player.name].setRespawn) >
             (global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE)) then
-        local change_respawn_button = spwnCtrls.add {
+        local change_respawn_button = container.add {
             type = "button",
             tags = { action = "oarc_spawn_ctrl_tab", setting = "set_respawn_location" },
             name = "setRespawnLocation",
-            caption = { "oarc-set-respawn-loc" }
+            caption = { "oarc-set-respawn-loc" },
+            tooltip = { "oarc-set-respawn-loc-tooltip" },
+            style = "red_button"
         }
         change_respawn_button.style.font = "default-small-semibold"
     else
-        AddLabel(spwnCtrls, nil,
+        AddLabel(container, nil,
             { "oarc-set-respawn-loc-cooldown", FormatTime((global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE) -
                 (game.tick - global.ocore.playerCooldowns[player.name].setRespawn)) }, my_note_style)
     end
-    AddLabel(spwnCtrls, nil, { "oarc-set-respawn-note" }, my_note_style)
+    AddLabel(container, nil, { "oarc-set-respawn-note" }, my_note_style)
+    AddSpacerLine(container)
+end
 
-    -- Display a list of people in the join queue for your base.
+---Display a list of people in the join queue for a shared spawn.
+---@param player LuaPlayer
+---@param container LuaGuiElement
+---@return nil
+function CreateJoinQueueControls(player, container)
     if (global.ocfg.gameplay.enable_shared_spawns and IsSharedSpawnActive(player)) then
         if (TableLength(global.ocore.sharedSpawns[player.name].joinQueue) > 0) then
-            AddLabel(spwnCtrls, "drop_down_msg_lbl1", { "oarc-select-player-join-queue" }, my_label_style)
+            AddLabel(container, nil, { "oarc-join-queue-header" }, "caption_label")
+            AddLabel(container, "drop_down_msg_lbl1", { "oarc-select-player-join-queue" }, my_label_style)
 
-            local horizontal_flow = spwnCtrls.add { type = "flow", direction = "horizontal" }
+            local horizontal_flow = container.add { type = "flow", direction = "horizontal" }
             horizontal_flow.style.horizontally_stretchable = true
 
             horizontal_flow.add {
@@ -98,10 +128,11 @@ function CreateSpawnControlsTab(tab_container, player)
                 caption = { "oarc-reject" }
             }
         else
-            AddLabel(spwnCtrls, "empty_join_queue_note1", { "oarc-no-player-join-reqs" }, my_note_style)
+            AddLabel(container, "empty_join_queue_note1", { "oarc-no-player-join-reqs" }, my_note_style)
         end
     end
 end
+
 
 ---Handle the gui checkboxes & radio buttons of the spawn control tab in the Oarc GUI.
 ---@param event EventData.on_gui_checked_state_changed

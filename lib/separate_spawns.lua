@@ -153,6 +153,12 @@ function SeparateSpawnsSurfaceCreated(event)
 
     -- Add the surface to the list of surfaces that allow spawns with value from config.
     global.ocore.surfaces[surface.name] = global.ocfg.gameplay.enable_spawning_on_other_surfaces
+
+    -- Make sure it has a surface configuration entry
+    if (global.ocfg.surfaces_config[surface.name] == nil) then
+        log("Surface does NOT have a config entry, defaulting to nauvis entry for new surface: " .. surface.name)
+        global.ocfg.surfaces_config[surface.name] = global.ocfg.surfaces_config["nauvis"]
+    end
 end
 
 ---Detects when surfaces are deleted and removes them from the list of surfaces that allow spawns.

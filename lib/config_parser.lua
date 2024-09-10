@@ -8,7 +8,6 @@ OCFG_KEYS =
 {
     ["Server Info"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["server_info.welcome_msg_title"] = {mod_key = "oarc-mod-welcome-msg-title" , ocfg_keys = {"server_info", "welcome_msg_title"}, type = "string"},
-    ["server_info.server_msg"] = {mod_key = "oarc-mod-server-msg" , ocfg_keys = {"server_info", "server_msg"}, type = "string"},
     ["server_info.welcome_msg"] = {mod_key = "oarc-mod-welcome-msg" , ocfg_keys = {"server_info", "welcome_msg"}, type = "string"},
     ["server_info.discord_invite"] = {mod_key = "oarc-mod-discord-invite" , ocfg_keys = {"server_info", "discord_invite"}, type = "string"},
 
@@ -43,6 +42,7 @@ OCFG_KEYS =
     ["regrowth.enable_regrowth"] = {mod_key = "oarc-mod-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
     ["regrowth.enable_world_eater"] = {mod_key = "oarc-mod-enable-world-eater" , ocfg_keys = {"regrowth", "enable_world_eater"}, type = "boolean"},
     ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-mod-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
+    ["regrowth.cleanup_interval"] = {mod_key = "oarc-mod-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
 }
 
 ---Easy reverse lookup for mod settings keys.
@@ -50,7 +50,6 @@ OCFG_KEYS =
 OCFG_MOD_KEYS =
 {
     ["oarc-mod-welcome-msg-title"] = "server_info.welcome_msg_title",
-    ["oarc-mod-server-msg"] = "server_info.server_msg",
     ["oarc-mod-welcome-msg"] = "server_info.welcome_msg",
     ["oarc-mod-discord-invite"] = "server_info.discord_invite",
 
@@ -83,6 +82,7 @@ OCFG_MOD_KEYS =
     ["oarc-mod-enable-regrowth"] = "regrowth.enable_regrowth",
     ["oarc-mod-enable-world-eater"] = "regrowth.enable_world_eater",
     ["oarc-mod-enable-abandoned-base-cleanup"] = "regrowth.enable_abandoned_base_cleanup",
+    ["oarc-mod-regrowth-cleanup-interval-min"] = "regrowth.cleanup_interval",
 }
 
 
@@ -110,6 +110,8 @@ function ValidateAndLoadConfig()
     GetScenarioOverrideSettings()
 
     ValidateSettings()
+
+    global.ocfg.previous_main_force_name = global.ocfg.gameplay.main_force_name
 end
 
 function ValidateSettings()
@@ -137,6 +139,14 @@ function ValidateSettings()
         global.ocfg.regrowth.enable_world_eater = false
         settings.global["oarc-mod-enable-world-eater"] = { value = false }
         SendBroadcastMsg("Invalid setting! World eater is enabled but regrowth is not! Disabling world eater.")
+    end
+
+    -- Validate that default surface exists.
+    if (game.surfaces[global.ocfg.gameplay.default_surface] == nil) then
+        log("Default surface does not exist! Please check your mod settings or config!")
+        global.ocfg.gameplay.default_surface = "nauvis"
+        settings.global["oarc-mod-default-surface"] = { value = "nauvis" }
+        SendBroadcastMsg("Invalid setting! Default surface does not exist! Setting to nauvis.")
     end
 end
 
@@ -193,9 +203,10 @@ function RuntimeModSettingChanged(event)
 
     if (not found_setting) then
         error("Unknown oarc-mod setting changed: " .. event.setting)
+    else
+        ValidateSettings()
+        ApplyRuntimeChanges(OCFG_MOD_KEYS[event.setting])
     end
-
-    ValidateSettings()
 end
 
 ---A probably quit stupid function to let me lookup and set the global.ocfg entries using a key table.
@@ -229,5 +240,29 @@ function GetGlobalOarcConfigUsingKeyTable(key_table)
         return global.ocfg[key_table[1]][key_table[2]][key_table[3]]
     else
         error("Invalid key_table length: " .. number_of_keys .. "\n" .. serpent.block(key_table))
+    end
+end
+
+---Handles any runtime changes that need more than just the setting change.
+---@param oarc_setting_index string
+---@return nil
+function ApplyRuntimeChanges(oarc_setting_index)
+
+    ---Handle changing enable_shared_team_vision
+    if (oarc_setting_index == "gameplay.enable_shared_team_vision") then
+        for _,force in pairs(game.forces) do
+            if (force.name ~= "neutral") and (force.name ~= "enemy") then
+                force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
+            end
+        end
+
+    ---Handle changing enable_friendly_fire
+    elseif (oarc_setting_index == "gameplay.enable_friendly_fire") then
+        for _,force in pairs(game.forces) do
+            if (force.name ~= "neutral") and (force.name ~= "enemy") then
+                force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
+            end
+        end
+
     end
 end

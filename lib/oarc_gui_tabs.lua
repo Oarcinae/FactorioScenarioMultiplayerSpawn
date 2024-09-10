@@ -127,8 +127,10 @@ function ClickOarcGuiButton(event)
 
     if (event.element.caption ~= "") then
         event.element.caption = ""
-        event.element.style.width = 20
-        event.element.sprite="utility/expand_dots"
+        -- event.element.style.width = 20
+        -- event.element.sprite="utility/expand_dots"
+        event.element.sprite = "oarc-mod-sprite-40"
+        event.element.style.padding = 0
     end
 
     if (not DoesOarcGuiExist(player)) then
