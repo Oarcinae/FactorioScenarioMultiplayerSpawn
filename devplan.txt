@@ -9,13 +9,26 @@ BACKLOG:
 
 
 
-27. Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
+
 
 31. Ensure updates to regrowth surfaces don't cause errors (update indexes)
 
 33. Lots of localizations!
 
 19. Support run time toggling of main_force_name OR change to a startup setting?
+
+34. Show the surface name in shared spawn join GUI
+35. Show the surface name in the share spawn controls tab
+
+37. Add rich text map location links for new spawns
+38. Add rich text map location in spawn controls tab for current home location
+39. Test multiple enemy forces to provide a way to scale evolution locally
+40. Custom tips and tricks??
+41. List all TODOs in code here.
+
+42. Enable/Disable and show information about shared spawn based on shared spawn dropdown interactions.
+43. In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -25,17 +38,16 @@ Other Ideas, Not Committed:
 - Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
 - Make players join a "holding_pen" force instead of the main force? Might cause issues with chat and vision?
 - Separate chest sharing and electricity ()
-- If this is their first spawn, give them items. Otherwise don't give new items and don't clear items either?
-- Watch for chunks being generated to be able to move the player to their spawn as soon as it is done with the last chunk.
 - Consider scrapping any overlapping mod settings from the config. ONLY keep the part that can't easily be done in the mod settings menu... NOT SURE about this.
 - Change enable_shared_team_vision to allow players to change this per player (like BNO)
 - Change enable_friendly_fire to be per team?
 - Allow players to spawn "near" an existing player (by request)
-- Change enable_spawning_on_other_surfaces to a start up setting?
 - Allow players to restart at anytime via GUI button (configurable setting by admin)
 - Change regrowth to be list of surfaces indexed by surface name?
 - Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
 - Add a show current respawn location button/feature
+- Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
+- Work on space ex support?
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
@@ -80,3 +92,9 @@ FIGURE OUT CHUNK NOT IN MAP REGROWTH ISSUE!
 32. Make disable main team setting work (hide radio button)
 17. Support run time toggling of enable_shared_team_vision
 18. Support run time toggling of enable_friendly_fire
+- Watch for chunks being generated to be able to move the player to their spawn as soon as it is done with the last chunk.
+- If this is their first spawn, give them items. Otherwise don't give new items and don't clear items either?
+- Change enable_spawning_on_other_surfaces to a start up setting?
+36. Test out space expansion
+41. Compare GUI mod button icons to space ex (looks better??)
+27. Create surface blacklist setting.

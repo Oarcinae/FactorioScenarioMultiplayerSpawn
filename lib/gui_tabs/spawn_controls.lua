@@ -238,6 +238,12 @@ function SpawnCtrlGuiClick(event)
 
         elseif (tags.setting == "accept_player_request") then
             
+            -- TODO: Check if there is space first
+            if (TableLength(sharedSpawn.players) >= global.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
+                player.print({ "oarc-shared-spawn-full" })
+                return
+            end
+
             RemovePlayerFromJoinQueue(joinQueuePlayerChoice) -- This also refreshes the host gui
 
             -- Send an announcement

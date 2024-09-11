@@ -82,16 +82,12 @@ end
 ---@return nil
 function InitSurface(surface_name)
 
-    local enable_regrowth_on_surface = true -- TODO: Default to true? Or make it a setting?
-    for _, blacklist_surface_name in pairs(global.ocfg.regrowth.surface_blacklist) do
-        if (surface_name == blacklist_surface_name) then
-            log("RegrowthInit: Blacklisted surface found: " .. surface_name)
-            enable_regrowth_on_surface = false
-            return
-        end
-    end
+    -- TODO: Default to true if not in blacklist? Or make it a configurable setting?
+    local enable_regrowth_on_surface = not TableContains(global.ocfg.surfaces_blacklist, surface_name)
 
     if (enable_regrowth_on_surface) then
+        log("Adding surface to regrowth: " .. surface_name)
+
         -- Add a new surface to the regrowth map
         global.rg[surface_name] = {}
 

@@ -179,7 +179,10 @@ OCFG = {
     -- basically always be enabled unless you're making serious changes.
     gameplay = {
 
-        
+        -- Default setting for enabling spawning on other surfaces other than the default_surface.
+        -- This is a STARTUP setting, so it can't be changed in game.
+        default_allow_spawning_on_other_surfaces = true,
+
         -- At least one of these must be enabled! (enable_main_team and enable_separate_teams)
         -- Otherwise we default to enable_main_team = true
         -- Allow all players to join a primary force(team).
@@ -187,9 +190,6 @@ OCFG = {
 
         -- Allow players to create their own force(team).
         enable_separate_teams = true,
-
-        -- Enable spawning on other surfaces other than the default "nauvis".
-        enable_spawning_on_other_surfaces = true,
 
         -- Allow players to choose to spawn with a moat
         allow_moats_around_spawns = true,
@@ -280,8 +280,6 @@ OCFG = {
 
         -- This is the interval in minutes that the regrowth cleanup will run.
         cleanup_interval = 60,
-
-        surface_blacklist = {"oarc_holding_pen"},
     },
 
     -- Spawn configuration (starting items and spawn area config) for each surface.
@@ -309,6 +307,12 @@ OCFG = {
             spawn_config = NAUVIS_SPAWN_CONFIG
         }
     },
+
+    -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
+    ---@type table<integer, string>
+    surfaces_blacklist = {
+        "oarc_holding_pen"
+    },
 }
 
 
@@ -331,6 +335,7 @@ OCFG = {
 ---@field gameplay OarcConfigGameplaySettings Various mod gameplay settings
 ---@field regrowth OarcConfigRegrowth Regrowth specific settings (keeps map size down)
 ---@field surfaces_config table<string, OarcConfigSurface> Spawn configuration (starting items and spawn area config) for each surface.
+---@field surfaces_blacklist table<string> List of surfaces to ignore automatically.
 
 ---@class OarcConfigServerInfo
 ---@field welcome_msg_title string  Title of welcome GUI window.
@@ -338,9 +343,9 @@ OCFG = {
 ---@field discord_invite string Discord invite for easy copy paste.
 
 ---@class OarcConfigGameplaySettings
+---@field default_allow_spawning_on_other_surfaces boolean Default setting for enabling spawning on other surfaces other than the default_surface. This is a STARTUP setting, so it can't be changed in game.
 ---@field enable_main_team boolean Allows all players to join a primary force(team).
 ---@field enable_separate_teams boolean Allows players to create their own force(team).
----@field enable_spawning_on_other_surfaces boolean Enable spawning on other surfaces other than the default.
 ---@field allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
 ---@field enable_moat_bridging boolean If there is a moat, this makes a small path to land to avoid "turtling", but if the spawn is in the middle of water, it won't do anything.
 ---@field minimum_distance_to_existing_chunks number The radius, in chunks, that a spawn area is from any other generated chunks. It ensures the spawn area isn't too near generated/explored/existing area.
@@ -360,13 +365,11 @@ OCFG = {
 ---@field minimum_online_time number Require playes to be online for at least X minutes Else their character is removed and their spawn point is freed up for use
 ---@field respawn_cooldown_min number Respawn cooldown in minutes.
 
-
 ---@class OarcConfigRegrowth
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.
 ---@field enable_world_eater boolean Checks inactive chunks to see if they are empty of entities and deletes them periodically.
 ---@field enable_abandoned_base_cleanup boolean Removes player bases when they leave shortly after joining.
 ---@field cleanup_interval number This is the interval in minutes that the regrowth cleanup will run.
----@field surface_blacklist table<string> List of surfaces to ignore automatically.
 
 ---@class OarcConfigSurface
 ---@field starting_items OarcConfigStartingItems Starting items for players on this surface (including crashed ship items)

@@ -60,13 +60,14 @@ end
 ---@return nil
 function CreateOarcGuiButton(player)
     if (mod_gui.get_button_flow(player).oarc_button == nil) then
-        local b = mod_gui.get_button_flow(player).add{name="oarc_button",
-                                                        caption="CLICK ME FOR MORE INFO",
-                                                        type="sprite-button",
-                                                        -- sprite="utility/expand_dots",
-                                                        style=mod_gui.button_style}
+        local b = mod_gui.get_button_flow(player).add{
+            name="oarc_button",
+            caption="CLICK ME FOR MORE INFO",
+            type="sprite-button",
+            style=mod_gui.button_style,
+            tooltip={ "oarc-gui-tooltip" }
+        }
         b.style.padding=2
-        -- b.style.width=20
     end
 end
 
@@ -127,10 +128,9 @@ function ClickOarcGuiButton(event)
 
     if (event.element.caption ~= "") then
         event.element.caption = ""
-        -- event.element.style.width = 20
-        -- event.element.sprite="utility/expand_dots"
         event.element.sprite = "oarc-mod-sprite-40"
         event.element.style.padding = 0
+        event.element.style = "slot_button"
     end
 
     if (not DoesOarcGuiExist(player)) then

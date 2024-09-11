@@ -144,7 +144,8 @@ function CreateSurfaceSelectDropdown(parent_flow)
         type = "drop-down",
         items = surface_list,
         selected_index = 1,
-        tooltip = { "oarc-surface-select-tooltip" }
+        tooltip = { "oarc-surface-select-tooltip" },
+        enabled = #surface_list > 1
     }
 end
 
@@ -248,9 +249,7 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
     AddLabel(spawn_settings_frame, nil, { "oarc-spawn-menu-settings-info" }, my_label_style)
 
     -- Pick surface
-    if (gameplay.enable_spawning_on_other_surfaces) then
-        CreateSurfaceSelectDropdown(spawn_settings_frame)
-    end
+    CreateSurfaceSelectDropdown(spawn_settings_frame)
 
     -- Radio buttons to pick your team.
     DisplayTeamSelectRadioButtons(spawn_settings_frame, gameplay.enable_main_team, gameplay.enable_separate_teams)
@@ -337,12 +336,14 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
     --- Let's us refresh the frame if it already exists instead of recreating it
     else
         -- Save the previous selected host so we can reselect it after the frame is recreated
-        if shared_spawn_frame.shared_spawn_select_dropdown ~= nil then
-            local index = shared_spawn_frame.shared_spawn_select_dropdown.selected_index
+        if (shared_spawn_frame.shared_spawn_horizontal_flow ~= nil) then
+            local dropdown = shared_spawn_frame.shared_spawn_horizontal_flow.shared_spawn_select_dropdown
+            local index = dropdown.selected_index
             if index > 0 then
-                selected_host = shared_spawn_frame.shared_spawn_select_dropdown.get_item(index) --[[@as string]]
-            end
+                selected_host = dropdown.get_item(index) --[[@as string]]
+            end 
         end
+        
 
         for _,child in pairs(shared_spawn_frame.children) do
             child.destroy()
@@ -362,7 +363,7 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
 
     if (num_avail_spawns > 0) then
 
-        AddLabel(shared_spawn_frame, "join_other_spawn_lbl1", { "oarc-join-someone-info" }, my_label_style)
+        AddLabel(shared_spawn_frame, nil, { "oarc-join-someone-info" }, my_label_style)
 
         local previous_index = 0
         if selected_host then
@@ -375,6 +376,7 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
         end
 
         local horizontal_flow = shared_spawn_frame.add {
+            name = "shared_spawn_horizontal_flow",
             type = "flow",
             direction = "horizontal",
             style = "dialog_buttons_horizontal_flow"
@@ -399,21 +401,26 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             style = "draggable_space",
         }
         dragger.style.horizontally_stretchable = true
-        
 
         local button = horizontal_flow.add {
             name = "join_other_spawn",
             tags = { action = "oarc_spawn_options", setting = "join_other_spawn" },
             type = "button",
-            caption = { "oarc-join-someone-avail", num_avail_spawns },
-            style = "green_button",
-            tooltip = { "oarc-join-someone-avail-tooltip", num_avail_spawns }
+            tooltip = { "oarc-join-shared-button-tooltip" },
+            enabled = previous_index > 0
         }
+        if previous_index == 0 then
+            button.caption = { "oarc-join-shared-button-disable" }
+            button.style = "red_button"
+        else
+            button.caption = { "oarc-join-shared-button-enable", selected_host, global.ocore.uniqueSpawns[selected_host].surface }
+            button.style = "green_button"
+        end
+
         button.style.horizontal_align = "right"
 
-        
     else
-        AddLabel(shared_spawn_frame, "join_other_spawn_lbl1", { "oarc-no-shared-avail" }, my_label_style)
+        AddLabel(shared_spawn_frame, nil, { "oarc-no-shared-avail" }, my_label_style)
     end
 end
 
@@ -746,6 +753,9 @@ end
 ---@return nil
 function CancelSharedSpawnRequest(player)
 
+    --TODO implement this, need to validate the host is still valid
+    -- host_player.print({ "oarc-player-cancel-join-request", player_name })
+
     --- Destroy the waiting menu and display the spawn options again.
     player.gui.screen.join_shared_spawn_wait_menu.destroy()
     DisplaySpawnOptions(player)
@@ -789,16 +799,36 @@ function SpawnOptsSelectionChanged(event)
 
     if (tags.setting == "surface_select") then
         local index = event.element.selected_index
-        local surfaceName = event.element.get_item(index) --[[@as string]]
-        global.ocore.spawnChoices[player.name].surface = surfaceName
-        log("GUI DEBUG Selected surface: " .. surfaceName)
+        local surface_name = event.element.get_item(index) --[[@as string]]
+        global.ocore.spawnChoices[player.name].surface = surface_name
+        log("GUI DEBUG Selected surface: " .. surface_name)
 
     elseif (tags.setting == "shared_spawn_select") then
+
+        -- TODO convert this section into a separate function
         local index = event.element.selected_index
         if (index > 0) then
-            local hostName = event.element.get_item(index) --[[@as string]]
-            global.ocore.spawnChoices[player.name].host = hostName
-            log("GUI DEBUG Selected host: " .. hostName)
+            local host_name = event.element.get_item(index) --[[@as string]]
+            local button = event.element.parent.join_other_spawn
+            
+            log("GUI DEBUG Selected host: " .. host_name)
+
+            if (IsSharedSpawnValid(host_name)) then
+                global.ocore.spawnChoices[player.name].host = host_name
+                button.enabled = true
+                button.caption = { "oarc-join-shared-button-enable", host_name, global.ocore.uniqueSpawns[host_name].surface }
+                button.style = "green_button"
+            else
+                player.print({ "oarc-invalid-host-shared-spawn" })
+                global.ocore.spawnChoices[player.name].host = nil
+                event.element.selected_index = 0
+                button.enabled = false
+                button.caption = { "oarc-join-shared-button-disable" }
+                button.style = "red_button"
+            end
+
+
+
         else
             global.ocore.spawnChoices[player.name].host = nil
         end

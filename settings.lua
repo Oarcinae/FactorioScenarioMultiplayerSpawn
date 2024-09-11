@@ -1,5 +1,13 @@
 data:extend({
     {
+        type = "bool-setting",
+        name = "oarc-mod-default-allow-spawning-on-other-surfaces",
+        setting_type = "startup",
+        default_value = false,
+        order = "b3"
+    },
+    
+    {
         type = "string-setting",
         name = "oarc-mod-welcome-msg-title",
         setting_type = "runtime-global",
@@ -36,13 +44,7 @@ data:extend({
         default_value = true,
         order = "b2"
     },
-    -- {
-    --     type = "bool-setting",
-    --     name = "oarc-mod-enable-spawning-on-other-surfaces",
-    --     setting_type = "runtime-global",
-    --     default_value = true,
-    --     order = "b3"
-    -- },
+
     {
         type = "bool-setting",
         name = "oarc-mod-allow-moats-around-spawns",

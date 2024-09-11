@@ -23,12 +23,18 @@ function InitSpawnGlobalsAndForces()
     if (global.ocore.surfaces == nil) then
         global.ocore.surfaces --[[@as table<string, boolean>]]= {}
         for _, surface in pairs(game.surfaces) do
-            -- TODO: create a blacklist of surfaces that shouldn't be tracked?
-            if (surface.name == HOLDING_PEN_SURFACE_NAME) then
-                global.ocore.surfaces[surface.name] = false
+            
+            -- If allowing by default, check the blacklist first
+            if global.ocfg.gameplay.default_allow_spawning_on_other_surfaces then
+                global.ocore.surfaces[surface.name] = not TableContains(global.ocfg.surfaces_blacklist, surface.name)
+            
+            -- Otherwise only allow the default surface
+            elseif (surface.name == global.ocfg.gameplay.default_surface) then
+                global.ocore.surfaces[surface.name] = true
             else
-                global.ocore.surfaces[surface.name] = global.ocfg.gameplay.enable_spawning_on_other_surfaces
+                global.ocore.surfaces[surface.name] = false
             end
+
         end
     end
 
@@ -152,7 +158,7 @@ function SeparateSpawnsSurfaceCreated(event)
     end
 
     -- Add the surface to the list of surfaces that allow spawns with value from config.
-    global.ocore.surfaces[surface.name] = global.ocfg.gameplay.enable_spawning_on_other_surfaces
+    global.ocore.surfaces[surface.name] = global.ocfg.gameplay.default_allow_spawning_on_other_surfaces
 
     -- Make sure it has a surface configuration entry
     if (global.ocfg.surfaces_config[surface.name] == nil) then
@@ -877,7 +883,6 @@ function RemovePlayerFromJoinQueue(player_name)
                 global.ocore.sharedSpawns[host_name].joinQueue[index] = nil
                 local host_player = game.players[host_name]
                 if (host_player ~= nil) and (host_player.connected) then
-                    host_player.print({ "oarc-player-cancel-join-request", player_name })
                     OarcGuiRefreshContent(host_player)
                 end
                 return true
@@ -981,23 +986,45 @@ function GetNumberOfAvailableSharedSpawns()
 end
 
 ---Get a list of available shared spawns.
----@return table
+---@return table<string>
 function GetAvailableSharedSpawns()
     local list_of_spawns = {}
     local number_of_players_per_shared_spawn = global.ocfg.gameplay.number_of_players_per_shared_spawn
 
     for owner_name, shared_spawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-        if (shared_spawn.openAccess and
-                (game.players[owner_name] ~= nil) and
-                game.players[owner_name].connected) then
-            if ((number_of_players_per_shared_spawn == 0) or
-                    (TableLength(global.ocore.sharedSpawns[owner_name].players) < number_of_players_per_shared_spawn)) then
-                table.insert(list_of_spawns, owner_name)
-            end
+        if IsSharedSpawnValid(owner_name) then
+            table.insert(list_of_spawns, owner_name)
         end
     end
 
     return list_of_spawns
+end
+
+---Check if a specific shared spawn is available to join
+---@param owner_name string
+---@return boolean
+function IsSharedSpawnValid(owner_name)
+    if (global.ocore.sharedSpawns[owner_name] == nil) then
+        return false
+    end
+
+    if (not global.ocore.sharedSpawns[owner_name].openAccess) then
+        return false
+    end
+
+    if (game.players[owner_name] == nil) or not (game.players[owner_name].connected) then
+        return false
+    end
+
+    -- Technically I only limit the players based on if they are online, so you can exceed the limit if players join
+    -- while others are offline. This is a feature, not a bug?
+    local number_of_players_per_shared_spawn = global.ocfg.gameplay.number_of_players_per_shared_spawn
+    local online_players = GetOnlinePlayersAtSharedSpawn(owner_name)
+    if ((number_of_players_per_shared_spawn > 0) and (online_players >= number_of_players_per_shared_spawn)) then
+        return false
+    end
+
+    return true
 end
 
 ---Checks if player has a custom spawn point set.

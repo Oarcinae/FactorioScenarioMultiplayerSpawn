@@ -1,4 +1,4 @@
--- This file is used to validate the config.lua file and handle any mod conflicts.
+-- This file is used to validate the config.lua file and handle any mod settings conflicts.
 
 ---Provides a way to look up the config settings key from the mod settings key.
 ---@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string }
@@ -14,7 +14,7 @@ OCFG_KEYS =
     ["Gameplay"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
     ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
-    -- ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-enable-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
+    -- ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-default-allow-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
     ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-mod-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
     ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-mod-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
     ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-mod-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
@@ -55,7 +55,7 @@ OCFG_MOD_KEYS =
 
     ["oarc-mod-enable-main-team"] = "gameplay.enable_main_team",
     ["oarc-mod-enable-separate-teams"] = "gameplay.enable_separate_teams",
-    --oarc-mod-enable-spawning-on-other-surfaces"] = " ["gameplay.enable_spawning_on_other_surfaces",
+    --oarc-mod-default-allow-spawning-on-other-surfaces"] = " ["gameplay.enable_spawning_on_other_surfaces",
     ["oarc-mod-allow-moats-around-spawns"] = "gameplay.allow_moats_around_spawns",
     ["oarc-mod-enable-moat-bridging"] = "gameplay.enable_moat_bridging",
     ["oarc-mod-minimum-distance-to-existing-chunks"] = "gameplay.minimum_distance_to_existing_chunks",
@@ -110,8 +110,6 @@ function ValidateAndLoadConfig()
     GetScenarioOverrideSettings()
 
     ValidateSettings()
-
-    global.ocfg.previous_main_force_name = global.ocfg.gameplay.main_force_name
 end
 
 function ValidateSettings()
@@ -162,6 +160,9 @@ function CacheModSettings()
             SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, settings.global[entry.mod_key].value)
         end
     end
+
+    -- Special case for startup settings
+    global.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value
 end
 
 function GetScenarioOverrideSettings()
