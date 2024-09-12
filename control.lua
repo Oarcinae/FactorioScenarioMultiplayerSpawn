@@ -21,22 +21,6 @@
 --      Chunk cleanup to keep save file size down.
 --      (TENTATIVE) Support for multiple vanilla-style spawn points.
 
--- TODO NOTES:
---      Add more tooltips?!
---      on_runtime_mod_setting_changed 
-
--- Start Flow:
---      Display scenario welcome info.
---      Display main spawn options.
---          Display buddy spawn options. (OPTIONAL)
---      Create spawn area.
---      Send player to spawn area.
-
--- Options Menu:
---      Display scenario info. (Dupe of welcome info?)
---      Admin tools to restart or ban players.
---      Personal settings for player (Allow shared base)
-
 require("lib/oarc_utils")
 require("lib/config")
 require("lib/config_parser")
@@ -46,6 +30,7 @@ require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 require("lib/oarc_gui_tabs")
 
+-- Possibly remove this later?
 require("lib/oarc_tests")
 
 
@@ -172,7 +157,6 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
     if global.ocfg.regrowth.enable_regrowth then
-        -- if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
         RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 
@@ -183,16 +167,13 @@ end)
 
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if global.ocfg.regrowth.enable_regrowth then
-        -- if (event.created_entity.surface.name ~= GAME_SURFACE_NAME) then return end
         RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 end)
 
 script.on_event(defines.events.on_player_built_tile, function (event)
     if global.ocfg.regrowth.enable_regrowth then
-        -- if (game.surfaces[event.surface_index].name ~= GAME_SURFACE_NAME) then return end
-
-        for k,v in pairs(event.tiles) do
+        for _,v in pairs(event.tiles) do
             RegrowthMarkAreaSafeGivenTilePos(game.surfaces[event.surface_index].name, v.position, 2, false)
         end
     end
@@ -205,7 +186,6 @@ end)
 ----------------------------------------
 script.on_event(defines.events.script_raised_built, function(event)
     if global.ocfg.regrowth.enable_regrowth then
-        -- if (event.entity.surface.name ~= GAME_SURFACE_NAME) then return end
         RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 2, false)
     end
 end)

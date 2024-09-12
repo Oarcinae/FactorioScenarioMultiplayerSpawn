@@ -1,24 +1,17 @@
 
 ACTIVE ITEMS:
 
+43. In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+19. Change main_force_name to a startup setting!
+34. Show the surface name in shared spawn join GUI
+35. Show the surface name in the share spawn controls tab
 
 
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
 
-
-
-
-
-31. Ensure updates to regrowth surfaces don't cause errors (update indexes)
-
 33. Lots of localizations!
-
-19. Support run time toggling of main_force_name OR change to a startup setting?
-
-34. Show the surface name in shared spawn join GUI
-35. Show the surface name in the share spawn controls tab
 
 37. Add rich text map location links for new spawns
 38. Add rich text map location in spawn controls tab for current home location
@@ -26,8 +19,11 @@ BACKLOG:
 40. Custom tips and tricks??
 41. List all TODOs in code here.
 
-42. Enable/Disable and show information about shared spawn based on shared spawn dropdown interactions.
-43. In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+
+
+
+44.
+45.
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -48,6 +44,7 @@ Other Ideas, Not Committed:
 - Add a show current respawn location button/feature
 - Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
 - Work on space ex support?
+- Profile regrowth and try to improve performance ?
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
@@ -98,3 +95,5 @@ FIGURE OUT CHUNK NOT IN MAP REGROWTH ISSUE!
 36. Test out space expansion
 41. Compare GUI mod button icons to space ex (looks better??)
 27. Create surface blacklist setting.
+42. Enable/Disable and show information about shared spawn based on shared spawn dropdown interactions.
+31. Ensure updates to regrowth surfaces don't cause errors (update indexes)

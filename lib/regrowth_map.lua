@@ -9,17 +9,20 @@
 --      the on_sector_scanned event.
 -- 5. Chunks timeout after 1 hour-ish, configurable
 
+--- These chunks are marked for removal. They will be deleted by the regrowth system.
+--- If it gets refreshed before it is removed, then it will be marked safe again
+REGROWTH_FLAG_REMOVAL = -1
+
 --- If a chunk is marked "active", then it will only be checked by the "world eater" system if that is enabled.
 --- World eater does more extensive checks to see if a chunk might be safe to delete. For example, if a player builds
 --- stuff in a chunk it will be marked as "active" and won't be checked by the regrowth system.
-REGROWTH_FLAG_ACTIVE = -1
+REGROWTH_FLAG_ACTIVE = -2
 
 --- These chunks will NEVER be deleted by the regrowth + world eater systems. However, they can be overwritten in some
 --- cases. Like when a player leaves the game early and their spawn is deleted.
-REGROWTH_FLAG_PERMANENT = -2
+REGROWTH_FLAG_PERMANENT = -3
 
---- These chunks are marked for removal. They will be deleted by the regrowth system.
-REGROWTH_FLAG_REMOVAL = -3
+
 
 --- Radius in chunks around a player to mark as safe.
 REGROWTH_ACTIVE_AREA_AROUND_PLAYER = 4
@@ -40,8 +43,7 @@ function RegrowthInit()
     global.rg.current_surface_index = 1
     global.rg.active_surfaces = {} -- List of all surfaces with regrowth enabled
     global.rg.chunk_iter = nil -- We only iterate through onface at a time
-    
-    
+
     global.rg.world_eater_iter = nil
     global.rg.we_current_surface = nil
     global.rg.we_current_surface_index = 1
@@ -67,14 +69,7 @@ end
 function RegrowthSurfaceDeleted(event)
     log("WARNING - RegrowthSurfaceDeleted: " .. game.surfaces[event.surface_index].name)
     local surface_name = game.surfaces[event.surface_index].name
-    global.rg[surface_name] = nil
-    for key,value in pairs(global.rg.active_surfaces) do
-        if (value == surface_name) then
-            table.remove(global.rg.active_surfaces, key)
-            break
-        end
-    end
-    --TODO: Check if we need to reset any of the indexes in use.
+    RegrowthDisableSurface(surface_name )
 end
 
 ---Initialize the new surface for regrowth
@@ -82,26 +77,63 @@ end
 ---@return nil
 function InitSurface(surface_name)
 
-    -- TODO: Default to true if not in blacklist? Or make it a configurable setting?
-    local enable_regrowth_on_surface = not TableContains(global.ocfg.surfaces_blacklist, surface_name)
-
-    if (enable_regrowth_on_surface) then
+    if (not IsSurfaceBlacklisted(surface_name) and not TableContains(global.rg.active_surfaces, surface_name)) then
         log("Adding surface to regrowth: " .. surface_name)
 
-        -- Add a new surface to the regrowth map
-        global.rg[surface_name] = {}
+        -- Add a new surface to the regrowth map (Don't overwrite if it already exists)
+        if (global.rg[surface_name] == nil) then
+            global.rg[surface_name] = {}
+        end
 
-        -- This is a 2D array of chunk positions and their last tick updated / status
-        global.rg[surface_name].map = {}
+        -- This is a 2D array of chunk positions and their last tick updated / status (Don't overwrite if it already exists)
+        if (global.rg[surface_name].map == nil) then
+            global.rg[surface_name].map = {}
+        end
 
-        -- Set the current surface tone found
+        -- Set the current surface to the first one found if none are set.
         if (global.rg.current_surface == nil) then
             global.rg.current_surface = surface_name
             global.rg.we_current_surface = surface_name
         end
 
+        global.rg[surface_name].active = true
         table.insert(global.rg.active_surfaces, surface_name)
     end
+end
+
+function RegrowthDisableSurface(surface_name)
+
+    -- We don't want to delete the surface history in case it's re-enabled later!
+    -- global.rg[surface_name] = nil
+
+    global.rg[surface_name].active = false
+    TableRemoveOneUsingPairs(global.rg.active_surfaces, surface_name)
+
+    -- Make sure indices are reset if needed
+    if (global.rg.current_surface == surface_name) then
+        global.rg.current_surface = nil
+        global.rg.current_surface_index = 1
+    end
+    if (global.rg.we_current_surface == surface_name) then
+        global.rg.we_current_surface = nil
+        global.rg.we_current_surface_index = 1
+    end
+    if #global.rg.active_surfaces > 0 then
+        global.rg.current_surface = global.rg.active_surfaces[1]
+        global.rg.we_current_surface = global.rg.active_surfaces[1]
+    end
+end
+
+---Simple check to see if a surface is enabled for regrowth
+---@param surface_name string - The surface name to act on
+---@return boolean
+function IsRegrowthEnabledOnSurface(surface_name)
+    if (global.rg[surface_name] == nil) then return false end
+    return global.rg[surface_name].active
+end
+
+function RegrowthEnableSurface(surface_name)
+    InitSurface(surface_name)
 end
 
 ---Trigger an immediate cleanup of any chunks that are marked for removal.
@@ -162,8 +194,8 @@ function RegrowthChunkGenerate(event)
     local c_pos = event.position
     local surface_name = event.surface.name
 
-    -- Surface not in regrowth map, ignore it.
-    if (global.rg[surface_name] == nil) then return end
+    -- Surface not init or not active, ignore it.
+    if not IsRegrowthEnabledOnSurface(surface_name) then return end
 
     -- If this is the first chunk in that row:
     if (global.rg[surface_name].map[c_pos.x] == nil) then
@@ -197,9 +229,6 @@ function RegrowthMarkAreaForRemoval(surface_name, pos, chunk_radius)
             local removal_entry = { pos = { x = x, y = y }, force = true, surface = surface_name }
             table.insert(global.rg.removal_list, removal_entry)
         end
-        -- if (table_size(global.rg[surface_name].map[x]) == 0) then
-        --     global.rg[surface_name].map[x] = nil
-        -- end
     end
 end
 
@@ -251,7 +280,7 @@ end
 ---@param permanent boolean - If true, the chunk will be marked as permanent
 ---@return nil
 function RegrowthMarkAreaSafeGivenChunkPos(surface_name, c_pos, chunk_radius, permanent)
-    if (global.rg == nil) then return end
+    if (global.rg[surface_name] == nil) then return end
 
     for i = -chunk_radius, chunk_radius do
         for j = -chunk_radius, chunk_radius do
@@ -267,7 +296,7 @@ end
 ---@param permanent boolean - If true, the chunk will be marked as permanent
 ---@return nil
 function RegrowthMarkAreaSafeGivenTilePos(surface_name, pos, chunk_radius, permanent)
-    if (global.rg == nil) then return end
+    if not IsRegrowthEnabledOnSurface(surface_name) then return end
 
     local c_pos = GetChunkPosFromTilePos(pos)
     RegrowthMarkAreaSafeGivenChunkPos(surface_name, c_pos, chunk_radius, permanent)
@@ -284,7 +313,7 @@ function RefreshChunkTimer(surface_name, pos, bonus_time)
     if (global.rg[surface_name].map[c_pos.x] == nil) then
         global.rg[surface_name].map[c_pos.x] = {}
     end
-    if (global.rg[surface_name].map[c_pos.x][c_pos.y] >= 0) then
+    if (global.rg[surface_name].map[c_pos.x][c_pos.y] >= REGROWTH_FLAG_REMOVAL) then
         global.rg[surface_name].map[c_pos.x][c_pos.y] = game.tick + bonus_time
     end
 end
@@ -317,7 +346,7 @@ function RefreshAreaChunkPosition(surface_name, c_pos, chunk_radius, bonus_time)
             if (global.rg[surface_name].map[x] == nil) then
                 global.rg[surface_name].map[x] = {}
             end
-            if ((global.rg[surface_name].map[x][y] == nil) or (global.rg[surface_name].map[x][y] >= 0)) then
+            if ((global.rg[surface_name].map[x][y] == nil) or (global.rg[surface_name].map[x][y] >= REGROWTH_FLAG_REMOVAL)) then
                 global.rg[surface_name].map[x][y] = game.tick + bonus_time
             end
         end
@@ -357,6 +386,7 @@ end
 ---Adds it to the removal list if it has.
 ---@return nil
 function RegrowthSingleStepArray()
+    if (#global.rg.active_surfaces == 0) then return end
     local current_surface = global.rg.current_surface
 
     -- Make sure we have a valid iterator!
@@ -393,7 +423,12 @@ function RegrowthSingleStepArray()
     end
     if (global.rg[current_surface].map[next_chunk.x][next_chunk.y] == nil and game.surfaces[current_surface].is_chunk_generated(next_chunk)) then
         log("RegrowthSingleStepArray: Chunk not in map: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
-        global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick
+        local has_player_entities = CheckIfChunkHasAnyPlayerEntities(current_surface, next_chunk)
+        if has_player_entities then
+            global.rg[current_surface].map[next_chunk.x][next_chunk.y] = REGROWTH_FLAG_ACTIVE
+        else
+            global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick
+        end
         return
     end
 
@@ -422,8 +457,8 @@ function OarcRegrowthRemoveAllChunks()
         local c_pos = c_remove.pos
         local surface_name = c_remove.surface
 
-        -- Confirm chunk is still expired
-        if (not global.rg[surface_name].map[c_pos.x] or not global.rg[surface_name].map[c_pos.x][c_pos.y]) then
+        -- Confirm chunk is still marked for removal
+        if (global.rg[surface_name].map[c_pos.x] and global.rg[surface_name].map[c_pos.x][c_pos.y] == REGROWTH_FLAG_REMOVAL) then
             -- If it is FORCE removal, then remove it regardless of pollution.
             if (c_remove.force) then
                 game.surfaces[surface_name].delete_chunk(c_pos)
@@ -502,6 +537,7 @@ function RegrowthForceRemovalOnTick()
 end
 
 function WorldEaterSingleStep()
+    if (#global.rg.active_surfaces == 0) then return end
     local current_surface = global.rg.we_current_surface
 
     -- Make sure we have a valid iterator!
@@ -571,7 +607,11 @@ function WorldEaterSingleStep()
             for k, v in pairs(entities) do
                 --string.contains is valid but not in the type definitions?
                 ---@diagnostic disable-next-line: undefined-field
-                if (v.last_user or (v.type == "character") or string.contains(v.type, "robot")) then
+                if (v.last_user or (v.type == "character")
+                    or (v.type == "logistics-robot")
+                    or (v.type == "construction-robot")
+                    or (v.type == "car")
+                    or (v.type == "spider-vehicle")) then
                     has_last_user_set = true
                     return -- This means we're done checking this chunk.
                 end
@@ -592,4 +632,34 @@ function WorldEaterSingleStep()
             global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
         end
     end
+end
+
+
+---Checks if a chunk has any player entities in or near it.
+---@param surface_name string - The surface name to act on
+---@param chunk ChunkPositionAndArea - The chunk position to check
+---@return boolean
+function CheckIfChunkHasAnyPlayerEntities(surface_name, chunk)
+
+    -- Check around the chunk for anything overlapping to be safe!
+    local area = {
+        left_top = { chunk.area.left_top.x - 8, chunk.area.left_top.y - 8 },
+        right_bottom = { chunk.area.right_bottom.x + 8, chunk.area.right_bottom.y + 8 }
+    }
+
+    local entities = game.surfaces[surface_name].find_entities_filtered { area = area, force = { "enemy", "neutral" }, invert = true }
+
+    for _, v in pairs(entities) do
+        --string.contains is valid but not in the type definitions?
+        ---@diagnostic disable-next-line: undefined-field
+        if (v.last_user or (v.type == "character")
+            or (v.type == "logistics-robot")
+            or (v.type == "construction-robot")
+            or (v.type == "car")
+            or (v.type == "spider-vehicle")) then
+            return true -- YES there is player stuff here.
+        end
+    end
+
+    return false
 end

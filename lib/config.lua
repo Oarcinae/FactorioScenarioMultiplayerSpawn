@@ -311,7 +311,16 @@ OCFG = {
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
     ---@type table<integer, string>
     surfaces_blacklist = {
-        "oarc_holding_pen"
+        "oarc_holding_pen",
+    },
+
+    -- Surfaces blacklist that match start of these strings
+    -- (Ignore these surfaces completely for spawning and regrowth!)
+    ---@type table<integer, string>
+    surfaces_blacklist_match = {
+        -- Factorissimo Mod Surfaces
+        "factory-power",
+        "factory-floor",
     },
 }
 
@@ -336,6 +345,7 @@ OCFG = {
 ---@field regrowth OarcConfigRegrowth Regrowth specific settings (keeps map size down)
 ---@field surfaces_config table<string, OarcConfigSurface> Spawn configuration (starting items and spawn area config) for each surface.
 ---@field surfaces_blacklist table<string> List of surfaces to ignore automatically.
+---@field surfaces_blacklist_match table<string> List of surfaces to ignore automatically if the start of the string matches the surface name.
 
 ---@class OarcConfigServerInfo
 ---@field welcome_msg_title string  Title of welcome GUI window.

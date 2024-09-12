@@ -155,6 +155,29 @@ function StringStartsWith(string, start)
     return string:sub(1, #start) == start
 end
 
+---Checks if a surface is blacklisted based on the global.ocfg settings
+---@param surface_name string
+---@return boolean --true if blacklisted
+function IsSurfaceBlacklisted(surface_name)
+    if (global.ocfg.surfaces_blacklist == nil) then
+        for _,name in pairs(global.ocfg.surfaces_blacklist) do
+            if (name == surface_name) then
+                return true
+            end
+        end
+    end
+
+    if (global.ocfg.surfaces_blacklist_match == nil) then
+        for _,match in pairs(global.ocfg.surfaces_blacklist_match) do
+            if (StringStartsWith(surface_name, match)) then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 -- -- Simple way to write to a file. Always appends. Only server.
 -- -- Has a global setting for enable/disable
 -- function ServerWriteFile(filename, msg)
@@ -237,14 +260,36 @@ function TableContains(table, val)
     return false
 end
 
----Remove a value from a table
+---Get a key from a table given a value (if it exists)
 ---@param table table
 ---@param val any
----@return nil
-function TableRemove(table, val)
-    for i = #table, 1, -1 do
-        if table[i] == val then
-            table.remove(table, i)
+---@return any
+function GetTableKey(table, val)
+    for k, v in pairs(table) do
+        if v == val then
+            return k
+        end
+    end
+    return nil
+end
+
+-- ---Remove a value from a table
+-- ---@param table table
+-- ---@param val any
+-- ---@return nil
+-- function TableRemove(t, val)
+--     for i = #t, 1, -1 do
+--         if t[i] == val then
+--             table.remove(t, i)
+--         end
+--     end
+-- end
+
+function TableRemoveOneUsingPairs(t, val)
+    for k,v in pairs(t) do
+        if v == val then
+            table.remove(t, k)
+            return
         end
     end
 end
@@ -335,12 +380,7 @@ function GivePlayerRespawnItems(player)
     local respawnItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_respawn_items
 
     util.insert_safe(player, respawnItems)
-    -- for name, count in pairs(respawnItems) do
-    --     player.insert({ name = name, count = count })
-    -- end
 end
-
--- TODO: Take advantage of util.insert_safe ??
 
 ---Gives the player the starter items if there are any
 ---@param player LuaPlayer
@@ -355,9 +395,6 @@ function GivePlayerStarterItems(player)
     local startItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
 
     util.insert_safe(player, startItems)
-    -- for name, count in pairs(startItems) do
-    --     player.insert({ name = name, count = count })
-    -- end
 end
 
 ---Attempts to remove any starter items from the player

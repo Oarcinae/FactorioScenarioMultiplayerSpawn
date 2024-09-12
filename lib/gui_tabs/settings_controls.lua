@@ -71,19 +71,23 @@ function CreateSurfaceSettingsSection(container, player)
     local surface_table = container.add {
         type = "table",
         name = "surface_table",
-        column_count = 2,
+        column_count = 3,
         style = "bordered_table",
     }
 
     --- Add the header row
     AddLabel(surface_table, nil, "Surface", "caption_label") ---TODO: localize
     AddLabel(surface_table, nil, "Spawning Enabled", "caption_label")
+    AddLabel(surface_table, nil, "Regrowth Enabled", "caption_label")
 
     --- Add the rows
     for name, allowed in pairs(global.ocore.surfaces --[[@as table<string, boolean>]]) do
         AddLabel(surface_table, nil, name, my_label_style)
         AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed, player.admin)
+        local regrowth_enabled = TableContains(global.rg.active_surfaces, name)
+        AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", regrowth_enabled, player.admin)
     end
+    
 end
 
 ---Handles the click event for the tab used by AddOarcGuiTab
@@ -323,7 +327,7 @@ function SettingsSurfaceControlsTabGuiClick(event)
     local gui_elem = event.element
     if (gui_elem.tags.action ~= "oarc_settings_tab_surfaces") then return end
     local setting_name = gui_elem.tags.setting
-    local surface_name = gui_elem.tags.surface
+    local surface_name = gui_elem.tags.surface --[[@as string]]
 
     if (setting_name == "spawn_enabled") then
         global.ocore.surfaces[surface_name] = gui_elem.state
@@ -332,6 +336,17 @@ function SettingsSurfaceControlsTabGuiClick(event)
             log("Warning - GetAllowedSurfaces() - No surfaces found! Forcing default surface!")
             global.ocore.surfaces[global.ocfg.gameplay.default_surface] = true
             event.element.parent[global.ocfg.gameplay.default_surface.."_spawn_enabled"].state = true
+        end
+    elseif (setting_name == "regrowth_enabled") then
+
+        if (gui_elem.state) then
+            if not IsRegrowthEnabledOnSurface(surface_name) then
+                RegrowthEnableSurface(surface_name)
+            end
+        else
+            if IsRegrowthEnabledOnSurface(surface_name) then
+                RegrowthDisableSurface(surface_name)
+            end
         end
     end
 end

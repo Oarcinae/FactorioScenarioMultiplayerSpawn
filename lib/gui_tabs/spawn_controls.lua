@@ -61,12 +61,6 @@ end
 function CreateSetRespawnLocationButton(player, container)
     AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
-    -- TODO: Figure out why this case could be hit... Fix for error report in github.
-    if (global.ocore.playerCooldowns[player.name] == nil) then
-        error("ERROR! playerCooldowns[player.name] is nil!")
-        global.ocore.playerCooldowns[player.name] = { setRespawn = game.tick }
-    end
-
     -- Sets the player's custom spawn point to their current location
     if ((game.tick - global.ocore.playerCooldowns[player.name].setRespawn) >
             (global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE)) then
@@ -238,7 +232,7 @@ function SpawnCtrlGuiClick(event)
 
         elseif (tags.setting == "accept_player_request") then
             
-            -- TODO: Check if there is space first
+            -- Check if there is space first
             if (TableLength(sharedSpawn.players) >= global.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
                 player.print({ "oarc-shared-spawn-full" })
                 return

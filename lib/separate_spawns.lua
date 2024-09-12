@@ -26,7 +26,7 @@ function InitSpawnGlobalsAndForces()
             
             -- If allowing by default, check the blacklist first
             if global.ocfg.gameplay.default_allow_spawning_on_other_surfaces then
-                global.ocore.surfaces[surface.name] = not TableContains(global.ocfg.surfaces_blacklist, surface.name)
+                global.ocore.surfaces[surface.name] = not IsSurfaceBlacklisted(surface.name)
             
             -- Otherwise only allow the default surface
             elseif (surface.name == global.ocfg.gameplay.default_surface) then
@@ -34,7 +34,6 @@ function InitSpawnGlobalsAndForces()
             else
                 global.ocore.surfaces[surface.name] = false
             end
-
         end
     end
 
@@ -158,10 +157,19 @@ function SeparateSpawnsSurfaceCreated(event)
     end
 
     -- Add the surface to the list of surfaces that allow spawns with value from config.
-    global.ocore.surfaces[surface.name] = global.ocfg.gameplay.default_allow_spawning_on_other_surfaces
+    -- If allowing by default, check the blacklist first
+    if global.ocfg.gameplay.default_allow_spawning_on_other_surfaces then
+        global.ocore.surfaces[surface.name] = not IsSurfaceBlacklisted(surface.name)
+    
+    -- Otherwise only allow the default surface
+    elseif (surface.name == global.ocfg.gameplay.default_surface) then
+        global.ocore.surfaces[surface.name] = true
+    else
+        global.ocore.surfaces[surface.name] = false
+    end
 
     -- Make sure it has a surface configuration entry
-    if (global.ocfg.surfaces_config[surface.name] == nil) then
+    if (global.ocore.surfaces[surface.name] and global.ocfg.surfaces_config[surface.name] == nil) then
         log("Surface does NOT have a config entry, defaulting to nauvis entry for new surface: " .. surface.name)
         global.ocfg.surfaces_config[surface.name] = global.ocfg.surfaces_config["nauvis"]
     end
