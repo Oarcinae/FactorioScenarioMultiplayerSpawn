@@ -44,7 +44,7 @@ function RegrowthInit()
     global.rg.active_surfaces = {} -- List of all surfaces with regrowth enabled
     global.rg.chunk_iter = nil -- We only iterate through onface at a time
 
-    global.rg.world_eater_iter = nil
+    global.rg.we_chunk_iter = nil
     global.rg.we_current_surface = nil
     global.rg.we_current_surface_index = 1
 
@@ -382,39 +382,64 @@ function RefreshPlayerArea()
     end
 end
 
----Gets the next chunk the array map and checks to see if it has timed out.
----Adds it to the removal list if it has.
----@return nil
-function RegrowthSingleStepArray()
-    if (#global.rg.active_surfaces == 0) then return end
-    local current_surface = global.rg.current_surface
+---Updates the chunk_iter and returns the next chunk from it. May not be valid if it no chunks exist.
+---@return ChunkPositionAndArea?
+function GetNextChunkAndUpdateIter()
 
     -- Make sure we have a valid iterator!
     if (not global.rg.chunk_iter or not global.rg.chunk_iter.valid) then
-        global.rg.chunk_iter = game.surfaces[current_surface].get_chunks()
+        global.rg.chunk_iter = game.surfaces[global.rg.current_surface].get_chunks()
     end
 
     local next_chunk = global.rg.chunk_iter()
 
     -- Check if we reached the end
-    if (not next_chunk) then
+    if (next_chunk == nil) then
 
         -- Switch to the next active surface
         local next_surface_info = GetNextActiveSurface(global.rg.current_surface_index)
         global.rg.current_surface = next_surface_info.surface
         global.rg.current_surface_index = next_surface_info.index
-
-        -- log("RegrowthSingleStepArray: Switching to next surface: " .. global.rg.current_surface)
-
-        current_surface = global.rg.current_surface
-        global.rg.chunk_iter = game.surfaces[current_surface].get_chunks()
+        global.rg.chunk_iter = game.surfaces[global.rg.current_surface].get_chunks()
         next_chunk = global.rg.chunk_iter()
-
-        -- Possible that there are no chunks in this surface?
-        if (not next_chunk) then
-            return
-        end
     end
+
+    return next_chunk
+end
+
+---Updates the chunk_iter (for World Eater) and returns the next chunk from it. May not be valid if it no chunks exist.
+---@return ChunkPositionAndArea?
+function GetNextChunkAndUpdateWorldEaterIter()
+
+    -- Make sure we have a valid iterator!
+    if (not global.rg.we_chunk_iter or not global.rg.we_chunk_iter.valid) then
+        global.rg.we_chunk_iter = game.surfaces[global.rg.we_current_surface].get_chunks()
+    end
+
+    local next_chunk = global.rg.we_chunk_iter()
+
+    -- Check if we reached the end
+    if (next_chunk == nil) then
+
+        -- Switch to the next active surface
+        local next_surface_info = GetNextActiveSurface(global.rg.we_current_surface_index)
+        global.rg.we_current_surface = next_surface_info.surface
+        global.rg.we_current_surface_index = next_surface_info.index
+        global.rg.we_chunk_iter = game.surfaces[global.rg.we_current_surface].get_chunks()
+        next_chunk = global.rg.we_chunk_iter()
+    end
+
+    return next_chunk
+end
+
+---Gets the next chunk the array map and checks to see if it has timed out.
+---Adds it to the removal list if it has.
+---@return nil
+function RegrowthSingleStepArray()
+
+    local next_chunk = GetNextChunkAndUpdateIter()
+    if (next_chunk == nil) then return end
+    local current_surface = global.rg.current_surface
 
     -- It's possible that if regrowth is disabled/enabled during runtime we might miss on_chunk_generated.
     -- This will catch that case and add the chunk to the map.
@@ -480,7 +505,7 @@ function OarcRegrowthRemoveAllChunks()
 
     -- MUST GET A NEW CHUNK ITERATOR ON DELETE CHUNK!
     global.rg.chunk_iter = nil
-    global.rg.world_eater_iter = nil
+    global.rg.we_chunk_iter = nil
 end
 
 ---This is the main work function, it checks a single chunk in the list per tick. It works according to the rules
@@ -488,20 +513,23 @@ end
 ---@return nil
 function RegrowthOnTick()
 
-    -- Every half a second, refresh all chunks near a single player
-    -- Cyles through all players. Tick is offset by 2
-    if ((game.tick % (30)) == 2) then
-        RefreshPlayerArea()
-    end
+    if (#global.rg.active_surfaces > 0) then
 
-    -- Every tick, check a few points in the 2d array of the only active surface According to /measured-command this
-    -- shouldn't take more than 0.1ms on average
-    for i = 1, 20 do
-        RegrowthSingleStepArray()
-    end
+        -- Every half a second, refresh all chunks near a single player
+        -- Cyles through all players. Tick is offset by 2
+        if ((game.tick % (30)) == 2) then
+            RefreshPlayerArea()
+        end
 
-    if (global.ocfg.regrowth.enable_world_eater) then
-        WorldEaterSingleStep()
+        -- Every tick, check a few points in the 2d array of the only active surface According to /measured-command this
+        -- shouldn't take more than 0.1ms on average (TODO: needs to be re-measured!)
+        for i = 1, 20 do
+            RegrowthSingleStepArray()
+        end
+
+        if (global.ocfg.regrowth.enable_world_eater) then
+            WorldEaterSingleStep()
+        end
     end
 
     -- Allow enable/disable of auto cleanup, can change during runtime.
@@ -537,36 +565,10 @@ function RegrowthForceRemovalOnTick()
 end
 
 function WorldEaterSingleStep()
-    if (#global.rg.active_surfaces == 0) then return end
+
+    local next_chunk = GetNextChunkAndUpdateWorldEaterIter()
+    if (not next_chunk) then return end    
     local current_surface = global.rg.we_current_surface
-
-    -- Make sure we have a valid iterator!
-    if (not global.rg.world_eater_iter or not global.rg.world_eater_iter.valid) then
-        global.rg.world_eater_iter = game.surfaces[current_surface].get_chunks()
-    end
-
-    local next_chunk = global.rg.world_eater_iter()
-
-    -- Check if we reached the end
-    if (not next_chunk) then
-
-        -- Switch to the next active surface
-        -- TODO: Validate this
-        local next_surface_info = GetNextActiveSurface(global.rg.we_current_surface_index)
-        global.rg.we_current_surface = next_surface_info.surface
-        global.rg.we_current_surface_index = next_surface_info.index
-        current_surface = global.rg.we_current_surface
-
-        -- log("WorldEaterSingleStep: Switching to next surface: " .. global.rg.we_current_surface)
-
-        global.rg.world_eater_iter = game.surfaces[current_surface].get_chunks()
-        next_chunk = global.rg.world_eater_iter()
-
-        -- Possible that there are no chunks in this surface?
-        if (not next_chunk) then
-            return
-        end
-    end
 
     -- Do we have it in our map?
     if (not global.rg[current_surface].map[next_chunk.x] or not global.rg[current_surface].map[next_chunk.x][next_chunk.y]) then
@@ -588,7 +590,6 @@ function WorldEaterSingleStep()
         v.die(nil)
     end
 
-
     local c_timer = global.rg[current_surface].map[next_chunk.x][next_chunk.y]
 
     -- Only check chunnks that are flagged as "active".
@@ -600,37 +601,29 @@ function WorldEaterSingleStep()
         }
 
         local entities = game.surfaces[current_surface].find_entities_filtered { area = area, force = { "enemy", "neutral" }, invert = true }
-        local total_count = #entities
-        local has_last_user_set = false
-
-        if (total_count > 0) then
-            for k, v in pairs(entities) do
-                --string.contains is valid but not in the type definitions?
-                ---@diagnostic disable-next-line: undefined-field
-                if (v.last_user or (v.type == "character")
-                    or (v.type == "logistics-robot")
-                    or (v.type == "construction-robot")
-                    or (v.type == "car")
-                    or (v.type == "spider-vehicle")) then
-                    has_last_user_set = true
-                    return -- This means we're done checking this chunk.
-                end
+        for _, v in pairs(entities) do
+            if (v.last_user) then
+                return -- This means we're done checking this chunk. It has an active player entity.
             end
-
-            -- If all entities found have no last user, then KILL all entities!
-            if (not has_last_user_set) then
-                for k, v in pairs(entities) do
-                    if (v and v.valid) then
-                        v.die(nil)
-                    end
-                end
-                -- SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - ENTITIES FOUND")
-                global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
-            end
-        else
-            -- SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep - NO ENTITIES FOUND")
-            global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
         end
+
+        local moving_entities = game.surfaces[current_surface].find_entities_filtered {
+            area = area,
+            type = { "character", "logistics-robot", "construction-robot", "car", "spider-vehicle" },
+        }
+        if (#moving_entities > 0) then
+            return -- It's possible there are some moving entities with no last user set.
+        end
+
+        -- Destroy the entities that lack an owner! (player was removed)
+        for _, v in pairs(entities) do
+            if (v and v.valid) then
+                v.die(nil)
+            end
+        end
+        -- SendBroadcastMsg(next_chunk.x .. "," .. next_chunk.y .. " WorldEaterSingleStep")
+        global.rg[current_surface].map[next_chunk.x][next_chunk.y] = game.tick -- Set the timer on it.
+
     end
 end
 
@@ -648,17 +641,18 @@ function CheckIfChunkHasAnyPlayerEntities(surface_name, chunk)
     }
 
     local entities = game.surfaces[surface_name].find_entities_filtered { area = area, force = { "enemy", "neutral" }, invert = true }
-
     for _, v in pairs(entities) do
-        --string.contains is valid but not in the type definitions?
-        ---@diagnostic disable-next-line: undefined-field
-        if (v.last_user or (v.type == "character")
-            or (v.type == "logistics-robot")
-            or (v.type == "construction-robot")
-            or (v.type == "car")
-            or (v.type == "spider-vehicle")) then
+        if (v.last_user) then
             return true -- YES there is player stuff here.
         end
+    end
+
+    local moving_entities = game.surfaces[surface_name].find_entities_filtered {
+        area = area,
+        type = { "character", "logistics-robot", "construction-robot", "car", "spider-vehicle" },
+    }
+    if (#moving_entities > 0) then
+        return true -- Any of these entities are player controlled and count!
     end
 
     return false

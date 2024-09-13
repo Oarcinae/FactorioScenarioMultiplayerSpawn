@@ -21,7 +21,8 @@ function InitSpawnGlobalsAndForces()
 
     -- Contains a table of entries for each surface. This tracks which surfaces allow spawning?
     if (global.ocore.surfaces == nil) then
-        global.ocore.surfaces --[[@as table<string, boolean>]]= {}
+        --[[@type table<string, boolean>]]
+        global.ocore.surfaces = {}
         for _, surface in pairs(game.surfaces) do
             
             -- If allowing by default, check the blacklist first
@@ -40,44 +41,51 @@ function InitSpawnGlobalsAndForces()
     -- This contains each player's spawn point. Literally where they will respawn.
     -- There is a way in game to change this under one of the little menu features I added.
     if (global.ocore.playerSpawns == nil) then
-        global.ocore.playerSpawns --[[@as OarcPlayerSpawnsTable]] = {}
+        --[[@type OarcPlayerSpawnsTable]]
+        global.ocore.playerSpawns = {}
     end
 
     -- This is the most important table. It is a list of all the unique spawn points.
     -- This is what chunk generation checks against.
     if (global.ocore.uniqueSpawns == nil) then
-        global.ocore.uniqueSpawns --[[@as OarcUniqueSpawnsTable]] = {}
+        --[[@type OarcUniqueSpawnsTable]]
+        global.ocore.uniqueSpawns = {}
     end
 
 
     -- This keeps a list of any player that has shared their base.
     -- Each entry contains information about if it's open, spawn pos, and players in the group.
     if (global.ocore.sharedSpawns == nil) then
-        global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]] = {}
+        --[[@type OarcSharedSpawnsTable]]
+        global.ocore.sharedSpawns = {}
     end
 
     -- Each player has an option to change their respawn which has a cooldown when used.
     -- Other similar abilities/functions that require cooldowns could be added here.
     if (global.ocore.playerCooldowns == nil) then
-        global.ocore.playerCooldowns --[[@as OarcPlayerCooldownsTable]] = {}
+        --[[@type OarcPlayerCooldownsTable]]
+        global.ocore.playerCooldowns = {}
     end
 
     -- List of players in the "waiting room" for a buddy spawn.
     -- They show up in the list to select when doing a buddy spawn.
     if (global.ocore.waitingBuddies == nil) then
-        global.ocore.waitingBuddies --[[@as OarcWaitingBuddiesTable]] = {}
+        --[[@type OarcWaitingBuddiesTable]]
+        global.ocore.waitingBuddies = {}
     end
 
     -- Players who have made a spawn choice get put into this list while waiting.
     -- An on_tick event checks when it expires and then places down the base resources, and teleports the player.
     -- Go look at DelayedSpawnOnTick() for more info.
     if (global.ocore.delayedSpawns == nil) then
-        global.ocore.delayedSpawns --[[@as OarcDelayedSpawnsTable]] = {}
+        --[[@type OarcDelayedSpawnsTable]]
+        global.ocore.delayedSpawns = {}
     end
 
     -- This temporarily stores the spawn choices that a player makes from the GUI interactions.
     if (global.ocore.spawnChoices == nil) then
-        global.ocore.spawnChoices --[[@as OarcSpawnChoicesTable]] = {}
+        --[[@type OarcSpawnChoicesTable]]
+        global.ocore.spawnChoices = {}
     end
 
     -- Buddy info: The only real use is to check if one of a buddy pair is online to see if we should allow enemy
@@ -85,12 +93,14 @@ function InitSpawnGlobalsAndForces()
     -- global.ocore.buddyPairs[player.name] = requesterName
     -- global.ocore.buddyPairs[requesterName] = player.name
     if (global.ocore.buddyPairs == nil) then
-        global.ocore.buddyPairs --[[@as table<string, string>]] = {}
+        --[[@type table<string, string>]]
+        global.ocore.buddyPairs = {}
     end
 
     --- Table contains all the renders that need to be faded out over time in the on_tick event. They are removed when they expire.
     if (global.oarc_renders_fadeout == nil) then
-        global.oarc_renders_fadeout --[[@as table<integer>]] = {}
+        --[[@type table<integer>]]
+        global.oarc_renders_fadeout = {}
     end
 
     -- Name a new force to be the default force.
@@ -105,7 +115,6 @@ function InitSpawnGlobalsAndForces()
     game.create_force(global.ocore.destroyed_force)
 
     CreateHoldingPenPermissionsGroup()
-
 end
 
 function CreateHoldingPenPermissionsGroup()
@@ -245,7 +254,7 @@ function SeparateSpawnsPlayerLeft(event)
         SendBroadcastMsg(player.name ..
         "'s base was marked for immediate clean up because they left within " ..
         global.ocfg.gameplay.minimum_online_time .. " minutes of joining.") --TODO: localize
-        RemoveOrResetPlayer(player, true, true, true, true)
+        RemoveOrResetPlayer(player, true)
     end
 end
 
@@ -258,13 +267,15 @@ end
 --]]
 
 ---Adds a new [OarcSharedSpawn](lua://OarcSharedSpawn) to the global list of shared spawns.
----@param player LuaPlayer
+---@param player_name string
+---@param surface_name string
+---@param position MapPosition
 ---@return nil
-function CreateNewSharedSpawn(player)
-    global.ocore.sharedSpawns[player.name] --[[@as OarcSharedSpawn]] = {
-        surface = global.ocore.playerSpawns[player.name].surface,
-        position = global.ocore.playerSpawns[player.name].position,
-        openAccess = true,
+function InitSharedSpawn(player_name, surface_name, position)
+    global.ocore.sharedSpawns[player_name] --[[@as OarcSharedSpawn]] = {
+        surface = surface_name,
+        position = position,
+        openAccess = false,
         players = {},
         joinQueue = {}
     }
@@ -640,75 +651,75 @@ end
 
 --]]
 
----Resets the player and destroys their force if they are not on the main one.
----@param player LuaPlayer
----@return nil
-function ResetPlayerAndDestroyForce(player)
-    local player_old_force = player.force
+-- ---Resets the player and destroys their force if they are not on the main one.
+-- ---@param player LuaPlayer
+-- ---@return nil
+-- function ResetPlayerAndDestroyForce(player)
+--     local player_old_force = player.force
 
-    player.force = global.ocfg.gameplay.main_force_name
+--     player.force = global.ocfg.gameplay.main_force_name
 
-    if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
-        SendBroadcastMsg("Team " ..
-            player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.") --TODO: localize
-        log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
-        game.merge_forces(player_old_force, global.ocore.destroyed_force)
-    end
+--     if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
+--         SendBroadcastMsg("Team " ..
+--             player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.") --TODO: localize
+--         log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
+--         game.merge_forces(player_old_force, global.ocore.destroyed_force)
+--     end
 
-    RemoveOrResetPlayer(player, false, false, true, true)
-    SeparateSpawnsInitPlayer(player.index)
-end
+--     RemoveOrResetPlayer(player, false, false, true, true)
+--     SeparateSpawnsInitPlayer(player.index)
+-- end
 
----Resets the player and merges their force into the abandoned_force.
----@param player LuaPlayer
----@return nil
-function ResetPlayerAndAbandonForce(player)
-    local player_old_force = player.force
+-- ---Resets the player and merges their force into the abandoned_force.
+-- ---@param player LuaPlayer
+-- ---@return nil
+-- function ResetPlayerAndAbandonForce(player)
+--     local player_old_force = player.force
 
-    player.force = global.ocfg.gameplay.main_force_name
+--     player.force = global.ocfg.gameplay.main_force_name
 
-    if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
-        SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!") --TODO: localize
-        log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
-        game.merge_forces(player_old_force, global.ocore.abandoned_force)
-    end
+--     if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
+--         SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!") --TODO: localize
+--         log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
+--         game.merge_forces(player_old_force, global.ocore.abandoned_force)
+--     end
 
-    RemoveOrResetPlayer(player, false, false, false, false)
-    SeparateSpawnsInitPlayer(player.index)
-end
+--     RemoveOrResetPlayer(player, false, false, false, false)
+--     SeparateSpawnsInitPlayer(player.index)
+-- end
 
----Reset player and merge their force to neutral
----@param player LuaPlayer
----@return nil
-function ResetPlayerAndMergeForceToNeutral(player)
-    RemoveOrResetPlayer(player, false, true, true, true)
-    SeparateSpawnsInitPlayer(player.index)
-end
+-- ---Reset player and merge their force to neutral
+-- ---@param player LuaPlayer
+-- ---@return nil
+-- function ResetPlayerAndMergeForceToNeutral(player)
+--     RemoveOrResetPlayer(player, false, true, true, true)
+--     SeparateSpawnsInitPlayer(player.index)
+-- end
 
----Kicks player from game and marks player for removal from globals.
----@param player LuaPlayer
----@return nil
-function KickAndMarkPlayerForRemoval(player)
-    game.kick_player(player, "KickAndMarkPlayerForRemoval")
-    if (not global.ocore.player_removal_list) then
-        global.ocore.player_removal_list = {}
-    end
-    table.insert(global.ocore.player_removal_list, player)
-end
+-- ---Kicks player from game and marks player for removal from globals.
+-- ---@param player LuaPlayer
+-- ---@return nil
+-- function KickAndMarkPlayerForRemoval(player)
+--     game.kick_player(player, "KickAndMarkPlayerForRemoval")
+--     if (not global.ocore.player_removal_list) then
+--         global.ocore.player_removal_list = {}
+--     end
+--     table.insert(global.ocore.player_removal_list, player)
+-- end
 
 ---Call this if a player leaves the game early (or a player wants an early game reset)
 ---@param player LuaPlayer
 ---@param remove_player boolean Deletes player from the game assuming they are offline.
----@param remove_force boolean
----@param remove_base boolean
----@param immediate boolean
-function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, immediate)
+function RemoveOrResetPlayer(player, remove_player)
     if (not player) then
         log("ERROR - CleanupPlayer on NIL Player!")
         return
     end
 
-    RemovePlayerStarterItems(player, player.surface.name) -- Remove any starting items they may have.
+    -- If playtime is less than minimum online time, try to remove starter items
+    if (player.online_time < (global.ocfg.gameplay.minimum_online_time * TICKS_PER_MINUTE)) then
+        RemovePlayerStarterItems(player)
+    end
 
     -- If this player is staying in the game, lets make sure we don't delete them along with the map chunks being
     -- cleared.
@@ -717,17 +728,15 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, i
     player.force = global.ocfg.gameplay.main_force_name
 
     -- Clear globals
-    CleanupPlayerGlobals(player.name) -- Except global.ocore.uniqueSpawns
+    CleanupPlayerGlobals(player.name) -- This cleans global.ocore.uniqueSpawns IF we are transferring ownership.
 
-    -- Clear their unique spawn (if they have one)
-    UniqueSpawnCleanupRemove(player.name, remove_base, immediate) -- Specifically global.ocore.uniqueSpawns
+    -- Safely clear the unique spawn IF it is still valid.
+    UniqueSpawnCleanupRemove(player.name) -- Specifically global.ocore.uniqueSpawns
 
     -- Remove a force if this player created it and they are the only one on it
-    if (remove_force) then
-        if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
-            log("RemoveOrResetPlayer - FORCE REMOVED: " .. player_old_force.name)
-            game.merge_forces(player_old_force, "neutral")
-        end
+    if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
+        log("RemoveOrResetPlayer - FORCE REMOVED: " .. player_old_force.name)
+        game.merge_forces(player_old_force, "neutral")
     end
 
     -- Remove the character completely
@@ -736,13 +745,10 @@ function RemoveOrResetPlayer(player, remove_player, remove_force, remove_base, i
     end
 end
 
----Cleans up a player's unique spawn point.
----TODO: Move relevant stuff to regrowth?
+---Cleans up a player's unique spawn point, if safe to do so.
 ---@param playerName string
----@param cleanup boolean Marks the chunks for cleanup by the regrowth mod.
----@param immediate boolean Trrigger cleanup immediately.
 ---@return nil
-function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
+function UniqueSpawnCleanupRemove(playerName)
     if (global.ocore.uniqueSpawns[playerName] == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. playerName)
 
@@ -762,23 +768,11 @@ function UniqueSpawnCleanupRemove(playerName, cleanup, immediate)
         end
     end
 
-    -- Unused Chunk Removal mod (aka regrowth)
-    if (cleanup and global.ocfg.regrowth.enable_abandoned_base_cleanup and
-            (not nearOtherSpawn) and global.ocfg.regrowth.enable_regrowth) then
-        -- TODO: Vanilla spawn point are not implemented yet.
-        -- if (global.ocore.uniqueSpawns[playerName].vanilla) then
-        --     log("Returning a vanilla spawn back to available.")
-        --     table.insert(global.vanillaSpawns, { x = spawnPos.x, y = spawnPos.y })
-        -- end
-
-        if (immediate) then
-            log("IMMEDIATE Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
-            RegrowthMarkAreaForRemoval(spawn.surface, spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
-            TriggerCleanup()
-        else
-            log("Removing permanent flags on base: " .. spawnPos.x .. "," .. spawnPos.y)
-            RegrowthMarkAreaNotPermanentOVERWRITE(spawn.surface, spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
-        end
+    -- Use regrowth mod to cleanup the area.
+    if (global.ocfg.regrowth.enable_abandoned_base_cleanup and (not nearOtherSpawn)) then
+        log("Removing base: " .. spawnPos.x .. "," .. spawnPos.y)
+        RegrowthMarkAreaForRemoval(spawn.surface, spawnPos, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
+        TriggerCleanup()
     end
 
     global.ocore.uniqueSpawns[playerName] = nil
@@ -933,27 +927,27 @@ function GetClosestUniqueSpawn(surface, pos)
     return global.ocore.uniqueSpawns[closest_key]
 end
 
----Return the owner of the shared spawn for this player. May return nil if player has not spawned yet.
----@param playerName string
----@return string?
-function FindPlayerSharedSpawn(playerName)
-    -- If the player IS an owner, he can't be in any other shared base.
-    if (global.ocore.sharedSpawns[playerName] ~= nil) then
-        return playerName
-    end
+-- ---Return the owner of the shared spawn for this player. May return nil if player has not spawned yet.
+-- ---@param playerName string
+-- ---@return string?
+-- function FindPlayerSharedSpawn(playerName)
+--     -- If the player IS an owner, he can't be in any other shared base.
+--     if (global.ocore.sharedSpawns[playerName] ~= nil) then
+--         return playerName
+--     end
 
-    -- Otherwise, search all shared spawns for this player and return the owner.
-    for ownerName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-        for _, sharingPlayerName in pairs(sharedSpawn.players) do
-            if (playerName == sharingPlayerName) then
-                return ownerName
-            end
-        end
-    end
+--     -- Otherwise, search all shared spawns for this player and return the owner.
+--     for ownerName, sharedSpawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
+--         for _, sharingPlayerName in pairs(sharedSpawn.players) do
+--             if (playerName == sharingPlayerName) then
+--                 return ownerName
+--             end
+--         end
+--     end
 
-    -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
-    return nil
-end
+--     -- Lastly, return nil if not found. Means player hasn't been assigned a base yet.
+--     return nil
+-- end
 
 ---Returns the number of players currently online at the shared spawn
 ---@param ownerName string
@@ -985,22 +979,21 @@ function GetOnlinePlayersAtSharedSpawn(ownerName)
     end
 end
 
--- Get the number of currently available shared spawns.
--- This means the base owner has enabled access AND the number of online players
--- is below the threshold.
----@return number
-function GetNumberOfAvailableSharedSpawns()
-    return #GetAvailableSharedSpawns()
-end
+-- -- Get the number of currently available shared spawns.
+-- -- This means the base owner has enabled access AND the number of online players
+-- -- is below the threshold.
+-- ---@return number
+-- function GetNumberOfAvailableSharedSpawns()
+--     return #GetAvailableSharedSpawns()
+-- end
 
 ---Get a list of available shared spawns.
 ---@return table<string>
 function GetAvailableSharedSpawns()
     local list_of_spawns = {}
-    local number_of_players_per_shared_spawn = global.ocfg.gameplay.number_of_players_per_shared_spawn
 
-    for owner_name, shared_spawn in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
-        if IsSharedSpawnValid(owner_name) then
+    for owner_name,_ in pairs(global.ocore.sharedSpawns --[[@as OarcSharedSpawnsTable]]) do
+        if IsSharedSpawnValid(owner_name) and not IsSharedSpawnFull(owner_name) then
             table.insert(list_of_spawns, owner_name)
         end
     end
@@ -1008,7 +1001,7 @@ function GetAvailableSharedSpawns()
     return list_of_spawns
 end
 
----Check if a specific shared spawn is available to join
+---Check if a specific shared spawn is valid, open and host is online (might still be full!)
 ---@param owner_name string
 ---@return boolean
 function IsSharedSpawnValid(owner_name)
@@ -1024,40 +1017,45 @@ function IsSharedSpawnValid(owner_name)
         return false
     end
 
-    -- Technically I only limit the players based on if they are online, so you can exceed the limit if players join
-    -- while others are offline. This is a feature, not a bug?
-    local number_of_players_per_shared_spawn = global.ocfg.gameplay.number_of_players_per_shared_spawn
-    local online_players = GetOnlinePlayersAtSharedSpawn(owner_name)
-    if ((number_of_players_per_shared_spawn > 0) and (online_players >= number_of_players_per_shared_spawn)) then
-        return false
-    end
-
     return true
 end
 
----Checks if player has a custom spawn point set.
----@param player LuaPlayer
----@return boolean
-function DoesPlayerHaveCustomSpawn(player)
-    for name, spawnPos in pairs(global.ocore.playerSpawns --[[@as OarcPlayerSpawnsTable]]) do
-        if (player.name == name) then
-            return true
-        end
+---Check if a specific shared spawn is full.
+---@param owner_name string
+---@return boolean --True if the shared spawn is full or invalid.
+function IsSharedSpawnFull(owner_name)
+    if (global.ocore.sharedSpawns[owner_name] == nil) then
+        return true
     end
-    return false
+
+    -- Technically I only limit the players based on if they are online, so you can exceed the limit if players join
+    -- while others are offline. This is a feature, not a bug?
+    return (GetOnlinePlayersAtSharedSpawn(owner_name) >= global.ocfg.gameplay.number_of_players_per_shared_spawn)
 end
 
----Gets the custom spawn point for a player if they have one.
----@param player LuaPlayer
----@return OarcPlayerSpawn?
-function GetPlayerCustomSpawn(player)
-    for name, playerSpawn in pairs(global.ocore.playerSpawns --[[@as OarcPlayerSpawnsTable]]) do
-        if (player.name == name) then
-            return playerSpawn
-        end
-    end
-    return nil
-end
+-- ---Checks if player has a custom spawn point set.
+-- ---@param player LuaPlayer
+-- ---@return boolean
+-- function DoesPlayerHaveCustomSpawn(player)
+--     for name,_ in pairs(global.ocore.playerSpawns --[[@as OarcPlayerSpawnsTable]]) do
+--         if (player.name == name) then
+--             return true
+--         end
+--     end
+--     return false
+-- end
+
+-- ---Gets the custom spawn point for a player if they have one.
+-- ---@param player LuaPlayer
+-- ---@return OarcPlayerSpawn?
+-- function GetPlayerCustomSpawn(player)
+--     for name, player_spawn in pairs(global.ocore.playerSpawns --[[@as OarcPlayerSpawnsTable]]) do
+--         if (player.name == name) then
+--             return player_spawn
+--         end
+--     end
+--     return nil
+-- end
 
 ---Sets the custom spawn point for a player.
 ---@param player LuaPlayer
@@ -1074,25 +1072,33 @@ function ChangePlayerSpawn(player, surface, position)
     global.ocore.playerCooldowns[player.name] = { setRespawn = game.tick }
 end
 
----Queue a player for a delayed spawn.
+---Creates the global.ocore entries for a new spawn area.
+---@param player_name string
+---@param surface_name string
+---@param spawn_position MapPosition
+---@param moat_enabled boolean
+---@return nil
+function InitUniqueSpawnGlobals(player_name, surface_name, spawn_position, moat_enabled)
+    ---@type OarcUniqueSpawn
+    local new_unique_spawn = {}
+    new_unique_spawn.surface = surface_name
+    new_unique_spawn.position = spawn_position
+    new_unique_spawn.moat = moat_enabled
+
+    global.ocore.uniqueSpawns[player_name] = new_unique_spawn
+    InitSharedSpawn(player_name, surface_name, spawn_position)
+end
+
+---Queue a player for a delayed spawn. This will generate the spawn area and move the player there when ready.
 ---@param playerName string
 ---@param surface string
 ---@param spawnPosition MapPosition
 ---@param moatEnabled boolean
----@param vanillaSpawn boolean
 ---@return nil
-function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnabled, vanillaSpawn)
+function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnabled)
     -- If we get a valid spawn point, setup the area
     if ((spawnPosition.x ~= 0) or (spawnPosition.y ~= 0)) then
-        ---@type OarcUniqueSpawn
-        local newUniqueSpawn = {}
-        newUniqueSpawn.surface = surface
-        newUniqueSpawn.position = spawnPosition
-        newUniqueSpawn.moat = moatEnabled
-
-        ---TODO: Vanilla spawn point are not implemented yet.
-        -- newUniqueSpawn.vanilla = vanillaSpawn
-        global.ocore.uniqueSpawns[playerName] = newUniqueSpawn
+        InitUniqueSpawnGlobals(playerName, surface, spawnPosition, moatEnabled)
 
         -- Add a 1 chunk buffer to be safe
         local spawn_chunk_radius = math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE) + 1
@@ -1118,7 +1124,7 @@ function QueuePlayerForDelayedSpawn(playerName, surface, spawnPosition, moatEnab
         table.insert(global.ocore.delayedSpawns, delayedSpawn)
 
         HideOarcGui(game.players[playerName])
-        DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds)
+        DisplayPleaseWaitForSpawnDialog(game.players[playerName], delay_spawn_seconds, game.surfaces[surface], spawnPosition)
 
         RegrowthMarkAreaSafeGivenTilePos(surface, spawnPosition,
             math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE), true)
@@ -1161,25 +1167,13 @@ function DelayedSpawnOnTick()
     end
 end
 
----Send player to their custom spawn point if one exists, otherwise to the force's spawn point.
+---Send player to their custom spawn point
 ---@param player LuaPlayer
 ---@return nil
 function SendPlayerToSpawn(player)
-    local playerSpawn = GetPlayerCustomSpawn(player)
-
+    local playerSpawn = global.ocore.playerSpawns[player.name]
+    SafeTeleport(player, game.surfaces[playerSpawn.surface], playerSpawn.position)
     player.permission_group = game.permissions.get_group("default")
-
-    if (playerSpawn ~= nil) then
-        SafeTeleport(player,
-            game.surfaces[playerSpawn.surface],
-            playerSpawn.position)
-    else
-        log("ERROR - SendPlayerToSpawn - No custom spawn point found for player: " .. player.name)
-        local gameplayConfig = global.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
-        SafeTeleport(player,
-            game.surfaces[gameplayConfig.default_surface],
-            game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.default_surface))
-    end
 end
 
 ---Send player to a random spawn point.
@@ -1443,7 +1437,7 @@ SPAWN_TEAM_CHOICE = {
 
 ---Contains the respawn point for a player. Usually this is their home base but it can be changed.
 ---@alias OarcPlayerSpawn { surface: string, position: MapPosition }
----Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by player name.
+---Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by player name
 ---@alias OarcPlayerSpawnsTable table<string, OarcPlayerSpawn>
 
 ---A unique spawn point. This is what chunk generation checks against.

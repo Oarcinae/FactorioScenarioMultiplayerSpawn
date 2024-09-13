@@ -59,15 +59,15 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function CreateOarcGuiButton(player)
-    if (mod_gui.get_button_flow(player).oarc_button == nil) then
+    if (mod_gui.get_button_flow(player).oarc_mod_gui_button == nil) then
         local b = mod_gui.get_button_flow(player).add{
-            name="oarc_button",
-            caption="CLICK ME FOR MORE INFO",
+            name="oarc_mod_gui_button",
             type="sprite-button",
-            style=mod_gui.button_style,
+            sprite = "oarc-mod-sprite-40",
+            style="slot_button",
             tooltip={ "oarc-gui-tooltip" }
         }
-        b.style.padding=2
+        b.style.padding=0
     end
 end
 
@@ -124,14 +124,7 @@ function ClickOarcGuiButton(event)
     local player = game.players[event.player_index]
     local name = event.element.name
 
-    if (name ~= "oarc_button") then return end
-
-    if (event.element.caption ~= "") then
-        event.element.caption = ""
-        event.element.sprite = "oarc-mod-sprite-40"
-        event.element.style.padding = 0
-        event.element.style = "slot_button"
-    end
+    if (name ~= "oarc_mod_gui_button") then return end
 
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)

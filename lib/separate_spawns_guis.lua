@@ -617,7 +617,7 @@ function SpawnOptsRadioSelect(event)
     end
 
     if (tags.setting == "team_select") then
-        global.ocore.spawnChoices[player.name].team = tags.value
+        global.ocore.spawnChoices[player.name].team = tags.value --[[@as SpawnTeamChoice]]
 
         -- Need to handle the radio button logic manually
         if (elemName == "isolated_spawn_main_team_radio") then
@@ -810,10 +810,10 @@ function SpawnOptsSelectionChanged(event)
         if (index > 0) then
             local host_name = event.element.get_item(index) --[[@as string]]
             local button = event.element.parent.join_other_spawn
-            
+
             log("GUI DEBUG Selected host: " .. host_name)
 
-            if (IsSharedSpawnValid(host_name)) then
+            if (IsSharedSpawnValid(host_name) and not IsSharedSpawnFull(host_name)) then
                 global.ocore.spawnChoices[player.name].host = host_name
                 button.enabled = true
                 button.caption = { "oarc-join-shared-button-enable", host_name, global.ocore.uniqueSpawns[host_name].surface }
@@ -826,8 +826,6 @@ function SpawnOptsSelectionChanged(event)
                 button.caption = { "oarc-join-shared-button-disable" }
                 button.style = "red_button"
             end
-
-
 
         else
             global.ocore.spawnChoices[player.name].host = nil
@@ -855,7 +853,6 @@ function SpawnRequest(player)
     if (spawn_choices == nil) then error("ERROR! No spawn choices found for player!") return end
 
     -- Cache some useful variables
-    local gameplay = global.ocfg.gameplay
     local surface = game.surfaces[spawn_choices.surface]
 
     -- Create a new force for player if they choose that radio button
@@ -878,8 +875,7 @@ function SpawnRequest(player)
     ChangePlayerSpawn(player, spawn_choices.surface, newSpawn)
 
     -- Send the player there
-     -- global.ocfg.enable_vanilla_spawns --TODO: Vanilla spawn points are not implemented yet.
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, false)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat)
     SendBroadcastMsg({ "oarc-player-is-joining-far", player.name, spawn_choices.surface })
 
     -- Unlock spawn control gui tab
@@ -1162,8 +1158,6 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
         CreatePlayerCustomForce(requesting_buddy)
     end
 
-    ---@type OarcConfigGameplaySettings
-    local gameplay = global.ocfg.gameplay
     local surface = game.surfaces[spawn_choices.surface]
 
     -- Find coordinates of a good place to spawn
@@ -1185,12 +1179,12 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     else
         buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
     end
-    ChangePlayerSpawn(player, spawn_choices.surface, newSpawn) --TODO: Add support for multiple surfaces
+    ChangePlayerSpawn(player, spawn_choices.surface, newSpawn)
     ChangePlayerSpawn(requesting_buddy, spawn_choices.surface, buddySpawn)
 
     -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, false)
-    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat, false)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat)
+    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat)
     SendBroadcastMsg(requesting_buddy_name .. " and " .. player.name .. " are joining the game together!")
 
     -- Unlock spawn control gui tab
@@ -1227,8 +1221,10 @@ end
 ---Display the please wait dialog
 ---@param player LuaPlayer
 ---@param delay_seconds integer
+---@param surface LuaSurface
+---@param position MapPosition
 ---@return nil
-function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
+function DisplayPleaseWaitForSpawnDialog(player, delay_seconds, surface, position)
     local pleaseWaitGui = player.gui.screen.add { name = "wait_for_spawn_dialog",
         type = "frame",
         direction = "vertical",
@@ -1242,10 +1238,6 @@ function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
 
     AddLabel(pleaseWaitGui, "warning_lbl1", wait_warning_text, my_warning_style)
 
-    -- Show a minimap of the spawn location :)
-    ---@type OarcPlayerSpawn
-    local player_spawn = global.ocore.playerSpawns[player.name]
-
     local pleaseWaitGui_if = pleaseWaitGui.add {
         type = "frame",
         direction = "vertical",
@@ -1254,8 +1246,8 @@ function DisplayPleaseWaitForSpawnDialog(player, delay_seconds)
 
     pleaseWaitGui_if.add {
         type = "minimap",
-        position = player_spawn.position,
-        surface_index = game.surfaces[player_spawn.surface].index,
+        position = position,
+        surface_index = surface.index,
         force = player.force.name
     }
 end

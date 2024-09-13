@@ -1,30 +1,31 @@
 
 ACTIVE ITEMS:
 
-43. In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
-19. Change main_force_name to a startup setting!
-34. Show the surface name in shared spawn join GUI
-35. Show the surface name in the share spawn controls tab
+- In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+- Change main_force_name to a startup setting!
+
 
 
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
 
-33. Lots of localizations!
+- Lots of localizations!
 
-37. Add rich text map location links for new spawns
-38. Add rich text map location in spawn controls tab for current home location
-39. Test multiple enemy forces to provide a way to scale evolution locally
-40. Custom tips and tricks??
-41. List all TODOs in code here.
+- Add rich text map location links for new spawns
+- Add rich text map location in spawn controls tab for current home location
+- Test multiple enemy forces to provide a way to scale evolution locally
+- Custom tips and tricks??
+- List all TODOs in code here.
+- Add refresh chunks around spidertrons based on their vision
+- Convert regrowth to a proper mod
+- Refresh players in admin controls when dropdown is clicked
 
+- "uniqueSpawns" should have a "primary" flag
+- Create a function to create secondary uniqueSpawns for the same player
+- Make respawn location be indexed per surface
 
-
-
-44.
-45.
-
+- Default to selecting SELF in admin controls player dropdown?
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -54,46 +55,50 @@ Other Ideas, Not Committed:
 - Rocket silo locations per player? (Only allowed to build 1)?
 - Surface names for space ships?
 - Spawner health tied to evolution?
+- Respawn position is surface specific? Each surface needs a separate respawn point?
 
 --------------------------------------------------------DONE------------------------------------------------------------
 
-1. First setup the mod settings and lua global settings.
-2. Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.
-3. Start copying in the core pieces required for the primary spawning mechanic.
-5. Document config and mod settings using Lua annotation as a custom class
-6. Document global ocore as a custom class (with subclasses/types as needed)
-7. Add multiple surfaces to options/settings [As a single boolean.]
-15. Convert scenario to a mod.
-4. Add multiple surfaces to Spawn GUI (Drop down selection?)
-12. Configurable welcome/server messages in mod settings.
-8. Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
-9. Create server settings admin GUI tab
-15. Figure out how to define custom lua table/data structs to make syntax/linting work?
-23. Setup multiplayer testing using multiple instances and some batch files.
-11. Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
-21. Refactor the spawn menu GUI (don't destroy the menu unless we need to, refresh only the elements we need to, save data to a global using tags?)
-22. Remove separate buddy spawn menu?
-24. Remove the shared spawn separate GUI window?
-25. Redo DisplayBuddySpawnRequestMenu and DisplayBuddySpawnWaitMenu and move their events to the new event handlers
-23. Refresh the spawn controls GUI when player accepts/rejects
-15. Redo FindUngeneratedCoordinates to pick a random direction, and use the distance to get a starting point, instead of multiple tries.
-26. Fix all GUI styling (buttons outside of content)
-20. Force enable_world_eater to require enable_regrowth
+- First setup the mod settings and lua global settings.
+- Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.
+- Start copying in the core pieces required for the primary spawning mechanic.
+- Document config and mod settings using Lua annotation as a custom class
+- Document global ocore as a custom class (with subclasses/types as needed)
+- Add multiple surfaces to options/settings [As a single boolean.]
+- Convert scenario to a mod.
+- Add multiple surfaces to Spawn GUI (Drop down selection?)
+- Configurable welcome/server messages in mod settings.
+- Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
+- Create server settings admin GUI tab
+- Figure out how to define custom lua table/data structs to make syntax/linting work?
+- Setup multiplayer testing using multiple instances and some batch files.
+- Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
+- Refactor the spawn menu GUI (don't destroy the menu unless we need to, refresh only the elements we need to, save data to a global using tags?)
+- Remove separate buddy spawn menu?
+- Remove the shared spawn separate GUI window?
+- Redo DisplayBuddySpawnRequestMenu and DisplayBuddySpawnWaitMenu and move their events to the new event handlers
+- Refresh the spawn controls GUI when player accepts/rejects
+- Redo FindUngeneratedCoordinates to pick a random direction, and use the distance to get a starting point, instead of multiple tries.
+- Fix all GUI styling (buttons outside of content)
+- Force enable_world_eater to require enable_regrowth
 - Add warning for modifying surface settings after gameplay has started
-10. Tooltips for GUI elements in spawn menu options!
-14. Check all settings to see which CAN'T be changed during runtime. Possibly move these to startup.
-FIGURE OUT CHUNK NOT IN MAP REGROWTH ISSUE!
-28. Add validation for default starting surface name
-29. Make server info headings consistent / Add heading for spawn controls (change button?)
-30. Confirm regrowth should add new chunks when found (not only on chunk generate?)
-32. Make disable main team setting work (hide radio button)
-17. Support run time toggling of enable_shared_team_vision
-18. Support run time toggling of enable_friendly_fire
+- Tooltips for GUI elements in spawn menu options!
+- Check all settings to see which CAN'T be changed during runtime. Possibly move these to startup.
+- FIGURE OUT CHUNK NOT IN MAP REGROWTH ISSUE!
+- Add validation for default starting surface name
+- Make server info headings consistent / Add heading for spawn controls (change button?)
+- Confirm regrowth should add new chunks when found (not only on chunk generate?)
+- Make disable main team setting work (hide radio button)
+- Support run time toggling of enable_shared_team_vision
+- Support run time toggling of enable_friendly_fire
 - Watch for chunks being generated to be able to move the player to their spawn as soon as it is done with the last chunk.
 - If this is their first spawn, give them items. Otherwise don't give new items and don't clear items either?
 - Change enable_spawning_on_other_surfaces to a start up setting?
-36. Test out space expansion
-41. Compare GUI mod button icons to space ex (looks better??)
-27. Create surface blacklist setting.
-42. Enable/Disable and show information about shared spawn based on shared spawn dropdown interactions.
-31. Ensure updates to regrowth surfaces don't cause errors (update indexes)
+- Test out space expansion
+- Compare GUI mod button icons to space ex (looks better??)
+- Create surface blacklist setting.
+- Enable/Disable and show information about shared spawn based on shared spawn dropdown interactions.
+- Ensure updates to regrowth surfaces don't cause errors (update indexes)
+- Confirm regrowth does or does not delete chunks with robots in them?
+- Show the surface name in shared spawn join GUI
+- Show the surface name in the share spawn controls tab

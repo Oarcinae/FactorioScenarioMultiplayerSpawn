@@ -35,10 +35,12 @@ MAX_INT32_NEG = -2147483648
 --     end
 -- end
 
--- -- Get a printable GPS string
--- function GetGPStext(pos)
---     return "[gps=" .. pos.x .. "," .. pos.y .. "]"
--- end
+-- Get a printable GPS string
+---@param pos MapPosition
+---@return string
+function GetGPStext(pos)
+    return "[gps=" .. pos.x .. "," .. pos.y .. "]"
+end
 
 -- -- Requires having an on_tick handler.
 -- function DisplaySpeechBubble(player, text, timeout_secs)
@@ -371,13 +373,13 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerRespawnItems(player)
-    local playerSpawn = global.ocore.playerSpawns[player.name]
-    if (playerSpawn == nil) then
-        error("ERROR - GivePlayerRespawnItems - No player spawn found for player: " .. player.name)
+    local surface_name = player.surface.name
+    if (global.ocfg.surfaces_config[surface_name] == nil) then
+        error("GivePlayerRespawnItems - Missing surface config! " .. surface_name)
         return
     end
 
-    local respawnItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_respawn_items
+    local respawnItems = global.ocfg.surfaces_config[surface_name].starting_items.player_respawn_items
 
     util.insert_safe(player, respawnItems)
 end
@@ -386,25 +388,24 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerStarterItems(player)
-    local playerSpawn = global.ocore.playerSpawns[player.name]
-    if (playerSpawn == nil) then
-        error("ERROR - GivePlayerStarterItems - No player spawn found for player: " .. player.name)
+    local surface_name = player.surface.name
+    if (global.ocfg.surfaces_config[surface_name] == nil) then
+        error("GivePlayerStarterItems - Missing surface config! " .. surface_name)
         return
     end
 
-    local startItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
+    local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
 
     util.insert_safe(player, startItems)
 end
 
----Attempts to remove any starter items from the player
+---Half-heartedly attempts to remove starter items from the player. Probably more trouble than it's worth.
 ---@param player LuaPlayer
----@param surface_name string? Fallback surface name if player spawn is not found
 ---@return nil
-function RemovePlayerStarterItems(player, surface_name)
-    local playerSpawn = global.ocore.playerSpawns[player.name]
-    if (playerSpawn ~= nil) and (global.ocfg.surfaces_config[playerSpawn.surface]) ~= nil then
-        local startItems = global.ocfg.surfaces_config[playerSpawn.surface].starting_items.player_start_items
+function RemovePlayerStarterItems(player)
+    local surface_name = player.surface.name
+    if (global.ocfg.surfaces_config[surface_name]) ~= nil then
+        local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
         util.remove_safe(player, startItems)
     end
 end
@@ -729,6 +730,7 @@ function FindUngeneratedCoordinates(surface, minimum_distance)
 
         -- Set some absolute limits.
         if ((math.abs(search_pos.x) > MAX_CHUNK_DISTANCE) or (math.abs(search_pos.y) > MAX_CHUNK_DISTANCE)) then
+            error("FindUngeneratedCoordinates - Hit max chunk distance!")
             break
 
         -- If chunk is already generated, keep looking

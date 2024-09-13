@@ -157,7 +157,7 @@ function ServerInfoGuiClick(event)
         if (pIndex ~= 0) then
             local banPlayer = player_dropdown.get_item(pIndex)
             if (game.players[banPlayer]) then
-                game.ban_player(banPlayer --[[@as string]], "Banned from admin panel.")
+                game.ban_player(banPlayer --[[@as string]], "Banned from admin panel by " .. player.name)
                 log("Banning " .. banPlayer)
             end
         end
@@ -180,7 +180,7 @@ function ServerInfoGuiClick(event)
             end
 
             log("Resetting " .. resetPlayer)
-            RemoveOrResetPlayer(game.players[resetPlayer], false, true, true, true)
+            RemoveOrResetPlayer(game.players[resetPlayer], false)
             SeparateSpawnsInitPlayer(resetPlayer --[[@as string]])
         else
             SendMsg(player.name, "No player selected!")
