@@ -146,6 +146,12 @@ function ValidateSettings()
         settings.global["oarc-mod-default-surface"] = { value = "nauvis" }
         SendBroadcastMsg("Invalid setting! Default surface does not exist! Setting to nauvis.")
     end
+
+    -- Validate that a "nauvis" surface config exists (nauvis is the default config fallback)
+    -- This should only break with a bad scenario custom config.
+    if (global.ocfg.surfaces_config["nauvis"] == nil) then
+        error("nauvis surface config does not exist! Please check your mod settings or config!")
+    end
 end
 
 -- Read in the mod settings and copy them to the OARC_CFG table, overwriting the defaults in config.lua.

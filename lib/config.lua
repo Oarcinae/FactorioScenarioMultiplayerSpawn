@@ -311,7 +311,7 @@ OCFG = {
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
     ---@type table<integer, string>
     surfaces_blacklist = {
-        "oarc_holding_pen",
+        HOLDING_PEN_SURFACE_NAME,
     },
 
     -- Surfaces blacklist that match start of these strings

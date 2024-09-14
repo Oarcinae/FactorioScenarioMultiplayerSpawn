@@ -577,7 +577,7 @@ function WorldEaterSingleStep()
 
     -- Search for any abandoned radars and destroy them?
     local abandoned_radars = game.surfaces[current_surface].find_entities_filtered { area = next_chunk.area,
-        force = { global.ocore.abandoned_force },
+        force = { ABANDONED_FORCE_NAME },
         name = "radar" }
     for k, v in pairs(abandoned_radars) do
         v.die(nil)
@@ -585,7 +585,7 @@ function WorldEaterSingleStep()
 
     -- Search for any entities with _DESTROYED_ force and kill them.
     local destroy_entities = game.surfaces[current_surface].find_entities_filtered { area = next_chunk.area,
-        force = { global.ocore.destroyed_force } }
+        force = { DESTROYED_FORCE_NAME } }
     for k, v in pairs(destroy_entities) do
         v.die(nil)
     end

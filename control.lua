@@ -29,6 +29,7 @@ require("lib/holding_pen")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 require("lib/oarc_gui_tabs")
+require("lib/offline_protection")
 
 -- Possibly remove this later?
 require("lib/oarc_tests")
@@ -59,6 +60,12 @@ script.on_init(function(event)
         remote.call("freeplay", "set_disable_crashsite", true)
         remote.call("freeplay", "set_created_items", {})
         remote.call("freeplay", "set_respawn_items", {})
+    end
+
+    -- If there are any players that already exist, init them now.
+    -- TODO: Test this!
+    for _,player in pairs(game.players) do
+        SeparateSpawnsInitPlayer(player.index)
     end
 end)
 
@@ -203,6 +210,16 @@ end)
 script.on_event(defines.events.on_biter_base_built, function(event)
     if (global.ocfg.gameplay.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+
+----------------------------------------
+-- On unit group finished gathering
+-- This is where I remove biter waves on offline players
+----------------------------------------
+script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
+    if (global.ocfg.gameplay.enable_offline_protection) then
+        OarcModifyEnemyGroup(event)
     end
 end)
 

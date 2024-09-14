@@ -318,7 +318,8 @@ end
 function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
 
     local shared_spawn_frame = parent_flow.shared_spawn_frame
-    local selected_host = nil ---@type string?
+    local prev_selected_host = nil ---@type string?
+    local prev_selected_spawn = nil ---@type OarcUniqueSpawn?
 
     -- Create the shared spawn frame if it doesn't exist
     if shared_spawn_frame == nil then
@@ -340,7 +341,7 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             local dropdown = shared_spawn_frame.shared_spawn_horizontal_flow.shared_spawn_select_dropdown
             local index = dropdown.selected_index
             if index > 0 then
-                selected_host = dropdown.get_item(index) --[[@as string]]
+                prev_selected_host = dropdown.get_item(index) --[[@as string]]
             end 
         end
         
@@ -358,18 +359,18 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
     end
 
 
-    local avail_hosts = GetAvailableSharedSpawns()
-    local num_avail_spawns = #avail_hosts
+    local avail_spawns = GetAvailableSharedSpawns()
+    local num_avail_spawns = #avail_spawns.hosts
 
     if (num_avail_spawns > 0) then
 
         AddLabel(shared_spawn_frame, nil, { "oarc-join-someone-info" }, my_label_style)
 
-        local previous_index = 0
-        if selected_host then
-            for i,host in ipairs(avail_hosts) do
-                if host == selected_host then
-                    previous_index = i
+        local new_selected_index = 0
+        if prev_selected_host then
+            for i,host in ipairs(avail_spawns.hosts) do
+                if host == prev_selected_host then
+                    new_selected_index = i
                     break
                 end
             end
@@ -390,8 +391,8 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             name = "shared_spawn_select_dropdown",
             tags = { action = "oarc_spawn_options", setting = "shared_spawn_select" },
             type = "drop-down",
-            items = avail_hosts,
-            selected_index = previous_index,
+            items = avail_spawns.hosts,
+            selected_index = new_selected_index,
             tooltip = { "oarc-join-someone-dropdown-tooltip" }
         }
         dropdown.style.horizontal_align = "left"
@@ -407,13 +408,13 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             tags = { action = "oarc_spawn_options", setting = "join_other_spawn" },
             type = "button",
             tooltip = { "oarc-join-shared-button-tooltip" },
-            enabled = previous_index > 0
+            enabled = new_selected_index > 0
         }
-        if previous_index == 0 then
+        if new_selected_index == 0 then
             button.caption = { "oarc-join-shared-button-disable" }
             button.style = "red_button"
         else
-            button.caption = { "oarc-join-shared-button-enable", selected_host, global.ocore.uniqueSpawns[selected_host].surface }
+            button.caption = { "oarc-join-shared-button-enable", prev_selected_host, avail_spawns.spawns[new_selected_index].surface_name }
             button.style = "green_button"
         end
 
@@ -594,7 +595,7 @@ function DisplaySpawnOptions(player)
         host = nil,
         buddy_team = false
     }
-    global.ocore.spawnChoices[player.name] = spawn_choices_entry
+    global.spawn_choices[player.name] = spawn_choices_entry
 
     CreateSpawnSettingsFrame(sGui, gameplay) -- The settings for configuring a spawn
     CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn) -- The primary method of spawning
@@ -617,7 +618,7 @@ function SpawnOptsRadioSelect(event)
     end
 
     if (tags.setting == "team_select") then
-        global.ocore.spawnChoices[player.name].team = tags.value --[[@as SpawnTeamChoice]]
+        global.spawn_choices[player.name].team = tags.value --[[@as SpawnTeamChoice]]
 
         -- Need to handle the radio button logic manually
         if (elemName == "isolated_spawn_main_team_radio") then
@@ -629,10 +630,10 @@ function SpawnOptsRadioSelect(event)
         end
 
     elseif (tags.setting == "buddy_team_select") then
-        global.ocore.spawnChoices[player.name].buddy_team = event.element.state
+        global.spawn_choices[player.name].buddy_team = event.element.state
 
     elseif (tags.setting == "moat_option") then
-        global.ocore.spawnChoices[player.name].moat = event.element.state
+        global.spawn_choices[player.name].moat = event.element.state
     end
 end
 
@@ -654,7 +655,7 @@ function SpawnOptsGuiClick(event)
         end
         DisplaySpawnOptions(player)
     elseif (tags.setting == "spawn_request") then
-        SpawnRequest(player)
+        PrimarySpawnRequest(player)
     elseif (tags.setting == "join_other_spawn") then
         RequestToJoinSharedSpawn(player)
     elseif (tags.setting == "cancel_shared_spawn_wait_menu") then
@@ -678,7 +679,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function RequestBuddySpawn(player)
-    local buddy_choice = global.ocore.spawnChoices[player.name].buddy
+    local buddy_choice = global.spawn_choices[player.name].buddy
     if (buddy_choice == nil) then player.print({ "oarc-invalid-buddy" }) return end
     local buddy = game.players[buddy_choice]
     if (buddy == nil) then player.print({ "oarc-invalid-buddy" }) return end
@@ -695,7 +696,7 @@ end
 function CancelBuddySpawnWaitMenu(player)
 
     ---@type OarcSpawnChoices
-    local spawn_choices = global.ocore.spawnChoices[player.name]
+    local spawn_choices = global.spawn_choices[player.name]
     local buddy = game.players[spawn_choices.buddy]
 
     player.gui.screen.buddy_wait_menu.destroy()
@@ -723,7 +724,7 @@ function RequestToJoinSharedSpawn(player)
         player.gui.screen.spawn_opts.destroy()
     end
 
-    local host_name = global.ocore.spawnChoices[player.name].host
+    local host_name = global.spawn_choices[player.name].host
     if (host_name == nil) then player.print({ "oarc-no-shared-spawn-selected" }) return end
 
     -- Clear the spawn options gui
@@ -732,7 +733,8 @@ function RequestToJoinSharedSpawn(player)
     end
 
     if ((game.players[host_name] ~= nil) and (game.players[host_name].connected)) then
-        table.insert(global.ocore.sharedSpawns[host_name].joinQueue, player.name)
+        local primary_spawn = FindPrimaryUniqueSpawn(host_name)
+        table.insert(global.unique_spawns[primary_spawn.surface_name][host_name].join_queue, player.name)
 
         -- Display wait menu with cancel button.
         DisplaySharedSpawnJoinWaitMenu(player)
@@ -779,7 +781,7 @@ function SpawnOptsValueChanged(event)
 
     if (tags.setting == "distance_select") then
         local distance = event.element.slider_value
-        global.ocore.spawnChoices[player.name].distance = distance
+        global.spawn_choices[player.name].distance = distance
         event.element.parent.spawn_distance_slider_value.text = tostring(distance)
         -- log("GUI DEBUG Selected distance: " .. distance)
     end
@@ -800,7 +802,7 @@ function SpawnOptsSelectionChanged(event)
     if (tags.setting == "surface_select") then
         local index = event.element.selected_index
         local surface_name = event.element.get_item(index) --[[@as string]]
-        global.ocore.spawnChoices[player.name].surface = surface_name
+        global.spawn_choices[player.name].surface = surface_name
         log("GUI DEBUG Selected surface: " .. surface_name)
 
     elseif (tags.setting == "shared_spawn_select") then
@@ -813,14 +815,15 @@ function SpawnOptsSelectionChanged(event)
 
             log("GUI DEBUG Selected host: " .. host_name)
 
-            if (IsSharedSpawnValid(host_name) and not IsSharedSpawnFull(host_name)) then
-                global.ocore.spawnChoices[player.name].host = host_name
+            local primary_spawn = FindPrimaryUniqueSpawn(host_name)
+            if (IsSharedSpawnOpen(primary_spawn.surface_name, host_name) and not IsSharedSpawnFull(primary_spawn.surface_name, host_name)) then
+                global.spawn_choices[player.name].host = host_name
                 button.enabled = true
-                button.caption = { "oarc-join-shared-button-enable", host_name, global.ocore.uniqueSpawns[host_name].surface }
+                button.caption = { "oarc-join-shared-button-enable", host_name, primary_spawn.surface_name }
                 button.style = "green_button"
             else
                 player.print({ "oarc-invalid-host-shared-spawn" })
-                global.ocore.spawnChoices[player.name].host = nil
+                global.spawn_choices[player.name].host = nil
                 event.element.selected_index = 0
                 button.enabled = false
                 button.caption = { "oarc-join-shared-button-disable" }
@@ -828,28 +831,28 @@ function SpawnOptsSelectionChanged(event)
             end
 
         else
-            global.ocore.spawnChoices[player.name].host = nil
+            global.spawn_choices[player.name].host = nil
         end
     
     elseif (tags.setting == "buddy_select") then
         local index = event.element.selected_index
         if (index > 0) then
             local buddyName = event.element.get_item(index) --[[@as string]]
-            global.ocore.spawnChoices[player.name].buddy = buddyName
+            global.spawn_choices[player.name].buddy = buddyName
             log("GUI DEBUG Selected buddy: " .. buddyName)
         else
-            global.ocore.spawnChoices[player.name].buddy = nil
+            global.spawn_choices[player.name].buddy = nil
         end
     end
 end
 
----Requests the generation of a spawn point for the player
+---Requests the generation of a spawn point for the player (their first primary spawn)
 ---@param player LuaPlayer
 ---@return nil
-function SpawnRequest(player)
+function PrimarySpawnRequest(player)
     -- Get the player's spawn choices
     ---@type OarcSpawnChoices
-    local spawn_choices = global.ocore.spawnChoices[player.name]
+    local spawn_choices = global.spawn_choices[player.name]
     if (spawn_choices == nil) then error("ERROR! No spawn choices found for player!") return end
 
     -- Cache some useful variables
@@ -872,10 +875,10 @@ function SpawnRequest(player)
     end
 
     -- Create that player's spawn in the global vars
-    ChangePlayerSpawn(player, spawn_choices.surface, newSpawn)
+    ChangePlayerRespawn(player.name, spawn_choices.surface, newSpawn)
 
     -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, true, nil)
     SendBroadcastMsg({ "oarc-player-is-joining-far", player.name, spawn_choices.surface })
 
     -- Unlock spawn control gui tab
@@ -885,48 +888,6 @@ function SpawnRequest(player)
     if (player.gui.screen.spawn_opts ~= nil) then
         player.gui.screen.spawn_opts.destroy()
     end
-end
-
----Display the spawn options and explanation
----@param player LuaPlayer
----@return nil
-function DisplaySharedSpawnOptions(player)
-    player.gui.screen.add { name = "shared_spawn_opts",
-        type = "frame",
-        direction = "vertical",
-        caption = { "oarc-avail-bases-join" } }
-
-    local shGuiFrame = player.gui.screen.shared_spawn_opts
-    shGuiFrame.auto_center = true
-    local shGui = shGuiFrame.add { type = "scroll-pane", name = "spawns_scroll_pane", caption = "" }
-    ApplyStyle(shGui, my_fixed_width_style)
-    shGui.style.maximal_width = SPAWN_GUI_MAX_WIDTH
-    shGui.style.maximal_height = SPAWN_GUI_MAX_HEIGHT
-    shGui.horizontal_scroll_policy = "never"
-
-
-    for spawnName, sharedSpawn in pairs(global.ocore.sharedSpawns) do
-        if (sharedSpawn.openAccess and
-                (game.players[spawnName] ~= nil) and
-                game.players[spawnName].connected) then
-            local spotsRemaining = global.ocfg.gameplay.number_of_players_per_shared_spawn - TableLength(global.ocore.sharedSpawns[spawnName].players)
-            if (global.ocfg.gameplay.number_of_players_per_shared_spawn == 0) then
-                shGui.add { type = "button", caption = spawnName, name = spawnName }
-            elseif (spotsRemaining > 0) then
-                shGui.add { type = "button", caption = { "oarc-spawn-spots-remaining", spawnName, spotsRemaining }, name = spawnName }
-            end
-            if (shGui.spawnName ~= nil) then
-                -- AddSpacer(buddyGui, spawnName .. "spacer_lbl")
-                ApplyStyle(shGui[spawnName], my_small_button_style)
-            end
-        end
-    end
-
-
-    shGui.add { name = "shared_spawn_cancel",
-        type = "button",
-        caption = { "oarc-cancel-button-caption" },
-        style = "back_button" }
 end
 
 ---Display shared spawn join wait menu to the requesting player
@@ -1068,7 +1029,7 @@ function DisplayBuddySpawnRequestMenu(player, requesting_buddy_name)
     AddSpacer(buddy_request_gui_if)
 
     ---@type OarcSpawnChoices
-    local spawn_choices = global.ocore.spawnChoices[requesting_buddy_name]
+    local spawn_choices = global.spawn_choices[requesting_buddy_name]
 
     ---@type LocalisedString
     local teamText = "error!"
@@ -1131,11 +1092,14 @@ function DisplayBuddySpawnRequestMenu(player, requesting_buddy_name)
 
 end
 
-
+---Handles spawning the buddies together once the request has been accepted
+---@param player LuaPlayer The player that is accepting the buddy request
+---@param requesting_buddy_name string The name of the player that is requesting to buddy spawn
+---@return nil
 function AcceptBuddyRequest(player, requesting_buddy_name)
 
     ---@type OarcSpawnChoices
-    local spawn_choices = global.ocore.spawnChoices[requesting_buddy_name]
+    local spawn_choices = global.spawn_choices[requesting_buddy_name]
     local requesting_buddy = game.players[requesting_buddy_name]
 
     if (requesting_buddy.gui.screen.buddy_wait_menu ~= nil) then
@@ -1171,28 +1135,26 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
 
     -- Create that spawn in the global vars
     local buddySpawn = { x = 0, y = 0 }
+    -- The x_offset must be big enough to ensure the spawns DO NOT overlap!
+    local x_offset = (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2)
     if (spawn_choices.moat) then
-        buddySpawn = {
-            x = newSpawn.x + (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2) + 10,
-            y = newSpawn.y
-        }
-    else
-        buddySpawn = { x = newSpawn.x + (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2), y = newSpawn.y }
+        x_offset = x_offset + 10
     end
-    ChangePlayerSpawn(player, spawn_choices.surface, newSpawn)
-    ChangePlayerSpawn(requesting_buddy, spawn_choices.surface, buddySpawn)
+    buddySpawn = { x = newSpawn.x + x_offset, y = newSpawn.y }
+    ChangePlayerRespawn(player.name, spawn_choices.surface, newSpawn)
+    ChangePlayerRespawn(requesting_buddy_name, spawn_choices.surface, buddySpawn)
 
     -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat)
-    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, true, requesting_buddy_name)
+    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, player.name)
     SendBroadcastMsg(requesting_buddy_name .. " and " .. player.name .. " are joining the game together!")
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
     SetOarcGuiTabEnabled(requesting_buddy, OARC_SPAWN_CTRL_TAB_NAME, true)
 
-    global.ocore.buddyPairs[player.name] = requesting_buddy_name
-    global.ocore.buddyPairs[requesting_buddy_name] = player.name
+    global.buddy_pairs[player.name] = requesting_buddy_name
+    global.buddy_pairs[requesting_buddy_name] = player.name
 end
 
 ---Rejects a buddy spawn request proposal

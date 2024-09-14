@@ -36,10 +36,11 @@ MAX_INT32_NEG = -2147483648
 -- end
 
 -- Get a printable GPS string
----@param pos MapPosition
+---@param surface_name string
+---@param position MapPosition
 ---@return string
-function GetGPStext(pos)
-    return "[gps=" .. pos.x .. "," .. pos.y .. "]"
+function GetGPStext(surface_name, position)
+    return "[gps=" .. position.x .. "," .. position.y .. "," .. surface_name .. "]"
 end
 
 -- -- Requires having an on_tick handler.
@@ -518,9 +519,9 @@ end
 ---@return nil
 function SetCeaseFireBetweenAllForces()
     for name, team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
+        if name ~= "neutral" and name ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
             for x, y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
+                if x ~= "neutral" and x ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
                     team.set_cease_fire(x, true)
                 end
             end
@@ -532,9 +533,9 @@ end
 ---@return nil
 function SetFriendlyBetweenAllForces()
     for name, team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" and name ~= global.ocore.abandoned_force then
+        if name ~= "neutral" and name ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
             for x, y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" and name ~= global.ocore.abandoned_force then
+                if x ~= "neutral" and x ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
                     team.set_friend(x, true)
                 end
             end
@@ -1002,7 +1003,7 @@ end
 ---@param surface LuaSurface
 ---@param area BoundingBox
 ---@return nil
-function RemoveAliensInArea(surface, area)
+function RemoveEnemiesInArea(surface, area)
     for _, entity in pairs(surface.find_entities_filtered { area = area, force = "enemy" }) do
         entity.destroy()
     end
@@ -1013,7 +1014,7 @@ end
 ---@param area BoundingBox
 ---@param reductionFactor integer Reduction factor divides the enemy spawns by that number. 2 = half, 3 = third, etc...
 ---@return nil
-function ReduceAliensInArea(surface, area, reductionFactor)
+function ReduceEnemiesInArea(surface, area, reductionFactor)
     for _, entity in pairs(surface.find_entities_filtered { area = area, force = "enemy" }) do
         if (math.random(0, reductionFactor) > 0) then
             entity.destroy()

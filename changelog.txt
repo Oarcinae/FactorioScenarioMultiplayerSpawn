@@ -1,0 +1,6 @@
+---------------------------------------------------------------------------------------------------
+Version: 2.0.0
+Date: 21. 10. 2024
+  Major Features:
+    - Initial release of a proper mod version. This is essentially a rewrite of the original scenario in mod form.
+    - Coin shop, energy and item sharing are all removed for now until I get time to re-implement or turn them into separate mods.

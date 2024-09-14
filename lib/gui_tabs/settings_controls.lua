@@ -81,7 +81,7 @@ function CreateSurfaceSettingsSection(container, player)
     AddLabel(surface_table, nil, "Regrowth Enabled", "caption_label")
 
     --- Add the rows
-    for name, allowed in pairs(global.ocore.surfaces --[[@as table<string, boolean>]]) do
+    for name, allowed in pairs(global.oarc_surfaces --[[@as table<string, boolean>]]) do
         AddLabel(surface_table, nil, name, my_label_style)
         AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed, player.admin)
         local regrowth_enabled = TableContains(global.rg.active_surfaces, name)
@@ -330,11 +330,11 @@ function SettingsSurfaceControlsTabGuiClick(event)
     local surface_name = gui_elem.tags.surface --[[@as string]]
 
     if (setting_name == "spawn_enabled") then
-        global.ocore.surfaces[surface_name] = gui_elem.state
+        global.oarc_surfaces[surface_name] = gui_elem.state
 
         if (#GetAllowedSurfaces() == 0) then
             log("Warning - GetAllowedSurfaces() - No surfaces found! Forcing default surface!")
-            global.ocore.surfaces[global.ocfg.gameplay.default_surface] = true
+            global.oarc_surfaces[global.ocfg.gameplay.default_surface] = true
             event.element.parent[global.ocfg.gameplay.default_surface.."_spawn_enabled"].state = true
         end
     elseif (setting_name == "regrowth_enabled") then

@@ -1,8 +1,8 @@
 
 ACTIVE ITEMS:
 
-- In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
-- Change main_force_name to a startup setting!
+
+- Change main_force_name to a startup setting! New players in spawn area should stay on default "player" force to avoid mod conflicts on player init?
 
 
 
@@ -12,8 +12,8 @@ BACKLOG:
 
 - Lots of localizations!
 
-- Add rich text map location links for new spawns
-- Add rich text map location in spawn controls tab for current home location
+- Add rich text map location links for new spawns (print to chat)
+
 - Test multiple enemy forces to provide a way to scale evolution locally
 - Custom tips and tricks??
 - List all TODOs in code here.
@@ -21,11 +21,16 @@ BACKLOG:
 - Convert regrowth to a proper mod
 - Refresh players in admin controls when dropdown is clicked
 
-- "uniqueSpawns" should have a "primary" flag
-- Create a function to create secondary uniqueSpawns for the same player
-- Make respawn location be indexed per surface
+- Think through player flow for Space Age for creating new unique spawns on other surfaces and respawning:
+    
+    - Create a function to create secondary uniqueSpawns for the same player
+    - Move "buddy" info to unique_spawns as well.
 
 - Default to selecting SELF in admin controls player dropdown?
+- In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+- TEST resizing spawn areas and moat sizes!
+
+- If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -55,7 +60,7 @@ Other Ideas, Not Committed:
 - Rocket silo locations per player? (Only allowed to build 1)?
 - Surface names for space ships?
 - Spawner health tied to evolution?
-- Respawn position is surface specific? Each surface needs a separate respawn point?
+- Respawn position is surface specific? Each surface needs a separate respawn point? Default respawn behavior?
 
 --------------------------------------------------------DONE------------------------------------------------------------
 
@@ -102,3 +107,8 @@ Other Ideas, Not Committed:
 - Confirm regrowth does or does not delete chunks with robots in them?
 - Show the surface name in shared spawn join GUI
 - Show the surface name in the share spawn controls tab
+- Add rich text map location in spawn controls tab for current home location
+- Move sharedspawns data under unique spawns
+- "uniqueSpawns" should have a "primary" flag and be indexed by surface FIRST
+- Make respawn locations first be indexed by player, then surface
+- Offline protection re-implement!
