@@ -137,6 +137,9 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     SeparateSpawnsGenerateChunk(event)
 end)
 
+----------------------------------------
+-- Radar Scanning
+----------------------------------------
 script.on_event(defines.events.on_sector_scanned, function (event)   
     if global.ocfg.regrowth.enable_regrowth then
         RegrowthSectorScan(event)

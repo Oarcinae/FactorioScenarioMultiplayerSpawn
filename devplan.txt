@@ -32,6 +32,8 @@ BACKLOG:
 
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 
+
+
 ------------------------------------------------------------------------------------------------------------------------
 
 Other Ideas, Not Committed:
@@ -112,3 +114,4 @@ Other Ideas, Not Committed:
 - "uniqueSpawns" should have a "primary" flag and be indexed by surface FIRST
 - Make respawn locations first be indexed by player, then surface
 - Offline protection re-implement!
+- Resolve regrowth issue with radars and confirm that when we mark chunks for removal, they can be refreshed still. (trace logic!)

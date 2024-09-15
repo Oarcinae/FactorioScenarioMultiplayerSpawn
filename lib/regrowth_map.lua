@@ -209,7 +209,7 @@ function RegrowthChunkGenerate(event)
     end
 end
 
----Mark an area for "immediate" forced removal
+---Mark an area for "immediate" forced removal, this will override any pemranent flags.
 ---@param surface_name string - The surface name to act on
 ---@param pos TilePosition - The tile position to mark for removal
 ---@param chunk_radius integer - The radius in chunks around the position to mark for removal
@@ -232,26 +232,26 @@ function RegrowthMarkAreaForRemoval(surface_name, pos, chunk_radius)
     end
 end
 
----Downgrades permanent flag to semi-permanent.
----@param surface_name string - The surface name to act on
----@param pos TilePosition - The tile position to mark
----@param chunk_radius integer - The radius in chunks around the position to mark
----@return nil
-function RegrowthMarkAreaNotPermanentOVERWRITE(surface_name, pos, chunk_radius)
-    local c_pos = GetChunkPosFromTilePos(pos)
-    for i = -chunk_radius, chunk_radius do
-        local x = c_pos.x + i
-        for k = -chunk_radius, chunk_radius do
-            local y = c_pos.y + k
+-- ---Downgrades permanent flag to semi-permanent.
+-- ---@param surface_name string - The surface name to act on
+-- ---@param pos TilePosition - The tile position to mark
+-- ---@param chunk_radius integer - The radius in chunks around the position to mark
+-- ---@return nil
+-- function RegrowthMarkAreaNotPermanentOVERWRITE(surface_name, pos, chunk_radius)
+--     local c_pos = GetChunkPosFromTilePos(pos)
+--     for i = -chunk_radius, chunk_radius do
+--         local x = c_pos.x + i
+--         for k = -chunk_radius, chunk_radius do
+--             local y = c_pos.y + k
 
-            if (global.rg[surface_name].map[x] and
-                    global.rg[surface_name].map[x][y] and
-                    (global.rg[surface_name].map[x][y] == REGROWTH_FLAG_PERMANENT)) then
-                global.rg[surface_name].map[x][y] = REGROWTH_FLAG_ACTIVE
-            end
-        end
-    end
-end
+--             if (global.rg[surface_name].map[x] and
+--                     global.rg[surface_name].map[x][y] and
+--                     (global.rg[surface_name].map[x][y] == REGROWTH_FLAG_PERMANENT)) then
+--                 global.rg[surface_name].map[x][y] = REGROWTH_FLAG_ACTIVE
+--             end
+--         end
+--     end
+-- end
 
 ---Marks a chunk containing a position to be relatively permanent.
 ---@param surface_name string - The surface name to act on
@@ -482,21 +482,28 @@ function OarcRegrowthRemoveAllChunks()
         local c_pos = c_remove.pos
         local surface_name = c_remove.surface
 
-        -- Confirm chunk is still marked for removal
-        if (global.rg[surface_name].map[c_pos.x] and global.rg[surface_name].map[c_pos.x][c_pos.y] == REGROWTH_FLAG_REMOVAL) then
+        -- Confirm chunk is still marked for removal or is a force removal, if it's nil, something else happened?
+        if (global.rg[surface_name].map[c_pos.x] ~= nil) then
+
             -- If it is FORCE removal, then remove it regardless of pollution.
             if (c_remove.force) then
                 game.surfaces[surface_name].delete_chunk(c_pos)
 
-            -- If it is a normal timeout removal, don't do it if there is pollution in the chunk.
-            elseif (game.surfaces[surface_name].get_pollution({ c_pos.x * 32, c_pos.y * 32 }) > 0) then
-                global.rg[surface_name].map[c_pos.x][c_pos.y] = game.tick
+            elseif (global.rg[surface_name].map[c_pos.x][c_pos.y] == REGROWTH_FLAG_REMOVAL) then
 
-            -- Else delete the chunk
-            else
-                game.surfaces[surface_name].delete_chunk(c_pos)
-                global.rg[surface_name].map[c_pos.x][c_pos.y] = nil
+                -- If it is a normal timeout removal, don't do it if there is pollution in the chunk.
+                if (game.surfaces[surface_name].get_pollution({ c_pos.x * 32, c_pos.y * 32 }) > 0) then
+                    global.rg[surface_name].map[c_pos.x][c_pos.y] = game.tick
+
+                -- Else delete the chunk
+                else
+                    game.surfaces[surface_name].delete_chunk(c_pos)
+                    global.rg[surface_name].map[c_pos.x][c_pos.y] = nil
+                end
             end
+        else
+            -- This should never happen, TODO: check if it does?
+            error("ERROR - OarcRegrowthRemoveAllChunks: Chunk not in map: " .. c_pos.x .. "," .. c_pos.y .. " on surface: " .. surface_name)
         end
 
         -- Remove entry
