@@ -173,3 +173,14 @@ function RecreateOarcGui(player)
 
     InitOarcGuiTabs(player)
 end
+
+
+function SetNauvisChunksGenerated()
+    local nauvis = game.surfaces["nauvis"]
+
+    for x = -100, 100, 1 do
+        for y = -100, 100, 1 do
+            nauvis.set_chunk_generated_status({x=x, y=y}, defines.chunk_generated_status.entities)
+        end
+    end
+end

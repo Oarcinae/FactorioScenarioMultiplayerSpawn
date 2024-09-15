@@ -858,28 +858,26 @@ function PrimarySpawnRequest(player)
     -- Cache some useful variables
     local surface = game.surfaces[spawn_choices.surface]
 
+    -- Find coordinates of a good place to spawn
+    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+
+    -- If that fails, just throw a warning and don't spawn them. They can try again.
+    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
+        player.print({ "oarc-no-ungenerated-land-error" })
+        return
+    end
+
     -- Create a new force for player if they choose that radio button
     if spawn_choices.team ~= SPAWN_TEAM_CHOICE.join_main_team then
         CreatePlayerCustomForce(player)
     end
 
-    -- Find coordinates of a good place to spawn
-    local newSpawn = { x = 0, y = 0 }
-    -- TODO: Rewrite this function to make use of spawnChoices.distance!!
-    newSpawn = FindUngeneratedCoordinates(surface, spawn_choices.distance)
-
-    -- If that fails, find a random map edge in a rand direction.
-    if ((newSpawn.x == 0) and (newSpawn.y == 0)) then
-        newSpawn = FindMapEdge(GetRandomVector(), surface)
-        log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
-    end
-
     -- Create that player's spawn in the global vars
-    ChangePlayerRespawn(player.name, spawn_choices.surface, newSpawn)
+    ChangePlayerRespawn(player.name, spawn_choices.surface, spawn_position)
 
     -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, true, nil)
-    SendBroadcastMsg({ "oarc-player-is-joining-far", player.name, spawn_choices.surface })
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, nil)
+    SendBroadcastMsg({ "oarc-player-is-joining", player.name, spawn_choices.surface })
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
@@ -1101,16 +1099,16 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     ---@type OarcSpawnChoices
     local spawn_choices = global.spawn_choices[requesting_buddy_name]
     local requesting_buddy = game.players[requesting_buddy_name]
+    local surface = game.surfaces[spawn_choices.surface]
 
-    if (requesting_buddy.gui.screen.buddy_wait_menu ~= nil) then
-        requesting_buddy.gui.screen.buddy_wait_menu.destroy()
-    end
-    if (player.gui.screen.buddy_request_menu ~= nil) then
-        player.gui.screen.buddy_request_menu.destroy()
-    end
+     -- Find coordinates of a good place to spawn
+     local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
 
-    -- Create a new spawn point
-    local newSpawn = { x = 0, y = 0 }
+     -- If that fails, just throw a warning and don't spawn them. They can try again.
+     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
+         player.print({ "oarc-no-ungenerated-land-error" })
+         return
+     end
 
     -- Create a new force for the combined players if they chose that option
     if spawn_choices.buddy_team then
@@ -1122,15 +1120,12 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
         CreatePlayerCustomForce(requesting_buddy)
     end
 
-    local surface = game.surfaces[spawn_choices.surface]
-
-    -- Find coordinates of a good place to spawn
-    newSpawn = FindUngeneratedCoordinates(surface, spawn_choices.distance)
-
-    -- If that fails, find a random map edge in a rand direction.
-    if ((newSpawn.x == 0) and (newSpawn.x == 0)) then
-        newSpawn = FindMapEdge(GetRandomVector(), surface)
-        log("Resorting to find map edge! x=" .. newSpawn.x .. ",y=" .. newSpawn.y)
+    -- Destroy GUIs
+    if (requesting_buddy.gui.screen.buddy_wait_menu ~= nil) then
+        requesting_buddy.gui.screen.buddy_wait_menu.destroy()
+    end
+    if (player.gui.screen.buddy_request_menu ~= nil) then
+        player.gui.screen.buddy_request_menu.destroy()
     end
 
     -- Create that spawn in the global vars
@@ -1140,12 +1135,12 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     if (spawn_choices.moat) then
         x_offset = x_offset + 10
     end
-    buddySpawn = { x = newSpawn.x + x_offset, y = newSpawn.y }
-    ChangePlayerRespawn(player.name, spawn_choices.surface, newSpawn)
+    buddySpawn = { x = spawn_position.x + x_offset, y = spawn_position.y }
+    ChangePlayerRespawn(player.name, spawn_choices.surface, spawn_position)
     ChangePlayerRespawn(requesting_buddy_name, spawn_choices.surface, buddySpawn)
 
     -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, newSpawn, spawn_choices.moat, true, requesting_buddy_name)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, requesting_buddy_name)
     QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, player.name)
     SendBroadcastMsg(requesting_buddy_name .. " and " .. player.name .. " are joining the game together!")
 

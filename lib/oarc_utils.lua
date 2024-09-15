@@ -614,14 +614,18 @@ function RandomNegPos()
     end
 end
 
----Create a random direction vector to look in (values are integers between -3 and 3)
+---Create a random direction vector to look in, returns normalized vector
 ---@return MapPosition
 function GetRandomVector()
     local randVec = {x=0,y=0}
     while ((randVec.x == 0) and (randVec.y == 0)) do
-        randVec.x = math.random(-3,3)
-        randVec.y = math.random(-3,3)
+        randVec.x = math.random() * 2 - 1
+        randVec.y = math.random() * 2 - 1
     end
+    -- Normalize the vector
+    local magnitude = math.sqrt((randVec.x^2) + (randVec.y^2))
+    randVec.x = randVec.x / magnitude
+    randVec.y = randVec.y / magnitude
     log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
     return randVec
 end
@@ -667,94 +671,125 @@ function ClearNearbyEnemies(pos, safeDist, surface)
     end
 end
 
----Function to find coordinates of ungenerated map area in a given direction starting from the center of the map
----@param directionVec MapPosition
----@param surface LuaSurface
----@return MapPosition
-function FindMapEdge(directionVec, surface)
-    local position = {x=0,y=0}
-    local chunkPos = {x=0,y=0}
+-- ---Function to find coordinates of ungenerated map area in a given direction starting from the center of the map
+-- ---@param direction_vector MapPosition
+-- ---@param surface LuaSurface
+-- ---@return MapPosition
+-- function FindMapEdge(direction_vector, surface)
+--     local position = {x=0,y=0}
+--     local chunk_position = {x=0,y=0}
 
-    -- Keep checking chunks in the direction of the vector
-    while(true) do
+--     -- Keep checking chunks in the direction of the vector
+--     while(true) do
 
-        -- Set some absolute limits.
-        if ((math.abs(chunkPos.x) > 1000) or (math.abs(chunkPos.y) > 1000)) then
-            break
+--         -- Set some absolute limits.
+--         if ((math.abs(chunk_position.x) > 1000) or (math.abs(chunk_position.y) > 1000)) then
+--             break
 
-        -- If chunk is already generated, keep looking
-        elseif (surface.is_chunk_generated(chunkPos)) then
-            chunkPos.x = chunkPos.x + directionVec.x
-            chunkPos.y = chunkPos.y + directionVec.y
+--         -- If chunk is already generated, keep looking
+--         elseif (surface.is_chunk_generated(chunk_position)) then
+--             chunk_position.x = chunk_position.x + direction_vector.x
+--             chunk_position.y = chunk_position.y + direction_vector.y
 
-        -- Found a possible ungenerated area
-        else
+--         -- Found a possible ungenerated area
+--         else
 
-            chunkPos.x = chunkPos.x + directionVec.x
-            chunkPos.y = chunkPos.y + directionVec.y
+--             chunk_position.x = chunk_position.x + direction_vector.x
+--             chunk_position.y = chunk_position.y + direction_vector.y
 
-            -- Check there are no generated chunks in a 10x10 area.
-            if IsChunkAreaUngenerated(chunkPos, 10, surface) then
-                position.x = (chunkPos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
-                position.y = (chunkPos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
-                break
-            end
-        end
-    end
+--             -- Check there are no generated chunks in a 10x10 area.
+--             if IsChunkAreaUngenerated(chunk_position, 10, surface) then
+--                 position.x = (chunk_position.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
+--                 position.y = (chunk_position.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
+--                 break
+--             end
+--         end
+--     end
 
-    -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
-    return position
-end
+--     -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
+--     return position
+-- end
 
 
 ---Pick a random direction, go at least the minimum distance, and start looking for ungenerated chunks
+---We try a few times (hardcoded) and then try a different random direction if we fail (up to max_tries)
 ---@param surface LuaSurface
----@param minimum_distance number
+---@param minimum_distance_chunks number Distance in chunks to start looking for ungenerated chunks
+---@param max_tries integer Maximum number of tries to find a spawn point
 ---@return MapPosition
-function FindUngeneratedCoordinates(surface, minimum_distance)
+function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
 
     --- Get a random vector, figure out how many times to multiply it to get the minimum distance
     local direction_vector = GetRandomVector()
-    local direction_mag = math.sqrt((direction_vector.x^2) + (direction_vector.y^2))
-    local direction_multiple = math.ceil(minimum_distance / direction_mag)
+    local start_distance_tiles = minimum_distance_chunks * CHUNK_SIZE
     
     local final_position = {x=0,y=0}
+    local tries_remaining = max_tries - 1
+
+    -- Starting search position
     local search_pos = {
-        x=direction_vector.x * direction_multiple,
-        y=direction_vector.y * direction_multiple
+        x=direction_vector.x * start_distance_tiles,
+        y=direction_vector.y * start_distance_tiles
     }
 
-    local MAX_CHUNK_DISTANCE = 1000
+    -- We check up to THIS many times, each jump moves out by minimum_distance_to_existing_chunks
+    local jumps_count = 3
+
+    local minimum_distance_to_existing_chunks = global.ocfg.gameplay.minimum_distance_to_existing_chunks
 
     -- Keep checking chunks in the direction of the vector, assumes this terminates...
     while(true) do
 
-        -- Set some absolute limits.
-        if ((math.abs(search_pos.x) > MAX_CHUNK_DISTANCE) or (math.abs(search_pos.y) > MAX_CHUNK_DISTANCE)) then
-            error("FindUngeneratedCoordinates - Hit max chunk distance!")
-            break
+        local chunk_position = GetChunkPosFromTilePos(search_pos)
 
-        -- If chunk is already generated, keep looking
-        elseif (surface.is_chunk_generated(search_pos)) then
-            search_pos.x = search_pos.x + direction_vector.x
-            search_pos.y = search_pos.y + direction_vector.y
+        if (jumps_count <= 0) then
 
-        -- Found a possible ungenerated area
-        else
-
-            search_pos.x = search_pos.x + direction_vector.x
-            search_pos.y = search_pos.y + direction_vector.y
-
-            -- Check there are no generated chunks in a 10x10 area.
-            if IsChunkAreaUngenerated(search_pos, 10, surface) then
-                final_position.x = (search_pos.x*CHUNK_SIZE) + (CHUNK_SIZE/2)
-                final_position.y = (search_pos.y*CHUNK_SIZE) + (CHUNK_SIZE/2)
+            if (tries_remaining > 0) then
+                return FindUngeneratedCoordinates(surface, minimum_distance_chunks, tries_remaining)
+            else
+                log("WARNING - FindUngeneratedCoordinates - Hit max distance!")
                 break
             end
+
+        -- If chunk is already generated, keep looking further out
+        elseif (surface.is_chunk_generated(chunk_position)) then
+
+            -- For debugging, ping the map
+            -- SendBroadcastMsg("GENERATED: " .. GetGPStext(surface.name, {x=chunk_position.x*32, y=chunk_position.y*32}))
+
+             -- Move out a bit more to give some space and then check the surrounding area
+             search_pos.x = search_pos.x + (direction_vector.x * CHUNK_SIZE * minimum_distance_to_existing_chunks)
+             search_pos.y = search_pos.y + (direction_vector.y * CHUNK_SIZE * minimum_distance_to_existing_chunks)
+
+        -- Found a possible ungenerated area
+        elseif IsChunkAreaUngenerated(chunk_position, minimum_distance_to_existing_chunks, surface) then
+
+            -- For debugging, ping the map
+            -- SendBroadcastMsg("SUCCESS: " .. GetGPStext(surface.name, {x=chunk_position.x*32, y=chunk_position.y*32}))
+
+            -- Place the spawn in the center of a chunk
+            final_position.x = (chunk_position.x * CHUNK_SIZE) + (CHUNK_SIZE/2)
+            final_position.y = (chunk_position.y * CHUNK_SIZE) + (CHUNK_SIZE/2)
+            break
+        
+        -- The area around the chunk is not clear, keep looking
+        else
+
+            -- For debugging, ping the map
+            -- SendBroadcastMsg("NOT CLEAR: " .. GetGPStext(surface.name, {x=chunk_position.x*32, y=chunk_position.y*32}))
+
+            -- Move out a bit more to give some space and then check the surrounding area
+            search_pos.x = search_pos.x + (direction_vector.x * CHUNK_SIZE * minimum_distance_to_existing_chunks)
+            search_pos.y = search_pos.y + (direction_vector.y * CHUNK_SIZE * minimum_distance_to_existing_chunks)
         end
+
+        jumps_count = jumps_count - 1
     end
 
-    -- log("spawn: x=" .. position.x .. ", y=" .. position.y)
+    if (final_position.x == 0 and final_position.y == 0) then
+        log("WARNING! FindUngeneratedCoordinates - Failed to find a spawn point!")
+    end
+
     return final_position
 end
 

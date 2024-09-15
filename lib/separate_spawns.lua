@@ -1255,9 +1255,9 @@ function CreatePlayerCustomForce(player)
     player.force = newForce
 
     if (newForce.name == player.name) then
-        SendBroadcastMsg(player.name .. " has started their own team!") -- TODO: Localize
+        SendBroadcastMsg({ "oarc-player-started-own-team", player.name })
     else
-        player.print("Sorry, no new teams can be created. You were assigned to the default team instead.") -- TODO: Localize
+        player.print({ "oarc-player-no-new-teams-sorry" })
     end
 
     return newForce
