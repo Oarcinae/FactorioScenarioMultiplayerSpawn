@@ -184,3 +184,22 @@ function SetNauvisChunksGenerated()
         end
     end
 end
+
+
+function FlagEnemyForce(player, enemy_force_name)
+
+    local enemy_force = game.forces[enemy_force_name]
+
+    player.force.set_friend(enemy_force, true)
+    player.force.set_cease_fire(enemy_force, true)
+ 
+end
+
+function UnflagEnemyForce(player, enemy_force_name)
+
+    local enemy_force = game.forces[enemy_force_name]
+
+    player.force.set_friend(enemy_force, false)
+    player.force.set_cease_fire(enemy_force, false)
+ 
+end

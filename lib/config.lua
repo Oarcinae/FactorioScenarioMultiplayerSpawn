@@ -79,7 +79,7 @@ NAUVIS_SPAWN_CONFIG =
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 20,
 
-        -- Danger area has slightly reduce aliens
+        -- Danger area has slightly reduced aliens
         -- This is the radius in tiles of danger area.
         danger_radius = CHUNK_SIZE*32,
 

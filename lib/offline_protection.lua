@@ -22,7 +22,7 @@ function OarcModifyEnemyGroup(event)
     local group = event.group
 
     -- Check validity
-    if ((group == nil) or (group.command == nil) or (group.force.name ~= "enemy")) then
+    if ((group == nil) or (group.command == nil) or TableContains(ENEMY_FORCES_NAMES, group.force.name)) then
         log("OarcModifyEnemyGroup ignoring INVALID group/command")
         return
     end
@@ -57,7 +57,7 @@ function OarcModifyEnemyGroup(event)
     local target_entities = group.surface.find_entities_filtered{
                                             position=destination,
                                             radius=search_radius,
-                                            force={"enemy", "neutral"},
+                                            force={"enemy", "enemy-easy", "neutral"},
                                             limit=50,
                                             invert=true}
 

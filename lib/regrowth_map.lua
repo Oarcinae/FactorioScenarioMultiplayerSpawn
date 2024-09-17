@@ -607,7 +607,7 @@ function WorldEaterSingleStep()
             right_bottom = { next_chunk.area.right_bottom.x + 8, next_chunk.area.right_bottom.y + 8 }
         }
 
-        local entities = game.surfaces[current_surface].find_entities_filtered { area = area, force = { "enemy", "neutral" }, invert = true }
+        local entities = game.surfaces[current_surface].find_entities_filtered { area = area, force = { "enemy", "enemy-easy", "neutral" }, invert = true }
         for _, v in pairs(entities) do
             if (v.last_user) then
                 return -- This means we're done checking this chunk. It has an active player entity.
@@ -647,7 +647,7 @@ function CheckIfChunkHasAnyPlayerEntities(surface_name, chunk)
         right_bottom = { chunk.area.right_bottom.x + 8, chunk.area.right_bottom.y + 8 }
     }
 
-    local entities = game.surfaces[surface_name].find_entities_filtered { area = area, force = { "enemy", "neutral" }, invert = true }
+    local entities = game.surfaces[surface_name].find_entities_filtered { area = area, force = { "enemy", "enemy-easy", "neutral" }, invert = true }
     for _, v in pairs(entities) do
         if (v.last_user) then
             return true -- YES there is player stuff here.

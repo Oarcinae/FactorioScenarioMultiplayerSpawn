@@ -14,7 +14,7 @@ BACKLOG:
 
 - Add rich text map location links for new spawns (print to chat)
 
-- Test multiple enemy forces to provide a way to scale evolution locally
+
 - Custom tips and tricks??
 - List all TODOs in code here.
 - Add refresh chunks around spidertrons based on their vision
@@ -24,15 +24,19 @@ BACKLOG:
 - Think through player flow for Space Age for creating new unique spawns on other surfaces and respawning:
     - Create a function to create secondary uniqueSpawns for the same player
     
-
+- Add a show current respawn location button (same as show spawn location)
 - Default to selecting SELF in admin controls player dropdown?
 - In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
 - TEST resizing spawn areas and moat sizes!
+- Add in square bases again
 
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 
 - Shared electricity (proper)
 - Shared items (proper)
+
+- Expose some settings for adjusting easy and medium enemy evolution values
+- Clean out old enemy scaling and remove unnecessary checks/logs
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -48,11 +52,10 @@ Other Ideas, Not Committed:
 - Allow players to spawn "near" an existing player (by request)
 - Allow players to restart at anytime via GUI button (configurable setting by admin)
 - Change regrowth to be list of surfaces indexed by surface name?
-- Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
-- Add a show current respawn location button/feature
 - Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
 - Work on space ex support?
 - Profile regrowth and try to improve performance ?
+- Possibly adjust easy/medium evo factors on new player joined?
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
@@ -117,3 +120,5 @@ Other Ideas, Not Committed:
 - Resolve regrowth issue with radars and confirm that when we mark chunks for removal, they can be refreshed still. (trace logic!)
 - Move "buddy" info to unique_spawns as well.
 - Fix search vector to use more variable vector'ing, always normalize vector, and then ensure the other reliant functions work still.
+- Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
+- Test multiple enemy forces to provide a way to scale evolution locally (need to continually set the evo factor back)

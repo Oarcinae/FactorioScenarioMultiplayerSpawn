@@ -258,7 +258,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     ---Handle changing enable_shared_team_vision
     if (oarc_setting_index == "gameplay.enable_shared_team_vision") then
         for _,force in pairs(game.forces) do
-            if (force.name ~= "neutral") and (force.name ~= "enemy") then
+            if (force.name ~= "neutral") and (force.name ~= "enemy") and (force.name ~= "enemy-easy") then
                 force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
             end
         end
@@ -266,7 +266,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     ---Handle changing enable_friendly_fire
     elseif (oarc_setting_index == "gameplay.enable_friendly_fire") then
         for _,force in pairs(game.forces) do
-            if (force.name ~= "neutral") and (force.name ~= "enemy") then
+            if (force.name ~= "neutral") and (force.name ~= "enemy") and (force.name ~= "enemy-easy") then
                 force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
             end
         end

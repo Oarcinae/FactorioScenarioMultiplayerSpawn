@@ -515,33 +515,60 @@ function CheckIfInArea(point, area)
     return false
 end
 
----Set all forces to ceasefire
+---Configures the friend and cease fire relationships between all player forces.
+---@param cease_fire boolean
+---@param friends boolean
 ---@return nil
-function SetCeaseFireBetweenAllForces()
-    for name, team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
-            for x, y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
-                    team.set_cease_fire(x, true)
-                end
+function ConfigurePlayerForceRelationships(cease_fire, friends)
+    local player_forces = {}
+
+    for name, force in pairs(game.forces) do
+        if name ~= "neutral" and name ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES, name) then
+            table.insert(player_forces, force)
+        end
+    end
+
+    for _, force1 in pairs(player_forces) do
+        for _, force2 in pairs(player_forces) do
+            if force1.name ~= force2.name then
+                force1.set_cease_fire(force2, cease_fire)
+                force1.set_friend(force2, friends)
+
+                force2.set_cease_fire(force1, cease_fire)
+                force2.set_friend(force1, friends)
             end
         end
     end
 end
 
----Set all forces to friendly
----@return nil
-function SetFriendlyBetweenAllForces()
-    for name, team in pairs(game.forces) do
-        if name ~= "neutral" and name ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
-            for x, y in pairs(game.forces) do
-                if x ~= "neutral" and x ~= "enemy" and name ~= ABANDONED_FORCE_NAME then
-                    team.set_friend(x, true)
-                end
-            end
-        end
-    end
-end
+-- ---Set all forces to ceasefire
+-- ---@return nil
+-- function SetCeaseFireBetweenAllPlayerForces()
+--     for name, team in pairs(game.forces) do
+--         if name ~= "neutral" and name ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES, name) then
+--             for x, _ in pairs(game.forces) do
+--                 if x ~= "neutral" and x ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES, x) then
+--                     team.set_cease_fire(x, true)
+--                 end
+--             end
+--         end
+--     end
+-- end
+
+-- ---Set all forces to friendly
+-- ---@return nil
+-- function SetFriendlyBetweenAllPlayerForces()
+--     for name, team in pairs(game.forces) do
+--         if name ~= "neutral" and name ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES, name) then
+--             for x, _ in pairs(game.forces) do
+--                 if x ~= "neutral" and x ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES, x) then
+--                     team.set_friend(x, true)
+--                 end
+--             end
+--         end
+--     end
+-- end
+
 
 ---For each other player force, share a chat msg.
 ---@param player LuaPlayer
@@ -551,6 +578,7 @@ function ShareChatBetweenForces(player, msg)
     for _,force in pairs(game.forces) do
         if (force ~= nil) then
             if ((force.name ~= "enemy") and
+                (force.name ~= "enemy-easy") and
                 (force.name ~= "neutral") and
                 (force.name ~= "player") and
                 (force ~= player.force)) then
@@ -1025,134 +1053,6 @@ end
 
 --     return player.surface.get_closest(player.position, entities)
 -- end
-
--- --------------------------------------------------------------------------------
--- -- Functions for removing/modifying enemies
--- --------------------------------------------------------------------------------
-
--- TODO: Plan for new enemies in space DLC.
--- TODO: Plan for new enemies in space DLC.
--- TODO: Plan for new enemies in space DLC.
-
----Convenient way to remove aliens, just provide an area
----@param surface LuaSurface
----@param area BoundingBox
----@return nil
-function RemoveEnemiesInArea(surface, area)
-    for _, entity in pairs(surface.find_entities_filtered { area = area, force = "enemy" }) do
-        entity.destroy()
-    end
-end
-
----Make an area safer.
----@param surface LuaSurface
----@param area BoundingBox
----@param reductionFactor integer Reduction factor divides the enemy spawns by that number. 2 = half, 3 = third, etc...
----@return nil
-function ReduceEnemiesInArea(surface, area, reductionFactor)
-    for _, entity in pairs(surface.find_entities_filtered { area = area, force = "enemy" }) do
-        if (math.random(0, reductionFactor) > 0) then
-            entity.destroy()
-        end
-    end
-end
-
----Downgrades worms in an area based on chance. 100% small would mean all worms are changed to small.
----@param surface LuaSurface
----@param area BoundingBox
----@param small_percent integer ---Chance to change to small worm
----@param medium_percent integer
----@param big_percent integer
----@return nil
-function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_percent)
-    -- Leave out "small-worm-turret" as it's the lowest.
-    local worm_types = { "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret" }
-
-    for _, entity in pairs(surface.find_entities_filtered { area = area, name = worm_types }) do
-        -- Roll a number between 0-100
-        local rand_percent = math.random(0, 100)
-        local worm_pos = entity.position
-        local worm_name = entity.name
-
-        -- If number is less than small percent, change to small
-        if (rand_percent <= small_percent) then
-            if (not (worm_name == "small-worm-turret")) then
-                entity.destroy()
-                surface.create_entity { name = "small-worm-turret", position = worm_pos, force = game.forces.enemy }
-            end
-
-            -- ELSE If number is less than medium percent, change to small
-        elseif (rand_percent <= medium_percent) then
-            if (not (worm_name == "medium-worm-turret")) then
-                entity.destroy()
-                surface.create_entity { name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy }
-            end
-
-            -- ELSE If number is less than big percent, change to small
-        elseif (rand_percent <= big_percent) then
-            if (not (worm_name == "big-worm-turret")) then
-                entity.destroy()
-                surface.create_entity { name = "big-worm-turret", position = worm_pos, force = game.forces.enemy }
-            end
-
-            -- ELSE ignore it.
-        end
-    end
-end
-
----Downgrades worms based on distance from origin and near/far spawn distances.
----This helps make sure worms aren't too overwhelming even at these further spawn distances.
----@param event EventData.on_chunk_generated
----@return nil
-function DowngradeWormsDistanceBasedOnChunkGenerate(event)
-
-    ---@type OarcConfigGameplaySettings
-    local gameplay = global.ocfg.gameplay
-
-    if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.near_spawn_distance * CHUNK_SIZE)) then
-        DowngradeWormsInArea(event.surface, event.area, 100, 100, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_distance * CHUNK_SIZE)) then
-        DowngradeWormsInArea(event.surface, event.area, 50, 90, 100)
-    elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_distance * CHUNK_SIZE * 2)) then
-        DowngradeWormsInArea(event.surface, event.area, 20, 80, 97)
-    else
-        DowngradeWormsInArea(event.surface, event.area, 0, 20, 90)
-    end
-end
-
----A function to help me remove worms in an area. Yeah kind of an unecessary wrapper, but makes my life easier to remember the worm types.
----@param surface LuaSurface
----@param area BoundingBox
----@param small boolean
----@param medium boolean
----@param big boolean
----@param behemoth boolean
----@return nil
-function RemoveWormsInArea(surface, area, small, medium, big, behemoth)
-    local worm_types = {}
-
-    if (small) then
-        table.insert(worm_types, "small-worm-turret")
-    end
-    if (medium) then
-        table.insert(worm_types, "medium-worm-turret")
-    end
-    if (big) then
-        table.insert(worm_types, "big-worm-turret")
-    end
-    if (behemoth) then
-        table.insert(worm_types, "behemoth-worm-turret")
-    end
-
-    -- Destroy
-    if (#worm_types > 0) then
-        for _, entity in pairs(surface.find_entities_filtered { area = area, name = worm_types }) do
-            entity.destroy()
-        end
-    else
-        log("RemoveWormsInArea had empty worm_types list!")
-    end
-end
 
 -- -- Add Long Reach to Character
 -- function GivePlayerLongReach(player)

@@ -69,6 +69,9 @@ function InitSpawnGlobalsAndForces()
     game.create_force(ABANDONED_FORCE_NAME)
     game.create_force(DESTROYED_FORCE_NAME)
 
+    -- Special enemy forces for scaling down enemies near player bases.
+    CreateEnemyForces()
+
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreatePlayerForce(global.ocfg.gameplay.main_force_name)
@@ -410,24 +413,6 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         y = chunkArea.left_top.y + (CHUNK_SIZE / 2)
     }
 
-    -- Make chunks near a spawn safe by removing enemies
-    -- TODO: Space Age will change this!
-    if (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius) then
-        RemoveEnemiesInArea(surface, chunkArea)
-
-        -- Create a warning area with heavily reduced enemies
-    elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.warn_radius) then
-        ReduceEnemiesInArea(surface, chunkArea, spawn_config.safe_area.warn_reduction)
-        -- DowngradeWormsInArea(surface, chunkArea, 100, 100, 100)
-        RemoveWormsInArea(surface, chunkArea, false, true, true, true) -- remove all non-small worms.
-
-        -- Create a third area with moderately reduced enemies
-    elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.danger_radius) then
-        ReduceEnemiesInArea(surface, chunkArea, spawn_config.safe_area.danger_reduction)
-        -- DowngradeWormsInArea(surface, chunkArea, 50, 100, 100)
-        RemoveWormsInArea(surface, chunkArea, false, false, true, true) -- remove all huge/behemoth worms.
-    end
-
     -- If there is a buddy spawn, we need to setup both areas TOGETHER so they overlap.
     local spawns = { closest_spawn }
     if (closest_spawn.buddy_name ~= nil) then
@@ -480,12 +465,6 @@ function SeparateSpawnsGenerateChunk(event)
     -- Don't block based on spawn enabled.
     -- if (not global.oarc_surfaces[surface.name]) then return end
 
-    -- Helps scale worm sizes to not be unreasonable when far from the origin.
-    -- TODO: Space Age will change this!
-    if global.ocfg.gameplay.modified_enemy_spawning then
-        DowngradeWormsDistanceBasedOnChunkGenerate(event)
-    end
-
     -- Downgrade resources near to spawns
     -- TODO: Space Age will change this!
     if global.ocfg.gameplay.scale_resources_around_spawns then
@@ -493,8 +472,7 @@ function SeparateSpawnsGenerateChunk(event)
     end
 
     -- This handles chunk generation near player spawns
-    -- If it is near a player spawn, it does a few things like make the area
-    -- safe and provide a guaranteed area of land and water tiles.
+    -- If it is near a player spawn, it provide a guaranteed area of land and water tiles.
     SetupAndClearSpawnAreas(surface, chunkArea)
 end
 
@@ -527,66 +505,6 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
                     entity.amount = new_amount
                 end
             end
-        end
-    end
-end
-
--- I wrote this to ensure everyone gets safer spawns regardless of evolution level.
--- This is intended to downgrade any biters/spitters spawning near player bases.
--- I'm not sure the performance impact of this but I'm hoping it's not bad.
----@param event EventData.on_entity_spawned|EventData.on_biter_base_built
----@return nil
-function ModifyEnemySpawnsNearPlayerStartingAreas(event)
-    if (not event.entity or not (event.entity.force.name == "enemy") or not event.entity.position) then
-        log("ModifyBiterSpawns - Unexpected use.")
-        return
-    end
-
-    local enemy_pos = event.entity.position
-    local surface = event.entity.surface
-    local enemy_name = event.entity.name
-
-    local closest_spawn = GetClosestUniqueSpawn(surface.name, enemy_pos)
-
-    if (closest_spawn == nil) then
-        -- log("GetClosestUniqueSpawn ERROR - None found?")
-        return
-    end
-
-    -- No enemies inside safe radius!
-    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.safe_radius) then
-        event.entity.destroy()
-
-        -- Warn distance is all SMALL only.
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius) then
-        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
-            event.entity.destroy()
-            surface.create_entity { name = "small-biter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded biter close to spawn.")
-        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter") or (enemy_name == "medium-spitter")) then
-            event.entity.destroy()
-            surface.create_entity { name = "small-spitter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded spitter close to spawn.")
-        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret") or (enemy_name == "medium-worm-turret")) then
-            event.entity.destroy()
-            surface.create_entity { name = "small-worm-turret", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded worm close to spawn.")
-        end
-
-        -- Danger distance is MEDIUM max.
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius) then
-        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
-            event.entity.destroy()
-            surface.create_entity { name = "medium-biter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded biter further from spawn.")
-        elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
-            event.entity.destroy()
-            surface.create_entity { name = "medium-spitter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded spitter further from spawn
-        elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret")) then
-            event.entity.destroy()
-            surface.create_entity { name = "medium-worm-turret", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded worm further from spawn.")
         end
     end
 end
@@ -1225,7 +1143,7 @@ end
 ---@param force_name string
 ---@return LuaForce
 function CreatePlayerForce(force_name)
-    local newForce = nil
+    local new_force = nil
 
     -- Check if force already exists
     if (game.forces[force_name] ~= nil) then
@@ -1234,17 +1152,19 @@ function CreatePlayerForce(force_name)
 
         -- Create a new force
     elseif (#game.forces < MAX_FORCES) then
-        newForce = game.create_force(force_name)
-        newForce.share_chart = global.ocfg.gameplay.enable_shared_team_vision
-        newForce.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
-        SetCeaseFireBetweenAllForces()
-        SetFriendlyBetweenAllForces()
+        new_force = game.create_force(force_name)
+        new_force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
+        new_force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
+        -- SetCeaseFireBetweenAllPlayerForces()
+        -- SetFriendlyBetweenAllPlayerForces()
+        ConfigurePlayerForceRelationships(true, true)
+        ConfigureEnemyForceRelationshipsForNewPlayerForce(new_force)
     else
         log("TOO MANY FORCES!!! - CreatePlayerForce()")
         return game.forces[global.ocfg.gameplay.main_force_name]
     end
 
-    return newForce
+    return new_force
 end
 
 ---Create a new player force and assign the player to it.

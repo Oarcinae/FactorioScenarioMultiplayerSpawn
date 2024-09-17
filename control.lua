@@ -30,6 +30,7 @@ require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 require("lib/oarc_gui_tabs")
 require("lib/offline_protection")
+require("lib/scaled_enemies")
 
 -- Possibly remove this later?
 require("lib/oarc_tests")
@@ -122,6 +123,10 @@ script.on_event(defines.events.on_tick, function(event)
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
+
+    if global.ocfg.gameplay.modified_enemy_spawning then
+        RestrictEnemyEvolutionOnTick()
+    end
 end)
 
 ----------------------------------------
@@ -135,6 +140,11 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     
     CreateHoldingPenChunks(event.surface, event.area)
     SeparateSpawnsGenerateChunk(event)
+
+    if global.ocfg.gameplay.modified_enemy_spawning then
+        DowngradeWormsDistanceBasedOnChunkGenerate(event)
+        DowngradeAndReduceEnemiesOnChunkGenerate(event)
+    end
 end)
 
 ----------------------------------------
@@ -205,14 +215,18 @@ end)
 -- This is where I modify biter spawning based on location and other factors.
 ----------------------------------------
 script.on_event(defines.events.on_entity_spawned, function(event)
-    if (global.ocfg.gameplay.modified_enemy_spawning) then
-        ModifyEnemySpawnsNearPlayerStartingAreas(event)
-    end
+
+    -- TODO: Confirm that the new enemy scaling is working correctly!
+    -- if (global.ocfg.gameplay.modified_enemy_spawning) then
+    --     ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    -- end
 end)
 
 script.on_event(defines.events.on_biter_base_built, function(event)
+    -- TODO: Confirm that the new enemy scaling is working correctly!
     if (global.ocfg.gameplay.modified_enemy_spawning) then
-        ModifyEnemySpawnsNearPlayerStartingAreas(event)
+        -- ModifyEnemySpawnsNearPlayerStartingAreas(event)
+        ChangeEnemySpawnersToOtherForceOnBuilt(event)
     end
 end)
 
