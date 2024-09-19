@@ -14,7 +14,8 @@ function CreateSpawnControlsTab(tab_container, player)
     spwnCtrls.style.maximal_height = 1000
     spwnCtrls.horizontal_scroll_policy = "never"
 
-    CreateSpawnInfo(player, spwnCtrls)
+    CreatePrimarySpawnInfo(player, spwnCtrls)
+    CreateSecondarySpawnInfo(player, spwnCtrls)
     CreateSetRespawnLocationButton(player, spwnCtrls)
 
     if global.ocfg.gameplay.enable_shared_spawns then
@@ -28,15 +29,16 @@ end
 ---@param player LuaPlayer
 ---@param container LuaGuiElement
 ---@return nil
-function CreateSpawnInfo(player, container)
+function CreatePrimarySpawnInfo(player, container)
     local primary_spawn = FindPrimaryUniqueSpawn(player.name)
     if (primary_spawn == nil) then return end
 
-    AddLabel(container, nil, { "oarc-spawn-info-header" }, "caption_label")
+    AddLabel(container, nil, { "oarc-primary-spawn-info-header" }, "caption_label")
+    AddLabel(container, nil, { "oarc-primary-spawn-info-note" }, my_label_style)
 
     local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
     horizontal_flow.style.vertical_align = "center"
-    AddLabel(horizontal_flow, nil, { "oarc-spawn-info-surface-label",
+    AddLabel(horizontal_flow, nil, { "oarc-primary-spawn-info-surface-label",
                                     primary_spawn.surface_name,
                                     primary_spawn.position.x,
                                     primary_spawn.position.y}, my_label_style)
@@ -48,14 +50,39 @@ function CreateSpawnInfo(player, container)
     }
     dragger.style.horizontally_stretchable = true
 
-    horizontal_flow.add {
-        type = "sprite-button",
-        sprite = "utility/gps_map_icon",
-        -- caption = { "oarc-spawn-info-location-button" },
-        tags = { action = "oarc_spawn_ctrl_tab", setting = "show_spawn_location" },
-        style = "slot_button",
-        tooltip = { "oarc-spawn-info-location-button-tooltip" },
-    }
+    CreateGPSButton(horizontal_flow, primary_spawn.surface_name, primary_spawn.position)
+
+    AddSpacerLine(container)
+end
+
+---Display some general info about the player's secondary spawn points.
+---@param player LuaPlayer
+---@param container LuaGuiElement
+---@return nil
+function CreateSecondarySpawnInfo(player, container)
+    local secondary_spawns = FindSecondaryUniqueSpawns(player.name)
+    if (secondary_spawns == nil) or (table_size(secondary_spawns) == 0) then return end
+
+    AddLabel(container, nil, { "oarc-secondary-spawn-info-header" }, "caption_label")
+    AddLabel(container, nil, { "oarc-secondary-spawn-info-note" }, my_label_style)
+
+    for _,secondary_spawn in pairs(secondary_spawns) do
+        local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
+        horizontal_flow.style.vertical_align = "center"
+        AddLabel(horizontal_flow, nil, { "oarc-secondary-spawn-info-surface-label",
+                                        secondary_spawn.surface_name,
+                                        secondary_spawn.position.x,
+                                        secondary_spawn.position.y}, my_label_style)
+
+        --Add empty widget
+        local dragger = horizontal_flow.add {
+            type = "empty-widget",
+            style = "draggable_space_header"
+        }
+        dragger.style.horizontally_stretchable = true
+
+        CreateGPSButton(horizontal_flow, secondary_spawn.surface_name, secondary_spawn.position)
+    end
 
     AddSpacerLine(container)
 end
@@ -98,15 +125,26 @@ function CreateSetRespawnLocationButton(player, container)
     AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
     --[[@type OarcPlayerSpawn]]
-    local spawn_info = global.player_respawns[player.name][player.surface.name]
-    local spawn_surface_name = spawn_info.surface
-    local spawn_position = spawn_info.position
+    local respawn_info = global.player_respawns[player.name][player.surface.name]
+    local respawn_surface_name = respawn_info.surface
+    local respawn_position = respawn_info.position
 
     -- Display the current respawn location
-    AddLabel(container, nil, { "oarc-spawn-info-surface-label",
-                                spawn_surface_name,
-                                spawn_position.x,
-                                spawn_position.y }, my_label_style)
+    local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
+    horizontal_flow.style.vertical_align = "center"
+    AddLabel(horizontal_flow, nil, { "oarc-set-respawn-loc-info-surface-label",
+                                respawn_surface_name,
+                                respawn_position.x,
+                                respawn_position.y }, my_label_style)
+
+    --Add empty widget
+    local dragger = horizontal_flow.add {
+        type = "empty-widget",
+        style = "draggable_space_header"
+    }
+    dragger.style.horizontally_stretchable = true
+
+    CreateGPSButton(horizontal_flow, respawn_surface_name, respawn_position)
 
     -- Sets the player's custom spawn point to their current location
     if ((game.tick - global.player_cooldowns[player.name].setRespawn) >
@@ -183,6 +221,28 @@ function CreateJoinQueueControls(player, container)
 end
 
 
+---Display a GPS button for a specific location.
+---@param container LuaGuiElement
+---@param surface_name string
+---@param position MapPosition
+---@return nil
+function CreateGPSButton(container, surface_name, position)
+    local gps_button = container.add {
+        type = "sprite-button",
+        sprite = "utility/gps_map_icon",
+        tags = {
+            action = "oarc_spawn_ctrl_tab",
+            setting = "show_location",
+            surface = surface_name,
+            position = position
+        },
+        style = "slot_button",
+        tooltip = { "oarc-spawn-info-location-button-tooltip" },
+    }
+    gps_button.style.width = 28
+    gps_button.style.height = 28
+end
+
 ---Handle the gui checkboxes & radio buttons of the spawn control tab in the Oarc GUI.
 ---@param event EventData.on_gui_checked_state_changed
 ---@return nil
@@ -232,11 +292,11 @@ function SpawnCtrlGuiClick(event)
         player.print({ "oarc-spawn-point-updated" })
 
     -- Shows the spawn location on the map
-    elseif (tags.setting == "show_spawn_location") then
-        local primary_spawn = FindPrimaryUniqueSpawn(player.name)
-        local position = primary_spawn.position
+    elseif (tags.setting == "show_location") then
+        local surface_name = tags.surface --[[@as string]]
+        local position = tags.position --[[@as MapPosition]]
         player.open_map(position, 0.05)
-        player.print({"", { "oarc-spawn-gps-home-location" }, GetGPStext(primary_spawn.surface_name, position)})
+        player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
 
     -- Accept or reject pending player join requests to a shared base
     elseif ((tags.setting == "accept_player_request") or (tags.setting == "reject_player_request")) then

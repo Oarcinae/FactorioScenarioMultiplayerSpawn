@@ -1,12 +1,7 @@
 
 ACTIVE ITEMS:
 
-- Think through player flow for Space Age for creating new unique spawns on other surfaces and respawning:
-    - Expose primary AND secondary spawn info in spawn controls GUI tab
-
-
-- Expose some settings for adjusting easy and medium enemy evolution values
-- Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
+- Shared electricity (proper)
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -24,9 +19,10 @@ Minor:
 - Default to selecting SELF in admin controls player dropdown?
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 - Pull out general spawn config from surfaces config
+- Expose some settings for adjusting easy and medium enemy evolution values
+- Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
 
 Major:
-- Shared electricity (proper)
 - Shared items (proper)
 
 
@@ -121,3 +117,4 @@ Other Ideas, Not Committed:
 - Add in square bases again
 - TEST resizing spawn areas and moat sizes!
 - Create a function to create secondary uniqueSpawns for the same player
+- Expose primary AND secondary spawn info in spawn controls GUI tab

@@ -231,9 +231,7 @@ end
 ---@param T table
 ---@return integer
 function TableLength(T)
-    local count = 0
-    for _ in pairs(T) do count = count + 1 end
-    return count
+    return table_size(T) -- TODO: Remove this function and replace with table_size everywhere.
 end
 
 -- Fisher-Yares shuffle

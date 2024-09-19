@@ -642,6 +642,19 @@ function FindPrimaryUniqueSpawn(player_name)
     end
 end
 
+---Searches all unique spawns for a list of secondary ones for a player.
+---@param player_name string
+---@return table<string, OarcUniqueSpawn> -- Indexed by surface name!
+function FindSecondaryUniqueSpawns(player_name)
+    local secondary_spawns = {}
+    for surface_index, spawns in pairs(global.unique_spawns) do
+        if (spawns[player_name] ~= nil and not spawns[player_name].primary) then
+            secondary_spawns[surface_index] = spawns[player_name]
+        end
+    end
+    return secondary_spawns
+end
+
 ---Cleans up a player's unique spawn point, if safe to do so.
 ---@param player_name string
 ---@return nil
