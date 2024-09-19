@@ -4,7 +4,14 @@ data:extend({
         name = "oarc-mod-default-allow-spawning-on-other-surfaces",
         setting_type = "startup",
         default_value = false,
-        order = "b3"
+        order = "a1"
+    },
+    {
+        type = "string-setting",
+        name = "oarc-mod-main-force-name",
+        setting_type = "startup",
+        default_value = "Main Force",
+        order = "a2"
     },
     
     {
@@ -140,13 +147,6 @@ data:extend({
         order = "d7"
     },
 
-    {
-        type = "string-setting",
-        name = "oarc-mod-main-force-name",
-        setting_type = "runtime-global",
-        default_value = "Main Force",
-        order = "e1"
-    },
     {
         type = "string-setting",
         name = "oarc-mod-default-surface",

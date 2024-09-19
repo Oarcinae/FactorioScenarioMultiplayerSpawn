@@ -180,8 +180,12 @@ OCFG = {
     gameplay = {
 
         -- Default setting for enabling spawning on other surfaces other than the default_surface.
-        -- This is a STARTUP setting, so it can't be changed in game.
+        -- This is a STARTUP setting, so it can't be changed in game!!
         default_allow_spawning_on_other_surfaces = true,
+
+        -- The name of the main force.
+        -- This is a STARTUP setting, so it can't be changed in game!!
+        main_force_name = "Main Force",
 
         -- At least one of these must be enabled! (enable_main_team and enable_separate_teams)
         -- Otherwise we default to enable_main_team = true
@@ -234,9 +238,6 @@ OCFG = {
 
         -- I like keeping this off... set to true if you want to shoot your own chests and stuff.
         enable_friendly_fire = true,
-
-        -- The name of the main force.
-        main_force_name = "Main Force",
 
         -- The default starting surface.
         default_surface = "nauvis",
@@ -354,6 +355,7 @@ OCFG = {
 
 ---@class OarcConfigGameplaySettings
 ---@field default_allow_spawning_on_other_surfaces boolean Default setting for enabling spawning on other surfaces other than the default_surface. This is a STARTUP setting, so it can't be changed in game.
+---@field main_force_name string The name of the main force. This is a STARTUP setting, so it can't be changed in game.
 ---@field enable_main_team boolean Allows all players to join a primary force(team).
 ---@field enable_separate_teams boolean Allows players to create their own force(team).
 ---@field allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
@@ -368,7 +370,6 @@ OCFG = {
 ---@field enable_shared_spawns boolean Enable if players can allow others to join their spawn.
 ---@field number_of_players_per_shared_spawn number Number of players allowed to join a shared spawn.
 ---@field enable_friendly_fire boolean Set to true if you want to shoot your own chests and stuff.
----@field main_force_name string The name of the main force.
 ---@field default_surface string The starting surface of the main force.
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.

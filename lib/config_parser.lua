@@ -14,7 +14,7 @@ OCFG_KEYS =
     ["Gameplay"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
     ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
-    -- ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-default-allow-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
+    -- STARTUP ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-default-allow-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
     ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-mod-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
     ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-mod-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
     ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-mod-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
@@ -29,7 +29,7 @@ OCFG_KEYS =
     ["gameplay.number_of_players_per_shared_spawn"] = {mod_key = "oarc-mod-number-of-players-per-shared-spawn" , ocfg_keys = {"gameplay", "number_of_players_per_shared_spawn"}, type = "integer"},
     ["gameplay.enable_friendly_fire"] = {mod_key = "oarc-mod-enable-friendly-fire" , ocfg_keys = {"gameplay", "enable_friendly_fire"}, type = "boolean"},
 
-    ["gameplay.main_force_name"] = {mod_key = "oarc-mod-main-force-name" , ocfg_keys = {"gameplay", "main_force_name"}, type = "string"},
+    -- ["gameplay.main_force_name"] = {mod_key = "oarc-mod-main-force-name" , ocfg_keys = {"gameplay", "main_force_name"}, type = "string"},
     ["gameplay.default_surface"] = {mod_key = "oarc-mod-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
 
     ["gameplay.scale_resources_around_spawns"] = {mod_key = "oarc-mod-scale-resources-around-spawns" , ocfg_keys = {"gameplay", "scale_resources_around_spawns"}, type = "boolean"},
@@ -70,7 +70,7 @@ OCFG_MOD_KEYS =
     ["oarc-mod-number-of-players-per-shared-spawn"] = "gameplay.number_of_players_per_shared_spawn",
     ["oarc-mod-enable-friendly-fire"] = "gameplay.enable_friendly_fire",
 
-    ["oarc-mod-main-force-name"] = "gameplay.main_force_name",
+    -- STARTUP ["oarc-mod-main-force-name"] = "gameplay.main_force_name",
     ["oarc-mod-default-surface"] = "gameplay.default_surface",
 
     ["oarc-mod-scale-resources-around-spawns"] = "gameplay.scale_resources_around_spawns",
@@ -169,6 +169,7 @@ function CacheModSettings()
 
     -- Special case for startup settings
     global.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value
+    global.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value
 end
 
 function GetScenarioOverrideSettings()

@@ -1,42 +1,36 @@
 
 ACTIVE ITEMS:
 
+- Think through player flow for Space Age for creating new unique spawns on other surfaces and respawning:
+    - Create a function to create secondary uniqueSpawns for the same player
 
-- Change main_force_name to a startup setting! New players in spawn area should stay on default "player" force to avoid mod conflicts on player init?
 
-
+- Expose some settings for adjusting easy and medium enemy evolution values
+- Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
 
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
 
+Not specific:
 - Lots of localizations!
-
-- Add rich text map location links for new spawns (print to chat)
-
-
 - Custom tips and tricks??
 - List all TODOs in code here.
-- Add refresh chunks around spidertrons based on their vision
-- Convert regrowth to a proper mod
-- Refresh players in admin controls when dropdown is clicked
+- TEST resizing spawn areas and moat sizes!
 
-- Think through player flow for Space Age for creating new unique spawns on other surfaces and respawning:
-    - Create a function to create secondary uniqueSpawns for the same player
-    
+Minor:
+- Add rich text map location links for new spawns (print to chat)
+- Add refresh chunks around spidertrons based on their vision
+- Refresh players in admin controls when dropdown is clicked
 - Add a show current respawn location button (same as show spawn location)
 - Default to selecting SELF in admin controls player dropdown?
-- In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
-- TEST resizing spawn areas and moat sizes!
 - Add in square bases again
-
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 
+Major:
 - Shared electricity (proper)
 - Shared items (proper)
 
-- Expose some settings for adjusting easy and medium enemy evolution values
-- Clean out old enemy scaling and remove unnecessary checks/logs
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -56,13 +50,14 @@ Other Ideas, Not Committed:
 - Work on space ex support?
 - Profile regrowth and try to improve performance ?
 - Possibly adjust easy/medium evo factors on new player joined?
+- Convert regrowth to a proper mod
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
 - Map Settings changes?
 - Pollution changes (regrowth)?
 - Enemy changes?
-- Rocket silo locations per player? (Only allowed to build 1)?
+- Landing pad locations per FORCE limited to 1?
 - Surface names for space ships?
 - Spawner health tied to evolution?
 - Respawn position is surface specific? Each surface needs a separate respawn point? Default respawn behavior?
@@ -122,3 +117,5 @@ Other Ideas, Not Committed:
 - Fix search vector to use more variable vector'ing, always normalize vector, and then ensure the other reliant functions work still.
 - Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
 - Test multiple enemy forces to provide a way to scale evolution locally (need to continually set the evo factor back)
+- Change main_force_name to a startup setting! New players in spawn area should stay on default "player" force to avoid mod conflicts on player init?
+- In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
