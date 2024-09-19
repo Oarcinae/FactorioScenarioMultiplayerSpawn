@@ -221,9 +221,10 @@ function RegrowthMarkAreaForRemoval(surface_name, pos, chunk_radius)
         for k = -chunk_radius, chunk_radius do
             local y = c_pos.y + k
 
-            if (global.rg[surface_name].map[x] ~= nil) then
-                global.rg[surface_name].map[x][y] = REGROWTH_FLAG_REMOVAL
+            if (global.rg[surface_name].map[x] == nil) then
+                global.rg[surface_name].map[x] = {}
             end
+            global.rg[surface_name].map[x][y] = REGROWTH_FLAG_REMOVAL
 
             ---@type RemovalListEntry
             local removal_entry = { pos = { x = x, y = y }, force = true, surface = surface_name }

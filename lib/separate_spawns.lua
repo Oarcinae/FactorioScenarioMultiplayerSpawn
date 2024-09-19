@@ -429,27 +429,58 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         end
 
         -- Remove trees/resources inside the spawn area
-        RemoveInCircle(surface, chunkArea, "tree", spawn.position, spawn_config.general.spawn_radius_tiles)
-        RemoveInCircle(surface, chunkArea, "resource", spawn.position, spawn_config.general.spawn_radius_tiles + 5)
-        RemoveInCircle(surface, chunkArea, "cliff", spawn.position, spawn_config.general.spawn_radius_tiles + 5)
+        if (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.circle) or (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.octagon) then
+            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, spawn_config.general.spawn_radius_tiles + 5)
+        elseif (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.square) then
+            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, spawn_config.general.spawn_radius_tiles + 5)
+        end
 
         -- Fill in the spawn area with landfill and create a circle of trees around it.
         local fill_tile = "landfill"
-        if (spawn_config.general.tree_circle) then
-            CreateCropCircle(surface, spawn.position, chunkArea, spawn_config.general.spawn_radius_tiles, fill_tile)
+        if spawn_config.general.force_grass then
+            fill_tile = "grass-1"
         end
-        if (spawn_config.general.tree_octagon) then
-            CreateCropOctagon(surface, spawn.position, chunkArea, spawn_config.general.spawn_radius_tiles, fill_tile)
-        end
-
-        if (spawn.moat) then
-            CreateMoat(surface,
+        
+        if (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.circle) then
+            CreateCropCircle(
+                surface,
                 spawn.position,
                 chunkArea,
                 spawn_config.general.spawn_radius_tiles,
-                "water",
-                global.ocfg.gameplay.enable_moat_bridging)
+                fill_tile,
+                spawn.moat,
+                global.ocfg.gameplay.enable_moat_bridging
+            )
+        elseif (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.octagon) then
+            CreateCropOctagon(
+                surface,
+                spawn.position,
+                chunkArea,
+                spawn_config.general.spawn_radius_tiles,
+                fill_tile,
+                spawn.moat,
+                global.ocfg.gameplay.enable_moat_bridging
+            )
+        elseif (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.square) then
+            CreateCropSquare(
+                surface,
+                spawn.position,
+                chunkArea,
+                spawn_config.general.spawn_radius_tiles,
+                fill_tile,
+                spawn.moat,
+                global.ocfg.gameplay.enable_moat_bridging
+            )
         end
+
+        -- if (spawn.moat) then
+        --     CreateMoat(surface,
+        --         spawn.position,
+        --         chunkArea,
+        --         spawn_config.general.spawn_radius_tiles,
+        --         "water",
+        --         global.ocfg.gameplay.enable_moat_bridging)
+        -- end
 
         :: CONTINUE ::
     end
@@ -621,13 +652,14 @@ function UniqueSpawnCleanupRemove(player_name)
     if (primary_spawn == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. player_name)
 
-    local spawn_radius_tiles = global.ocfg.surfaces_config[primary_spawn.surface_name].spawn_config.general.spawn_radius_tiles
+    local total_spawn_width = global.ocfg.surfaces_config[primary_spawn.surface_name].spawn_config.general.spawn_radius_tiles +
+                                global.ocfg.surfaces_config[primary_spawn.surface_name].spawn_config.general.moat_width_tiles
 
     -- Check if it was near someone else's base. (Really just buddy base is possible I think?)
     nearOtherSpawn = false
     for player_index, spawn in pairs(global.unique_spawns[primary_spawn.surface_name]) do
         if ((player_index ~= player_name) and
-            (util.distance(primary_spawn.position, spawn.position) < (spawn_radius_tiles * 3))) then
+            (util.distance(primary_spawn.position, spawn.position) < (total_spawn_width * 3))) then
             log("Won't remove base as it's close to another spawn: " .. player_index)
             nearOtherSpawn = true
         end
@@ -637,7 +669,7 @@ function UniqueSpawnCleanupRemove(player_name)
     local spawn_position = primary_spawn.position
     if (global.ocfg.regrowth.enable_abandoned_base_cleanup and (not nearOtherSpawn)) then
         log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. primary_spawn.surface_name)
-        RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, math.ceil(spawn_radius_tiles / CHUNK_SIZE))
+        RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, math.ceil(total_spawn_width / CHUNK_SIZE) + 1) -- +1 to match the spawn generation requested area
         TriggerCleanup()
     end
 
@@ -948,19 +980,24 @@ end
 --     return nil
 -- end
 
----Sets the custom spawn point for a player.
+---Sets the custom spawn point for a player. They can have one per surface.
 ---@param player_name string
 ---@param surface_name string
 ---@param position MapPosition
+---@param reset_cooldown boolean
 ---@return nil
-function ChangePlayerRespawn(player_name, surface_name, position)
+function SetPlayerRespawn(player_name, surface_name, position, reset_cooldown)
     ---@type OarcPlayerSpawn
     local updatedPlayerSpawn = {}
     updatedPlayerSpawn.surface = surface_name
     updatedPlayerSpawn.position = position
 
     global.player_respawns[player_name][surface_name] = updatedPlayerSpawn
-    global.player_cooldowns[player_name] = { setRespawn = game.tick }
+
+
+    if (global.player_cooldowns[player_name].setRespawn == nil) or reset_cooldown then
+        global.player_cooldowns[player_name].setRespawn = game.tick
+    end
 end
 
 ---Creates the global.unique_spawns entries for a new spawn area.
@@ -1010,7 +1047,9 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
     InitUniqueSpawnGlobals(player_name, surface, spawn_position, moat_enabled, primary, buddy_name)
 
     -- Add a 1 chunk buffer to be safe
-    local spawn_chunk_radius = math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE) + 1
+    local total_spawn_width = global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles +
+                                global.ocfg.surfaces_config[surface].spawn_config.general.moat_width_tiles
+    local spawn_chunk_radius = math.ceil(total_spawn_width / CHUNK_SIZE) + 1
     local delay_spawn_seconds = 5 * spawn_chunk_radius
 
     game.players[player_name].print({ "oarc-generating-spawn-please-wait" })
@@ -1043,6 +1082,44 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
         spawn_chunk_radius,
         surface
     )
+end
+
+---Creates and sends a player to a new secondary spawn, temporarily placing them in the holding pen.
+---@param player LuaPlayer
+---@param surface LuaSurface
+---@return nil
+function SecondarySpawn(player, surface)
+
+    -- Ensure we still have their previous spawn choices
+    local spawn_choices = global.spawn_choices[player.name]
+    if (spawn_choices == nil) then
+        log("ERROR - SecondarySpawn - No spawn choices for player: " .. player.name)
+        return
+    end
+
+    -- Confirm there is no existing spawn point for this player on this surface
+    if (global.unique_spawns[surface.name] ~= nil and global.unique_spawns[surface.name][player.name] ~= nil) then
+        log("ERROR - SecondarySpawn - Player already has a spawn point on this surface: " .. player.name)
+        return
+    end
+
+    -- Find a new spawn point
+    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+    -- If that fails, just throw a warning and don't spawn them. They can try again.
+    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
+        player.print({ "oarc-no-ungenerated-land-error" })
+        return
+    end
+    
+    -- Add new spawn point for the new surface
+    SetPlayerRespawn(player.name, surface.name, spawn_position, false) -- Do not reset cooldown
+    QueuePlayerForDelayedSpawn(player.name, surface.name, spawn_position, spawn_choices.moat, false, nil)
+
+    -- Send them to the holding pen
+    SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+
+    -- Announce
+    SendBroadcastMsg({"", { "oarc-player-new-secondary", player.name, spawn_choices.surface }, " ", GetGPStext(spawn_choices.surface, spawn_position)})
 end
 
 -- Check a table to see if there are any players waiting to spawn

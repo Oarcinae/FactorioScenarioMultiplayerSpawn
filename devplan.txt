@@ -2,7 +2,7 @@
 ACTIVE ITEMS:
 
 - Think through player flow for Space Age for creating new unique spawns on other surfaces and respawning:
-    - Create a function to create secondary uniqueSpawns for the same player
+    - Expose primary AND secondary spawn info in spawn controls GUI tab
 
 
 - Expose some settings for adjusting easy and medium enemy evolution values
@@ -16,16 +16,14 @@ Not specific:
 - Lots of localizations!
 - Custom tips and tricks??
 - List all TODOs in code here.
-- TEST resizing spawn areas and moat sizes!
 
 Minor:
-- Add rich text map location links for new spawns (print to chat)
 - Add refresh chunks around spidertrons based on their vision
 - Refresh players in admin controls when dropdown is clicked
 - Add a show current respawn location button (same as show spawn location)
 - Default to selecting SELF in admin controls player dropdown?
-- Add in square bases again
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
+- Pull out general spawn config from surfaces config
 
 Major:
 - Shared electricity (proper)
@@ -119,3 +117,7 @@ Other Ideas, Not Committed:
 - Test multiple enemy forces to provide a way to scale evolution locally (need to continually set the evo factor back)
 - Change main_force_name to a startup setting! New players in spawn area should stay on default "player" force to avoid mod conflicts on player init?
 - In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+- Add rich text map location links for new spawns (print to chat)
+- Add in square bases again
+- TEST resizing spawn areas and moat sizes!
+- Create a function to create secondary uniqueSpawns for the same player

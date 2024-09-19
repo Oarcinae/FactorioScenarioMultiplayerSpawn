@@ -12,6 +12,13 @@
 -- Additionally, many settings are exposed in the game itself and can be chanced once you launch.
 -- For convenience you can provide you own config-scenario.lua file in the scenarios/OARC folder to override these settings.
 
+---@enum SpawnShapeChoice
+SPAWN_SHAPE_CHOICE = {
+    circle = 1,
+    octagon = 2,
+    square = 3,
+}
+
 ---@type OarcConfigStartingItems
 NAUVIS_STARTER_ITEMS =
 {
@@ -47,11 +54,17 @@ NAUVIS_SPAWN_CONFIG =
     general = {
 
         -- Create a circle of land area for the spawn
-        -- If you make this much bigger than a few chunks, good luck.
+        -- If you make this much bigger than a few chunks, good luck!
+        -- (It takes a long time to generate new chunks!)
         spawn_radius_tiles = CHUNK_SIZE*2,
 
-        -- If you change the spawn area size, you might have to adjust this as well
-        moat_size_modifier = 1,
+        -- Width of the moat around the spawn area.
+        -- If you change the spawn area size, you might have to adjust this as well.
+        moat_width_tiles = 8,
+
+        -- Width of the tree ring around the spawn area.
+        -- If you change the spawn area size, you might have to adjust this as well.
+        tree_width_tiles = 5,
 
         -- Start resource shape. true = circle, false = square.
         resources_circle_shape = true,
@@ -59,9 +72,8 @@ NAUVIS_SPAWN_CONFIG =
         -- Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain.
         force_grass = true,
 
-        -- Spawn a circle/octagon of trees around the base outline.
-        tree_circle = true,
-        tree_octagon = false,
+        -- Spawn a circle/octagon/square of trees around this base outline.
+        shape = SPAWN_SHAPE_CHOICE.circle,
     },
 
     -- Safe Spawn Area Options
@@ -403,11 +415,11 @@ OCFG = {
 
 ---@class OarcConfigSpawnGeneral
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
----@field moat_size_modifier number If you change the spawn area size, you might have to adjust this as well
+---@field moat_width_tiles number Width of the moat around the spawn area. If you change the spawn area size, you might have to adjust this as well.
+---@field tree_width_tiles number Width of the tree ring around the spawn area. If you change the spawn area size, you might have to adjust this as well.
 ---@field resources_circle_shape boolean Start resource shape. true = circle, false = square.
 ---@field force_grass boolean Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain.
----@field tree_circle boolean Spawn a circle/octagon of trees around the base outline.
----@field tree_octagon boolean Spawn a circle/octagon of trees around the base outline.
+---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
 
 ---@class OarcConfigSpawnSafeArea
 ---@field safe_radius number Safe area has no aliens This is the radius in tiles of safe area.

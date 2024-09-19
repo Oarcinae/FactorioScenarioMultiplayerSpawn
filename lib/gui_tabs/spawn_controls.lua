@@ -227,7 +227,7 @@ function SpawnCtrlGuiClick(event)
 
     -- Sets a new respawn point and resets the cooldown.
     if (tags.setting == "set_respawn_location") then
-        ChangePlayerRespawn(player.name, player.surface.name, player.position)
+        SetPlayerRespawn(player.name, player.surface.name, player.position, true)
         OarcGuiRefreshContent(player)
         player.print({ "oarc-spawn-point-updated" })
 
@@ -293,7 +293,7 @@ function SpawnCtrlGuiClick(event)
 
             -- Spawn the player
             local joining_player = game.players[join_queue_player_choice]
-            ChangePlayerRespawn(joining_player.name, primary_spawn.surface_name, primary_spawn.position)
+            SetPlayerRespawn(joining_player.name, primary_spawn.surface_name, primary_spawn.position, true)
             SendPlayerToSpawn(primary_spawn.surface_name, joining_player)
             GivePlayerStarterItems(joining_player)
             table.insert(global.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)

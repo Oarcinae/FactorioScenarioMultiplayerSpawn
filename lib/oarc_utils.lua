@@ -894,7 +894,7 @@ end
 --             right_bottom={x=chunk_pos.x*32+31, y=chunk_pos.y*32+31}}
 -- end
 
--- -- Removes the entity type from the area given
+-- Removes the entity type from the area given
 -- function RemoveInArea(surface, area, type)
 --     for key, entity in pairs(surface.find_entities_filtered{area=area, type= type}) do
 --         if entity.valid and entity and entity.position then
@@ -906,14 +906,32 @@ end
 ---Removes the entity type from the area given. Only if it is within given distance from given position.
 ---@param surface LuaSurface
 ---@param area BoundingBox
----@param type string
+---@param type string|string[]
 ---@param pos MapPosition
 ---@param dist number
 ---@return nil
 function RemoveInCircle(surface, area, type, pos, dist)
-    for key, entity in pairs(surface.find_entities_filtered { area = area, type = type }) do
+    for _, entity in pairs(surface.find_entities_filtered { area = area, type = type }) do
         if entity.valid and entity and entity.position then
             if ((pos.x - entity.position.x) ^ 2 + (pos.y - entity.position.y) ^ 2 < dist ^ 2) then
+                entity.destroy()
+            end
+        end
+    end
+end
+
+---Removes the entity type from the area given. Only if it is within given distance from given position.
+---@param surface LuaSurface
+---@param area BoundingBox
+---@param type string|string[]
+---@param pos MapPosition
+---@param dist number
+---@return nil
+function RemoveInSquare(surface, area, type, pos, dist)
+    for _, entity in pairs(surface.find_entities_filtered { area = area, type = type }) do
+        if entity.valid and entity and entity.position then
+            local max_distance = math.max(math.abs(pos.x - entity.position.x), math.abs(pos.y - entity.position.y))
+            if (max_distance < dist) then
                 entity.destroy()
             end
         end
@@ -1298,35 +1316,54 @@ end
 -- -- Resource patch and starting area generation
 -- --------------------------------------------------------------------------------
 
----Enforce a circle of land, also adds trees in a ring around the area.
+---Circle spawn shape (handles land, trees and moat)
 ---@param surface LuaSurface
 ---@param centerPos MapPosition
 ---@param chunkArea BoundingBox
 ---@param tileRadius number
 ---@param fillTile string
+---@param moat boolean
+---@param bridge boolean
 ---@return nil
-function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile)
-    local tileRadSqr = tileRadius ^ 2
+function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
+    local tile_radius_sqr = tileRadius ^ 2
+
+    local moat_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles
+    local moat_radius_sqr = ((tileRadius + moat_width)^2)
+
+    local tree_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.tree_width_tiles
+    local tree_radius_sqr_inner = ((tileRadius - 1 - tree_width) ^ 2) -- 1 less to make sure trees are inside the spawn area
+    local tree_radius_sqr_outer = ((tileRadius - 1) ^ 2)
 
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
-            -- This ( X^2 + Y^2 ) is used to calculate if something
-            -- is inside a circle area.
+            
+            -- This ( X^2 + Y^2 ) is used to calculate if something is inside a circle area.
+            -- We avoid using sqrt for performance reasons.
             local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
-            -- Fill in all unexpected water in a circle
-            if (distSqr < tileRadSqr) then
+            -- Fill in all unexpected water (or force grass)
+            if (distSqr <= tile_radius_sqr) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
                         global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
 
-            -- Create a circle of trees around the spawn point.
-            if ((distSqr < tileRadSqr - 100) and
-                    (distSqr > tileRadSqr - 500)) then
+            -- Create a tree ring
+            if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
                 surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+
+            -- Fill moat with water.
+            if (moat) then
+                if (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
+                    -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
+                    -- land connections if the spawn is on or near land.
+                elseif ((distSqr < moat_radius_sqr) and (distSqr > tile_radius_sqr)) then
+                    table.insert(dirtTiles, { name = "water", position = { i, j } })
+                end
             end
         end
     end
@@ -1334,37 +1371,107 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile)
     surface.set_tiles(dirtTiles)
 end
 
----Enforce a square of land, with a tree border. This is equivalent to the CreateCropCircle code. COPIED FROM jvmguy!
+---` spawn shape (handles land, trees and moat) (Curtesy of jvmguy)
 ---@param surface LuaSurface
 ---@param centerPos MapPosition
 ---@param chunkArea BoundingBox
 ---@param tileRadius number
 ---@param fillTile string
+---@param moat boolean
+---@param bridge boolean
 ---@return nil
-function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile)
+function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
+    
+    local moat_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles
+    local moat_width_outer = tileRadius + moat_width
+
+    local tree_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.tree_width_tiles
+    local tree_distance_inner = tileRadius - tree_width
+
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+
             local distVar1 = math.floor(math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j)))
             local distVar2 = math.floor(math.abs(centerPos.x - i) + math.abs(centerPos.y - j))
-            local distVar = math.max(distVar1 * 1.1, distVar2 * 0.707 * 1.1);
+            local distVar = math.max(distVar1, distVar2 * 0.707);
 
-            -- Fill in all unexpected water in a circle
-            if (distVar < tileRadius + 2) then
+            -- Fill in all unexpected water (or force grass)
+            if (distVar <= tileRadius) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass or
-                        (game.active_mods["oarc-restricted-build"])) then
+                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
 
             -- Create a tree ring
-            if ((distVar < tileRadius) and
-                    (distVar > tileRadius - 2)) then
+            if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
                 surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
+            end
+
+            -- Fill moat with water
+            if (moat) then
+                if (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
+                    -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
+                    -- land connections if the spawn is on or near land.
+                elseif ((distVar > tileRadius) and (distVar <= moat_width_outer)) then
+                    table.insert(dirtTiles, { name = "water", position = { i, j } })
+                end
             end
         end
     end
+    surface.set_tiles(dirtTiles)
+end
+
+---Square spawn shape (handles land, trees and moat) 
+---@param surface LuaSurface
+---@param centerPos MapPosition
+---@param chunkArea BoundingBox
+---@param tileRadius number
+---@param fillTile string
+---@param moat boolean
+---@param bridge boolean
+---@return nil
+function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
+
+    local moat_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles
+    local moat_width_outer = tileRadius + moat_width
+
+    local tree_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.tree_width_tiles
+    local tree_distance_inner = tileRadius - tree_width
+
+    local dirtTiles = {}
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+
+            -- Max distance from center (either x or y)
+            local max_distance = math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j))
+
+            -- Fill in all unexpected water (or force grass)
+            if (max_distance <= tileRadius) then
+                if (surface.get_tile(i, j).collides_with("water-tile") or
+                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
+                    table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                end
+            end
+
+            -- Create a tree ring
+            if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+
+            -- Fill moat with water
+            if (moat) then
+                if (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
+                    -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
+                    -- land connections if the spawn is on or near land.
+                elseif ((max_distance > tileRadius) and (max_distance <= moat_width_outer)) then
+                    table.insert(dirtTiles, { name = "water", position = { i, j } })
+                end
+            end
+        end
+    end
+
     surface.set_tiles(dirtTiles)
 end
 
@@ -1375,8 +1482,9 @@ end
 ---@param tileRadius number
 ---@param moatTile string
 ---@param bridge boolean
+---@param shape SpawnShapeChoice
 ---@return nil
-function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
+function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge, shape)
     local tileRadSqr = tileRadius ^ 2
 
     local tiles = {}
@@ -1391,7 +1499,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge)
                 local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
                 -- Create a circle of water
-                if ((distVar < tileRadSqr + (1500 * global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_size_modifier)) and
+                if ((distVar < tileRadSqr + (1500 * global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles)) and
                         (distVar > tileRadSqr)) then
                     table.insert(tiles, { name = moatTile, position = { i, j } })
                 end

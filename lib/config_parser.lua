@@ -168,8 +168,8 @@ function CacheModSettings()
     end
 
     -- Special case for startup settings
-    global.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value
-    global.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value
+    global.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value  --[[@as boolean]]
+    global.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value --[[@as string]]
 end
 
 function GetScenarioOverrideSettings()

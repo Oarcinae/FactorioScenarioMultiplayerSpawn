@@ -873,11 +873,11 @@ function PrimarySpawnRequest(player)
     end
 
     -- Create that player's spawn in the global vars
-    ChangePlayerRespawn(player.name, spawn_choices.surface, spawn_position)
+    SetPlayerRespawn(player.name, spawn_choices.surface, spawn_position, true)
 
     -- Send the player there
     QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, nil)
-    SendBroadcastMsg({ "oarc-player-is-joining", player.name, spawn_choices.surface })
+    SendBroadcastMsg({"", { "oarc-player-is-joining", player.name, spawn_choices.surface }, " ", GetGPStext(spawn_choices.surface, spawn_position)})
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
@@ -1136,13 +1136,13 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
         x_offset = x_offset + 10
     end
     buddySpawn = { x = spawn_position.x + x_offset, y = spawn_position.y }
-    ChangePlayerRespawn(player.name, spawn_choices.surface, spawn_position)
-    ChangePlayerRespawn(requesting_buddy_name, spawn_choices.surface, buddySpawn)
+    SetPlayerRespawn(player.name, spawn_choices.surface, spawn_position, true)
+    SetPlayerRespawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, true)
 
     -- Send the player there
     QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, requesting_buddy_name)
     QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, player.name)
-    SendBroadcastMsg(requesting_buddy_name .. " and " .. player.name .. " are joining the game together!")
+    SendBroadcastMsg({"", {"oarc-buddies-are-joining", requesting_buddy_name, player.name, spawn_choices.surface}, " ", GetGPStext(spawn_choices.surface, spawn_position)})
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
