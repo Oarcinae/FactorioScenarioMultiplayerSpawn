@@ -31,6 +31,7 @@ require("lib/separate_spawns_guis")
 require("lib/oarc_gui_tabs")
 require("lib/offline_protection")
 require("lib/scaled_enemies")
+require("lib/sharing")
 
 -- Possibly remove this later?
 require("lib/oarc_tests")
@@ -215,7 +216,6 @@ end)
 -- This is where I modify biter spawning based on location and other factors.
 ----------------------------------------
 script.on_event(defines.events.on_entity_spawned, function(event)
-
     -- TODO: Confirm that the new enemy scaling is working correctly!
     -- if (global.ocfg.gameplay.modified_enemy_spawning) then
     --     ModifyEnemySpawnsNearPlayerStartingAreas(event)

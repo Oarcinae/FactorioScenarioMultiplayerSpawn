@@ -169,6 +169,24 @@ data:extend({
         default_value = true,
         order = "f2"
     },
+    {
+        type = "double-setting",
+        name = "oarc-mod-modified-enemy-easy-evo",
+        setting_type = "runtime-global",
+        default_value = 0,
+        minimum_value = 0,
+        maximum_value = 1,
+        order = "f21"
+    },
+    {
+        type = "double-setting",
+        name = "oarc-mod-modified-enemy-medium-evo",
+        setting_type = "runtime-global",
+        default_value = 0.3,
+        minimum_value = 0,
+        maximum_value = 1,
+        order = "f22"
+    },
 
     {
         type = "int-setting",
@@ -188,6 +206,22 @@ data:extend({
         maximum_value = 60,
         order = "f4"
     },
+
+    {
+        type = "bool-setting",
+        name = "oarc-mod-enable-shared-power",
+        setting_type = "runtime-global",
+        default_value = false,
+        order = "f10"
+    },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-enable-shared-chest",
+        setting_type = "runtime-global",
+        default_value = false,
+        order = "f11"
+    },
+
 
     {
         type = "bool-setting",
@@ -219,6 +253,8 @@ data:extend({
         maximum_value = 180,
         order = "g4"
     },
+
+
 
 
     -- Vanilla spawn point are not implemented yet.

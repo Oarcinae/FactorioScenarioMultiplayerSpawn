@@ -304,14 +304,15 @@ end
 ---@return nil
 function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     local ocfg --[[@as OarcConfig]] = global.ocfg
+    local spawn_config = ocfg.surfaces_config[delayed_spawn.surface].spawn_config
 
     -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(delayed_spawn.position, ocfg.surfaces_config[delayed_spawn.surface].spawn_config.safe_area.safe_radius,
+    ClearNearbyEnemies(delayed_spawn.position, spawn_config.safe_area.safe_radius,
         game.surfaces[delayed_spawn.surface])
 
     -- Generate water strip only if we don't have a moat.
     if (not delayed_spawn.moat) then
-        local water_data = ocfg.surfaces_config[delayed_spawn.surface].spawn_config.water
+        local water_data = spawn_config.water
         CreateWaterStrip(game.surfaces[delayed_spawn.surface],
             { x = delayed_spawn.position.x + water_data.x_offset, y = delayed_spawn.position.y + water_data.y_offset },
             water_data.length)
@@ -323,6 +324,22 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     -- Create the spawn resources here
     GenerateStartingResources(game.surfaces[delayed_spawn.surface], delayed_spawn.position)
 
+    -- Create shared power poles
+    if (ocfg.gameplay.enable_shared_power) then
+        local power_pole_position = {
+            x = delayed_spawn.position.x + spawn_config.shared_power_pole_position.x_offset,
+            y = delayed_spawn.position.y + spawn_config.shared_power_pole_position.y_offset }
+        CreateSharedPowerPolePair(game.surfaces[delayed_spawn.surface], power_pole_position)
+    end
+
+    -- Create shared chest
+    if (ocfg.gameplay.enable_shared_chest) then
+        local chest_position = {
+            x = delayed_spawn.position.x + spawn_config.shared_chest_position.x_offset,
+            y = delayed_spawn.position.y + spawn_config.shared_chest_position.y_offset }
+        CreateSharedChest(game.surfaces[delayed_spawn.surface], chest_position)
+    end
+
     -- Send the player to that position
     local player = game.players[delayed_spawn.playerName]
     SendPlayerToSpawn(delayed_spawn.surface, player)
@@ -332,7 +349,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     DisplayWelcomeGroundTextAtSpawn(player, delayed_spawn.surface, delayed_spawn.position)
 
     -- Chart the area.
-    ChartArea(player.force, delayed_spawn.position, math.ceil(ocfg.surfaces_config[delayed_spawn.surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
+    ChartArea(player.force, delayed_spawn.position, math.ceil(spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
         player.surface)
 
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then

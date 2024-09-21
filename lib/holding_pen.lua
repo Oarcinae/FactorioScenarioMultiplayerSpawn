@@ -4,6 +4,11 @@ HOLDING_PEN_SURFACE_NAME = "oarc_holding_pen"
 
 function CreateHoldingPenSurface()
 
+    if game.surfaces[HOLDING_PEN_SURFACE_NAME] ~= nil then
+        log("ERROR - Holding pen surface already exists!")
+        return
+    end
+
     ---@type MapGenSettings
     ---@diagnostic disable-next-line: missing-fields
     local map_settings = {}
@@ -20,27 +25,25 @@ function CreateHoldingPenSurface()
     -- map_settings.autoplace_controls["uranium-ore"].size = 0
     -- map_settings.autoplace_controls["enemy-base"].size = 0
     -- map_settings.autoplace_controls["trees"].size = 0
-    map_settings.width = 32
-    map_settings.height = 32
+    map_settings.width = 64
+    map_settings.height = 64
 
     -- Create a new surface for the holding pen
-    if game.surfaces[HOLDING_PEN_SURFACE_NAME] == nil then
-        local holding_pen_surface = game.create_surface(HOLDING_PEN_SURFACE_NAME, map_settings)
-        holding_pen_surface.always_day = true
-        holding_pen_surface.show_clouds = false
-        holding_pen_surface.generate_with_lab_tiles = true
 
-        RenderPermanentGroundText(holding_pen_surface, {x=-15,y=-24}, 20, "OARC", {0.9, 0.7, 0.3, 0.8})
+    local holding_pen_surface = game.create_surface(HOLDING_PEN_SURFACE_NAME, map_settings)
+    holding_pen_surface.always_day = true
+    holding_pen_surface.show_clouds = false
+    holding_pen_surface.generate_with_lab_tiles = true
 
-        -- This doesn't work if loading map data. TODO: Revert this later?
-        -- Disabling this let's me launch the scenario directly from the editor while using an empty blueprint.zip as 
-        -- a workaround since there's a bug with the "--load-scenario" launch argument.
-        -- https://forums.factorio.com/110708
-        -- holding_pen_surface.request_to_generate_chunks({0,0}, 2)
-        -- holding_pen_surface.force_generate_chunk_requests()
-    else
-        log("Holding pen surface already exists!?")
-    end
+    RenderPermanentGroundText(holding_pen_surface, {x=-15,y=-24}, 20, "OARC", {0.9, 0.7, 0.3, 0.8})
+
+    -- This doesn't work if loading map data. TODO: Revert this later?
+    -- Disabling this let's me launch the scenario directly from the editor while using an empty blueprint.zip as 
+    -- a workaround since there's a bug with the "--load-scenario" launch argument.
+    -- https://forums.factorio.com/110708
+    -- holding_pen_surface.request_to_generate_chunks({0,0}, 2)
+    -- holding_pen_surface.force_generate_chunk_requests()
+
 end
 
 ---Creates a holding pen area
@@ -53,21 +56,26 @@ function CreateHoldingPenChunks(surface, chunkArea)
     end
 
     -- Remove ALL entities in the chunk
-    for key, entity in pairs(surface.find_entities(chunkArea)) do
+    for _, entity in pairs(surface.find_entities(chunkArea)) do
         if entity.type ~= "character" then
             entity.destroy()
         end
     end
 
-    -- Makes a small circle of grass hopefully?
+    -- Place some tutorial grid tiles
     local tiles = {}
-    for i=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
-        for j=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
-            local distance = math.floor(i^2 + j^2)
-            if (distance < 10^2) then
-                table.insert(tiles, {name="tutorial-grid", position={i, j}})
+    for x=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
+        for y=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
+            local distance = math.floor(x^2 + y^2)
+
+            --This is for placing shared power poles on (temporary hack? TODO: Space Age?)
+            if (y == 20) then
+                table.insert(tiles, {name="tutorial-grid", position={x, y}})
+            -- This is for the spawn area
+            elseif (distance < 10^2) then
+                table.insert(tiles, {name="tutorial-grid", position={x, y}})
             else
-                table.insert(tiles, {name="out-of-map", position={i, j}})
+                table.insert(tiles, {name="out-of-map", position={x, y}})
             end
         end
     end

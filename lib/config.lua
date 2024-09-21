@@ -69,8 +69,9 @@ NAUVIS_SPAWN_CONFIG =
         -- Start resource shape. true = circle, false = square.
         resources_circle_shape = true,
 
-        -- Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain.
-        force_grass = true,
+        -- Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain
+        -- or uses landfill.
+        force_grass = false,
 
         -- Spawn a circle/octagon/square of trees around this base outline.
         shape = SPAWN_SHAPE_CHOICE.circle,
@@ -104,6 +105,18 @@ NAUVIS_SPAWN_CONFIG =
         x_offset = -4,
         y_offset = -48,
         length = 8,
+    },
+
+    -- Location of shared power pole relative to spawn center (if enabled)
+    shared_power_pole_position = {
+        x_offset=-4,
+        y_offset=-54
+    },
+
+    -- Location of shared chest relative to spawn center (if enabled)
+    shared_chest_position = {
+        x_offset=4,
+        y_offset=-54
     },
 
     -- Handle placement of starting resources
@@ -266,6 +279,12 @@ OCFG = {
         -- If you're trying out the vanilla spawning, you might want to disable this.
         modified_enemy_spawning = true,
 
+        -- Enemy evolution factor for the easy force (inside warning area).
+        modified_enemy_easy_evo = 0.0,
+
+        -- Enemy evolution factor for the medium force (inside danger area).
+        modified_enemy_medium_evo = 0.3,
+
         -- Require playes to be online for at least X minutes
         -- Else their character is removed and their spawn point is freed up for use
         -- TODO: Move this to mod settings?
@@ -273,6 +292,13 @@ OCFG = {
 
         -- Respawn cooldown in minutes.
         respawn_cooldown_min = 15,
+
+        -- Enable shared power between bases.
+        -- Creates a special power pole for cross surface connections.
+        enable_shared_power = false,
+
+        -- Enables a single shared chest using the native linked-chest entity in factorio.
+        enable_shared_chest = false,
     },
 
     -- This is a separate feature that is part of the mod that helps keep the map size down. Not required but useful.
@@ -385,8 +411,12 @@ OCFG = {
 ---@field default_surface string The starting surface of the main force.
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.
+---@field modified_enemy_easy_evo number Enemy evolution factor for the easy force (inside warning area).
+---@field modified_enemy_medium_evo number Enemy evolution factor for the medium force (inside danger area).
 ---@field minimum_online_time number Require playes to be online for at least X minutes Else their character is removed and their spawn point is freed up for use
 ---@field respawn_cooldown_min number Respawn cooldown in minutes.
+---@field enable_shared_power boolean Enable shared power between bases. Creates a special power pole for cross surface connections.
+---@field enable_shared_chest boolean Enables a single shared chest using the native linked-chest entity in factorio.
 
 ---@class OarcConfigRegrowth
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.
@@ -409,6 +439,8 @@ OCFG = {
 ---@field general OarcConfigSpawnGeneral General spawn settings (size, shape, etc.)
 ---@field safe_area OarcConfigSpawnSafeArea How safe is the spawn area?
 ---@field water OarcConfigSpawnWater Water strip settings
+---@field shared_power_pole_position OarcOffsetPosition Location of shared power pole relative to spawn center (if enabled)
+---@field shared_chest_position OarcOffsetPosition Location of shared chest relative to spawn center (if enabled)
 ---@field resource_rand_pos_settings OarcConfigSpawnResourceRandPosSettings Resource placement settings
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
@@ -432,6 +464,8 @@ OCFG = {
 ---@field x_offset number Location of water strip within the spawn area (horizontal)
 ---@field y_offset number Location of water strip within the spawn area (vertical)
 ---@field length number Length of water strip within the spawn area
+
+---@alias OarcOffsetPosition { x_offset: number, y_offset: number } An offset position intended to be relative to the spawn center.
 
 ---@class OarcConfigSpawnResourceRandPosSettings
 ---@field enabled boolean Autoplace resources (randomly in circle) This will ignore the fixed x_offset/y_offset values in solid_resources. Only works for solid_resources at the moment, not oil patches/water.

@@ -7,9 +7,7 @@
 
 
 ENEMY_FORCE_EASY = "enemy-easy"
-ENEMY_FORCE_EASY_EVOLUTION = 0
 ENEMY_FORCE_MEDIUM = "enemy-medium"
-ENEMY_FORCE_MEDIUM_EVOLUTION = 0.3
 ENEMY_FORCES_NAMES = {"enemy", ENEMY_FORCE_EASY, ENEMY_FORCE_MEDIUM}
 
 ENEMY_BUILT_TYPES = { "biter-spawner", "spitter-spawner", "small-worm-turret", "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret" }
@@ -91,8 +89,8 @@ function RestrictEnemyEvolutionOnTick()
     local base_evo_factor = game.forces["enemy"].evolution_factor
 
     -- Restrict the evolution factor of the enemy forces
-    game.forces[ENEMY_FORCE_EASY].evolution_factor = 0
-    game.forces[ENEMY_FORCE_MEDIUM].evolution_factor = math.min(base_evo_factor, ENEMY_FORCE_MEDIUM_EVOLUTION)
+    game.forces[ENEMY_FORCE_EASY].evolution_factor = math.min(base_evo_factor, global.ocfg.gameplay.modified_enemy_easy_evo)
+    game.forces[ENEMY_FORCE_MEDIUM].evolution_factor = math.min(base_evo_factor, global.ocfg.gameplay.modified_enemy_medium_evo)
 end
 
 ---Downgrades worms based on distance from origin and near/far spawn distances.
@@ -133,7 +131,6 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
     }
 
     -- Make chunks near a spawn safe by removing enemies
-    -- TODO: Space Age will change this!
     if (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius) then
         RemoveEnemiesInArea(surface, chunk_area)
 
@@ -166,7 +163,7 @@ function RemoveEnemiesInArea(surface, area)
     end
 end
 
----Make an area safer.
+---Make an area safer, randomly removes enemies based on a reduction factor.
 ---@param surface LuaSurface
 ---@param area BoundingBox
 ---@param reductionFactor integer Reduction factor divides the enemy spawns by that number. 2 = half, 3 = third, etc...
@@ -203,21 +200,21 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
                 surface.create_entity { name = "small-worm-turret", position = worm_pos, force = game.forces.enemy }
             end
 
-            -- ELSE If number is less than medium percent, change to small
+        -- ELSE If number is less than medium percent, change to small
         elseif (rand_percent <= medium_percent) then
             if (not (worm_name == "medium-worm-turret")) then
                 entity.destroy()
                 surface.create_entity { name = "medium-worm-turret", position = worm_pos, force = game.forces.enemy }
             end
 
-            -- ELSE If number is less than big percent, change to small
+        -- ELSE If number is less than big percent, change to small
         elseif (rand_percent <= big_percent) then
             if (not (worm_name == "big-worm-turret")) then
                 entity.destroy()
                 surface.create_entity { name = "big-worm-turret", position = worm_pos, force = game.forces.enemy }
             end
 
-            -- ELSE ignore it.
+        -- ELSE ignore it.
         end
     end
 end

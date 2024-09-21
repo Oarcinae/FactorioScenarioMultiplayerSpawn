@@ -126,6 +126,12 @@ function CreateSetRespawnLocationButton(player, container)
 
     --[[@type OarcPlayerSpawn]]
     local respawn_info = global.player_respawns[player.name][player.surface.name]
+
+    if (respawn_info == nil) then
+        log("ERROR: No respawn info for player: " .. player.name)
+        return
+    end
+
     local respawn_surface_name = respawn_info.surface
     local respawn_position = respawn_info.position
 

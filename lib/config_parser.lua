@@ -34,9 +34,13 @@ OCFG_KEYS =
 
     ["gameplay.scale_resources_around_spawns"] = {mod_key = "oarc-mod-scale-resources-around-spawns" , ocfg_keys = {"gameplay", "scale_resources_around_spawns"}, type = "boolean"},
     ["gameplay.modified_enemy_spawning"] = {mod_key = "oarc-mod-modified-enemy-spawning" , ocfg_keys = {"gameplay", "modified_enemy_spawning"}, type = "boolean"},
+    ["gameplay.modified_enemy_easy_evo"] = {mod_key = "oarc-mod-modified-enemy-easy-evo" , ocfg_keys = {"gameplay", "modified_enemy_easy_evo"}, type = "double"},
+    ["gameplay.modified_enemy_medium_evo"] = {mod_key = "oarc-mod-modified-enemy-medium-evo" , ocfg_keys = {"gameplay", "modified_enemy_medium_evo"}, type = "double"},
 
     ["gameplay.minimum_online_time"] = {mod_key = "oarc-mod-minimum-online-time" , ocfg_keys = {"gameplay", "minimum_online_time"}, type = "integer"},
     ["gameplay.respawn_cooldown_min"] = {mod_key = "oarc-mod-respawn-cooldown-min" , ocfg_keys = {"gameplay", "respawn_cooldown_min"}, type = "integer"},
+    ["gameplay.enable_shared_power"] = {mod_key = "oarc-mod-enable-shared-power" , ocfg_keys = {"gameplay", "enable_shared_power"}, type = "boolean"},
+    ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
 
     ["Regrowth"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
     ["regrowth.enable_regrowth"] = {mod_key = "oarc-mod-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
@@ -75,9 +79,13 @@ OCFG_MOD_KEYS =
 
     ["oarc-mod-scale-resources-around-spawns"] = "gameplay.scale_resources_around_spawns",
     ["oarc-mod-modified-enemy-spawning"] = "gameplay.modified_enemy_spawning",
+    ["oarc-mod-modified-enemy-easy-evo"] = "gameplay.modified_enemy_easy_evo",
+    ["oarc-mod-modified-enemy-medium-evo"] = "gameplay.modified_enemy_medium_evo",
 
     ["oarc-mod-minimum-online-time"] = "gameplay.minimum_online_time",
     ["oarc-mod-respawn-cooldown-min"] = "gameplay.respawn_cooldown_min",
+    ["oarc-mod-enable-shared-power"] = "gameplay.enable_shared_power",
+    ["oarc-mod-enable-shared-chest"] = "gameplay.enable_shared_chest",
 
     ["oarc-mod-enable-regrowth"] = "regrowth.enable_regrowth",
     ["oarc-mod-enable-world-eater"] = "regrowth.enable_world_eater",
@@ -241,10 +249,21 @@ function GetGlobalOarcConfigUsingKeyTable(key_table)
     local number_of_keys = #key_table
 
     if (number_of_keys == 1) then
+        if (global.ocfg[key_table[1]] == nil) then
+            error("Invalid key_table 1: " .. serpent.block(key_table))
+        end
         return global.ocfg[key_table[1]]
     elseif (number_of_keys == 2) then
+        if (global.ocfg[key_table[1]] == nil) or (global.ocfg[key_table[1]][key_table[2]] == nil) then
+            error("Invalid key_table 2: " .. serpent.block(key_table))
+        end
         return global.ocfg[key_table[1]][key_table[2]]
     elseif (number_of_keys == 3) then
+        if (global.ocfg[key_table[1]] == nil) or
+            (global.ocfg[key_table[1]][key_table[2]] == nil) or 
+            (global.ocfg[key_table[1]][key_table[2]][key_table[3]] == nil) then
+            error("Invalid key_table 3: " .. serpent.block(key_table))
+        end
         return global.ocfg[key_table[1]][key_table[2]][key_table[3]]
     else
         error("Invalid key_table length: " .. number_of_keys .. "\n" .. serpent.block(key_table))

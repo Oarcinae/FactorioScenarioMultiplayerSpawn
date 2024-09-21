@@ -22,7 +22,7 @@ function OarcModifyEnemyGroup(event)
     local group = event.group
 
     -- Check validity
-    if ((group == nil) or (group.command == nil) or TableContains(ENEMY_FORCES_NAMES, group.force.name)) then
+    if ((group == nil) or (group.command == nil) or not TableContains(ENEMY_FORCES_NAMES, group.force.name)) then
         log("OarcModifyEnemyGroup ignoring INVALID group/command")
         return
     end

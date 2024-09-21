@@ -79,12 +79,13 @@ function RenderPermanentGroundText(surface, position, scale, text, color)
 end
 
 ---A standardized helper text that fades out over time
----@param text string
+---@param text string|LocalisedString
 ---@param surface LuaSurface
 ---@param position MapPosition
 ---@param ttl number
+---@param alignment TextAlign?
 ---@return nil
-function TemporaryHelperText(text, surface, position, ttl)
+function TemporaryHelperText(text, surface, position, ttl, alignment)
     local rid = rendering.draw_text { text = text,
         surface = surface,
         target = position,
@@ -92,6 +93,7 @@ function TemporaryHelperText(text, surface, position, ttl)
         scale = 1,
         font = "compi",
         time_to_live = ttl,
+        alignment = alignment,
         draw_on_ground = false }
     table.insert(global.oarc_renders_fadeout, rid)
 end

@@ -56,6 +56,8 @@ function CreateModSettingsSection(container, player)
             AddTextfieldSetting(container, index, entry, player.admin)
         elseif (entry.type == "integer") then
             AddIntegerSetting(container, index, entry, player.admin)
+        elseif (entry.type == "double") then
+            AddDoubleSetting(container, index, entry, player.admin)
         end
     end
 end
@@ -157,6 +159,18 @@ function SettingsControlsTabGuiTextconfirmed(event)
 
         local slider = gui_elem.parent["slider"]
         slider.slider_value = settings.global[entry.mod_key].value --[[@as integer]]
+    elseif (entry.type == "double") then
+        local safe_value = GetSafeDoubleValueForModSetting(value, entry.mod_key)
+        if not pcall(function() settings.global[entry.mod_key] = { value = safe_value } end) then
+            settings.global[entry.mod_key] = { value = game.mod_setting_prototypes[entry.mod_key].default_value }
+            log("Error setting value for " .. entry.mod_key .. " to " .. safe_value)
+        end
+        gui_elem.text = string.format("%.2f", settings.global[entry.mod_key].value)
+        gui_elem.style = "textbox"
+        gui_elem.style.width = 50
+
+        local slider = gui_elem.parent["slider"]
+        slider.slider_value = settings.global[entry.mod_key].value --[[@as number]]
     end
 end
 
@@ -177,6 +191,10 @@ function SettingsControlsTabGuiValueChanged(event)
         local textfield = gui_elem.parent["textfield"]
         settings.global[entry.mod_key] = { value = value } -- Assumes that the slider can only produce valid inputs!
         textfield.text = tostring(value)
+    elseif (entry.type == "double") then
+        local textfield = gui_elem.parent["textfield"]
+        settings.global[entry.mod_key] = { value = value } -- Assumes that the slider can only produce valid inputs!
+        textfield.text = string.format("%.2f", value)
     end
 end
 
@@ -200,6 +218,27 @@ function GetSafeIntValueForModSetting(input, mod_key)
         value_num = math.floor(value_num)
     end
     return value_num --[[@as integer]]
+end
+
+---Makes sure a given value is within the min/max range of a mod setting (double)
+---@param input string|number|integer
+---@param mod_key string
+---@return number
+function GetSafeDoubleValueForModSetting(input, mod_key)
+    local value_num = tonumber(input)
+    if not value_num then
+        value_num = tonumber(game.mod_setting_prototypes[mod_key].default_value)
+    else
+        local minimum = game.mod_setting_prototypes[mod_key].minimum_value
+        local maximum = game.mod_setting_prototypes[mod_key].maximum_value
+        if minimum ~= nil then
+            value_num = math.max(value_num, minimum)
+        end
+        if maximum ~= nil then
+            value_num = math.min(value_num, maximum)
+        end
+    end
+    return value_num --[[@as number]]
 end
 
 ---Creates a checkbox setting
@@ -284,6 +323,54 @@ function AddIntegerSetting(tab_container, index, entry, enabled)
         tags = { action = "oarc_settings_tab_slider", setting = index },
         discrete_values = true,
         value_step = 1,
+    }
+
+    local tooltip = {"", {"mod-setting-description."..entry.mod_key }, " ", { "oarc-settings-tab-text-field-enter-tooltip" }}
+    local textfield = horizontal_flow.add {
+        name = "textfield",
+        type = "textfield",
+        numeric = true,
+        caption = { "mod-setting-name."..entry.mod_key },
+        text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
+        enabled = enabled,
+        tooltip = tooltip,
+        tags = { action = "oarc_settings_tab", setting = index },
+    }
+    textfield.style.width = 50
+end
+
+---Creates a double setting
+---@param tab_container LuaGuiElement
+---@param index string
+---@param entry OarcSettingsLookup
+---@param enabled boolean
+---@return nil
+function AddDoubleSetting(tab_container, index, entry, enabled)
+    local horizontal_flow = tab_container.add {
+        type = "flow",
+        direction = "horizontal",
+    }
+    horizontal_flow.add {
+        type = "label",
+        caption = { "mod-setting-name."..entry.mod_key },
+        tooltip = { "mod-setting-description."..entry.mod_key },
+    }
+    local dragger = horizontal_flow.add {
+        type = "empty-widget",
+    }
+    dragger.style.horizontally_stretchable = true
+
+    local slider = horizontal_flow.add {
+        name = "slider",
+        type = "slider",
+        minimum_value = game.mod_setting_prototypes[entry.mod_key].minimum_value,
+        maximum_value = game.mod_setting_prototypes[entry.mod_key].maximum_value,
+        value = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
+        enabled = enabled,
+        tooltip = { "mod-setting-description."..entry.mod_key },
+        tags = { action = "oarc_settings_tab_slider", setting = index },
+        discrete_values = false,
+        value_step = 0.01,
     }
 
     local tooltip = {"", {"mod-setting-description."..entry.mod_key }, " ", { "oarc-settings-tab-text-field-enter-tooltip" }}

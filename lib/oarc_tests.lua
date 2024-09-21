@@ -203,3 +203,35 @@ function UnflagEnemyForce(player, enemy_force_name)
     player.force.set_cease_fire(enemy_force, false)
  
 end
+
+
+function CreateTestPowerpoles(player)
+
+    local surface = player.surface
+    local position1 = player.position
+    position1.x = position1.x - 2
+    local position2 = {x=position1.x + 2, y=position1.y}
+
+    local surface2 = game.surfaces["gleba"]
+    local position3 = {x=0, y=0}
+
+    -- local pole1 = surface.create_entity{name="small-electric-pole", position=position1, force=player.force}
+    -- local pole2 = surface.create_entity{name="small-electric-pole", position=position2, force=player.force}
+
+    -- pole1.connect_neighbour(pole2)
+
+    local pole_connector = surface2.create_entity{name="small-electric-pole", position=position3, force=player.force}
+    -- pole2.connect_neighbour(pole3)
+
+    -- Create 10 poles in a line
+    for i=-2,2 do
+        local pos = {x=position1.x + i*10, y=position1.y + 5}
+        local pole = surface.create_entity{name="small-electric-pole", position=pos, force=player.force}
+
+        if (pole_connector.connect_neighbour(pole)) then
+            log("Connected pole: " .. i)
+        else
+            log("Failed to connect pole: " .. i)
+        end
+    end
+end

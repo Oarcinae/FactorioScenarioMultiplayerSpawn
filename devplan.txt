@@ -1,7 +1,7 @@
 
 ACTIVE ITEMS:
 
-- Shared electricity (proper)
+
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -11,26 +11,26 @@ Not specific:
 - Lots of localizations!
 - Custom tips and tricks??
 - List all TODOs in code here.
+- Run the profiler
 
 Minor:
 - Add refresh chunks around spidertrons based on their vision
 - Refresh players in admin controls when dropdown is clicked
-- Add a show current respawn location button (same as show spawn location)
 - Default to selecting SELF in admin controls player dropdown?
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 - Pull out general spawn config from surfaces config
-- Expose some settings for adjusting easy and medium enemy evolution values
 - Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
+- Add FAQ for enemy modifications
+- Add FAQ for item and energy sharing
 
 Major:
-- Shared items (proper)
 
 
 ------------------------------------------------------------------------------------------------------------------------
 
 Other Ideas, Not Committed:
 - Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
-- Add option for spawn pen to be on a specified surface
+- Add option for spawn pen to be on a specified surface (not sure this serves any real purpose)
 - Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
 - Make players join a "holding_pen" force instead of the main force? Might cause issues with chat and vision?
 - Separate chest sharing and electricity ()
@@ -45,6 +45,7 @@ Other Ideas, Not Committed:
 - Profile regrowth and try to improve performance ?
 - Possibly adjust easy/medium evo factors on new player joined?
 - Convert regrowth to a proper mod
+- Create shared electricty with a LIMITED output transfer rate using a custom accumulator?
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
@@ -118,3 +119,7 @@ Other Ideas, Not Committed:
 - TEST resizing spawn areas and moat sizes!
 - Create a function to create secondary uniqueSpawns for the same player
 - Expose primary AND secondary spawn info in spawn controls GUI tab
+- Shared items (proper)
+- Shared electricity (proper) (with configurable settings)
+- Add a show current respawn location button (same as show spawn location)
+- Expose some settings for adjusting easy and medium enemy evolution values
