@@ -1,14 +1,11 @@
 ACTIVE ITEMS:
 
-- Test teleporting to other surfaces
-- Test on_player_changed_surface 
-
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
 
 Not specific:
-- Run the profiler
+
 
 Minor:
 - Add refresh chunks around spidertrons based on their vision
@@ -17,6 +14,7 @@ Minor:
 - Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
 - Refresh players in admin controls when dropdown is clicked
 - Default to selecting SELF in admin controls player dropdown?
+- Add a setting for forcing primary spawns to only be on default surface maybe?
 
 Performance:
 - User on_nth_tick for any tick % (modulo) operations.
@@ -25,7 +23,7 @@ Performance:
 
 Major:
 - Space Age Support (TBD)
-- Add surface settings for allowing secondary spawns, detect on teleport?
+
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
@@ -137,3 +135,6 @@ Other Ideas, Not Committed:
 - Remove testing surfaces before release!
 - Change default surface selection to be the default surface if multiple are enabled
 - Test and make sure scenario settings overrides get written back to mod settings to avoid any out of sync settings.
+- Test teleporting to other surfaces
+- Test on_player_changed_surface
+- Run the profiler
