@@ -33,7 +33,7 @@ require("lib/offline_protection")
 require("lib/scaled_enemies")
 require("lib/sharing")
 
--- Possibly remove this later?
+-- TODO: Possibly remove this later?
 require("lib/oarc_tests")
 
 
@@ -90,6 +90,10 @@ end)
 
 script.on_event(defines.events.on_player_left_game, function(event)
     SeparateSpawnsPlayerLeft(event)
+end)
+
+script.on_event(defines.events.on_player_changed_surface, function(event)
+    SeparateSpawnsPlayerChangedSurface(event)
 end)
 
 ----------------------------------------

@@ -1,5 +1,8 @@
 ACTIVE ITEMS:
 
+- Test teleporting to other surfaces
+- Test on_player_changed_surface 
+
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
@@ -22,6 +25,7 @@ Performance:
 
 Major:
 - Space Age Support (TBD)
+- Add surface settings for allowing secondary spawns, detect on teleport?
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 

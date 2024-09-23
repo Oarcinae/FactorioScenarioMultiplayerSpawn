@@ -264,6 +264,10 @@ OCFG = {
         -- The default starting surface.
         default_surface = "nauvis",
 
+        -- Enable secondary spawns for players.
+        -- This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
+        enable_secondary_spawns = true,
+
         -- This scales resources so that even if you spawn "far away" from the center
         -- of the map, resources near to your spawn point scale so you aren't
         -- surrounded by 100M patches or something. This is useful depending on what
@@ -404,6 +408,7 @@ OCFG = {
 ---@field number_of_players_per_shared_spawn number Number of players allowed to join a shared spawn.
 ---@field enable_friendly_fire boolean Set to true if you want to shoot your own chests and stuff.
 ---@field default_surface string The starting surface of the main force.
+---@field enable_secondary_spawns boolean Enable secondary spawns for players. This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.
 ---@field modified_enemy_easy_evo number Enemy evolution factor for the easy force (inside warning area).

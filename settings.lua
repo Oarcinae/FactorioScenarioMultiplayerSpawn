@@ -163,6 +163,13 @@ data:extend({
         default_value = "nauvis",
         order = "e2"
     },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-enable-secondary-spawns",
+        setting_type = "runtime-global",
+        default_value = true,
+        order = "e3"
+    },
 
     {
         type = "bool-setting",

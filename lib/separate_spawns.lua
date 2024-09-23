@@ -212,6 +212,9 @@ function SeparateSpawnsPlayerRespawned(event)
     -- It's possible if player is dead, and then resets, we don't want to do anything else.
     if (player.surface.name == HOLDING_PEN_SURFACE_NAME) then return end
 
+    -- If the mod isn't active on this surface, then ignore it.
+    if (not global.oarc_surfaces[surface_name]) then return end
+
     SendPlayerToSpawn(surface_name, player)
     GivePlayerRespawnItems(player)
 end
@@ -226,6 +229,28 @@ function SeparateSpawnsPlayerLeft(event)
     if (player and (player.online_time < (global.ocfg.gameplay.minimum_online_time * TICKS_PER_MINUTE))) then
         SendBroadcastMsg({ "oarc-player-left-early", player.name, global.ocfg.gameplay.minimum_online_time })
         RemoveOrResetPlayer(player, true)
+    end
+end
+
+---If the player moves surfaces, check if we need to present them with new a new spawn.
+---@param event EventData.on_player_changed_surface
+---@return nil
+function SeparateSpawnsPlayerChangedSurface(event)
+    if (not global.ocfg.gameplay.enable_secondary_spawns) then return end
+
+    local player = game.players[event.player_index]
+
+    -- Check if player has been init'd yet. If not, then ignore it.
+    if (global.player_respawns[player.name] == nil) then return end
+
+    -- If the mod isn't active on this surface, then ignore it.
+    if (not global.oarc_surfaces[player.surface.name]) then return end
+
+    -- If this is their first time on the planet, create a secondary spawn point for them.
+    -- TODO: Check for buddy and shared spawn hosts?
+    if (global.unique_spawns[player.surface.name] == nil) or (global.unique_spawns[player.surface.name][player.name] == nil) then
+        log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
+        SecondarySpawn(player, player.surface)
     end
 end
 
@@ -1150,7 +1175,7 @@ function SecondarySpawn(player, surface)
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
 
     -- Announce
-    SendBroadcastMsg({"", { "oarc-player-new-secondary", player.name, spawn_choices.surface }, " ", GetGPStext(spawn_choices.surface, spawn_position)})
+    SendBroadcastMsg({"", { "oarc-player-new-secondary", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
 end
 
 -- Check a table to see if there are any players waiting to spawn

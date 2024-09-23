@@ -85,9 +85,11 @@ function CreateSurfaceSettingsSection(container, player)
     --- Add the rows
     for name, allowed in pairs(global.oarc_surfaces --[[@as table<string, boolean>]]) do
         AddLabel(surface_table, nil, name, my_label_style)
-        AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed, player.admin)
+        AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed, player.admin,
+                                    { "oarc-settings-tab-surface-checkbox-tooltip" })
         local regrowth_enabled = TableContains(global.rg.active_surfaces, name)
-        AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", regrowth_enabled, player.admin)
+        AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", regrowth_enabled, player.admin,
+                                    {"oarc-settings-tab-surface-regrowth-checkbox-tooltip"})
     end
     
 end
@@ -393,15 +395,16 @@ end
 ---@param setting_name string
 ---@param state boolean
 ---@param admin boolean
+---@param tooltip LocalisedString
 ---@return nil
-function AddSurfaceCheckboxSetting(parent, surface_name, setting_name, state, admin)
+function AddSurfaceCheckboxSetting(parent, surface_name, setting_name, state, admin, tooltip)
     parent.add{
         name = surface_name.."_"..setting_name,
         type = "checkbox",
         state = state,
         tags = { action = "oarc_settings_tab_surfaces", setting = setting_name, surface = surface_name },
         enabled = admin,
-        tooltip = { "oarc-settings-tab-surface-checkbox-tooltip" },
+        tooltip = tooltip,
     }
 end
 

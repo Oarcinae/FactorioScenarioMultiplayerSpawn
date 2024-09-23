@@ -31,6 +31,7 @@ OCFG_KEYS =
 
     -- ["gameplay.main_force_name"] = {mod_key = "oarc-mod-main-force-name" , ocfg_keys = {"gameplay", "main_force_name"}, type = "string"},
     ["gameplay.default_surface"] = {mod_key = "oarc-mod-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
+    ["gameplay.enable_secondary_spawns"] = {mod_key = "oarc-mod-enable-secondary-spawns" , ocfg_keys = {"gameplay", "enable_secondary_spawns"}, type = "boolean"},
 
     ["gameplay.scale_resources_around_spawns"] = {mod_key = "oarc-mod-scale-resources-around-spawns" , ocfg_keys = {"gameplay", "scale_resources_around_spawns"}, type = "boolean"},
     ["gameplay.modified_enemy_spawning"] = {mod_key = "oarc-mod-modified-enemy-spawning" , ocfg_keys = {"gameplay", "modified_enemy_spawning"}, type = "boolean"},
@@ -59,7 +60,7 @@ OCFG_MOD_KEYS =
 
     ["oarc-mod-enable-main-team"] = "gameplay.enable_main_team",
     ["oarc-mod-enable-separate-teams"] = "gameplay.enable_separate_teams",
-    --oarc-mod-default-allow-spawning-on-other-surfaces"] = " ["gameplay.enable_spawning_on_other_surfaces",
+    -- STARTUP ["oarc-mod-default-allow-spawning-on-other-surfaces"] = " ["gameplay.enable_spawning_on_other_surfaces",
     ["oarc-mod-allow-moats-around-spawns"] = "gameplay.allow_moats_around_spawns",
     ["oarc-mod-enable-moat-bridging"] = "gameplay.enable_moat_bridging",
     ["oarc-mod-minimum-distance-to-existing-chunks"] = "gameplay.minimum_distance_to_existing_chunks",
@@ -76,6 +77,7 @@ OCFG_MOD_KEYS =
 
     -- STARTUP ["oarc-mod-main-force-name"] = "gameplay.main_force_name",
     ["oarc-mod-default-surface"] = "gameplay.default_surface",
+    ["oarc-mod-enable-secondary-spawns"] = "gameplay.enable_secondary_spawns",
 
     ["oarc-mod-scale-resources-around-spawns"] = "gameplay.scale_resources_around_spawns",
     ["oarc-mod-modified-enemy-spawning"] = "gameplay.modified_enemy_spawning",
