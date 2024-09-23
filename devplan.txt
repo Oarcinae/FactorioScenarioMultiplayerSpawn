@@ -1,7 +1,4 @@
-
 ACTIVE ITEMS:
-
-- Remove testing surfaces before release!
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -15,7 +12,6 @@ Minor:
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 - Pull out general spawn config from surfaces config
 - Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
-- Change default surface selection to be the default surface if multiple are enabled
 - Refresh players in admin controls when dropdown is clicked
 - Default to selecting SELF in admin controls player dropdown?
 
@@ -25,7 +21,7 @@ Performance:
 - Rework world eater to use less find_entities_filtered
 
 Major:
-
+- Space Age Support (TBD)
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------
 
@@ -134,3 +130,5 @@ Other Ideas, Not Committed:
 - FIX GetNextPlayerIndex!
 - Lots of localizations!
 - List all TO-DOs in code here.
+- Remove testing surfaces before release!
+- Change default surface selection to be the default surface if multiple are enabled

@@ -1,4 +1,4 @@
--- Aug 2024
+-- Sep 2024
 --   ____          _____   _____ 
 --  / __ \   /\   |  __ \ / ____|
 -- | |  | | /  \  | |__) | |     
@@ -14,12 +14,12 @@
 --      Removed a lot of unnecessary feature bloat.
 --      Move text to locale files where possible.
 
--- Feature List:
+-- Major Features:
 --      Core feature allows for a safe, separate spawn area for each player.
 --      Players can choose to spawn with friends (buddy spawn) or join other bases.
 --      Offline protection from enemy attacks.
 --      Chunk cleanup to keep save file size down.
---      (TENTATIVE) Support for multiple vanilla-style spawn points.
+--      Sharing of electricity and items between players.
 
 require("lib/oarc_utils")
 require("lib/config")
@@ -291,21 +291,6 @@ script.on_event(defines.events.on_gui_confirmed, function(event)
 
     SettingsControlsTabGuiTextconfirmed(event)
 end)
-
---on_gui_checked_state_changed	 Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
---on_gui_click	 Called when LuaGuiElement is clicked.
---on_gui_closed	 Called when the player closes the GUI they have open. [...]
---on_gui_confirmed	 Called when a LuaGuiElement is confirmed, for example by pressing Enter in a textfield.
---on_gui_elem_changed	 Called when LuaGuiElement element value is changed (related to choose element buttons).
---on_gui_hover	 Called when LuaGuiElement is hovered by the mouse.
---on_gui_leave	 Called when the player's cursor leaves a LuaGuiElement that was previously hovered.
---on_gui_location_changed	 Called when LuaGuiElement element location is changed (related to frames in player.gui.screen).
---on_gui_opened	 Called when the player opens a GUI.
---on_gui_selected_tab_changed	 Called when LuaGuiElement selected tab is changed (related to tabbed-panes).
---on_gui_selection_state_changed	 Called when LuaGuiElement selection state is changed (related to drop-downs and listboxes).
---on_gui_switch_state_changed	 Called when LuaGuiElement switch state is changed (related to switches).
---on_gui_text_changed	 Called when LuaGuiElement text is changed by the player.
---on_gui_value_changed	 Called when LuaGuiElement slider value is changed (related to the slider element).
 
 ----------------------------------------
 -- Remote Interface
