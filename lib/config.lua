@@ -206,9 +206,11 @@ OCFG = {
 
         -- Default setting for enabling spawning on other surfaces other than the default_surface.
         -- This is a STARTUP setting, so it can't be changed in game!!
+        -- This is a STARTUP setting, so it can't be changed in game!!
         default_allow_spawning_on_other_surfaces = true,
 
         -- The name of the main force.
+        -- This is a STARTUP setting, so it can't be changed in game!!
         -- This is a STARTUP setting, so it can't be changed in game!!
         main_force_name = "Main Force",
 
@@ -346,7 +348,7 @@ OCFG = {
         HOLDING_PEN_SURFACE_NAME,
     },
 
-    -- Surfaces blacklist that match start of these strings
+    -- Surfaces blacklist that match THE START of these strings
     -- (Ignore these surfaces completely for spawning and regrowth!)
     ---@type table<integer, string>
     surfaces_blacklist_match = {

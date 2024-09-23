@@ -18,20 +18,25 @@ end)
 
 local oarc_scenario_interface =
 {
-  get_scenario_settings = function()
+    get_scenario_settings = function()
 
-    ---@type OarcConfig
-    local modified_settings = remote.call("oarc_mod", "get_mod_settings")
+        ---@type OarcConfig
+        local modified_settings = remote.call("oarc_mod", "get_mod_settings")
 
-    -- Overwrite whatever settings you want here:
-    modified_settings.gameplay.main_force_name = "test"
+        -- Overwrite whatever settings you want here:
+        -- If you provide an invalid value for a mod setting, it will error and not load the scenario.
+        ----------------------------------------------------------------------------------------------------------------
+        modified_settings.server_info.welcome_msg_title = "THIS IS A TEMPLATE SCENARIO"
+        modified_settings.server_info.welcome_msg = "This is a template scenario. You can modify the settings in the control.lua file. If you are seeing this message, you did not modify the scenario correctly."
 
-    modified_settings.surfaces_config["nauvis"].starting_items.player_start_items = {
-        ["coal"] = 1,
-    }
-
-    return modified_settings
-  end
+        -- Some examples of overriding surface config (which is not accessible from the mod settings!)
+        modified_settings.surfaces_config["nauvis"].starting_items.player_start_items = {
+            ["coal"] = 1, -- You're on the naughty list!
+        }
+        modified_settings.surfaces_config["nauvis"].spawn_config.general.shape = 3 -- 3 is a SQUARE (see SPAWN_SHAPE_CHOICE)
+        ----------------------------------------------------------------------------------------------------------------
+        return modified_settings
+    end
 }
 
 remote.add_interface("oarc_scenario", oarc_scenario_interface)

@@ -109,15 +109,15 @@ function ValidateAndLoadConfig()
         end
     end
 
-    -- Save the config into the global table.
+    -- Load the template config into the global table.
     ---@class OarcConfig
     global.ocfg = OCFG
 
-    CacheModSettings()
+    CacheModSettings() -- Get all mod settings and overwrite the defaults in OARC_CFG.
 
-    GetScenarioOverrideSettings()
+    GetScenarioOverrideSettings() -- Get any scenario settings and overwrite both the mod settings and OARC_CFG.
 
-    ValidateSettings()
+    ValidateSettings() -- These are validation checks that can't be done within the mod settings natively.
 end
 
 function ValidateSettings()
@@ -164,7 +164,7 @@ end
 
 -- Read in the mod settings and copy them to the OARC_CFG table, overwriting the defaults in config.lua.
 function CacheModSettings()
-    
+
     log("Copying mod settings to OCFG table...")
 
     -- Copy the global settings from the mod settings.
@@ -184,16 +184,30 @@ function GetScenarioOverrideSettings()
 
     if remote.interfaces["oarc_scenario"] then
 
-        log("Getting scenario ode settings...")
+        log("Getting scenario override settings...")
         local scenario_settings = remote.call("oarc_scenario", "get_scenario_settings")
 
         -- Overwrite the non mod settings with the scenario settings.
         global.ocfg = scenario_settings
 
+        -- Override the mod settings with the scenario settings!
+        for _,entry in pairs(OCFG_KEYS) do
+            if (entry.type ~= "header") then
+                local mod_key = entry.mod_key
+                local oarc_key = entry.ocfg_keys
+                local scenario_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
+                if (scenario_value ~= nil) then
+                    local ok,result = pcall(function() settings.global[mod_key] = { value = scenario_value } end)
+                    if not ok then
+                        error("Error setting mod setting: " .. mod_key .. " = " .. tostring(scenario_value) .. "\n" .. "If you see this, you probably picked an invalid value for a setting override in the custom scenario.")
+                    end
+                end
+            end
+        end
+
     else
         log("No scenario settings found.")
     end
-
 end
 
 ---Handles the event when a mod setting is changed in the mod settings menu.
