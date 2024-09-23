@@ -42,13 +42,6 @@ require("lib/oarc_tests")
 -- On Init - Only runs once the first time the game starts
 --------------------------------------------------------------------------------
 script.on_init(function(event)
-    -- Test create some other surfaces
-    -- TODO: Remove this later.
-    game.create_surface("vulcanus")
-    game.create_surface("fulgora")
-    game.create_surface("gleba")
-    game.create_surface("aquilo")
-
     ValidateAndLoadConfig()
     RegrowthInit()
 
@@ -65,7 +58,6 @@ script.on_init(function(event)
     end
 
     -- If there are any players that already exist, init them now.
-    -- TODO: Test this!
     for _,player in pairs(game.players) do
         SeparateSpawnsInitPlayer(player.index)
     end
@@ -134,7 +126,6 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
-    -- TODO: Decide if this should always be enabled (to track chunks).
     if global.ocfg.regrowth.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
@@ -216,14 +207,12 @@ end)
 -- This is where I modify biter spawning based on location and other factors.
 ----------------------------------------
 script.on_event(defines.events.on_entity_spawned, function(event)
-    -- TODO: Confirm that the new enemy scaling is working correctly!
     -- if (global.ocfg.gameplay.modified_enemy_spawning) then
     --     ModifyEnemySpawnsNearPlayerStartingAreas(event)
     -- end
 end)
 
 script.on_event(defines.events.on_biter_base_built, function(event)
-    -- TODO: Confirm that the new enemy scaling is working correctly!
     if (global.ocfg.gameplay.modified_enemy_spawning) then
         -- ModifyEnemySpawnsNearPlayerStartingAreas(event)
         ChangeEnemySpawnersToOtherForceOnBuilt(event)

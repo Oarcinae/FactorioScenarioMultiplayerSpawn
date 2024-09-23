@@ -24,6 +24,8 @@ function CreateModInfoTab(tab_container, player)
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-regrowth" }, { "oarc-mod-faq-regrowth-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-cleanup-abandoned" }, { "oarc-mod-faq-cleanup-abandoned-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-offline-protection" }, { "oarc-mod-faq-offline-protection-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-shared-power" }, { "oarc-mod-faq-shared-power-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-shared-chest" }, { "oarc-mod-faq-shared-chest-answer" })
 
 end
 

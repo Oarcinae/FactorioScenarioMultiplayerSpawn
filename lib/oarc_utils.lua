@@ -229,13 +229,6 @@ end
 --     return math.floor(num+0.5)
 -- end
 
----Simple function to get total number of items in table. # Only works for array style indexed tables!
----@param T table
----@return integer
-function TableLength(T)
-    return table_size(T) -- TODO: Remove this function and replace with table_size everywhere.
-end
-
 -- Fisher-Yares shuffle
 -- https://stackoverflow.com/questions/35572435/how-do-you-do-the-fisher-yates-shuffle-in-lua
 ---@param T table
@@ -1096,7 +1089,6 @@ end
 -- function AntiGriefing(force)
 --     force.zoom_to_world_deconstruction_planner_enabled=false
 --     SetForceGhostTimeToLive(force)
---     -- TODO: Mess with permission groups and shit
 -- end
 
 -- function SetForceGhostTimeToLive(force)

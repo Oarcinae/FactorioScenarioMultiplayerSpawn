@@ -4,7 +4,8 @@
 local oarc_linked_chest=table.deepcopy(data.raw["container"]["wooden-chest"])
 oarc_linked_chest.type="linked-container"
 oarc_linked_chest.name="oarc-linked-chest"
-oarc_linked_chest.inventory_size=100
+oarc_linked_chest.inventory_type="with_filters_and_bar"
+oarc_linked_chest.inventory_size=settings.startup["oarc-mod-linked-chest-size"].value --[[@as integer]]
 oarc_linked_chest.picture.layers[1].filename = "__oarc-mod__/graphics/oarc-linked-chest.png"
 oarc_linked_chest.picture.layers[1].hr_version.filename = "__oarc-mod__/graphics/hr-oarc-linked-chest.png"
 

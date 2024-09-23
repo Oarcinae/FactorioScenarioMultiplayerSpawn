@@ -13,7 +13,16 @@ data:extend({
         default_value = "Main Force",
         order = "a2"
     },
-    
+    {
+        type = "int-setting",
+        name = "oarc-mod-linked-chest-size",
+        setting_type = "startup",
+        default_value = 100,
+        minimum_value = 1,
+        maximum_value = 1000,
+        order = "a3"
+    },
+
     {
         type = "string-setting",
         name = "oarc-mod-welcome-msg-title",

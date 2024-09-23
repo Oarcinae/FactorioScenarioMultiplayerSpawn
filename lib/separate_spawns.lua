@@ -13,7 +13,7 @@ local crash_site = require("crash-site")
 
 -- Hardcoded force names for special cases.
 ABANDONED_FORCE_NAME = "_ABANDONED_"
-DESTROYED_FORCE_NAME = "_DESTROYED_"
+-- DESTROYED_FORCE_NAME = "_DESTROYED_"
 
 ---Initializes the globals used to track the special spawn and player status information.
 ---@return nil
@@ -67,7 +67,7 @@ function InitSpawnGlobalsAndForces()
 
     -- Special forces for when players with their own force want a reset.
     game.create_force(ABANDONED_FORCE_NAME)
-    game.create_force(DESTROYED_FORCE_NAME)
+    -- game.create_force(DESTROYED_FORCE_NAME)
 
     -- Special enemy forces for scaling down enemies near player bases.
     CreateEnemyForces()
@@ -153,12 +153,14 @@ end
 ---@return nil
 function SeparateSpawnsSurfaceDeleted(event)
     local surface_name = game.surfaces[event.surface_index].name
-    log("WARNING!! - Surface deleted event not validated/implemented yet! " .. surface_name)
 
     -- Remove the surface from the list of surfaces that allow spawns
-    global.oarc_surfaces[surface_name] = nil
-    -- TODO: Validate if we need to do other cleanup too, like unique spawns, etc. I can't
-    -- think of a reason why we would need to do that yet.
+    if global.oarc_surfaces[surface_name] ~= nil then
+        log("WARNING!! - Surface deleted event not validated/implemented yet! " .. surface_name)
+        global.oarc_surfaces[surface_name] = nil
+        -- TODO: Validate if we need to do other cleanup too, like unique spawns, etc. I can't
+        -- think of a reason why we would need to do that yet.
+    end
 end
 
 --[[
@@ -171,7 +173,6 @@ end
 
 -- When a player is newly created or just reset, present the spawn options to them.
 -- If new player, assign them to the main force so they can communicate with the team without shouting (/s).
--- TODO: Possibly change this to a holding_pen force?
 ---@param player_index integer|string
 ---@return nil
 function SeparateSpawnsInitPlayer(player_index)
@@ -265,7 +266,7 @@ function GenerateStartingResources(surface, position)
 
         -- This places resources in a semi-circle
         local angle_offset = rand_settings.angle_offset
-        local num_resources = TableLength(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
+        local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
         local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
         local count = 0
 
@@ -542,7 +543,7 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
     local ore_per_tile_cap = math.floor(100000 * modifier)
 
     for _, entity in pairs(surface.find_entities_filtered { area = chunkArea, type = "resource" }) do
-        if entity.valid and entity and entity.position and entity.amount then
+        if entity.valid and entity.amount then
             local new_amount = math.ceil(entity.amount * modifier)
             if (new_amount < 1) then
                 entity.destroy()
@@ -575,7 +576,7 @@ end
 
 --     if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
 --         SendBroadcastMsg("Team " ..
---             player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.") --TODO: localize
+--             player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.") --: localize
 --         log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
 --         game.merge_forces(player_old_force, DESTROYED_FORCE_NAME)
 --     end
@@ -593,7 +594,7 @@ end
 --     player.force = global.ocfg.gameplay.main_force_name
 
 --     if ((#player_old_force.players == 0) and (player_old_force.name ~= global.ocfg.gameplay.main_force_name)) then
---         SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!") --TODO: localize
+--         SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!") --: localize
 --         log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
 --         game.merge_forces(player_old_force, ABANDONED_FORCE_NAME)
 --     end
@@ -832,7 +833,7 @@ function GetClosestUniqueSpawn(surface_name, pos)
     local surface_spawns
     for surface_index, spawns in pairs(global.unique_spawns) do
         if (surface_index == surface_name) then
-            if (TableLength(spawns) == 0) then return nil end -- EXIT - No spawns on requested surface
+            if (table_size(spawns) == 0) then return nil end -- EXIT - No spawns on requested surface
             surface_spawns = spawns
         end
     end
@@ -885,7 +886,7 @@ function GetPlayersFromSameSpawn(player_name, include_offline)
                     end
                 end
 
-                break -- We only need to find one match.
+                return shared_players -- We only need to find one match.
             end
 
             :: CONTINUE ::

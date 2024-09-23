@@ -149,17 +149,16 @@ end
 --     end
 -- end
 
----Get the next player index available. This is used to loop through players to refresh the areas around them.
+---Get the next player index available. This is used to loop through ONLINE players to refresh the areas around them.
 ---@return integer
-function GetNextPlayerIndex()
-    if (not global.rg.player_refresh_index or not game.players[global.rg.player_refresh_index]) then
+function GetNextConnectedPlayerIndex()
+    if (global.rg.player_refresh_index == nil) or (game.connected_players[global.rg.player_refresh_index] == nil) then
         global.rg.player_refresh_index = 1
     else
         global.rg.player_refresh_index = global.rg.player_refresh_index + 1
     end
 
-    -- TODO: This may be an issue since I think the player index might be a sparse array?
-    if (global.rg.player_refresh_index > #game.players) then
+    if (global.rg.player_refresh_index > #game.connected_players) then
         global.rg.player_refresh_index = 1
     end
 
@@ -364,20 +363,20 @@ function RegrowthSectorScan(event)
     if (global.rg[surface_name] == nil) then return end
 
     ---@type integer
-    local radar_range = event.radar.prototype.max_distance_of_nearby_sector_revealed
+    local radar_range = event.radar.prototype.max_distance_of_nearby_sector_revealed --TODO: Space age quality might affect this?
     RefreshAreaChunkPosition(surface_name, event.chunk_position, radar_range, 0)
 end
 
 ---Refresh all chunks near a single player. Cyles through all connected players.
 ---@return nil
 function RefreshPlayerArea()
-    player_index = GetNextPlayerIndex()
+    player_index = GetNextConnectedPlayerIndex()
     if (player_index and game.connected_players[player_index]) then
         local player = game.connected_players[player_index]
         local surface_name = player.surface.name
 
         if (not player.character) then return end
-        if (global.rg[surface_name] == nil) then return end
+        if (global.rg[surface_name] == nil) or (not global.rg[surface_name].active) then return end
 
         RefreshArea(surface_name, player.position, REGROWTH_ACTIVE_AREA_AROUND_PLAYER, 0)
     end
@@ -529,8 +528,7 @@ function RegrowthOnTick()
             RefreshPlayerArea()
         end
 
-        -- Every tick, check a few points in the 2d array of the only active surface According to /measured-command this
-        -- shouldn't take more than 0.1ms on average (TODO: needs to be re-measured!)
+        -- Every tick, check a few points in the 2d array of the only active surface
         for i = 1, 20 do
             RegrowthSingleStepArray()
         end
@@ -592,11 +590,11 @@ function WorldEaterSingleStep()
     end
 
     -- Search for any entities with _DESTROYED_ force and kill them.
-    local destroy_entities = game.surfaces[current_surface].find_entities_filtered { area = next_chunk.area,
-        force = { DESTROYED_FORCE_NAME } }
-    for k, v in pairs(destroy_entities) do
-        v.die(nil)
-    end
+    -- local destroy_entities = game.surfaces[current_surface].find_entities_filtered { area = next_chunk.area,
+    --     force = { DESTROYED_FORCE_NAME } }
+    -- for k, v in pairs(destroy_entities) do
+    --     v.die(nil)
+    -- end
 
     local c_timer = global.rg[current_surface].map[next_chunk.x][next_chunk.y]
 
@@ -608,7 +606,7 @@ function WorldEaterSingleStep()
             right_bottom = { next_chunk.area.right_bottom.x + 8, next_chunk.area.right_bottom.y + 8 }
         }
 
-        local entities = game.surfaces[current_surface].find_entities_filtered { area = area, force = { "enemy", "enemy-easy", "neutral" }, invert = true }
+        local entities = game.surfaces[current_surface].find_entities_filtered { area = area, force = ENEMY_FORCES_NAMES_INCL_NEUTRAL, invert = true }
         for _, v in pairs(entities) do
             if (v.last_user) then
                 return -- This means we're done checking this chunk. It has an active player entity.
@@ -648,7 +646,7 @@ function CheckIfChunkHasAnyPlayerEntities(surface_name, chunk)
         right_bottom = { chunk.area.right_bottom.x + 8, chunk.area.right_bottom.y + 8 }
     }
 
-    local entities = game.surfaces[surface_name].find_entities_filtered { area = area, force = { "enemy", "enemy-easy", "neutral" }, invert = true }
+    local entities = game.surfaces[surface_name].find_entities_filtered { area = area, force = ENEMY_FORCES_NAMES_INCL_NEUTRAL, invert = true }
     for _, v in pairs(entities) do
         if (v.last_user) then
             return true -- YES there is player stuff here.

@@ -240,11 +240,6 @@ OCFG = {
         -- This allows 2 players to spawn next to each other, each with their own starting area.
         enable_buddy_spawn = true,
 
-        -- TODO: Vanilla spawn point are not implemented yet.
-        -- enable_vanilla_spawn_points = true,
-        -- number_of_vanilla_spawn_points = 10,
-        -- vanilla_spawn_point_spacing = 100,
-
         -- This inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
         enable_offline_protection = true,
 
@@ -287,7 +282,6 @@ OCFG = {
 
         -- Require playes to be online for at least X minutes
         -- Else their character is removed and their spawn point is freed up for use
-        -- TODO: Move this to mod settings?
         minimum_online_time = 15,
 
         -- Respawn cooldown in minutes.
@@ -314,7 +308,6 @@ OCFG = {
         enable_world_eater = false,
 
         -- This removes player bases when they leave shortly after joining.
-        -- TODO: verify if this requires regrowth to be enabled!
         enable_abandoned_base_cleanup = true,
 
         -- This is the interval in minutes that the regrowth cleanup will run.

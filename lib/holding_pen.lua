@@ -16,15 +16,6 @@ function CreateHoldingPenSurface()
     map_settings.water = "none"
     map_settings.starting_area = "none"
     map_settings.peaceful_mode = true
-    -- map_settings.autoplace_controls = {}
-    -- map_settings.autoplace_controls["coal"].size = 0
-    -- map_settings.autoplace_controls["copper-ore"].size = 0
-    -- map_settings.autoplace_controls["crude-oil"].size = 0
-    -- map_settings.autoplace_controls["iron-ore"].size = 0
-    -- map_settings.autoplace_controls["stone"].size = 0
-    -- map_settings.autoplace_controls["uranium-ore"].size = 0
-    -- map_settings.autoplace_controls["enemy-base"].size = 0
-    -- map_settings.autoplace_controls["trees"].size = 0
     map_settings.width = 64
     map_settings.height = 64
 
@@ -36,14 +27,6 @@ function CreateHoldingPenSurface()
     holding_pen_surface.generate_with_lab_tiles = true
 
     RenderPermanentGroundText(holding_pen_surface, {x=-15,y=-24}, 20, "OARC", {0.9, 0.7, 0.3, 0.8})
-
-    -- This doesn't work if loading map data. TODO: Revert this later?
-    -- Disabling this let's me launch the scenario directly from the editor while using an empty blueprint.zip as 
-    -- a workaround since there's a bug with the "--load-scenario" launch argument.
-    -- https://forums.factorio.com/110708
-    -- holding_pen_surface.request_to_generate_chunks({0,0}, 2)
-    -- holding_pen_surface.force_generate_chunk_requests()
-
 end
 
 ---Creates a holding pen area
@@ -62,17 +45,13 @@ function CreateHoldingPenChunks(surface, chunkArea)
         end
     end
 
-    -- Place some tutorial grid tiles
+    -- Place some tutorial grid tiles for the spawn area
     local tiles = {}
     for x=chunkArea.left_top.x,chunkArea.right_bottom.x,1 do
         for y=chunkArea.left_top.y,chunkArea.right_bottom.y,1 do
             local distance = math.floor(x^2 + y^2)
 
-            --This is for placing shared power poles on (temporary hack? TODO: Space Age?)
-            if (y == 20) then
-                table.insert(tiles, {name="tutorial-grid", position={x, y}})
-            -- This is for the spawn area
-            elseif (distance < 10^2) then
+            if (distance < 10^2) then
                 table.insert(tiles, {name="tutorial-grid", position={x, y}})
             else
                 table.insert(tiles, {name="out-of-map", position={x, y}})

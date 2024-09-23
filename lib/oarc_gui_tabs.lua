@@ -14,11 +14,15 @@ require("lib/gui_tabs/mod_info_faq")
 OARC_GUI = "oarc_gui"
 
 -- LIST of all implemented tabs and their content Functions
-OARC_SERVER_INFO_TAB_NAME = "Server Info"
-OARC_SPAWN_CTRL_TAB_NAME = "Spawn Controls"
-OARC_CONFIG_CTRL_TAB_NAME = "Settings"
-OARC_MOD_INFO_CTRL_TAB_NAME = "Mod Info"
+OARC_SERVER_INFO_TAB_NAME = "server_info"
+OARC_SPAWN_CTRL_TAB_NAME = "spawn_controls"
+OARC_CONFIG_CTRL_TAB_NAME = "settings"
+OARC_MOD_INFO_CTRL_TAB_NAME = "mod_info"
 
+OARC_SERVER_INFO_TAB_LOCALIZED = {"oarc-server-info-tab-title"}
+OARC_SPAWN_CTRL_TAB_LOCALIZED = {"oarc-spawn-ctrls-tab-title"}
+OARC_CONFIG_CTRL_TAB_LOCALIZED = {"oarc-settings-tab-title"}
+OARC_MOD_INFO_CTRL_TAB_LOCALIZED = {"oarc-mod-info-tab-title"}
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
     [OARC_SERVER_INFO_TAB_NAME] = CreateServerInfoTab,
@@ -39,18 +43,18 @@ function InitOarcGuiTabs(player)
     CreateOarcGuiButton(player)
 
     -- Add general info tab
-    AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME)
+    AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME, OARC_SERVER_INFO_TAB_LOCALIZED)
     SetOarcGuiTabEnabled(player, OARC_SERVER_INFO_TAB_NAME, true)
 
     -- Spawn control tab, disabled by default
-    AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
+    AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME, OARC_SPAWN_CTRL_TAB_LOCALIZED)
 
     -- Regrowth control tab
-    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME)
+    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME, OARC_MOD_INFO_CTRL_TAB_LOCALIZED)
     SetOarcGuiTabEnabled(player, OARC_MOD_INFO_CTRL_TAB_NAME, true)
 
     -- Settings control tab
-    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
+    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME, OARC_CONFIG_CTRL_TAB_LOCALIZED)
     SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
 
     HideOarcGui(player)
@@ -200,7 +204,7 @@ function CreateOarcGuiTabsPane(player)
             name="sub_header",
             style = "changelog_subheader_frame"
         }
-        AddLabel(subhead, nil, "Scenario Info and Controls", "subheader_caption_label") --TODO: localize
+        AddLabel(subhead, nil, {"oarc-gui-tab-header-label"}, "subheader_caption_label")
 
         -- TABBED PANE
         local oarc_tabs = inside_frame.add{
@@ -215,7 +219,8 @@ end
 -- It adds whatever it wants to the provided scroll-pane.
 ---@param player LuaPlayer
 ---@param tab_name string
-function AddOarcGuiTab(player, tab_name)
+---@param localized_name LocalisedString
+function AddOarcGuiTab(player, tab_name, localized_name)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
     end
@@ -229,7 +234,7 @@ function AddOarcGuiTab(player, tab_name)
     local new_tab = otabs.add{
         type="tab",
         name=tab_name,
-        caption=tab_name}
+        caption=localized_name}
 
     -- Create inside frame for content
     local tab_inside_frame = otabs.add{

@@ -1,30 +1,44 @@
 
 ACTIVE ITEMS:
 
-
+- Remove testing surfaces before release!
 
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
 
 Not specific:
-- Lots of localizations!
-- Custom tips and tricks??
-- List all TODOs in code here.
 - Run the profiler
 
 Minor:
 - Add refresh chunks around spidertrons based on their vision
-- Refresh players in admin controls when dropdown is clicked
-- Default to selecting SELF in admin controls player dropdown?
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 - Pull out general spawn config from surfaces config
 - Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
-- Add FAQ for enemy modifications
-- Add FAQ for item and energy sharing
+- Change default surface selection to be the default surface if multiple are enabled
+- Refresh players in admin controls when dropdown is clicked
+- Default to selecting SELF in admin controls player dropdown?
+
+Performance:
+- User on_nth_tick for any tick % (modulo) operations.
+- SeparateSpawnsGenerateChunk should only search for closest spawn once and pass to sub functions!
+- Rework world eater to use less find_entities_filtered
 
 Major:
 
+
+------------------------------------------------------SPACE AGE---------------------------------------------------------
+
+- Map Settings changes?
+- Pollution changes (regrowth)?
+- Enemy changes?
+- Landing pad locations per FORCE limited to 1?
+- Surface names for space ships?
+- Spawner health tied to evolution?
+- Respawn position is surface specific? Each surface needs a separate respawn point? Default respawn behavior?
+- Confirm launch into scenario works (V2.0 fix supposedly) -- https://forums.factorio.com/110708
+- Radar quality affects regrowth safe range?
+- Update electric pole connections for shared power if things change in V2.0
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -46,16 +60,8 @@ Other Ideas, Not Committed:
 - Possibly adjust easy/medium evo factors on new player joined?
 - Convert regrowth to a proper mod
 - Create shared electricty with a LIMITED output transfer rate using a custom accumulator?
-
-------------------------------------------------------SPACE AGE---------------------------------------------------------
-
-- Map Settings changes?
-- Pollution changes (regrowth)?
-- Enemy changes?
-- Landing pad locations per FORCE limited to 1?
-- Surface names for space ships?
-- Spawner health tied to evolution?
-- Respawn position is surface specific? Each surface needs a separate respawn point? Default respawn behavior?
+- Cleanup offline protection (Lots of commented out code)
+- Custom tips and tricks??
 
 --------------------------------------------------------DONE------------------------------------------------------------
 
@@ -123,3 +129,8 @@ Other Ideas, Not Committed:
 - Shared electricity (proper) (with configurable settings)
 - Add a show current respawn location button (same as show spawn location)
 - Expose some settings for adjusting easy and medium enemy evolution values
+- Add FAQ for enemy modifications
+- Add FAQ for item and energy sharing
+- FIX GetNextPlayerIndex!
+- Lots of localizations!
+- List all TO-DOs in code here.

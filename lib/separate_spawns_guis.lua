@@ -137,13 +137,22 @@ function CreateSurfaceSelectDropdown(parent_flow)
 
     local surface_list = GetAllowedSurfaces()
 
+    -- Get the index of the default surface if it exists
+    local default_surface_index = 1
+    for i,surface in ipairs(surface_list) do
+        if (surface == global.ocfg.gameplay.default_surface) then
+            default_surface_index = i
+            break
+        end
+    end
+
     AddLabel(surfacesHorizontalFlow, "surfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
     surfacesHorizontalFlow.add {
         name = "surface_select_dropdown",
         tags = { action = "oarc_spawn_options", setting = "surface_select" },
         type = "drop-down",
         items = surface_list,
-        selected_index = 1,
+        selected_index = default_surface_index,
         tooltip = { "oarc-surface-select-tooltip" },
         enabled = #surface_list > 1
     }
@@ -755,8 +764,10 @@ end
 ---@return nil
 function CancelSharedSpawnRequest(player)
 
-    --TODO implement this, need to validate the host is still valid
-    -- host_player.print({ "oarc-player-cancel-join-request", player_name })
+    local host_name = global.spawn_choices[player.name].host
+    if (host_name ~= nil) and (game.players[host_name] ~= nil) then
+        game.players[host_name].print({ "oarc-player-cancel-join-request", player.name })
+    end
 
     --- Destroy the waiting menu and display the spawn options again.
     player.gui.screen.join_shared_spawn_wait_menu.destroy()
@@ -806,34 +817,8 @@ function SpawnOptsSelectionChanged(event)
         log("GUI DEBUG Selected surface: " .. surface_name)
 
     elseif (tags.setting == "shared_spawn_select") then
+        SharedSpawnSelect(event.element, player)
 
-        -- TODO convert this section into a separate function
-        local index = event.element.selected_index
-        if (index > 0) then
-            local host_name = event.element.get_item(index) --[[@as string]]
-            local button = event.element.parent.join_other_spawn
-
-            log("GUI DEBUG Selected host: " .. host_name)
-
-            local primary_spawn = FindPrimaryUniqueSpawn(host_name)
-            if (IsSharedSpawnOpen(primary_spawn.surface_name, host_name) and not IsSharedSpawnFull(primary_spawn.surface_name, host_name)) then
-                global.spawn_choices[player.name].host = host_name
-                button.enabled = true
-                button.caption = { "oarc-join-shared-button-enable", host_name, primary_spawn.surface_name }
-                button.style = "green_button"
-            else
-                player.print({ "oarc-invalid-host-shared-spawn" })
-                global.spawn_choices[player.name].host = nil
-                event.element.selected_index = 0
-                button.enabled = false
-                button.caption = { "oarc-join-shared-button-disable" }
-                button.style = "red_button"
-            end
-
-        else
-            global.spawn_choices[player.name].host = nil
-        end
-    
     elseif (tags.setting == "buddy_select") then
         local index = event.element.selected_index
         if (index > 0) then
@@ -846,6 +831,36 @@ function SpawnOptsSelectionChanged(event)
     end
 end
 
+---Handles the shared spawn host dropdown selection. Updates the join button and sets the host spawn choice entry.
+---@param gui_element LuaGuiElement
+---@param player LuaPlayer
+---@return nil
+function SharedSpawnSelect(gui_element, player)
+    local index = gui_element.selected_index
+    if (index > 0) then
+        local host_name = gui_element.get_item(index) --[[@as string]]
+        local button = gui_element.parent.join_other_spawn
+
+        local primary_spawn = FindPrimaryUniqueSpawn(host_name)
+        if (IsSharedSpawnOpen(primary_spawn.surface_name, host_name) and not IsSharedSpawnFull(primary_spawn.surface_name, host_name)) then
+            global.spawn_choices[player.name].host = host_name
+            button.enabled = true
+            button.caption = { "oarc-join-shared-button-enable", host_name, primary_spawn.surface_name }
+            button.style = "green_button"
+        else
+            player.print({ "oarc-invalid-host-shared-spawn" })
+            global.spawn_choices[player.name].host = nil
+            gui_element.selected_index = 0
+            button.enabled = false
+            button.caption = { "oarc-join-shared-button-disable" }
+            button.style = "red_button"
+        end
+
+    else
+        global.spawn_choices[player.name].host = nil
+    end
+end
+
 ---Requests the generation of a spawn point for the player (their first primary spawn)
 ---@param player LuaPlayer
 ---@return nil
@@ -854,6 +869,10 @@ function PrimarySpawnRequest(player)
     ---@type OarcSpawnChoices
     local spawn_choices = global.spawn_choices[player.name]
     if (spawn_choices == nil) then error("ERROR! No spawn choices found for player!") return end
+
+    -- N/A for solo spawns so clear these!
+    global.spawn_choices[player.name].host = nil
+    global.spawn_choices[player.name].buddy = nil
 
     -- Cache some useful variables
     local surface = game.surfaces[spawn_choices.surface]
@@ -1101,14 +1120,16 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     local requesting_buddy = game.players[requesting_buddy_name]
     local surface = game.surfaces[spawn_choices.surface]
 
-     -- Find coordinates of a good place to spawn
-     local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+    global.spawn_choices[player.name].host = nil -- N/A for buddy spawns so clear it.
 
-     -- If that fails, just throw a warning and don't spawn them. They can try again.
-     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-         player.print({ "oarc-no-ungenerated-land-error" })
-         return
-     end
+    -- Find coordinates of a good place to spawn
+    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+
+    -- If that fails, just throw a warning and don't spawn them. They can try again.
+    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
+        player.print({ "oarc-no-ungenerated-land-error" })
+        return
+    end
 
     -- Create a new force for the combined players if they chose that option
     if spawn_choices.buddy_team then

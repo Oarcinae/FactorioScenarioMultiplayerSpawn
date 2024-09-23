@@ -187,7 +187,7 @@ function CreateJoinQueueControls(player, container)
     -- Only show this if the player has an open and not full shared spawn
     if (not shared_spawn_open or shared_spawn_full) then return end
 
-    if (TableLength(primary_spawn.join_queue) > 0) then
+    if (table_size(primary_spawn.join_queue) > 0) then
         AddLabel(container, nil, { "oarc-join-queue-header" }, "caption_label")
         AddLabel(container, "drop_down_msg_lbl1", { "oarc-select-player-join-queue" }, my_label_style)
 
@@ -344,7 +344,7 @@ function SpawnCtrlGuiClick(event)
         elseif (tags.setting == "accept_player_request") then
             
             -- Check if there is space first
-            if (TableLength(primary_spawn.joiners) >= global.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
+            if (table_size(primary_spawn.joiners) >= global.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
                 player.print({ "oarc-shared-spawn-full" })
                 return
             end

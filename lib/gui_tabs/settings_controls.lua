@@ -44,7 +44,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function CreateModSettingsSection(container, player)
-    AddLabel(container, nil, { "oarc-settings-tab-title" }, my_label_header2_style)
+    AddLabel(container, nil, { "oarc-settings-tab-title-mod-settings" }, my_label_header2_style)
 
     for index,entry in pairs(OCFG_KEYS) do
         if (entry.type == "header") then
@@ -78,9 +78,9 @@ function CreateSurfaceSettingsSection(container, player)
     }
 
     --- Add the header row
-    AddLabel(surface_table, nil, "Surface", "caption_label") ---TODO: localize
-    AddLabel(surface_table, nil, "Spawning Enabled", "caption_label")
-    AddLabel(surface_table, nil, "Regrowth Enabled", "caption_label")
+    AddLabel(surface_table, nil, {"oarc-settings-tab-surface-column-header"}, "caption_label")
+    AddLabel(surface_table, nil, {"oarc-settings-tab-surface-spawning-enabled"}, "caption_label")
+    AddLabel(surface_table, nil, {"oarc-settings-tab-surface-regrowth-enabled"}, "caption_label")
 
     --- Add the rows
     for name, allowed in pairs(global.oarc_surfaces --[[@as table<string, boolean>]]) do

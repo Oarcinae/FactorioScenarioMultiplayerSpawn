@@ -9,6 +9,7 @@
 ENEMY_FORCE_EASY = "enemy-easy"
 ENEMY_FORCE_MEDIUM = "enemy-medium"
 ENEMY_FORCES_NAMES = {"enemy", ENEMY_FORCE_EASY, ENEMY_FORCE_MEDIUM}
+ENEMY_FORCES_NAMES_INCL_NEUTRAL = {"enemy", ENEMY_FORCE_EASY, ENEMY_FORCE_MEDIUM, "neutral"}
 
 ENEMY_BUILT_TYPES = { "biter-spawner", "spitter-spawner", "small-worm-turret", "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret" }
 

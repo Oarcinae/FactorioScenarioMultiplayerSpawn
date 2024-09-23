@@ -2,6 +2,9 @@
 -- Won't work too hard on this since 2.0 might change things...
 
 
+STARTING_X_OFFSET_SHARING_POLE = -5
+Y_OFFSET_SHARING_POLE = 20
+
 ---Create and connect a pair of power poles for a new base given surface and position.
 ---@param surface LuaSurface
 ---@param position MapPosition
@@ -17,7 +20,7 @@ function CreateSharedPowerPolePair(surface, position)
     local hidden_pole = FindSharedPowerPole()
     if not hidden_pole then
         local poles_count = table_size(global.shared_power_poles)
-        local new_position = { x = poles_count-15, y=20 }
+        local new_position = { x = poles_count + STARTING_X_OFFSET_SHARING_POLE, y = Y_OFFSET_SHARING_POLE }
         hidden_pole = CreateSpecialPole(game.surfaces[HOLDING_PEN_SURFACE_NAME], new_position)
         if not hidden_pole then
             log("ERROR - Failed to create shared power poles!? " .. serpent.block(position) .. " on " .. surface.name)
