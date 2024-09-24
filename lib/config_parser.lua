@@ -1,4 +1,5 @@
 -- This file is used to validate the config.lua file and handle any mod settings conflicts.
+-- DON'T JUDGE ME! I wanted to try and make a nice in game setting GUI since the native mod settings GUI is so limited.
 
 ---Provides a way to look up the config settings key from the mod settings key.
 ---@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string }
@@ -48,6 +49,25 @@ OCFG_KEYS =
     ["regrowth.enable_world_eater"] = {mod_key = "oarc-mod-enable-world-eater" , ocfg_keys = {"regrowth", "enable_world_eater"}, type = "boolean"},
     ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-mod-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
     ["regrowth.cleanup_interval"] = {mod_key = "oarc-mod-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
+
+    ["General Spawn Area Config"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-mod-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer"},
+    ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-mod-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer"},
+    ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-mod-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer"},
+    ["spawn_general.resources_shape"] = {mod_key = "oarc-mod-spawn-general-enable-resources-circle-shape" , ocfg_keys = {"spawn_general", "resources_shape"}, type = "string-list"},
+    ["spawn_general.force_grass"] = {mod_key = "oarc-mod-spawn-general-enable-force-grass" , ocfg_keys = {"spawn_general", "force_grass"}, type = "boolean"},
+    ["spawn_general.shape"] = {mod_key = "oarc-mod-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list"},
+
+    ["Starting Resources Placement"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["resource_placement.enabled"] = {mod_key = "oarc-mod-resource-placement-enabled" , ocfg_keys = {"resource_placement", "enabled"}, type = "boolean"},
+    ["resource_placement.distance_to_edge"] = {mod_key = "oarc-mod-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer"},
+    ["resource_placement.angle_offset"] = {mod_key = "oarc-mod-resource-placement-angle-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "double"},
+    ["resource_placement.angle_final"] = {mod_key = "oarc-mod-resource-placement-angle-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "double"},
+    ["resource_placement.vertical_offset"] = {mod_key = "oarc-mod-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},
+    ["resource_placement.horizontal_offset"] = {mod_key = "oarc-mod-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer"},
+    ["resource_placement.linear_spacing"] = {mod_key = "oarc-mod-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
+    ["resource_placement.size_multiplier"] = {mod_key = "oarc-mod-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double"},
+    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-mod-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double"}
 }
 
 ---Easy reverse lookup for mod settings keys.
@@ -93,6 +113,23 @@ OCFG_MOD_KEYS =
     ["oarc-mod-enable-world-eater"] = "regrowth.enable_world_eater",
     ["oarc-mod-enable-abandoned-base-cleanup"] = "regrowth.enable_abandoned_base_cleanup",
     ["oarc-mod-regrowth-cleanup-interval-min"] = "regrowth.cleanup_interval",
+
+    ["oarc-mod-spawn-general-radius-tiles"] = "spawn_general.spawn_radius_tiles",
+    ["oarc-mod-spawn-general-moat-width-tiles"] = "spawn_general.moat_width_tiles",
+    ["oarc-mod-spawn-general-tree-width-tiles"] = "spawn_general.tree_width_tiles",
+    ["oarc-mod-spawn-general-enable-resources-circle-shape"] = "spawn_general.resources_shape",
+    ["oarc-mod-spawn-general-enable-force-grass"] = "spawn_general.force_grass",
+    ["oarc-mod-spawn-general-shape"] = "spawn_general.shape",
+
+    ["oarc-mod-resource-placement-enabled"] = "resource_placement.enabled",
+    ["oarc-mod-resource-placement-distance-to-edge"] = "resource_placement.distance_to_edge",
+    ["oarc-mod-resource-placement-angle-offset"] = "resource_placement.angle_offset",
+    ["oarc-mod-resource-placement-angle-final"] = "resource_placement.angle_final",
+    ["oarc-mod-resource-placement-vertical-offset"] = "resource_placement.vertical_offset",
+    ["oarc-mod-resource-placement-horizontal-offset"] = "resource_placement.horizontal_offset",
+    ["oarc-mod-resource-placement-linear-spacing"] = "resource_placement.linear_spacing",
+    ["oarc-mod-resource-placement-size-multiplier"] = "resource_placement.size_multiplier",
+    ["oarc-mod-resource-placement-amount-multiplier"] = "resource_placement.amount_multiplier"
 }
 
 

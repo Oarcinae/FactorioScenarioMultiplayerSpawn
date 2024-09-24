@@ -12,12 +12,14 @@
 -- Additionally, many settings are exposed in the game itself and can be chanced once you launch.
 -- For convenience you can provide you own config-scenario.lua file in the scenarios/OARC folder to override these settings.
 
----@enum SpawnShapeChoice
-SPAWN_SHAPE_CHOICE = {
-    circle = 1,
-    octagon = 2,
-    square = 3,
-}
+---@alias SpawnShapeChoice "circle" | "octagon" | "square"
+SPAWN_SHAPE_CHOICE_CIRCLE = "circle"
+SPAWN_SHAPE_CHOICE_OCTAGON = "octagon"
+SPAWN_SHAPE_CHOICE_SQUARE = "square"
+
+---@alias SpawnResourcesShapeChoice "circle" | "square"
+RESOURCES_SHAPE_CHOICE_CIRCLE = "circle"
+RESOURCES_SHAPE_CHOICE_SQUARE = "square"
 
 ---@type OarcConfigStartingItems
 NAUVIS_STARTER_ITEMS =
@@ -51,32 +53,6 @@ NAUVIS_STARTER_ITEMS =
 ---@type OarcConfigSpawn
 NAUVIS_SPAWN_CONFIG =
 {
-    general = {
-
-        -- Create a circle of land area for the spawn
-        -- If you make this much bigger than a few chunks, good luck!
-        -- (It takes a long time to generate new chunks!)
-        spawn_radius_tiles = CHUNK_SIZE*2,
-
-        -- Width of the moat around the spawn area.
-        -- If you change the spawn area size, you might have to adjust this as well.
-        moat_width_tiles = 8,
-
-        -- Width of the tree ring around the spawn area.
-        -- If you change the spawn area size, you might have to adjust this as well.
-        tree_width_tiles = 5,
-
-        -- Start resource shape. true = circle, false = square.
-        resources_circle_shape = true,
-
-        -- Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain
-        -- or uses landfill.
-        force_grass = false,
-
-        -- Spawn a circle/octagon/square of trees around this base outline.
-        shape = SPAWN_SHAPE_CHOICE.circle,
-    },
-
     -- Safe Spawn Area Options
     -- The default settings here are balanced for my recommended map gen settings (close to train world).
     safe_area =
@@ -100,67 +76,53 @@ NAUVIS_SPAWN_CONFIG =
         danger_reduction = 5,
     },
 
-    -- Location of water strip within the spawn area (horizontal)
+    -- Location of water strip within the spawn area (2 horizontal rows)
+    -- The offset is from the TOP (NORTH) of the spawn area.
     water = {
         x_offset = -4,
-        y_offset = -48,
+        y_offset = 10,
         length = 8,
     },
 
-    -- Location of shared power pole relative to spawn center (if enabled)
+    -- Location of shared power pole within the spawn area (if enabled)
+    -- The offset is from the RIGHT (WEST) of the spawn area.
     shared_power_pole_position = {
-        x_offset=-4,
-        y_offset=-54
+        x_offset=-10,
+        y_offset=0
     },
 
-    -- Location of shared chest relative to spawn center (if enabled)
+    -- Location of shared chest within the spawn area (if enabled)
+    -- The offset is from the RIGHT (WEST) of the spawn area.
     shared_chest_position = {
-        x_offset=4,
-        y_offset=-54
-    },
-
-    -- Handle placement of starting resources
-    resource_rand_pos_settings =
-    {
-        -- Autoplace resources (randomly in circle)
-        -- This will ignore the fixed x_offset/y_offset values in solid_resources.
-        -- Only works for solid_resources at the moment, not oil patches/water.
-        enabled = true,
-        -- Distance from center of spawn that resources are placed.
-        radius = 45,
-        -- At what angle (in radians) do resources start.
-        -- 0 means starts directly east.
-        -- Resources are placed clockwise from there.
-        angle_offset = 2.32, -- 2.32 is approx SSW.
-        -- At what andle do we place the last resource.
-        -- angle_offset and angle_final determine spacing and placement.
-        angle_final = 4.46 -- 4.46 is approx NNW.
+        x_offset=-10,
+        y_offset=1
     },
 
     -- Solid resource tiles
     -- If you are running with mods that add or change resources, you'll want to customize this.
+    -- Offsets only are applicable if auto placement is disabled. Offsets are from CENTER of spawn area.
     solid_resources = {
         ["iron-ore"] = {
             amount = 1500,
-            size = 18,
+            size = 21,
             x_offset = -29,
             y_offset = 16
         },
         ["copper-ore"] = {
             amount = 1200,
-            size = 18,
+            size = 21,
             x_offset = -28,
             y_offset = -3
         },
         ["stone"] = {
             amount = 1200,
-            size = 16,
+            size = 21,
             x_offset = -27,
             y_offset = -34
         },
         ["coal"] = {
             amount = 1200,
-            size = 16,
+            size = 21,
             x_offset = -27,
             y_offset = -20
         }
@@ -168,14 +130,17 @@ NAUVIS_SPAWN_CONFIG =
 
     -- Fluid resource patches like oil
     -- If you are running with mods that add or change resources, you'll want to customize this.
+    -- The offset is from the BOTTOM (SOUTH) of the spawn area.
     fluid_resources =
     {
         ["crude-oil"] =
         {
             num_patches = 2,
             amount = 900000,
+            -- Starting position offset (relative to bottom/south of spawn area)
             x_offset_start = -3,
-            y_offset_start = 48,
+            y_offset_start = -10,
+            -- Additional position offsets for each new oil patch (relative to previous oil patch)
             x_offset_next = 6,
             y_offset_next = 0
         }
@@ -320,9 +285,76 @@ OCFG = {
         cleanup_interval = 60,
     },
 
-    -- Spawn configuration (starting items and spawn area config) for each surface.
+    -- General spawn settings (size, shape, etc.)
+    spawn_general = {
+
+        -- Create a circle of land area for the spawn
+        -- If you make this much bigger than a few chunks, good luck!
+        -- (It takes a long time to generate new chunks!)
+        spawn_radius_tiles = CHUNK_SIZE*2,
+
+        -- Width of the moat around the spawn area.
+        -- If you change the spawn area size, you might have to adjust this as well.
+        moat_width_tiles = 8,
+
+        -- Width of the tree ring around the spawn area.
+        -- If you change the spawn area size, you might have to adjust this as well.
+        tree_width_tiles = 5,
+
+        -- Starting resources deposits shape.
+        resources_shape = RESOURCES_SHAPE_CHOICE_CIRCLE,
+
+        -- Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain
+        -- or uses landfill.
+        force_grass = false,
+
+        -- Spawn a circle/octagon/square of trees around this base outline.
+        shape = SPAWN_SHAPE_CHOICE_CIRCLE,
+    },
+
+    -- Handle placement of starting resources within the spawn area.
+    resource_placement =
+    {
+        -- Autoplace resources (randomly in circle)
+        -- This will ignore the fixed x_offset/y_offset values in solid_resources.
+        -- Only works for solid_resources at the moment, not oil patches/water.
+        enabled = true,
+
+        -- Distance in tiles from the edge of spawn that resources are placed. Only applicable for circular spawns.
+        distance_to_edge = 20,
+
+        -- At what angle (in radians) do resources start.
+        -- 0 means starts directly east.
+        -- Resources are placed clockwise from there.
+        angle_offset = 2.32, -- 2.32 is approx SSW.
+
+        -- At what andle do we place the last resource.
+        -- angle_offset and angle_final determine spacing and placement.
+        angle_final = 4.46, -- 4.46 is approx NNW.
+
+        -- Vertical offset in tiles for the deposit resource placement. Starting from top-left corner.
+        -- Only applicable for square spawns.
+        vertical_offset = 20,
+
+        -- Horizontal offset in tiles for the deposit resource placement. Starting from top-left corner.
+        -- Only applicable for square spawns.
+        horizontal_offset = 20,
+
+        -- Spacing between resource deposits in tiles.
+        -- Only applicable for square spawns.
+        linear_spacing = 6,
+
+        -- Size multiplier for the starting resource deposits.
+        size_multiplier = 1.0,
+
+        -- Amount multiplier for the starting resource deposits.
+        amount_multiplier = 1.0,
+
+    },
+
+    -- Spawn configuration specific to each surface, including starting & respawn items.
     ---@type table<string, OarcConfigSurface>
-    surfaces_config = 
+    surfaces_config =
     {
         ["nauvis"] = {
             starting_items = NAUVIS_STARTER_ITEMS,
@@ -381,6 +413,8 @@ OCFG = {
 ---@field server_info OarcConfigServerInfo Personalized server info for the welcome GUI and Info panel.
 ---@field gameplay OarcConfigGameplaySettings Various mod gameplay settings
 ---@field regrowth OarcConfigRegrowth Regrowth specific settings (keeps map size down)
+---@field spawn_general OarcConfigSpawnGeneral General spawn settings (size, shape, etc.)
+---@field resource_placement OarcConfigSpawnResourcePlacementSettings Resource placement settings
 ---@field surfaces_config table<string, OarcConfigSurface> Spawn configuration (starting items and spawn area config) for each surface.
 ---@field surfaces_blacklist table<string> List of surfaces to ignore automatically.
 ---@field surfaces_blacklist_match table<string> List of surfaces to ignore automatically if the start of the string matches the surface name.
@@ -436,12 +470,10 @@ OCFG = {
 ---@field player_respawn_items table Items provided after EVERY respawn (disabled by default)
 
 ---@class OarcConfigSpawn
----@field general OarcConfigSpawnGeneral General spawn settings (size, shape, etc.)
 ---@field safe_area OarcConfigSpawnSafeArea How safe is the spawn area?
 ---@field water OarcConfigSpawnWater Water strip settings
 ---@field shared_power_pole_position OarcOffsetPosition Location of shared power pole relative to spawn center (if enabled)
 ---@field shared_chest_position OarcOffsetPosition Location of shared chest relative to spawn center (if enabled)
----@field resource_rand_pos_settings OarcConfigSpawnResourceRandPosSettings Resource placement settings
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
 
@@ -449,7 +481,7 @@ OCFG = {
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
 ---@field moat_width_tiles number Width of the moat around the spawn area. If you change the spawn area size, you might have to adjust this as well.
 ---@field tree_width_tiles number Width of the tree ring around the spawn area. If you change the spawn area size, you might have to adjust this as well.
----@field resources_circle_shape boolean Start resource shape. true = circle, false = square.
+---@field resources_shape SpawnResourcesShapeChoice The starting resources deposits shape.
 ---@field force_grass boolean Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain.
 ---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
 
@@ -467,11 +499,16 @@ OCFG = {
 
 ---@alias OarcOffsetPosition { x_offset: number, y_offset: number } An offset position intended to be relative to the spawn center.
 
----@class OarcConfigSpawnResourceRandPosSettings
----@field enabled boolean Autoplace resources (randomly in circle) This will ignore the fixed x_offset/y_offset values in solid_resources. Only works for solid_resources at the moment, not oil patches/water.
----@field radius number Distance from center of spawn that resources are placed.
----@field angle_offset number At what angle (in radians) do resources start. 0 means starts directly east. Resources are placed clockwise from there.
----@field angle_final number At what andle do we place the last resource. angle_offset and angle_final determine spacing and placement.
+---@class OarcConfigSpawnResourcePlacementSettings
+---@field enabled boolean Autoplace resources. This will ignore the fixed x_offset/y_offset values in solid_resources. Only works for solid_resources at the moment, not oil patches/water.
+---@field distance_to_edge number Distance in tiles from the edge of spawn that resources are placed. Only applicable for circular spawns.
+---@field angle_offset number At what angle (in radians) do resources start. 0 means starts directly east. Resources are placed clockwise from there. Only applicable for circular spawns.
+---@field angle_final number At what andle do we place the last resource. angle_offset and angle_final determine spacing and placement. Only applicable for circular spawns.
+---@field vertical_offset number Vertical offset in tiles for the deposit resource placement. Only applicable for square spawns.
+---@field horizontal_offset number Horizontal offset in tiles for the deposit resource placement. Only applicable for square spawns.
+---@field linear_spacing number Spacing between resource deposits in tiles. Only applicable for square spawns.
+---@field size_multiplier number Size multiplier for the starting resource deposits.
+---@field amount_multiplier number Amount multiplier for the starting resource deposits.
 
 ---@alias OarcConfigSolidResource { amount: integer, size: integer, x_offset: integer, y_offset: integer } Amount and placement of solid resource tiles in the spawn area.
 ---@alias OarcConfigFluidResource { num_patches: integer, amount: integer, x_offset_start: integer, y_offset_start: integer, x_offset_next: integer, y_offset_next: integer } Amount and placement of fluid resource patches in the spawn area.

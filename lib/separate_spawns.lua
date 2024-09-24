@@ -264,55 +264,37 @@ end
 
 -- Generate the basic starter resource around a given location.
 ---@param surface LuaSurface
----@param position TilePosition
+---@param position TilePosition --The center of the spawn area
 ---@return nil
 function GenerateStartingResources(surface, position)
-    local rand_settings = global.ocfg.surfaces_config[surface.name].spawn_config.resource_rand_pos_settings
+
+    local size_mod = global.ocfg.resource_placement.size_multiplier
+    local amount_mod = global.ocfg.resource_placement.amount_multiplier
 
     -- Generate all resource tile patches
-    if (not rand_settings.enabled) then
+    if (not global.ocfg.resource_placement.enabled) then
         for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
             local pos = { x = position.x + r_data.x_offset, y = position.y + r_data.y_offset }
-            GenerateResourcePatch(surface, r_name, r_data.size, pos, r_data.amount)
+            GenerateResourcePatch(surface, r_name, r_data.size * size_mod, pos, r_data.amount * amount_mod)
         end
 
         -- Generate resources in random order around the spawn point. Tweak in config.lua
     else
-        -- Create list of resource tiles
-        ---@type table<string>
-        local r_list = {}
-        for r_name, _ in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
-            if (r_name ~= "") then
-                table.insert(r_list, r_name)
-            end
-        end
-        ---@type table<string>
-        local shuffled_list = FYShuffle(r_list)
-
-        -- This places resources in a semi-circle
-        local angle_offset = rand_settings.angle_offset
-        local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
-        local theta = ((rand_settings.angle_final - rand_settings.angle_offset) / num_resources);
-        local count = 0
-
-        for _, r_name in pairs(shuffled_list) do
-            local angle = (theta * count) + angle_offset;
-
-            local tx = (rand_settings.radius * math.cos(angle)) + position.x
-            local ty = (rand_settings.radius * math.sin(angle)) + position.y
-
-            local pos = { x = math.floor(tx), y = math.floor(ty) }
-
-            local resourceConfig = global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
-            GenerateResourcePatch(surface, r_name, resourceConfig.size, pos, resourceConfig.amount)
-            count = count + 1
+        
+        if (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
+            PlaceResourcesInSemiCircle(surface, position)
+        elseif (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
+            PlaceResourcesInSquare(surface, position)
         end
     end
 
     -- Generate special fluid resource patches (oil)
+    -- Reference position is the bottom of the spawn area.
+    local fluid_ref_pos = { x = position.x,
+                            y = position.y + global.ocfg.spawn_general.spawn_radius_tiles }
     for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
-        local oil_patch_x = position.x + r_data.x_offset_start
-        local oil_patch_y = position.y + r_data.y_offset_start
+        local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
+        local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
         for i = 1, r_data.num_patches do
             surface.create_entity({
                 name = r_name,
@@ -322,6 +304,83 @@ function GenerateStartingResources(surface, position)
             oil_patch_x = oil_patch_x + r_data.x_offset_next
             oil_patch_y = oil_patch_y + r_data.y_offset_next
         end
+    end
+end
+
+---Places starting resource deposits in a semi-circle around the spawn point.
+---@param surface LuaSurface
+---@param position TilePosition --The center of the spawn area
+function PlaceResourcesInSemiCircle(surface, position)
+
+    local size_mod = global.ocfg.resource_placement.size_multiplier
+    local amount_mod = global.ocfg.resource_placement.amount_multiplier
+
+    -- Create list of resource tiles
+    ---@type table<string>
+    local r_list = {}
+    for r_name, _ in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
+        if (r_name ~= "") then
+            table.insert(r_list, r_name)
+        end
+    end
+    ---@type table<string>
+    local shuffled_list = FYShuffle(r_list)
+
+    -- This places resources in a semi-circle
+    local angle_offset = global.ocfg.resource_placement.angle_offset
+    local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
+    local theta = ((global.ocfg.resource_placement.angle_final - global.ocfg.resource_placement.angle_offset) / num_resources);
+    local count = 0
+
+    local radius = global.ocfg.spawn_general.spawn_radius_tiles - global.ocfg.resource_placement.distance_to_edge
+
+    for _, r_name in pairs(shuffled_list) do
+        local angle = (theta * count) + angle_offset;
+
+        local tx = (radius * math.cos(angle)) + position.x
+        local ty = (radius * math.sin(angle)) + position.y
+
+        local pos = { x = math.floor(tx), y = math.floor(ty) }
+
+        local resourceConfig = global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
+        GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
+        count = count + 1
+    end
+end
+
+---Places starting resource deposits in a line starting at the top left of the spawn point.
+---@param surface LuaSurface
+---@param position TilePosition --The center of the spawn area
+function PlaceResourcesInSquare(surface, position)
+
+    local size_mod = global.ocfg.resource_placement.size_multiplier
+    local amount_mod = global.ocfg.resource_placement.amount_multiplier
+
+    -- Create list of resource tiles
+    ---@type table<string>
+    local r_list = {}
+    for r_name, _ in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
+        if (r_name ~= "") then
+            table.insert(r_list, r_name)
+        end
+    end
+    ---@type table<string>
+    local shuffled_list = FYShuffle(r_list)
+
+    -- Get the top left position of the spawn area
+    local resource_position = { x = position.x - global.ocfg.spawn_general.spawn_radius_tiles,
+                                y = position.y - global.ocfg.spawn_general.spawn_radius_tiles }
+
+    -- Offset the starting position
+    resource_position.x = resource_position.x + global.ocfg.resource_placement.horizontal_offset
+    resource_position.y = resource_position.y + global.ocfg.resource_placement.vertical_offset
+
+    -- Place vertically using linear spacing
+    for _, r_name in pairs(shuffled_list) do
+        local resourceConfig = global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
+        local size = resourceConfig.size * size_mod
+        GenerateResourcePatch(surface, r_name, size, resource_position, resourceConfig.amount * amount_mod)
+        resource_position.y = resource_position.y + size + global.ocfg.resource_placement.linear_spacing
     end
 end
 
@@ -339,30 +398,41 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     -- Generate water strip only if we don't have a moat.
     if (not delayed_spawn.moat) then
         local water_data = spawn_config.water
+        -- Reference position is the top of the spawn area.
+        local reference_pos = {
+            x = delayed_spawn.position.x,
+            y = delayed_spawn.position.y - global.ocfg.spawn_general.spawn_radius_tiles
+        }
         CreateWaterStrip(game.surfaces[delayed_spawn.surface],
-            { x = delayed_spawn.position.x + water_data.x_offset, y = delayed_spawn.position.y + water_data.y_offset },
+            { x = reference_pos.x + water_data.x_offset, y = reference_pos.y + water_data.y_offset },
             water_data.length)
         CreateWaterStrip(game.surfaces[delayed_spawn.surface],
-            { x = delayed_spawn.position.x + water_data.x_offset, y = delayed_spawn.position.y + water_data.y_offset + 1 },
+            { x = reference_pos.x + water_data.x_offset, y = reference_pos.y + water_data.y_offset + 1 },
             water_data.length)
     end
 
     -- Create the spawn resources here
     GenerateStartingResources(game.surfaces[delayed_spawn.surface], delayed_spawn.position)
 
+    -- Reference position is RIGHT (WEST) of the spawn area.
+    local sharing_ref_pos = {
+        x = delayed_spawn.position.x + global.ocfg.spawn_general.spawn_radius_tiles,
+        y = delayed_spawn.position.y
+    }
+
     -- Create shared power poles
     if (ocfg.gameplay.enable_shared_power) then
         local power_pole_position = {
-            x = delayed_spawn.position.x + spawn_config.shared_power_pole_position.x_offset,
-            y = delayed_spawn.position.y + spawn_config.shared_power_pole_position.y_offset }
+            x = sharing_ref_pos.x + spawn_config.shared_power_pole_position.x_offset,
+            y = sharing_ref_pos.y + spawn_config.shared_power_pole_position.y_offset }
         CreateSharedPowerPolePair(game.surfaces[delayed_spawn.surface], power_pole_position)
     end
 
     -- Create shared chest
     if (ocfg.gameplay.enable_shared_chest) then
         local chest_position = {
-            x = delayed_spawn.position.x + spawn_config.shared_chest_position.x_offset,
-            y = delayed_spawn.position.y + spawn_config.shared_chest_position.y_offset }
+            x = sharing_ref_pos.x + spawn_config.shared_chest_position.x_offset,
+            y = sharing_ref_pos.y + spawn_config.shared_chest_position.y_offset }
         CreateSharedChest(game.surfaces[delayed_spawn.surface], chest_position)
     end
 
@@ -375,7 +445,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     DisplayWelcomeGroundTextAtSpawn(player, delayed_spawn.surface, delayed_spawn.position)
 
     -- Chart the area.
-    ChartArea(player.force, delayed_spawn.position, math.ceil(spawn_config.general.spawn_radius_tiles / CHUNK_SIZE),
+    ChartArea(player.force, delayed_spawn.position, math.ceil(global.ocfg.spawn_general.spawn_radius_tiles / CHUNK_SIZE),
         player.surface)
 
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then
@@ -450,7 +520,9 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     local closest_spawn = GetClosestUniqueSpawn(surface.name, chunkArea.left_top)
     if (closest_spawn == nil) then return end
 
-    local spawn_config --[[@as OarcConfigSpawn]] = global.ocfg.surfaces_config[surface.name].spawn_config
+    --[[@type OarcConfigSpawnGeneral]]
+    local general_spawn_config = global.ocfg.spawn_general
+
     local chunkAreaCenter = {
         x = chunkArea.left_top.x + (CHUNK_SIZE / 2),
         y = chunkArea.left_top.y + (CHUNK_SIZE / 2)
@@ -466,64 +538,55 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     for _, spawn in pairs(spawns) do
         -- If the chunk is within the main land area, then clear trees/resources and create the land spawn areas
         -- (guaranteed land with a circle of trees)
-        local landArea = GetAreaAroundPos(spawn.position, spawn_config.general.spawn_radius_tiles + CHUNK_SIZE)
+        local landArea = GetAreaAroundPos(spawn.position, general_spawn_config.spawn_radius_tiles + CHUNK_SIZE)
         if not CheckIfInArea(chunkAreaCenter, landArea) then 
             goto CONTINUE
         end
 
         -- Remove trees/resources inside the spawn area
-        if (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.circle) or (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.octagon) then
-            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, spawn_config.general.spawn_radius_tiles + 5)
-        elseif (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.square) then
-            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, spawn_config.general.spawn_radius_tiles + 5)
+        if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
+            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
+        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
+            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
         end
 
         -- Fill in the spawn area with landfill and create a circle of trees around it.
         local fill_tile = "landfill"
-        if spawn_config.general.force_grass then
+        if general_spawn_config.force_grass then
             fill_tile = "grass-1"
         end
         
-        if (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.circle) then
+        if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then
             CreateCropCircle(
                 surface,
                 spawn.position,
                 chunkArea,
-                spawn_config.general.spawn_radius_tiles,
+                general_spawn_config.spawn_radius_tiles,
                 fill_tile,
                 spawn.moat,
                 global.ocfg.gameplay.enable_moat_bridging
             )
-        elseif (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.octagon) then
+        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
             CreateCropOctagon(
                 surface,
                 spawn.position,
                 chunkArea,
-                spawn_config.general.spawn_radius_tiles,
+                general_spawn_config.spawn_radius_tiles,
                 fill_tile,
                 spawn.moat,
                 global.ocfg.gameplay.enable_moat_bridging
             )
-        elseif (spawn_config.general.shape == SPAWN_SHAPE_CHOICE.square) then
+        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             CreateCropSquare(
                 surface,
                 spawn.position,
                 chunkArea,
-                spawn_config.general.spawn_radius_tiles,
+                general_spawn_config.spawn_radius_tiles,
                 fill_tile,
                 spawn.moat,
                 global.ocfg.gameplay.enable_moat_bridging
             )
         end
-
-        -- if (spawn.moat) then
-        --     CreateMoat(surface,
-        --         spawn.position,
-        --         chunkArea,
-        --         spawn_config.general.spawn_radius_tiles,
-        --         "water",
-        --         global.ocfg.gameplay.enable_moat_bridging)
-        -- end
 
         :: CONTINUE ::
     end
@@ -708,8 +771,8 @@ function UniqueSpawnCleanupRemove(player_name)
     if (primary_spawn == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. player_name)
 
-    local total_spawn_width = global.ocfg.surfaces_config[primary_spawn.surface_name].spawn_config.general.spawn_radius_tiles +
-                                global.ocfg.surfaces_config[primary_spawn.surface_name].spawn_config.general.moat_width_tiles
+    local total_spawn_width = global.ocfg.spawn_general.spawn_radius_tiles +
+                                global.ocfg.spawn_general.moat_width_tiles
 
     -- Check if it was near someone else's base. (Really just buddy base is possible I think?)
     nearOtherSpawn = false
@@ -1103,8 +1166,8 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
     InitUniqueSpawnGlobals(player_name, surface, spawn_position, moat_enabled, primary, buddy_name)
 
     -- Add a 1 chunk buffer to be safe
-    local total_spawn_width = global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles +
-                                global.ocfg.surfaces_config[surface].spawn_config.general.moat_width_tiles
+    local total_spawn_width = global.ocfg.spawn_general.spawn_radius_tiles +
+                                global.ocfg.spawn_general.moat_width_tiles
     local spawn_chunk_radius = math.ceil(total_spawn_width / CHUNK_SIZE) + 1
     local delay_spawn_seconds = 5 * spawn_chunk_radius
 
@@ -1130,7 +1193,7 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
     DisplayPleaseWaitForSpawnDialog(game.players[player_name], delay_spawn_seconds, game.surfaces[surface], spawn_position)
 
     RegrowthMarkAreaSafeGivenTilePos(surface, spawn_position,
-        math.ceil(global.ocfg.surfaces_config[surface].spawn_config.general.spawn_radius_tiles / CHUNK_SIZE), true)
+        math.ceil(global.ocfg.spawn_general.spawn_radius_tiles / CHUNK_SIZE), true)
 
     -- Chart the area to be able to display the minimap while the player waits.
     ChartArea(game.players[player_name].force,

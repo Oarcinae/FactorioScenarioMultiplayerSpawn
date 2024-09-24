@@ -1320,10 +1320,10 @@ end
 function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
     local tile_radius_sqr = tileRadius ^ 2
 
-    local moat_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles
+    local moat_width = global.ocfg.spawn_general.moat_width_tiles
     local moat_radius_sqr = ((tileRadius + moat_width)^2)
 
-    local tree_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.tree_width_tiles
+    local tree_width = global.ocfg.spawn_general.tree_width_tiles
     local tree_radius_sqr_inner = ((tileRadius - 1 - tree_width) ^ 2) -- 1 less to make sure trees are inside the spawn area
     local tree_radius_sqr_outer = ((tileRadius - 1) ^ 2)
 
@@ -1338,7 +1338,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
             -- Fill in all unexpected water (or force grass)
             if (distSqr <= tile_radius_sqr) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
+                        global.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1373,11 +1373,11 @@ end
 ---@param bridge boolean
 ---@return nil
 function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
-    
-    local moat_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles
+
+    local moat_width = global.ocfg.spawn_general.moat_width_tiles
     local moat_width_outer = tileRadius + moat_width
 
-    local tree_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.tree_width_tiles
+    local tree_width = global.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
 
     local dirtTiles = {}
@@ -1391,7 +1391,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
             -- Fill in all unexpected water (or force grass)
             if (distVar <= tileRadius) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
+                        global.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1426,10 +1426,10 @@ end
 ---@return nil
 function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
 
-    local moat_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles
+    local moat_width = global.ocfg.spawn_general.moat_width_tiles
     local moat_width_outer = tileRadius + moat_width
 
-    local tree_width = global.ocfg.surfaces_config[surface.name].spawn_config.general.tree_width_tiles
+    local tree_width = global.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
 
     local dirtTiles = {}
@@ -1442,7 +1442,7 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
             -- Fill in all unexpected water (or force grass)
             if (max_distance <= tileRadius) then
                 if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.surfaces_config[surface.name].spawn_config.general.force_grass) then
+                        global.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1491,7 +1491,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge,
                 local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
                 -- Create a circle of water
-                if ((distVar < tileRadSqr + (1500 * global.ocfg.surfaces_config[surface.name].spawn_config.general.moat_width_tiles)) and
+                if ((distVar < tileRadSqr + (1500 * global.ocfg.spawn_general.moat_width_tiles)) and
                         (distVar > tileRadSqr)) then
                     table.insert(tiles, { name = moatTile, position = { i, j } })
                 end
@@ -1525,9 +1525,15 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     if (diameter == 0) then
         return
     end
+
+    -- Right now only 2 shapes are supported. Circle and Square.
+    local square_shape = (global.ocfg.spawn_general.resources_shape == RESOURCES_SHAPE_CHOICE_SQUARE)
+
     for y = -midPoint, midPoint do
         for x = -midPoint, midPoint do
-            if (not global.ocfg.surfaces_config[surface.name].spawn_config.general.resources_circle_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+
+            -- Either it's a square, or it's a circle so we check if it's inside the circle.
+            if (square_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
                 surface.create_entity({
                     name = resourceName,
                     amount = amount,

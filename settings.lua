@@ -270,30 +270,134 @@ data:extend({
         order = "g4"
     },
 
+    {
+        type = "int-setting",
+        name = "oarc-mod-spawn-general-radius-tiles",
+        setting_type = "runtime-global",
+        default_value = 64,
+        minimum_value = 32,
+        maximum_value = 6400,
+        order = "h1"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-spawn-general-moat-width-tiles",
+        setting_type = "runtime-global",
+        default_value = 8,
+        minimum_value = 1,
+        maximum_value = 32,
+        order = "h2"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-spawn-general-tree-width-tiles",
+        setting_type = "runtime-global",
+        default_value = 5,
+        minimum_value = 1,
+        maximum_value = 32,
+        order = "h3"
+    },
+    {
+        type = "string-setting",
+        name = "oarc-mod-spawn-general-enable-resources-circle-shape",
+        setting_type = "runtime-global",
+        default_value = "circle",
+        allowed_values = {"circle", "square"},
+        order = "h4"
+    },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-spawn-general-enable-force-grass",
+        setting_type = "runtime-global",
+        default_value = false,
+        order = "h5"
+    },    {
+        type = "string-setting",
+        name = "oarc-mod-spawn-general-shape",
+        setting_type = "runtime-global",
+        default_value = "circle",
+        allowed_values = {"circle", "octagon", "square"},
+        order = "h6"
+    },
 
 
-
-    -- Vanilla spawn point are not implemented yet.
-    -- {
-    --     type = "bool-setting",
-    --     name = "oarc-mod-enable-vanilla-spawn-points",
-    --     setting_type = "runtime-global",
-    --     default_value = true
-    -- },
-    -- {
-    --     type = "int-setting",
-    --     name = "oarc-mod-number-of-vanilla-spawn-points",
-    --     setting_type = "runtime-global",
-    --     default_value = 5,
-    --     minimum_value = 1,
-    --     maximum_value = 10
-    -- },
-    -- {
-    --     type = "int-setting",
-    --     name = "oarc-mod-vanilla-spawn-point-spacing",
-    --     setting_type = "runtime-global",
-    --     default_value = 10,
-    --     minimum_value = 5,
-    --     maximum_value = 20
-    -- },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-resource-placement-enabled",
+        setting_type = "runtime-global",
+        default_value = true,
+        order = "i1"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-resource-placement-distance-to-edge",
+        setting_type = "runtime-global",
+        default_value = 20,
+        minimum_value = 0,
+        maximum_value = 96,
+        order = "i2"
+    },
+    {
+        type = "double-setting",
+        name = "oarc-mod-resource-placement-angle-offset",
+        setting_type = "runtime-global",
+        default_value = 2.32,
+        minimum_value = 0,
+        maximum_value = 6.28,
+        order = "i3"
+    },
+    {
+        type = "double-setting",
+        name = "oarc-mod-resource-placement-angle-final",
+        setting_type = "runtime-global",
+        default_value = 4.46,
+        minimum_value = 0,
+        maximum_value = 6.28,
+        order = "i4"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-resource-placement-vertical-offset",
+        setting_type = "runtime-global",
+        default_value = 20,
+        minimum_value = 0,
+        maximum_value = 96,
+        order = "i5"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-resource-placement-horizontal-offset",
+        setting_type = "runtime-global",
+        default_value = 20,
+        minimum_value = 0,
+        maximum_value = 96,
+        order = "i6"
+    },
+    {
+        type = "int-setting",
+        name = "oarc-mod-resource-placement-linear-spacing",
+        setting_type = "runtime-global",
+        default_value = 6,
+        minimum_value = 0,
+        maximum_value = 32,
+        order = "i7"
+    },
+    {
+        type = "double-setting",
+        name = "oarc-mod-resource-placement-size-multiplier",
+        setting_type = "runtime-global",
+        default_value = 1.0,
+        minimum_value = 0,
+        maximum_value = 10,
+        order = "i8"
+    },
+    {
+        type = "double-setting",
+        name = "oarc-mod-resource-placement-amount-multiplier",
+        setting_type = "runtime-global",
+        default_value = 1.0,
+        minimum_value = 0,
+        maximum_value = 10,
+        order = "i9"
+    },
 })

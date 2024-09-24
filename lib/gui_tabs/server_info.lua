@@ -53,12 +53,17 @@ function CreateServerInfoTab(tab_container, player)
         horizontal_flow.style.horizontally_stretchable = true
 
         AddLabel(horizontal_flow, nil, {"oarc-server-info-ban-select-player"}, my_label_style)
-        horizontal_flow.add{
+        local drop_down = horizontal_flow.add{
             name = "ban_players_dropdown",
             tags = { action = "oarc_server_info_tab", setting = "ban_players_dropdown" },
             type = "drop-down",
             items = player_list
         }
+
+        -- If there is only one player, select it by default (for testing convenience)
+        if (#player_list == 1) then
+            drop_down.selected_index = 1
+        end
 
         local dragger = horizontal_flow.add{
             type="empty-widget",

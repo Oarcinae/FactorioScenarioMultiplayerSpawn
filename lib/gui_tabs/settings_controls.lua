@@ -58,6 +58,8 @@ function CreateModSettingsSection(container, player)
             AddIntegerSetting(container, index, entry, player.admin)
         elseif (entry.type == "double") then
             AddDoubleSetting(container, index, entry, player.admin)
+        elseif (entry.type == "string-list") then
+            AddStringListDropdownSetting(container, index, entry, player.admin)
         end
     end
 end
@@ -380,13 +382,55 @@ function AddDoubleSetting(tab_container, index, entry, enabled)
         name = "textfield",
         type = "textfield",
         numeric = true,
+        allow_decimal = true,
         caption = { "mod-setting-name."..entry.mod_key },
-        text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
+        text = string.format("%.2f", GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys)),
         enabled = enabled,
         tooltip = tooltip,
         tags = { action = "oarc_settings_tab", setting = index },
     }
     textfield.style.width = 50
+end
+
+---Create a dropdown setting for a string setting with allowed_values set
+---@param tab_container LuaGuiElement
+---@param index string
+---@param entry OarcSettingsLookup
+---@param enabled boolean
+---@return nil
+function AddStringListDropdownSetting(tab_container, index, entry, enabled)
+    local horizontal_flow = tab_container.add {
+        type = "flow",
+        direction = "horizontal",
+    }
+    horizontal_flow.add {
+        type = "label",
+        caption = { "mod-setting-name."..entry.mod_key },
+        tooltip = { "mod-setting-description."..entry.mod_key },
+    }
+    local dragger = horizontal_flow.add {
+        type = "empty-widget",
+    }
+    dragger.style.horizontally_stretchable = true
+
+    local allowed_values = game.mod_setting_prototypes[entry.mod_key].allowed_values --[[@as string[] ]]
+    
+    local selected_index = 1
+    for i,v in pairs(allowed_values) do
+        if (v == GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys)) then
+            selected_index = i
+            break
+        end
+    end
+
+    local dropdown = horizontal_flow.add {
+        type = "drop-down",
+        items = allowed_values,
+        selected_index = selected_index,
+        enabled = enabled,
+        tooltip = { "mod-setting-description."..entry.mod_key },
+        tags = { action = "oarc_settings_tab", setting = index },
+    }
 end
 
 ---Creates a checkbox setting for surface related settings.
@@ -438,5 +482,22 @@ function SettingsSurfaceControlsTabGuiClick(event)
                 RegrowthDisableSurface(surface_name)
             end
         end
+    end
+end
+
+
+---Handles dropdown selection events
+---@param event EventData.on_gui_selection_state_changed
+---@return nil
+function SettingsControlsTabGuiSelectionStateChanged(event)
+    if not (event.element.valid) then return end
+
+    local gui_elem = event.element
+    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    local index = gui_elem.tags.setting
+    local entry = OCFG_KEYS[index]
+
+    if (entry.type == "string-list") then
+        settings.global[entry.mod_key] = { value = gui_elem.items[gui_elem.selected_index] }
     end
 end

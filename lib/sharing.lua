@@ -40,7 +40,7 @@ function CreateSharedPowerPolePair(surface, position)
     TemporaryHelperText(
         { "oarc-shared-power-pole-helper-txt" },
         surface,
-        {position.x, position.y+1},
+        {position.x, position.y},
         TICKS_PER_MINUTE*2,
         "right"
     )
@@ -96,9 +96,9 @@ function CreateSharedChest(surface, position)
     TemporaryHelperText(
         { "oarc-shared-chest-helper-txt" },
         surface,
-        {position.x, position.y+1},
+        {position.x, position.y},
         TICKS_PER_MINUTE*2,
-        "left"
+        "right"
     )
 
     return chest

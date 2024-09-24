@@ -282,6 +282,7 @@ script.on_event(defines.events.on_gui_selection_state_changed, function(event)
     if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
 
     SeparateSpawnsGuiSelectionStateChanged(event)
+    SettingsControlsTabGuiSelectionStateChanged(event)
 end)
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
