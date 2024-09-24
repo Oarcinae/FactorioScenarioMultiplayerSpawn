@@ -83,9 +83,6 @@ function CreateHoldingPenChunks(event)
     -- If this is the bottom right chunk it's safe to place stuff inside the holding pen now.
     if (chunk_position.x == 2 and chunk_position.y == 2) then
 
-        -- temporarily copy the nauvis config for easy use of the resources config.
-        global.ocfg.surfaces_config[HOLDING_PEN_SURFACE_NAME] = {}
-        global.ocfg.surfaces_config[HOLDING_PEN_SURFACE_NAME].spawn_config = global.ocfg.surfaces_config["nauvis"].spawn_config
         PlaceResourcesInSemiCircleHoldingPen(surface, {x=0,y=0}, 0.2, 0.1)
 
         CreateWaterStrip(surface, {x=-2,y=-11}, 4)
@@ -96,8 +93,6 @@ function CreateHoldingPenChunks(event)
             amount = 90000,
             position = { 0, 9 }
         })
-
-        global.ocfg.surfaces_config[HOLDING_PEN_SURFACE_NAME] = nil
     end
 end
 
@@ -111,10 +106,12 @@ end
 ---@return nil
 function PlaceResourcesInSemiCircleHoldingPen(surface, position, size_mod, amount_mod)
 
+    local resources = global.ocfg.surfaces_config["nauvis"].spawn_config.solid_resources
+
     -- Create list of resource tiles
     ---@type table<string>
     local r_list = {}
-    for r_name, _ in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
+    for r_name, _ in pairs(resources) do
         if (r_name ~= "") then
             table.insert(r_list, r_name)
         end
@@ -124,7 +121,7 @@ function PlaceResourcesInSemiCircleHoldingPen(surface, position, size_mod, amoun
 
     -- This places resources in a semi-circle
     local angle_offset = 2.32
-    local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
+    local num_resources = table_size(resources)
     local theta = ((4.46 - 2.32) / num_resources);
     local count = 0
 
@@ -139,7 +136,7 @@ function PlaceResourcesInSemiCircleHoldingPen(surface, position, size_mod, amoun
 
         local pos = { x = math.floor(tx), y = math.floor(ty) }
 
-        local resourceConfig = global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
+        local resourceConfig = resources[r_name]
         GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
         count = count + 1
     end
