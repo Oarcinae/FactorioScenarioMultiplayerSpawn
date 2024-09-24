@@ -66,8 +66,9 @@ end
 ---@param scale number
 ---@param text string
 ---@param color Color
+---@param alignment TextAlign?
 ---@return nil
-function RenderPermanentGroundText(surface, position, scale, text, color)
+function RenderPermanentGroundText(surface, position, scale, text, color, alignment)
     rendering.draw_text { text = text,
         surface = surface,
         target = position,
@@ -75,6 +76,7 @@ function RenderPermanentGroundText(surface, position, scale, text, color)
         scale = scale,
         --Allowed fonts: default-dialog-button default-game compilatron-message-font default-large default-large-semibold default-large-bold heading-1 compi
         font = "compi",
+        alignment = alignment,
         draw_on_ground = true }
 end
 
@@ -1508,7 +1510,7 @@ end
 ---@param length integer
 function CreateWaterStrip(surface, leftPos, length)
     local waterTiles = {}
-    for i = 0, length, 1 do
+    for i = 0, length-1, 1 do
         table.insert(waterTiles, { name = "water", position = { leftPos.x + i, leftPos.y } })
     end
     surface.set_tiles(waterTiles)

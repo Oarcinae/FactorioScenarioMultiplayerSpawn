@@ -282,9 +282,9 @@ function GenerateStartingResources(surface, position)
     else
         
         if (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            PlaceResourcesInSemiCircle(surface, position)
+            PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         elseif (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            PlaceResourcesInSquare(surface, position)
+            PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
         end
     end
 
@@ -310,10 +310,10 @@ end
 ---Places starting resource deposits in a semi-circle around the spawn point.
 ---@param surface LuaSurface
 ---@param position TilePosition --The center of the spawn area
-function PlaceResourcesInSemiCircle(surface, position)
-
-    local size_mod = global.ocfg.resource_placement.size_multiplier
-    local amount_mod = global.ocfg.resource_placement.amount_multiplier
+---@param size_mod number
+---@param amount_mod number
+---@return nil
+function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
 
     -- Create list of resource tiles
     ---@type table<string>
@@ -351,10 +351,10 @@ end
 ---Places starting resource deposits in a line starting at the top left of the spawn point.
 ---@param surface LuaSurface
 ---@param position TilePosition --The center of the spawn area
-function PlaceResourcesInSquare(surface, position)
-
-    local size_mod = global.ocfg.resource_placement.size_multiplier
-    local amount_mod = global.ocfg.resource_placement.amount_multiplier
+---@param size_mod number
+---@param amount_mod number
+---@return nil
+function PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
 
     -- Create list of resource tiles
     ---@type table<string>

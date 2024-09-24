@@ -134,7 +134,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
         RegrowthChunkGenerate(event)
     end
     
-    CreateHoldingPenChunks(event.surface, event.area)
+    CreateHoldingPenChunks(event)
     SeparateSpawnsGenerateChunk(event)
 
     if global.ocfg.gameplay.modified_enemy_spawning then
