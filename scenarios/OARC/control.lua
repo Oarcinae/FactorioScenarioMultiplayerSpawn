@@ -1,3 +1,6 @@
+-- To edit this scenario, you must make a copy of it and place it in your own scenarios folder first!
+-- Do not edit the scenario provided by the mod install directly!
+
 -- I provide this empty scenario to avoid the freeplay scenario extra baggage.
 -- You can use the freeplay scenario too just fine if you want.
 -- The main benefit of the scenario is that it lets you modify the any of the config during on_init of the mod.

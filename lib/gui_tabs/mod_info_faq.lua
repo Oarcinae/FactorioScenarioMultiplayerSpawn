@@ -18,6 +18,7 @@ function CreateModInfoTab(tab_container, player)
 
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-what-is-this-mod" }, { "oarc-mod-faq-what-is-this-mod-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-other-surfaces" }, { "oarc-mod-faq-other-surfaces-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-mod-faq-secondary-spawns" }, { "oarc-mod-faq-secondary-spawns-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-what-are-teams" }, { "oarc-mod-faq-what-are-teams-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-shared-spawn" }, { "oarc-mod-faq-shared-spawn-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-mod-faq-buddy-spawn" }, { "oarc-mod-faq-buddy-spawn-answer" })
