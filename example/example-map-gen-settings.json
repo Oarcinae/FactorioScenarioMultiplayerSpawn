@@ -10,14 +10,16 @@
   "water": 1,
   
   "_comment_width+height": "Width and height of map, in tiles; 0 means infinite",
-  "width": 0,
-  "height": 0,
+  "width": 1,
+  "height": 1,
   
   "_starting_area_comment": "Multiplier for 'biter free zone radius'",
   "starting_area": 1,
   
   "peaceful_mode": false,
   
+  "default_enable_all_autoplace_controls": true,
+
   "autoplace_controls":
   {
     "coal"        : {"frequency" : 0.20, "richness" : 10.00, "size" : 0.20},

@@ -1,0 +1,141 @@
+ACTIVE ITEMS:
+
+------------------------------------------------------------------------------------------------------------------------
+
+BACKLOG:
+
+Not specific:
+
+
+Minor:
+- If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
+- Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
+- Refresh players in admin controls when dropdown is clicked
+- Add a setting for forcing primary spawns to only be on default surface maybe?
+
+Performance:
+- User on_nth_tick for any tick % (modulo) operations.
+- SeparateSpawnsGenerateChunk should only search for closest spawn once and pass to sub functions!
+- Rework world eater to use less find_entities_filtered
+
+Major:
+- Space Age Support (TBD)
+
+
+------------------------------------------------------SPACE AGE---------------------------------------------------------
+
+- Map Settings changes?
+- Pollution changes (regrowth)?
+- Enemy changes?
+- Landing pad locations per FORCE limited to 1?
+- Surface names for space ships?
+- Spawner health tied to evolution?
+- Respawn position is surface specific? Each surface needs a separate respawn point? Default respawn behavior?
+- Confirm launch into scenario works (V2.0 fix supposedly) -- https://forums.factorio.com/110708
+- Radar quality affects regrowth safe range?
+- Update electric pole connections for shared power if things change in V2.0
+
+------------------------------------------------------------------------------------------------------------------------
+
+Other Ideas, Not Committed:
+- Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
+- Add option for spawn pen to be on a specified surface (not sure this serves any real purpose)
+- Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
+- Make players join a "holding_pen" force instead of the main force? Might cause issues with chat and vision?
+- Separate chest sharing and electricity ()
+- Consider scrapping any overlapping mod settings from the config. ONLY keep the part that can't easily be done in the mod settings menu... NOT SURE about this.
+- Change enable_shared_team_vision to allow players to change this per player (like BNO)
+- Change enable_friendly_fire to be per team?
+- Allow players to spawn "near" an existing player (by request)
+- Allow players to restart at anytime via GUI button (configurable setting by admin)
+- Change regrowth to be list of surfaces indexed by surface name?
+- Figure out how to reset player inventory on player reset to avoid extra items? (save and load items?)
+- Work on space ex support?
+- Profile regrowth and try to improve performance ?
+- Possibly adjust easy/medium evo factors on new player joined?
+- Convert regrowth to a proper mod
+- Create shared electricty with a LIMITED output transfer rate using a custom accumulator?
+- Cleanup offline protection (Lots of commented out code)
+- Custom tips and tricks??
+
+--------------------------------------------------------DONE------------------------------------------------------------
+
+- First setup the mod settings and lua global settings.
+- Test out removing the creation of a custom surface and ensure map settings can be set as needed. Possibly create a separate surface, or just a separate area away from the origin, for starting players.
+- Start copying in the core pieces required for the primary spawning mechanic.
+- Document config and mod settings using Lua annotation as a custom class
+- Document global ocore as a custom class (with subclasses/types as needed)
+- Add multiple surfaces to options/settings [As a single boolean.]
+- Convert scenario to a mod.
+- Add multiple surfaces to Spawn GUI (Drop down selection?)
+- Configurable welcome/server messages in mod settings.
+- Check and update all functions using surfaces to clearly use either the LuaSurface obj OR a string name.
+- Create server settings admin GUI tab
+- Figure out how to define custom lua table/data structs to make syntax/linting work?
+- Setup multiplayer testing using multiple instances and some batch files.
+- Change Near/Far buttons to radio selection w/ text explanation and have a single Spawn button.
+- Refactor the spawn menu GUI (don't destroy the menu unless we need to, refresh only the elements we need to, save data to a global using tags?)
+- Remove separate buddy spawn menu?
+- Remove the shared spawn separate GUI window?
+- Redo DisplayBuddySpawnRequestMenu and DisplayBuddySpawnWaitMenu and move their events to the new event handlers
+- Refresh the spawn controls GUI when player accepts/rejects
+- Redo FindUngeneratedCoordinates to pick a random direction, and use the distance to get a starting point, instead of multiple tries.
+- Fix all GUI styling (buttons outside of content)
+- Force enable_world_eater to require enable_regrowth
+- Add warning for modifying surface settings after gameplay has started
+- Tooltips for GUI elements in spawn menu options!
+- Check all settings to see which CAN'T be changed during runtime. Possibly move these to startup.
+- FIGURE OUT CHUNK NOT IN MAP REGROWTH ISSUE!
+- Add validation for default starting surface name
+- Make server info headings consistent / Add heading for spawn controls (change button?)
+- Confirm regrowth should add new chunks when found (not only on chunk generate?)
+- Make disable main team setting work (hide radio button)
+- Support run time toggling of enable_shared_team_vision
+- Support run time toggling of enable_friendly_fire
+- Watch for chunks being generated to be able to move the player to their spawn as soon as it is done with the last chunk.
+- If this is their first spawn, give them items. Otherwise don't give new items and don't clear items either?
+- Change enable_spawning_on_other_surfaces to a start up setting?
+- Test out space expansion
+- Compare GUI mod button icons to space ex (looks better??)
+- Create surface blacklist setting.
+- Enable/Disable and show information about shared spawn based on shared spawn dropdown interactions.
+- Ensure updates to regrowth surfaces don't cause errors (update indexes)
+- Confirm regrowth does or does not delete chunks with robots in them?
+- Show the surface name in shared spawn join GUI
+- Show the surface name in the share spawn controls tab
+- Add rich text map location in spawn controls tab for current home location
+- Move sharedspawns data under unique spawns
+- "uniqueSpawns" should have a "primary" flag and be indexed by surface FIRST
+- Make respawn locations first be indexed by player, then surface
+- Offline protection re-implement!
+- Resolve regrowth issue with radars and confirm that when we mark chunks for removal, they can be refreshed still. (trace logic!)
+- Move "buddy" info to unique_spawns as well.
+- Fix search vector to use more variable vector'ing, always normalize vector, and then ensure the other reliant functions work still.
+- Add regrowth settings GUI tab? Not sure how the other settings fit in with a dedicated regrowth tab? Need to be able to enable/disable other surfaces during runtime?
+- Test multiple enemy forces to provide a way to scale evolution locally (need to continually set the evo factor back)
+- Change main_force_name to a startup setting! New players in spawn area should stay on default "player" force to avoid mod conflicts on player init?
+- In spawn controls, add a note if spawn is full (and maybe disable the shared spawn checkbox?)
+- Add rich text map location links for new spawns (print to chat)
+- Add in square bases again
+- TEST resizing spawn areas and moat sizes!
+- Create a function to create secondary uniqueSpawns for the same player
+- Expose primary AND secondary spawn info in spawn controls GUI tab
+- Shared items (proper)
+- Shared electricity (proper) (with configurable settings)
+- Add a show current respawn location button (same as show spawn location)
+- Expose some settings for adjusting easy and medium enemy evolution values
+- Add FAQ for enemy modifications
+- Add FAQ for item and energy sharing
+- FIX GetNextPlayerIndex!
+- Lots of localizations!
+- List all TO-DOs in code here.
+- Remove testing surfaces before release!
+- Change default surface selection to be the default surface if multiple are enabled
+- Test and make sure scenario settings overrides get written back to mod settings to avoid any out of sync settings.
+- Test teleporting to other surfaces
+- Test on_player_changed_surface
+- Run the profiler
+- Pull out general spawn config from surfaces config
+- Redo resource placement to be simpler (and make a linear layout for square base)
+- Default to selecting SELF in admin controls player dropdown?
+- Add refresh chunks around spidertrons based on their vision

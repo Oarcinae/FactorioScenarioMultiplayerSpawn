@@ -1,0 +1,22 @@
+---------------------------------------------------------------------------------------------------
+Version: 2.0.0
+Date: 2024-09-25
+  Major Features:
+    - Initial release of a formal mod (non-scenario) version. This is essentially a rewrite of the original scenario in mod form.
+    - Added support for spawning on different surfaces in preparation for space age support.
+    - Updated all GUIs to be more in line with style recommendations and to be more user friendly.
+    - New preview GUI while spawn is being generated and instant transition to the new spawn when ready.
+    - Exposed most of the mod settings in the custom in game mod GUI. This provides a nicer interface than the native mod settings allows.
+    - New holding pen surface with restricted permissions for players to spawn into before being moved to their primary spawn.
+    - Regrowth and world eater features can safely be toggled on/off at any time and supports multiple surfaces.
+  Bugfixes:
+    - Fixed an issue where active radars would block spawn areas from being cleaned up if a player left within the removal window.
+    - Fixed an issue where regrowth would sometimes delete chunks with vehicles, robots or spidertron in them.
+    - Added several mods as hidden dependencies to avoid fatal errors on startup due to incompatible load order issues.
+  Optimizations:
+    - New implementation of shared electricity should stop any possibility of desync with the old method as well as improve performance. (Uses cross-surface power connections.)
+    - New implementation of shared items should also improve performance. (Uses linked-chest.)
+    - Some changes to regrowth to improve performance (reducing unnecessary refresh areas).
+  Info:
+    - Several of the soft-mod features have been removed (including the coin shop).
+    - Space age support will not be available until some time after it is released. I will need time to test and implement it. For now, this is provided as a feature for experimentation. You can test "secondary" spawns by enabling that feature in the settings, it is currently disabled by default.
