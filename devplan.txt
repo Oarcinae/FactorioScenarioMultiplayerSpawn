@@ -8,7 +8,6 @@ Not specific:
 
 
 Minor:
-- Add refresh chunks around spidertrons based on their vision
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
 - Expose old enemy scaling as an option? And/or remove unnecessary checks/logs
 - Refresh players in admin controls when dropdown is clicked
@@ -139,3 +138,4 @@ Other Ideas, Not Committed:
 - Pull out general spawn config from surfaces config
 - Redo resource placement to be simpler (and make a linear layout for square base)
 - Default to selecting SELF in admin controls player dropdown?
+- Add refresh chunks around spidertrons based on their vision

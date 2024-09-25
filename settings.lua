@@ -72,7 +72,7 @@ data:extend({
         type = "bool-setting",
         name = "oarc-mod-enable-moat-bridging",
         setting_type = "runtime-global",
-        default_value = true,
+        default_value = false,
         order = "b5"
     },
 
@@ -143,7 +143,7 @@ data:extend({
         type = "int-setting",
         name = "oarc-mod-number-of-players-per-shared-spawn",
         setting_type = "runtime-global",
-        default_value = 4,
+        default_value = 3,
         minimum_value = 2,
         maximum_value = 10,
         order = "d6"
@@ -217,7 +217,7 @@ data:extend({
         type = "int-setting",
         name = "oarc-mod-respawn-cooldown-min",
         setting_type = "runtime-global",
-        default_value = 15,
+        default_value = 5,
         minimum_value = 0,
         maximum_value = 60,
         order = "f4"
@@ -243,7 +243,7 @@ data:extend({
         type = "bool-setting",
         name = "oarc-mod-enable-regrowth",
         setting_type = "runtime-global",
-        default_value = true,
+        default_value = false,
         order = "g1"
     },
     {
@@ -276,7 +276,7 @@ data:extend({
         setting_type = "runtime-global",
         default_value = 64,
         minimum_value = 32,
-        maximum_value = 6400,
+        maximum_value = 320,
         order = "h1"
     },
     {

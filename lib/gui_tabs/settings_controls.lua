@@ -49,7 +49,9 @@ function CreateModSettingsSection(container, player)
     for index,entry in pairs(OCFG_KEYS) do
         if (entry.type == "header") then
             AddSpacerLine(container)
-            AddLabel(container, nil, index, "caption_label")
+            AddLabel(container, nil, entry.text, "caption_label")
+        elseif (entry.type == "subheader") then
+            AddLabel(container, nil, entry.text, "bold_label")
         elseif (entry.type == "boolean") then
             AddCheckboxSetting(container, index, entry, player.admin)
         elseif (entry.type == "string") then

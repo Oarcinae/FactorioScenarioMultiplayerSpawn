@@ -26,10 +26,10 @@ function CreateHoldingPenSurface()
     holding_pen_surface.show_clouds = false
     holding_pen_surface.generate_with_lab_tiles = true
 
-    RenderPermanentGroundText(holding_pen_surface, {x=9,y=-7}, 5, "O", {0.9, 0.7, 0.3, 0.8}, "center")
-    RenderPermanentGroundText(holding_pen_surface, {x=9,y=-4}, 5, "A", {0.9, 0.7, 0.3, 0.8}, "center")
-    RenderPermanentGroundText(holding_pen_surface, {x=9,y=-1}, 5, "R", {0.9, 0.7, 0.3, 0.8}, "center")
-    RenderPermanentGroundText(holding_pen_surface, {x=9,y=2}, 5, "C", {0.9, 0.7, 0.3, 0.8}, "center")
+    RenderPermanentGroundText(holding_pen_surface, {x=9,y=-7}, 5, "O", {0.9, 0.7, 0.3, 0.5}, "center")
+    RenderPermanentGroundText(holding_pen_surface, {x=9,y=-4}, 5, "A", {0.9, 0.7, 0.3, 0.5}, "center")
+    RenderPermanentGroundText(holding_pen_surface, {x=9,y=-1}, 5, "R", {0.9, 0.7, 0.3, 0.5}, "center")
+    RenderPermanentGroundText(holding_pen_surface, {x=9,y=2}, 5, "C", {0.9, 0.7, 0.3, 0.5}, "center")
 end
 
 ---Creates a holding pen area

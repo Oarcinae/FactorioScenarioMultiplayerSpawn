@@ -2,17 +2,17 @@
 -- DON'T JUDGE ME! I wanted to try and make a nice in game setting GUI since the native mod settings GUI is so limited.
 
 ---Provides a way to look up the config settings key from the mod settings key.
----@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string }
+---@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string, text: LocalisedString? }
 
 ---@type table<string, OarcSettingsLookup>
 OCFG_KEYS =
 {
-    ["Server Info"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["server_info_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-server-info"}},
     ["server_info.welcome_msg_title"] = {mod_key = "oarc-mod-welcome-msg-title" , ocfg_keys = {"server_info", "welcome_msg_title"}, type = "string"},
     ["server_info.welcome_msg"] = {mod_key = "oarc-mod-welcome-msg" , ocfg_keys = {"server_info", "welcome_msg"}, type = "string"},
     ["server_info.discord_invite"] = {mod_key = "oarc-mod-discord-invite" , ocfg_keys = {"server_info", "discord_invite"}, type = "string"},
 
-    ["Gameplay"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["gameplay_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-gameplay"}},
     ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
     ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
     -- STARTUP ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-default-allow-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
@@ -44,13 +44,14 @@ OCFG_KEYS =
     ["gameplay.enable_shared_power"] = {mod_key = "oarc-mod-enable-shared-power" , ocfg_keys = {"gameplay", "enable_shared_power"}, type = "boolean"},
     ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
 
-    ["Regrowth"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["regrowth_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-regrowth"}},
+    ["regrowth_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-regrowth-warning"}},
     ["regrowth.enable_regrowth"] = {mod_key = "oarc-mod-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
     ["regrowth.enable_world_eater"] = {mod_key = "oarc-mod-enable-world-eater" , ocfg_keys = {"regrowth", "enable_world_eater"}, type = "boolean"},
     ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-mod-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
     ["regrowth.cleanup_interval"] = {mod_key = "oarc-mod-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
 
-    ["General Spawn Area Config"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["general_spawn_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-general-spawn"}},
     ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-mod-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer"},
     ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-mod-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer"},
     ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-mod-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer"},
@@ -58,16 +59,20 @@ OCFG_KEYS =
     ["spawn_general.force_grass"] = {mod_key = "oarc-mod-spawn-general-enable-force-grass" , ocfg_keys = {"spawn_general", "force_grass"}, type = "boolean"},
     ["spawn_general.shape"] = {mod_key = "oarc-mod-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list"},
 
-    ["Starting Resources Placement"] = {mod_key = "" , ocfg_keys = {""}, type = "header"},
+    ["resource_placement_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-resource-placement"}},
     ["resource_placement.enabled"] = {mod_key = "oarc-mod-resource-placement-enabled" , ocfg_keys = {"resource_placement", "enabled"}, type = "boolean"},
+    ["resource_placement.size_multiplier"] = {mod_key = "oarc-mod-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double"},
+    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-mod-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double"},
+
+    ["resource_placement_circle_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-circular"}},
     ["resource_placement.distance_to_edge"] = {mod_key = "oarc-mod-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer"},
     ["resource_placement.angle_offset"] = {mod_key = "oarc-mod-resource-placement-angle-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "double"},
     ["resource_placement.angle_final"] = {mod_key = "oarc-mod-resource-placement-angle-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "double"},
+
+    ["resource_placement_square_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-square"}},
     ["resource_placement.vertical_offset"] = {mod_key = "oarc-mod-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},
     ["resource_placement.horizontal_offset"] = {mod_key = "oarc-mod-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer"},
     ["resource_placement.linear_spacing"] = {mod_key = "oarc-mod-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
-    ["resource_placement.size_multiplier"] = {mod_key = "oarc-mod-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double"},
-    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-mod-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double"}
 }
 
 ---Easy reverse lookup for mod settings keys.
@@ -143,7 +148,7 @@ function ValidateAndLoadConfig()
     end
     -- And check the opposite.
     for ocfg_key,entry in pairs(OCFG_KEYS) do
-        if (entry.type ~= "header") and (OCFG_MOD_KEYS[entry.mod_key] == nil) then
+        if (entry.type ~= "header") and (entry.type ~= "subheader") and (OCFG_MOD_KEYS[entry.mod_key] == nil) then
             error("OCFG_KEYS entry does not have a corresponding OCFG_MOD_KEYS entry: " .. ocfg_key .. " -> " .. entry.mod_key)
         end
     end
@@ -151,6 +156,20 @@ function ValidateAndLoadConfig()
     -- Load the template config into the global table.
     ---@class OarcConfig
     global.ocfg = OCFG
+
+    -- Check that each entry in OCFG matches the default value of the mod setting. This is just for my own sanity.
+    -- Helps make sure mod default settings and my internal config are in sync.
+    for _,entry in pairs(OCFG_KEYS) do
+        if (entry.type ~= "header") and (entry.type ~= "subheader") then
+            local mod_key = entry.mod_key
+            local oarc_key = entry.ocfg_keys
+            local mod_value = game.mod_setting_prototypes[mod_key].default_value
+            local oarc_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
+            if (mod_value ~= oarc_value) then
+                error("OCFG value does not match mod setting: " .. mod_key .. " = " .. tostring(mod_value) .. " -> " .. serpent.block(oarc_key) .. " = " .. tostring(oarc_value))
+            end
+        end
+    end
 
     CacheModSettings() -- Get all mod settings and overwrite the defaults in OARC_CFG.
 
@@ -209,7 +228,7 @@ function CacheModSettings()
     -- Copy the global settings from the mod settings.
     -- Find the matching OARC setting and update it.
     for _,entry in pairs(OCFG_KEYS) do
-        if (entry.type ~= "header") then
+        if (entry.type ~= "header") and (entry.type ~= "subheader") then
             SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, settings.global[entry.mod_key].value)
         end
     end

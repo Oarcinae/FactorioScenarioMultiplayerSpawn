@@ -25,7 +25,7 @@ REGROWTH_FLAG_PERMANENT = -3
 
 
 --- Radius in chunks around a player to mark as safe.
-REGROWTH_ACTIVE_AREA_AROUND_PLAYER = 4
+REGROWTH_ACTIVE_AREA_AROUND_PLAYER = 2
 
 ---The removal list contains chunks that are marked for removal. Each entry is a table with the following fields:
 ---@alias RemovalListEntry { pos : ChunkPosition, force: boolean, surface: string }
@@ -48,7 +48,12 @@ function RegrowthInit()
     global.rg.we_current_surface = nil
     global.rg.we_current_surface_index = 1
 
-    ---@type table<integer, RemovalListEntry>
+
+    ---@type LuaEntity[]
+    global.rg.spidertrons = {} -- List of all spidertrons in the game
+    global.rg_spidertron_index = 1
+
+    ---@type RemovalListEntry[]
     global.rg.removal_list = {}
 
     for surface_name,_ in pairs(game.surfaces) do
@@ -528,6 +533,9 @@ function RegrowthOnTick()
             RefreshPlayerArea()
         end
 
+        -- Refresh a single spidertron every tick
+        RefreshSpidertronArea()
+
         -- Every tick, check a few points in the 2d array of the only active surface
         for i = 1, 20 do
             RegrowthSingleStepArray()
@@ -662,4 +670,53 @@ function CheckIfChunkHasAnyPlayerEntities(surface_name, chunk)
     end
 
     return false
+end
+
+
+---When an entity is built, if it is a spidertron we add it to our list
+---@param event EventData.on_built_entity
+---@return nil
+function RegrowthOnBuiltEntity(event)
+    if (event.created_entity and event.created_entity.valid and event.created_entity.type == "spider-vehicle") then
+        
+        table.insert(global.rg.spidertrons, event.created_entity)
+        log("Added spidertron to regrowth tracking")
+
+        if global.rg.spidertron_chunk_radius == nil then
+            global.rg.spidertron_chunk_radius = game.entity_prototypes["spidertron"].chunk_exploration_radius
+        end
+    end
+end
+
+
+---On tick, we refresh a single spidertron's area.
+---@return nil
+function RefreshSpidertronArea()
+    if (#global.rg.spidertrons > 0) then
+
+        local spidertron = global.rg.spidertrons[global.rg_spidertron_index]
+
+        if (spidertron and spidertron.valid) then
+
+            --Check if this surface is active.
+            local surface_name = spidertron.surface.name
+            if (global.rg[surface_name] ~= nil) and (global.rg[surface_name].active) then
+                RefreshArea(spidertron.surface.name, spidertron.position, global.rg.spidertron_chunk_radius, 0)
+            end
+
+            UpdateSpidertronIndex() -- Go to next valid spidertron on the next tick
+        else
+            table.remove(global.rg.spidertrons, global.rg_spidertron_index)
+            log("Removed spidertron from regrowth tracking")
+        end
+    end
+end
+
+---Updates the spidertron index to the next one in the list.
+---@return nil
+function UpdateSpidertronIndex()
+    global.rg_spidertron_index = global.rg_spidertron_index + 1
+    if (global.rg_spidertron_index > #global.rg.spidertrons) then
+        global.rg_spidertron_index = 1
+    end
 end

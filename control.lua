@@ -176,6 +176,9 @@ script.on_event(defines.events.on_built_entity, function(event)
         RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 
+    -- For tracking spidertrons...
+    RegrowthOnBuiltEntity(event)
+
     -- if global.ocfg.enable_anti_grief then
     --     SetItemBlueprintTimeToLive(event)
     -- end
@@ -192,6 +195,14 @@ script.on_event(defines.events.on_player_built_tile, function (event)
         for _,v in pairs(event.tiles) do
             RegrowthMarkAreaSafeGivenTilePos(game.surfaces[event.surface_index].name, v.position, 2, false)
         end
+    end
+end)
+
+--If a player gets in or out of a vehicle, mark the area as safe so we don't delete the vehicle by accident.
+--Only world eater will clean up these chunks over time if it is enabled.
+script.on_event(defines.events.on_player_driving_changed_state, function (event)
+    if global.ocfg.regrowth.enable_regrowth then
+        RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 1, false)
     end
 end)
 
