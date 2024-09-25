@@ -29,11 +29,12 @@ local oarc_scenario_interface =
         modified_settings.server_info.welcome_msg_title = "THIS IS A TEMPLATE SCENARIO"
         modified_settings.server_info.welcome_msg = "This is a template scenario. You can modify the settings in the control.lua file. If you are seeing this message, you did not modify the scenario correctly."
 
+        modified_settings.spawn_general.shape = "circle"
+        
         -- Some examples of overriding surface config (which is not accessible from the mod settings!)
         modified_settings.surfaces_config["nauvis"].starting_items.player_start_items = {
             ["coal"] = 1, -- You're on the naughty list!
         }
-        modified_settings.surfaces_config["nauvis"].spawn_config.general.shape = 3 -- 3 is a SQUARE (see SPAWN_SHAPE_CHOICE)
         ----------------------------------------------------------------------------------------------------------------
         return modified_settings
     end

@@ -250,7 +250,7 @@ function GetScenarioOverrideSettings()
 
         -- Override the mod settings with the scenario settings!
         for _,entry in pairs(OCFG_KEYS) do
-            if (entry.type ~= "header") then
+            if (entry.type ~= "header") and (entry.type ~= "subheader") then
                 local mod_key = entry.mod_key
                 local oarc_key = entry.ocfg_keys
                 local scenario_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)

@@ -1152,7 +1152,7 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     -- Create that spawn in the global vars
     local buddySpawn = { x = 0, y = 0 }
     -- The x_offset must be big enough to ensure the spawns DO NOT overlap!
-    local x_offset = (global.ocfg.surfaces_config[spawn_choices.surface].spawn_config.general.spawn_radius_tiles * 2)
+    local x_offset = (global.ocfg.spawn_general.spawn_radius_tiles * 2)
     if (spawn_choices.moat) then
         x_offset = x_offset + 10
     end
