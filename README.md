@@ -14,6 +14,7 @@ Check releases for stable versions.
 0.17 and 0.16 have final stable versions that will no longer be maintained.  
 
 ## Status
+New 2.0.0 mod version should be mostly stable and playable with Factorio V1.1.110+
 Currently working on adding support for V2.0 Factorio.  
 Will be removing many of the soft-mod features and other feature creep things for the first version.  
 Waiting on Space Age release so I can start working on support for that.  
