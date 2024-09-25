@@ -167,7 +167,7 @@ data:extend({
         type = "bool-setting",
         name = "oarc-mod-enable-secondary-spawns",
         setting_type = "runtime-global",
-        default_value = true,
+        default_value = false,
         order = "e3"
     },
 

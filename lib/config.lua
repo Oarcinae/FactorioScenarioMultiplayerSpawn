@@ -236,7 +236,7 @@ OCFG = {
 
         -- Enable secondary spawns for players.
         -- This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
-        enable_secondary_spawns = true,
+        enable_secondary_spawns = false,
 
         -- This scales resources so that even if you spawn "far away" from the center
         -- of the map, resources near to your spawn point scale so you aren't
