@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.1
+Date: 2024-09-25
+  Bugfixes:
+    - Fixed that players in holding pen didn't have console permissions to be able to chat with other players before spawning.
+  Ease of use:
+    - Renamed scenarios folder to disable the provided template and added a readme file too. This should make it very clear that the scenario is only a template that must MODIFY first before you use it. Don't worry about the scenario unless you are doing headless hosting and don't want to upload a save file everytime.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.0
 Date: 2024-09-25
   Major Features:
