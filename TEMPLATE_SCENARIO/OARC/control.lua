@@ -9,7 +9,7 @@
 -- Once you have a config you like, it's a good idea to save it for later use so you don't lose it if you update the
 -- scenario. I will try to avoid making breaking changes to this, but no guarantees.
 
--- To see what settings are available, look at the config_mod.lua file in the mod folder.
+-- To see what settings are available, look at the config_mod.lua file in the mod folder itself.
 
 -- Check if the OARC mod is loaded. Other than that, it's an empty scenario!
 script.on_init(function(event)
@@ -32,12 +32,12 @@ local oarc_scenario_interface =
         modified_settings.server_info.welcome_msg_title = "THIS IS A TEMPLATE SCENARIO"
         modified_settings.server_info.welcome_msg = "This is a template scenario. You can modify the settings in the control.lua file. If you are seeing this message, you did not modify the scenario correctly."
 
-        modified_settings.spawn_general.shape = "circle"
+        -- modified_settings.spawn_general.shape = "circle"
         
         -- Some examples of overriding surface config (which is not accessible from the mod settings!)
-        modified_settings.surfaces_config["nauvis"].starting_items.player_start_items = {
-            ["coal"] = 1, -- You're on the naughty list!
-        }
+        -- modified_settings.surfaces_config["nauvis"].starting_items.player_start_items = {
+        --     ["coal"] = 1, -- You're on the naughty list!
+        -- }
         ----------------------------------------------------------------------------------------------------------------
         return modified_settings
     end

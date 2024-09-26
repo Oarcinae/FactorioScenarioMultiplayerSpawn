@@ -47,8 +47,7 @@ NAUVIS_STARTER_ITEMS =
     crashed_ship_resources = {
         ["electronic-circuit"] = 200,
         ["iron-gear-wheel"] = 100,
-        ["copper-cable"] = 200,
-        ["steel-plate"] = 100
+        ["copper-cable"] = 200
     },
     crashed_ship_wreakage = {
         ["iron-plate"] = 100 -- I don't recommend more than 1 item type here!

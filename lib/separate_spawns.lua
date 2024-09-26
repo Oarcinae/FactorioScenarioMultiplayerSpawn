@@ -108,7 +108,7 @@ function CreateHoldingPenPermissionsGroup()
     holding_pen_group.set_allows_action(defines.input_action.gui_text_changed, true)
     holding_pen_group.set_allows_action(defines.input_action.gui_value_changed, true)
     holding_pen_group.set_allows_action(defines.input_action.start_walking, true)
-    -- holding_pen_group.set_allows_action(defines.input_action.write_to_console, true)
+    holding_pen_group.set_allows_action(defines.input_action.write_to_console, true)
 
 end
 
