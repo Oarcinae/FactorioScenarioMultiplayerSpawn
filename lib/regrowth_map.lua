@@ -493,6 +493,7 @@ function OarcRegrowthRemoveAllChunks()
             -- If it is FORCE removal, then remove it regardless of pollution.
             if (c_remove.force) then
                 game.surfaces[surface_name].delete_chunk(c_pos)
+                global.rg[surface_name].map[c_pos.x][c_pos.y] = nil
 
             elseif (global.rg[surface_name].map[c_pos.x][c_pos.y] == REGROWTH_FLAG_REMOVAL) then
 
@@ -506,9 +507,12 @@ function OarcRegrowthRemoveAllChunks()
                     global.rg[surface_name].map[c_pos.x][c_pos.y] = nil
                 end
             end
+
+            -- If we hit here, the chunk was probably refreshed or something and so we don't want to delete it.
+            -- We won't check it again since we clear the removal list after this. This should be correct.
         else
             -- This should never happen, TODO: check if it does?
-            error("ERROR - OarcRegrowthRemoveAllChunks: Chunk not in map: " .. c_pos.x .. "," .. c_pos.y .. " on surface: " .. surface_name)
+            log("WARN - OarcRegrowthRemoveAllChunks: Chunk not in map: " .. c_pos.x .. "," .. c_pos.y .. " on surface: " .. surface_name)
         end
 
         -- Remove entry
