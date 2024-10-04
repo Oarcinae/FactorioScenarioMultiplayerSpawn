@@ -1357,6 +1357,11 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                     -- land connections if the spawn is on or near land.
                 elseif ((distSqr < moat_radius_sqr) and (distSqr > tile_radius_sqr)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
+                    
+                    --5% chance of fish in water
+                    if (math.random(1,20) == 1) then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
                 end
             end
         end
@@ -1410,6 +1415,11 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
                     -- land connections if the spawn is on or near land.
                 elseif ((distVar > tileRadius) and (distVar <= moat_width_outer)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
+                    
+                    --5% chance of fish in water
+                    if (math.random(1,20) == 1) then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
                 end
             end
         end
@@ -1461,6 +1471,11 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
                     -- land connections if the spawn is on or near land.
                 elseif ((max_distance > tileRadius) and (max_distance <= moat_width_outer)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
+
+                    --5% chance of fish in water
+                    if (math.random(1,20) == 1) then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
                 end
             end
         end
