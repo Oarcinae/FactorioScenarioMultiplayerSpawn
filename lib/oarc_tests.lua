@@ -162,18 +162,6 @@ function ClearTestButtons(player)
     end
 end
 
-function RecreateOarcGui(player)
-    if (mod_gui.get_button_flow(player).oarc_button ~= nil) then
-        mod_gui.get_button_flow(player).oarc_button.destroy()
-    end
-
-    if (mod_gui.get_frame_flow(player)[OARC_GUI] ~= nil) then
-        mod_gui.get_frame_flow(player)[OARC_GUI].destroy()
-    end
-
-    InitOarcGuiTabs(player)
-end
-
 
 function SetNauvisChunksGenerated()
     local nauvis = game.surfaces["nauvis"]

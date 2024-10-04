@@ -737,13 +737,26 @@ function RemoveOrResetPlayer(player, remove_player)
     end
 end
 
----Searches all unique spawns for the primary one for a player.
+---Searches all unique spawns for the primary one for a player. This will return null if they joined someeone else's spawn.
 ---@param player_name string
 ---@return OarcUniqueSpawn?
 function FindPrimaryUniqueSpawn(player_name)
     for _,spawns in pairs(global.unique_spawns) do
         if (spawns[player_name] ~= nil and spawns[player_name].primary) then
             return spawns[player_name]
+        end
+    end
+end
+
+---Find the primary home spawn of a player, if one exists. It could be they joined a shared spawn.
+---@param player_name string
+---@return OarcUniqueSpawn?
+function FindPlayerHomeSpawn(player_name)
+    for _,spawns in pairs(global.unique_spawns) do
+        for _,spawn in pairs(spawns) do
+            if (spawn.primary) and ((spawn.host_name == player_name) or TableContains(spawn.joiners, player_name)) then
+                return spawn
+            end
         end
     end
 end
