@@ -51,26 +51,33 @@ end
 function AddPlayerRow(table, player_name, online)
     local player = game.players[player_name]
     if (player) then
-        AddLabel(table, nil, player.name, my_label_style)
+        if player.admin then
+            local label = AddLabel(table, nil, player.name, my_player_list_admin_style)
+            label.tooltip = "Admin"
+        else
+            AddLabel(table, nil, player.name, my_label_style)
+        end
         AddLabel(table, nil, player.force.name, my_label_style)
 
-        -- Get the player's home surface
-        local spawn = FindPlayerHomeSpawn(player.name)
-        if (spawn) then
-            AddLabel(table, nil, spawn.surface_name, my_label_style)
+        -- List home surface name or holding pen
+        if (player.surface.name == HOLDING_PEN_SURFACE_NAME) then
+            AddLabel(table, nil, {"oarc-player-waiting-to-spawn"}, my_label_style)
         else
-            AddLabel(table, nil, "Unknown", my_label_style)
+            local spawn = FindPlayerHomeSpawn(player.name)
+            if (spawn) then
+                AddLabel(table, nil, spawn.surface_name, my_label_style)
+            else
+                AddLabel(table, nil, "Unknown?", my_label_style) -- Shouldn't happen
+            end
         end
 
         AddLabel(table, nil, FormatTimeHoursSecs(player.online_time), my_label_style)
+
         CreatePlayerGPSButton(table, player.name)
         
         if online then
-            if (player.admin) then
-                AddLabel(table, nil, {"oarc-player-online"}, my_player_list_admin_style)
-            else
-                AddLabel(table, nil, {"oarc-player-online"}, my_player_list_style)
-            end
+            local label = AddLabel(table, nil, {"oarc-player-online"}, my_player_list_style)
+            label.style.font_color = {r=0.1, g=1, b=0.1}
         else
             AddLabel(table, nil, {"oarc-player-offline"}, my_player_list_offline_style)
         end
@@ -92,7 +99,7 @@ function CreatePlayerGPSButton(container, player_name)
             player_name = player_name,
         },
         style = "slot_button",
-        tooltip = { "oarc-player-list-tab-location-button-tooltip" },
+        tooltip = {"", {"oarc-player-list-tab-location-button-tooltip"}, " (", game.players[player_name].surface.name, ")"},
     }
     gps_button.style.width = 28
     gps_button.style.height = 28

@@ -99,7 +99,7 @@ my_shared_item_list_fixed_width_style = {
 ---@diagnostic disable-next-line: missing-fields
 my_player_list_admin_style = {
     font = "default-semibold",
-    font_color = {r=1,g=0.5,b=0.5},
+    font_color = { r=0.9, g=0.7, b=0.3 }, 
     -- minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
