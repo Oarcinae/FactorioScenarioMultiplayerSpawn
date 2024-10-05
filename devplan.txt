@@ -35,6 +35,46 @@ Major:
 - Radar quality affects regrowth safe range?
 - Update electric pole connections for shared power if things change in V2.0
 
+- Source: https://forums.factorio.com/115737
+- Specifics that I might need to investigate:
+Added LuaPlayer::land_on_planet() method.
+Added LuaPlayer::enter_space_platform() and leave_space_platform() method.
+Added cargo-landing-pad prototype.
+Added space-platform-starter-pack, space-location, planet and space-connection prototypes.
+Added surface-property and surface prototypes.
+Added new controller type (remote), which is to build space platforms, so it allows ghost building but not any physical manipulation.
+Added LuaPlayer::physical_surface, physical_surface_index, physical_vehicle and physical_position read.
+Electric pole created through LuaSurface::create_entity can be requested to not auto connect.
+Added LuaSurface::global_effect read/write.
+Added LuaSurface::localised_name read/write.
+LuaGameScript::print, LuaPlayer::print, LuaSurface::print and LuaForce::print no longer accept Color as a second parameter.
+Added LuaSurface::set_property() and get_property() methods.
+Added LuaSurface::execute_lightning() method.
+Added LuaSurface::create_global_electric_network() and destroy_global_electric_network() methods.
+Added LuaSurface::has_global_electric_network read.
+Added LuaSurface::platform read.
+Added LuaSurface::pollutant_type read.
+Added airborne-pollutant prototype and changed various pollution related properties to support multiple pollution types.
+Added LuaSurface::deletable read.
+Added LuaForce::set_surface_hidden() and get_surface_hidden() methods.
+Added cause argument to LuaSurface::create_entity.
+Added LuaSurfacePrototype::surface_properties read.
+Added on_player_controller_changed event.
+Removed LuaPlayer::open_map, zoom_to_world, and close_map. LuaPlayer::set_controller with type 'remote' replaces these.
+oved LuaGameScript::styles to LuaPrototypes::style.
+Removed LuaGameScript::active_mods. Use LuaBootstrap::active_mods instead.
+Renamed `global` into `storage`.
+Added LuaGameScript::technology_notifications_enabled (read/write).
+Added LuaGameScript::planets read.
+Added LuaGameScript::get_vehicles.
+Added LuaForce::platforms read.
+Added LuaGameScript::set_win_ending_info() and set_lose_ending_info() methods.
+Added LuaForce::unlock_space_location(), lock_space_location() and is_space_location_unlocked() methods.
+Added LuaForce::create_space_platform() method.
+Added LuaForce::unlock_space_platforms(), lock_space_platforms() and is_space_platforms_unlocked() methods.
+Changed LuaForce::evolution_factor, evolution_factor_by_pollution, evolution_factor_by_time and evolution_factor_by_killing_spawners to get_* and set_* methods.
+Added LuaForce::copy_from() and copy_chart() methods.
+
 ------------------------------------------------------------------------------------------------------------------------
 
 Other Ideas, Not Committed:
