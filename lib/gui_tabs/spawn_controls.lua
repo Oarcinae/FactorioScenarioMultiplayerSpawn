@@ -301,7 +301,7 @@ function SpawnCtrlGuiClick(event)
     elseif (tags.setting == "show_location") then
         local surface_name = tags.surface --[[@as string]]
         local position = tags.position --[[@as MapPosition]]
-        player.open_map(position, 0.05)
+        player.open_map(position, 0.05)  -- TODO: Update this for spage age!
         player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
 
     -- Accept or reject pending player join requests to a shared base

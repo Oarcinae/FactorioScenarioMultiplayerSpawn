@@ -5,6 +5,7 @@ require("lib/gui_tabs/server_info")
 require("lib/gui_tabs/spawn_controls")
 require("lib/gui_tabs/settings_controls")
 require("lib/gui_tabs/mod_info_faq")
+require("lib/gui_tabs/player_list")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -18,17 +19,20 @@ OARC_SERVER_INFO_TAB_NAME = "server_info"
 OARC_SPAWN_CTRL_TAB_NAME = "spawn_controls"
 OARC_CONFIG_CTRL_TAB_NAME = "settings"
 OARC_MOD_INFO_CTRL_TAB_NAME = "mod_info"
+OARC_MOD_PLAYER_LIST_TAB_NAME = "player_list"
 
 OARC_SERVER_INFO_TAB_LOCALIZED = {"oarc-server-info-tab-title"}
 OARC_SPAWN_CTRL_TAB_LOCALIZED = {"oarc-spawn-ctrls-tab-title"}
 OARC_CONFIG_CTRL_TAB_LOCALIZED = {"oarc-settings-tab-title"}
 OARC_MOD_INFO_CTRL_TAB_LOCALIZED = {"oarc-mod-info-tab-title"}
+OARC_PLAYER_LIST_TAB_LOCALIZED = {"oarc-player-list-tab-title"}
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
     [OARC_SERVER_INFO_TAB_NAME] = CreateServerInfoTab,
     [OARC_SPAWN_CTRL_TAB_NAME] = CreateSpawnControlsTab,
     [OARC_MOD_INFO_CTRL_TAB_NAME] = CreateModInfoTab,
     [OARC_CONFIG_CTRL_TAB_NAME] = CreateSettingsControlsTab,
+    [OARC_MOD_PLAYER_LIST_TAB_NAME] = CreatePlayerListTab
 }
 
 ---@param player LuaPlayer
@@ -56,6 +60,10 @@ function InitOarcGuiTabs(player)
     -- Settings control tab
     AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME, OARC_CONFIG_CTRL_TAB_LOCALIZED)
     SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
+
+    -- Player list tab
+    AddOarcGuiTab(player, OARC_MOD_PLAYER_LIST_TAB_NAME, OARC_PLAYER_LIST_TAB_LOCALIZED)
+    SetOarcGuiTabEnabled(player, OARC_MOD_PLAYER_LIST_TAB_NAME, true)
 
     HideOarcGui(player)
 end
@@ -298,9 +306,39 @@ function SwitchOarcGuiTab(player, tab_name)
     end
 end
 
---@param event EventData.on_gui_closed
+---Handles the closing of the OARC GUI.
+---@param event EventData.on_gui_closed
+---@return nil
 function OarcGuiClosed(event)
     if (event.element and (event.element.name == "oarc_gui")) then
         HideOarcGui(game.players[event.player_index])
     end
+end
+
+---Completely destroys and recreates the OARC GUI for a player.
+---@param player LuaPlayer
+---@return nil
+function RecreateOarcGui(player)
+    if (mod_gui.get_button_flow(player).oarc_button ~= nil) then
+        mod_gui.get_button_flow(player).oarc_button.destroy()
+    end
+
+    if (mod_gui.get_frame_flow(player)[OARC_GUI] ~= nil) then
+        mod_gui.get_frame_flow(player)[OARC_GUI].destroy()
+    end
+
+    InitOarcGuiTabs(player)
+end
+
+
+---Server info gui click event handler
+---@param event EventData.on_gui_click
+---@return nil
+function OarcGuiTabsClick(event)
+    if not event.element.valid then return end
+    ServerInfoGuiClick(event)
+    SpawnCtrlGuiClick(event)
+    SettingsControlsTabGuiClick(event)
+    SettingsSurfaceControlsTabGuiClick(event)
+    PlayerListGuiClick(event)
 end

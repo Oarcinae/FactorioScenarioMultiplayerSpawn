@@ -208,11 +208,12 @@ end
 ---@return string
 function FormatTimeHoursSecs(ticks)
   local seconds = ticks / 60
-  local minutes = math.floor((seconds)/60)
-  local hours   = math.floor((minutes)/60)
-  local minutes = math.floor(minutes - 60*hours)
+  local total_minutes = math.floor((seconds)/60)
+  local hours   = math.floor((total_minutes)/60)
+  local minutes = math.floor(total_minutes - 60*hours)
   return string.format("%dh:%02dm", hours, minutes)
 end
+
 
 -- -- Simple math clamp
 -- function clamp(val, min, max)

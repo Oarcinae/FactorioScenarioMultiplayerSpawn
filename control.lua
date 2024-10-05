@@ -68,9 +68,14 @@ end)
 --------------------------------------------------------------------------------
 -- oarc_new_spawn_created = script.generate_event_name()
 
--- script.on_configuration_changed(function(data)
---     -- Regenerate event ID:
--- end)
+script.on_configuration_changed(function(data)
+    -- Regenerate event ID:
+
+    -- Reset the players GUI
+    for _,player in pairs(game.players) do
+        RecreateOarcGui(player)
+    end
+end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     if (not StringStartsWith(event.setting, "oarc-mod")) then return end
@@ -95,6 +100,7 @@ end)
 script.on_event(defines.events.on_player_changed_surface, function(event)
     SeparateSpawnsPlayerChangedSurface(event)
 end)
+
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
@@ -253,10 +259,7 @@ script.on_event(defines.events.on_gui_click, function(event)
     SeparateSpawnsGuiClick(event)
 
     ClickOarcGuiButton(event)
-    ServerInfoGuiClick(event)
-    SpawnCtrlGuiClick(event)
-    SettingsControlsTabGuiClick(event)
-    SettingsSurfaceControlsTabGuiClick(event)
+    OarcGuiTabsClick(event)
 end)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).

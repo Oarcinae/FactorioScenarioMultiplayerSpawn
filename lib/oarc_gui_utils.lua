@@ -99,8 +99,8 @@ my_shared_item_list_fixed_width_style = {
 ---@diagnostic disable-next-line: missing-fields
 my_player_list_admin_style = {
     font = "default-semibold",
-    font_color = {r=1,g=0.5,b=0.5},
-    minimal_width = 200,
+    font_color = { r=0.9, g=0.7, b=0.3 }, 
+    -- minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
     single_line = false,
@@ -109,7 +109,7 @@ my_player_list_admin_style = {
 ---@diagnostic disable-next-line: missing-fields
 my_player_list_style = {
     font = "default-semibold",
-    minimal_width = 200,
+    -- minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
     single_line = false,
@@ -119,7 +119,7 @@ my_player_list_style = {
 my_player_list_offline_style = {
     -- font = "default-semibold",
     font_color = {r=0.5,g=0.5,b=0.5},
-    minimal_width = 200,
+    -- minimal_width = 200,
     top_padding = 0,
     bottom_padding = 0,
     single_line = false,
