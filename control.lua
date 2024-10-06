@@ -254,27 +254,24 @@ end)
 -- Gui Events
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
     SeparateSpawnsGuiClick(event)
-
-    ClickOarcGuiButton(event)
     OarcGuiTabsClick(event)
 end)
 
 --- Called when LuaGuiElement checked state is changed (related to checkboxes and radio buttons).
 script.on_event(defines.events.on_gui_checked_state_changed, function (event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
     SeparateSpawnsGuiCheckedStateChanged(event)
-
-    SpawnCtrlGuiOptionsSelect(event)
+    OarcGuiTabsCheckedStateChanged(event)
 end)
 
 script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
-    OarcGuiSelectedTabChanged(event)
+    OarcGuiTabsSelectedTabChanged(event)
 end)
 
 -- For capturing player escaping custom GUI so we can close it using ESC key.
@@ -285,30 +282,36 @@ end)
 
 --- For sliders and other value changing elements.
 script.on_event(defines.events.on_gui_value_changed, function(event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
     SeparateSpawnsGuiValueChanged(event)
-    SettingsControlsTabGuiValueChanged(event)
+    OarcGuiTabsValueChanged(event)
 end)
 
 --- For dropdowns and listboxes.
 script.on_event(defines.events.on_gui_selection_state_changed, function(event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
     SeparateSpawnsGuiSelectionStateChanged(event)
-    SettingsControlsTabGuiSelectionStateChanged(event)
+    OarcGuiTabsSelectionStateChanged(event)
 end)
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
-    SettingsControlsTabGuiTextChanged(event)
+    OarcGuiTabsTextChanged(event)
 end)
 
 script.on_event(defines.events.on_gui_confirmed, function(event)
-    if not event.element.valid then return end -- Should we ever react to invalid GUI elements?
+    if not event.element.valid then return end
 
-    SettingsControlsTabGuiTextconfirmed(event)
+    OarcGuiTabsConfirmed(event)
+end)
+
+script.on_event(defines.events.on_gui_elem_changed, function(event)
+    if not event.element.valid then return end
+
+    OarcGuiTabsElemChanged(event)
 end)
 
 ----------------------------------------

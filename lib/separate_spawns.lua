@@ -141,10 +141,10 @@ function SeparateSpawnsInitSurface(surface_name)
         global.oarc_surfaces[surface_name] = (surface_name == global.ocfg.gameplay.default_surface)
     end
 
-    -- Make sure it has a surface configuration entry
-    if (global.oarc_surfaces[surface_name] and global.ocfg.surfaces_config[surface_name] == nil) then
+    -- Make sure it has a surface configuration entry!
+    if (global.ocfg.surfaces_config[surface_name] == nil) then
         log("Surface does NOT have a config entry, defaulting to nauvis entry for new surface: " .. surface_name)
-        global.ocfg.surfaces_config[surface_name] = global.ocfg.surfaces_config["nauvis"]
+        global.ocfg.surfaces_config[surface_name] = table.deepcopy(global.ocfg.surfaces_config["nauvis"])
     end
 end
 

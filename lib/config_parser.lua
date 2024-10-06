@@ -158,7 +158,7 @@ function ValidateAndLoadConfig()
 
     -- Load the template config into the global table.
     ---@class OarcConfig
-    global.ocfg = OCFG
+    global.ocfg = table.deepcopy(OCFG)
 
     -- Check that each entry in OCFG matches the default value of the mod setting. This is just for my own sanity.
     -- Helps make sure mod default settings and my internal config are in sync.
@@ -220,6 +220,17 @@ function ValidateSettings()
     -- This should only break with a bad scenario custom config.
     if (global.ocfg.surfaces_config["nauvis"] == nil) then
         error("nauvis surface config does not exist! Please check your mod settings or config!")
+    end
+
+    -- Very for each surface config that the item counts are valid.
+    for surface_name,surface_config in pairs(global.ocfg.surfaces_config) do
+        if (table_size(surface_config.starting_items.crashed_ship_resources) > MAX_CRASHED_SHIP_RESOURCES_ITEMS) then
+            error("Too many items in crashed_ship_resources for surface: " .. surface_name)
+        end
+
+        if (table_size(surface_config.starting_items.crashed_ship_wreakage) > MAX_CRASHED_SHIP_WRECKAGE_ITEMS) then
+            error("Too many items in player_start_items for surface: " .. surface_name)
+        end
     end
 end
 

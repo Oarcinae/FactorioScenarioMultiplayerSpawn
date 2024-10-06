@@ -252,7 +252,7 @@ end
 ---Handle the gui checkboxes & radio buttons of the spawn control tab in the Oarc GUI.
 ---@param event EventData.on_gui_checked_state_changed
 ---@return nil
-function SpawnCtrlGuiOptionsSelect(event)
+function SpawnCtrlGuiOptionsCheckedStateChanged(event)
     if not event.element.valid then return end
     local player = game.players[event.player_index]
     local tags = event.element.tags
@@ -282,7 +282,7 @@ end
 ---Handle the gui click of the spawn control tab in the Oarc GUI.
 ---@param event EventData.on_gui_click
 ---@return nil
-function SpawnCtrlGuiClick(event)
+function SpawnCtrlTabGuiClick(event)
     if not event.element.valid then return end
     local player = game.players[event.player_index]
     local tags = event.element.tags

@@ -26,6 +26,9 @@ SPAWN_SHAPE_CHOICE_SQUARE = "square"
 RESOURCES_SHAPE_CHOICE_CIRCLE = "circle"
 RESOURCES_SHAPE_CHOICE_SQUARE = "square"
 
+MAX_CRASHED_SHIP_RESOURCES_ITEMS = 5
+MAX_CRASHED_SHIP_WRECKAGE_ITEMS = 1
+
 ---@type OarcConfigStartingItems
 NAUVIS_STARTER_ITEMS =
 {
@@ -364,22 +367,22 @@ OCFG = {
             starting_items = NAUVIS_STARTER_ITEMS,
             spawn_config = NAUVIS_SPAWN_CONFIG
         },
-        ["vulcanus"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["fulgora"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["gleba"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["aquilo"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        }
+        -- ["vulcanus"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["fulgora"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["gleba"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["aquilo"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- }
     },
 
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
