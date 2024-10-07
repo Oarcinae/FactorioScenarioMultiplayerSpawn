@@ -55,17 +55,19 @@ function CreateSurfaceConfigContent(container, surface_name)
     }
 
     -- Create an choose-elem-button for the testing
-    local button = spawn_config_flow.add {
-        type = "choose-elem-button",
-        elem_type = "entity",
-        elem_filters = {{filter = "type", type = "resource"}, {filter = "minable", mode = "and"}},
-    }
+    -- local button = spawn_config_flow.add {
+    --     type = "choose-elem-button",
+    --     elem_type = "entity",
+    --     elem_filters = {{filter = "type", type = "resource"}, {filter = "minable", mode = "and"}},
+    -- }
 
     -- Spawn Config (safe area)
+    CreateSafeAreaConfig(spawn_config_flow, surface_name)
     -- Spawn Config (water strip) (Note offset from north of spawn.)
     -- Spawn Config (shared power pole position) (Note offset from west of spawn.)
     -- Spawn Config (shared chest position) (Note offset from west of spawn.)
     -- Spawn Config (resources and amounts (and maybe x/y positions)) (Note offset is center and not used if auto place.)
+    CreateSolidResourcesConfig(spawn_config_flow, surface_name)
     -- Spawn Config (fluid resources) (Note offset from south of spawn.)
 end
 
@@ -157,6 +159,344 @@ function CreateSurfaceDropdown(container)
     return selected_surface_name
 end
 
+
+---Create an items selection section
+---@param container LuaGuiElement
+---@param surface_name string
+---@param header string
+---@param setting_name string
+---@param max_count integer?
+---@return nil
+function CreateItemsSection(container, surface_name, header, setting_name, max_count)
+
+    local items = global.ocfg.surfaces_config[surface_name].starting_items[setting_name]
+
+    if (items == nil) then
+        error("No items found for setting: " .. setting_name .. " for surface: " .. surface_name)
+    end
+
+    if (max_count and (table_size(items) > max_count)) then
+        -- This would only happen with a bad config.
+        error("Too many items in starting items list!?")
+    end
+
+    local vertical_flow = container.add {
+        type = "frame",
+        direction = "vertical",
+        style = "inside_shallow_frame"
+    }
+    vertical_flow.style.padding = 5
+    vertical_flow.style.horizontally_stretchable = false
+    
+    AddLabel(vertical_flow, nil, header, my_label_header2_style)
+
+    local table = vertical_flow.add {
+        type = "table",
+        column_count = 3,
+        -- style = "bordered_table",
+        tags = {
+            surface_name = surface_name,
+            setting = setting_name,
+            max_count = max_count or 0
+        }
+    }
+
+    --Add headers
+    AddLabel(table, nil, "Item", my_label_style)
+    AddLabel(table, nil, "Count", my_label_style)
+    AddLabel(table, nil, "", my_label_style)
+
+    for item_name, item_count in pairs(items) do
+        SurfaceConfigItemListDisplayRow(table, item_name, item_count)
+    end
+
+    -- Add a button to add another row
+    if (max_count == nil) or (max_count == 0) or (table_size(items) < max_count) then
+        SurfaceConfigItemListAddRowButton(table)
+    end
+end
+
+
+
+
+---Adds a row to a table with an item and count
+---@param table LuaGuiElement
+---@param item_name string?
+---@param item_count integer?
+---@return nil
+function SurfaceConfigItemListDisplayRow(table, item_name, item_count)
+    -- Create choose elem button
+    local button = table.add {
+        type = "choose-elem-button",
+        elem_type = "item",
+        item = item_name,
+        tags = {
+            action = "oarc_surface_config_tab",
+            elem_button = true,
+            item_name = item_name or ""
+        },
+    }
+    button.style.width = 28
+    button.style.height = 28
+
+    -- Create number textfield
+    local textfield = table.add {
+        type = "textfield",
+        text = tostring(item_count or 0),
+        numeric = true,
+        allow_decimal = false,
+        tooltip = {"oarc-settings-tab-text-field-enter-tooltip" },
+        tags = {
+            action = "oarc_surface_config_tab",
+            item_number_textfield = true,
+            item_name = item_name or ""
+        }
+    }
+    if (item_name == "") then
+        textfield.style = "invalid_value_textfield"
+    end
+    textfield.style.width = 40
+
+    -- Create a button to remove the row
+    local remove_button = table.add {
+        type = "sprite-button",
+        sprite = "utility/deconstruction_mark",
+        tooltip = "Remove Item", -- TODO: Localize
+        tags = {
+            action = "oarc_surface_config_tab",
+            remove_row_button = true,
+            item_name = item_name or ""
+        }
+    }
+    remove_button.style.width = 28
+    remove_button.style.height = 28
+end
+
+
+---Add the add row button to the table
+---@param table LuaGuiElement
+---@return nil
+function SurfaceConfigItemListAddRowButton(table)
+    -- Add a button to add another row
+    local add_row_button = table.add {
+        type = "sprite-button",
+        sprite = "utility/check_mark_green",
+        tooltip = "Add Item", -- TODO: Localize
+        tags = {
+            action = "oarc_surface_config_tab",
+            add_row_button = true
+        }
+    }
+    add_row_button.style.width = 28
+    add_row_button.style.height = 28
+end
+
+
+
+
+---Create the safe area config section
+---@param container LuaGuiElement
+---@param surface_name string
+---@return nil
+function CreateSafeAreaConfig(container, surface_name)
+
+    local safe_area_flow = container.add {
+        type = "frame",
+        direction = "vertical",
+        style = "inside_shallow_frame"
+    }
+    safe_area_flow.style.padding = 5
+    safe_area_flow.style.horizontally_stretchable = false
+
+    local header = AddLabel(safe_area_flow, nil, "Safe Area Config", my_label_header2_style) -- TODO: Localize
+    header.tooltip = "This controls how safe the area around the spawns is." -- TODO: Localize
+
+     -- TODO: Localize
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Safe Area Radius", "safe_area", "safe_radius", "This is the radius in tiles around the spawn in which no enemies will spawn.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Radius", "safe_area", "warn_radius", "This is the radius in tiles around the spawn in which enemies will be significantly reduced.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Reduction", "safe_area", "warn_reduction", "This is the reduction factor to reduce the number of enemies in the warn area. 10 means (1/10)th the number of enemies.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Radius", "safe_area", "danger_radius", "This is the radius in tiles around the spawn in which enemies will be slightly reduced.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Reduction", "safe_area", "danger_reduction", "This is the reduction factor to reduce the number of enemies in the danger area. 10 means (1/10)th the number of enemies.")
+end
+
+
+---Create an integer textfield with a label
+---@param container LuaGuiElement
+---@param surface_name string
+---@param label string
+---@param setting_name string
+---@param entry_name string
+---@param tooltip string
+---@return nil
+function CreateSpawnConfigIntegerField(container, surface_name, label, setting_name, entry_name, tooltip)
+
+    local value = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][entry_name]
+
+    local flow = container.add {
+        type = "flow",
+        direction = "horizontal"
+    }
+
+    AddLabel(flow, nil, label, my_label_style)
+
+    local dragger = flow.add{ type="empty-widget", style="draggable_space_header" }
+    dragger.style.horizontally_stretchable = true
+
+    -- Create number textfield
+    local textfield = flow.add {
+        type = "textfield",
+        text = tostring(value),
+        tooltip = tooltip,
+        numeric = true,
+        allow_decimal = false,
+        tags = {
+            action = "oarc_surface_config_tab",
+            surface_name = surface_name,
+            setting = setting_name,
+            entry = entry_name,
+            spawn_config_textfield = true
+        }
+    }
+    textfield.style.width = 50
+end
+
+
+---Create the solid resources config section
+---@param container LuaGuiElement
+---@param surface_name string
+---@return nil
+function CreateSolidResourcesConfig(container, surface_name)
+
+    local solid_resources = global.ocfg.surfaces_config[surface_name].spawn_config.solid_resources
+
+    local solid_resources_flow = container.add {
+        type = "frame",
+        direction = "vertical",
+        style = "inside_shallow_frame"
+    }
+    solid_resources_flow.style.padding = 5
+    solid_resources_flow.style.horizontally_stretchable = false
+
+    local header = AddLabel(solid_resources_flow, nil, "Solid Resources Config", my_label_header2_style) -- TODO: Localize
+    header.tooltip = "This controls the resources that will spawn around the spawn area." -- TODO: Localize
+
+    -- Create a table to display the resources
+    local table = solid_resources_flow.add {
+        type = "table",
+        column_count = 4,
+        tags = {
+            surface_name = surface_name,
+            setting = "solid_resources"
+        }
+    }
+
+    --Add headers
+    AddLabel(table, nil, "Type", my_label_style)
+    AddLabel(table, nil, "Amount", my_label_style)
+    AddLabel(table, nil, "Size", my_label_style)
+    AddLabel(table, nil, "", my_label_style)
+
+    for resource_name, resource_data in pairs(solid_resources) do
+        log("Resource: " .. resource_name)
+        SolidResourcesConfigDisplayRow(table, resource_name, resource_data.amount, resource_data.size)
+    end
+
+    SurfaceConfigSolidResourcesAddRowButton(table)
+end
+
+
+---Adds a row to a table with a resource, amount, and size
+---@param table LuaGuiElement
+---@param resource_name string?
+---@param amount integer
+---@param size integer
+---@return nil
+function SolidResourcesConfigDisplayRow(table, resource_name, amount, size)
+    -- Create choose elem button
+    local button = table.add {
+        type = "choose-elem-button",
+        elem_type = "entity",
+        elem_filters = {{filter = "type", type = "resource"}},
+        tags = {
+            action = "oarc_surface_config_tab",
+            resource_elem_button = true,
+            resource_name = resource_name or ""
+        },
+    }
+    button.elem_value = resource_name
+    button.style.width = 28
+    button.style.height = 28
+
+    -- Create number textfield
+    local amount_textfield = table.add {
+        type = "textfield",
+        text = tostring(amount),
+        numeric = true,
+        allow_decimal = false,
+        tags = {
+            action = "oarc_surface_config_tab",
+            resource_amount_textfield = true,
+            resource_name = resource_name or ""
+        }
+    }
+    amount_textfield.style.width = 50
+
+    -- Create number textfield
+    local size_textfield = table.add {
+        type = "textfield",
+        text = tostring(size),
+        numeric = true,
+        allow_decimal = false,
+        tags = {
+            action = "oarc_surface_config_tab",
+            resource_size_textfield = true,
+            resource_name = resource_name or ""
+        }
+    }
+    size_textfield.style.width = 50
+
+    -- Create a button to remove the row
+    local remove_button = table.add {
+        type = "sprite-button",
+        sprite = "utility/deconstruction_mark",
+        tooltip = "Remove Resource", -- TODO: Localize
+        tags = {
+            action = "oarc_surface_config_tab",
+            resource_remove_row_button = true,
+            resource_name = resource_name or ""
+        }
+    }
+    remove_button.style.width = 28
+    remove_button.style.height = 28
+end
+
+---Add the add row button to the table for solid resources
+---@param table LuaGuiElement
+---@return nil
+function SurfaceConfigSolidResourcesAddRowButton(table)
+    -- Add a button to add another row
+    local add_row_button = table.add {
+        type = "sprite-button",
+        sprite = "utility/check_mark_green",
+        tooltip = "Add Item", -- TODO: Localize
+        tags = {
+            action = "oarc_surface_config_tab",
+            resource_add_row_button = true
+        }
+    }
+    add_row_button.style.width = 28
+    add_row_button.style.height = 28
+end
+
+
+--[[
+  _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___ 
+ | __\ \ / / __| \| |_   _| | || | /_\ | \| |   \| |  | __| _ \/ __|
+ | _| \ V /| _|| .` | | |   | __ |/ _ \| .` | |) | |__| _||   /\__ \
+ |___| \_/ |___|_|\_| |_|   |_||_/_/ \_\_|\_|___/|____|___|_|_\|___/
+
+]]
+
 ---Handle the surface dropdown selection
 ---@param event EventData.on_gui_selection_state_changed
 ---@return nil
@@ -185,59 +525,103 @@ function SurfaceConfigTabGuiSelect(event)
     end
 end
 
----Create an items selection section
----@param container LuaGuiElement
----@param surface_name string
----@param header string
----@param setting_name string
----@param max_count integer?
+
+---Handle on_gui_text_changed events
+---@param event EventData.on_gui_text_changed
 ---@return nil
-function CreateItemsSection(container, surface_name, header, setting_name, max_count)
+function SurfaceConfigTabGuiTextChanged(event)
+    if not event.element.valid then return end
+    local player = game.players[event.player_index]
+    local tags = event.element.tags
 
-    local items = global.ocfg.surfaces_config[surface_name].starting_items[setting_name]
-
-    if (items == nil) then
-        error("No items found for setting: " .. setting_name .. " for surface: " .. surface_name)
+    if (tags.action ~= "oarc_surface_config_tab") then
+        return
     end
 
-    if (max_count and (table_size(items) > max_count)) then
-        -- This would only happen with a bad config.
-        error("Too many items in starting items list!?")
-    end
-
-    local vertical_flow = container.add {
-        type = "flow",
-        direction = "vertical"
-    }
-
-    AddLabel(vertical_flow, nil, header, my_label_header2_style)
-
-    local table = vertical_flow.add {
-        type = "table",
-        column_count = 3,
-        style = "bordered_table",
-        tags = {
-            surface_name = surface_name,
-            setting = setting_name,
-            max_count = max_count or 0
-        }
-    }
-
-    --Add headers
-    AddLabel(table, nil, "Item", "caption_label")
-    AddLabel(table, nil, "Count", "caption_label")
-    AddLabel(table, nil, "Remove", "caption_label")
-
-    for item_name, item_count in pairs(items) do
-        SurfaceConfigItemListDisplayRow(table, item_name, item_count)
-    end
-
-    -- Add a button to add another row
-    if (max_count == nil) or (max_count == 0) or (table_size(items) < max_count) then
-        SurfaceConfigItemListAddRowButton(table)
+    if (tags.item_number_textfield) then
+        event.element.style = "invalid_value_textfield"
+        event.element.style.width = 40
+    elseif  (tags.resource_amount_textfield or tags.resource_size_textfield or tags.spawn_config_textfield) then
+        event.element.style = "invalid_value_textfield"
+        event.element.style.width = 50
     end
 end
 
+
+---Handle on_gui_confirmed events
+---@param event EventData.on_gui_confirmed
+---@return nil
+function SurfaceConfigTabGuiConfirmed(event)
+    if not event.element.valid then return end
+    local player = game.players[event.player_index]
+    local tags = event.element.tags
+
+    if (tags.action ~= "oarc_surface_config_tab") then
+        return
+    end
+
+    if (tags.item_number_textfield) then
+        player.print("Selected item: " .. tags.item_name .. " count: " .. event.element.text)
+
+        local parent = event.element.parent
+        local surface_name = parent.tags.surface_name --[[@as string]]
+        local setting_name = parent.tags.setting --[[@as string]]
+        local item_name = tags.item_name --[[@as string]]
+
+        -- Check if an item is selected first.
+        if (tags.item_name == "") then
+            player.print("Please select an item first!")
+            event.element.text = "0"
+            return
+        end
+
+        -- Update the count
+        local count = tonumber(event.element.text) or 0
+        global.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = count
+
+        event.element.style = "textbox"
+        event.element.style.width = 40
+
+    elseif (tags.resource_amount_textfield or tags.resource_size_textfield) then
+        -- player.print("Selected resource: " .. tags.resource_name .. " amount: " .. event.element.text)
+
+        local parent = event.element.parent
+        local surface_name = parent.tags.surface_name --[[@as string]]
+        local setting_name = parent.tags.setting --[[@as string]]
+        local resource_name = tags.resource_name --[[@as string]]
+
+        -- Check if an item is selected first.
+        if (tags.resource_name == "") then
+            player.print("Please select a resource first!")
+            event.element.text = "0"
+            return
+        end
+
+        -- Update the count
+        local count = tonumber(event.element.text) or 0
+
+        if (tags.resource_amount_textfield) then
+            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].amount = count
+        elseif (tags.resource_size_textfield) then
+            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].size = count
+        end
+
+        event.element.style = "textbox"
+        event.element.style.width = 50
+    
+    elseif (tags.spawn_config_textfield) then
+        local surface_name = tags.surface_name --[[@as string]]
+        local setting_name = tags.setting --[[@as string]]
+        local entry_name = tags.entry --[[@as string]]
+
+        local value = tonumber(event.element.text) or 0
+        global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][entry_name] = value
+
+        event.element.style = "textbox"
+        event.element.style.width = 50
+    
+    end
+end
 
 ---Handle elem changed events
 ---@param event EventData.on_gui_elem_changed
@@ -278,15 +662,65 @@ function SurfaceConfigTabGuiElemChanged(event)
         end
 
         -- Update the item name in the list, keep the old count.
-        player.print("Update item: " .. old_item_name .. " to " .. new_item_name .. " for surface " .. surface_name)
-        global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name]
-        global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name] = nil
+        if (old_item_name ~= "") then
+            player.print("Update item: " .. old_item_name .. " to " .. new_item_name .. " for surface " .. surface_name)
+            global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name]
+            global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name] = nil
+        else
+            player.print("Add item: " .. new_item_name .. " for surface " .. surface_name)
+            global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = 0
+        end
 
         -- Update all tags with the new item name.
         for _, child in pairs(event.element.parent.children) do
             if (child.tags.item_name == old_item_name) then
                 local tags_copy = child.tags
                 tags_copy.item_name = new_item_name
+                child.tags = tags_copy
+            end
+        end
+    
+    elseif (tags.resource_elem_button) then
+        local new_resource_name = event.element.elem_value --[[@as string]]
+        player.print("Selected resource: " .. event.element.elem_value)
+
+        if (new_resource_name == nil) then
+            return
+        end
+
+        local old_resource_name = tags.resource_name --[[@as string]]
+
+        -- if the new resource name is the same as the old resource name, do nothing.
+        if (new_resource_name == tags.resource_name) then
+            return
+        end
+
+        -- otherwise, check if the new resource name is already in the list.
+        local parent = event.element.parent
+        local surface_name = parent.tags.surface_name --[[@as string]]
+        local setting_name = parent.tags.setting --[[@as string]]
+
+        if (global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
+            player.print("Resource already exists in list! " .. new_resource_name)
+            event.element.elem_value = nil
+            return
+        end
+
+        -- Update the resource name in the list, keep the old amount and size.
+        if (old_resource_name ~= "") then
+            player.print("Update resource: " .. old_resource_name .. " to " .. new_resource_name .. " for surface " .. surface_name)
+            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
+            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
+        else
+            player.print("Add resource: " .. new_resource_name .. " for surface " .. surface_name)
+            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {amount=0, size=0, x_offset=0, y_offset=0}
+        end
+
+        -- Update all tags with the new resource name.
+        for _, child in pairs(event.element.parent.children) do
+            if (child.tags.resource_name == old_resource_name) then
+                local tags_copy = child.tags
+                tags_copy.resource_name = new_resource_name
                 child.tags = tags_copy
             end
         end
@@ -396,135 +830,43 @@ function SurfaceConfigTabGuiClick(event)
         end
         content_flow.clear()
         CreateSurfaceConfigContent(content_flow, surface_name)
-    end
-end
+    
+    elseif (tags.resource_remove_row_button) then
+        player.print("Remove resource: " .. tags.resource_name)
 
----Adds a row to a table with an item and count
----@param table LuaGuiElement
----@param item_name string?
----@param item_count integer?
----@return nil
-function SurfaceConfigItemListDisplayRow(table, item_name, item_count)
-    -- Create choose elem button
-    local button = table.add {
-        type = "choose-elem-button",
-        elem_type = "item",
-        item = item_name,
-        tags = {
-            action = "oarc_surface_config_tab",
-            elem_button = true,
-            item_name = item_name or ""
-        },
-    }
-    button.style.width = 28
-    button.style.height = 28
-
-    -- Create number textfield
-    local textfield = table.add {
-        type = "textfield",
-        text = tostring(item_count or 0),
-        numeric = true,
-        allow_decimal = false,
-        tooltip = {"oarc-settings-tab-text-field-enter-tooltip" },
-        tags = {
-            action = "oarc_surface_config_tab",
-            item_number_textfield = true,
-            item_name = item_name or ""
-        }
-    }
-    if (item_name == "") then
-        textfield.style = "invalid_value_textfield"
-    end
-    textfield.style.width = 40
-
-    -- Create a button to remove the row
-    local remove_button = table.add {
-        type = "sprite-button",
-        sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Item", -- TODO: Localize
-        tags = {
-            action = "oarc_surface_config_tab",
-            remove_row_button = true,
-            item_name = item_name or ""
-        }
-    }
-    remove_button.style.width = 28
-    remove_button.style.height = 28
-end
-
-
----Add the add row button to the table
----@param table LuaGuiElement
----@return nil
-function SurfaceConfigItemListAddRowButton(table)
-    -- Add a button to add another row
-    local add_row_button = table.add {
-        type = "sprite-button",
-        sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
-        tags = {
-            action = "oarc_surface_config_tab",
-            add_row_button = true
-        }
-    }
-    add_row_button.style.width = 28
-    add_row_button.style.height = 28
-end
-
-
----Handle on_gui_text_changed events
----@param event EventData.on_gui_text_changed
----@return nil
-function SurfaceConfigTabGuiTextChanged(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local tags = event.element.tags
-
-    if (tags.action ~= "oarc_surface_config_tab") then
-        return
-    end
-
-    if (tags.item_number_textfield) then
-        player.print("Selected item: " .. tags.item_name .. " count: " .. event.element.text)
-
-        event.element.style = "invalid_value_textfield"
-        event.element.style.width = 40
-    end
-end
-
-
----Handle on_gui_confirmed events
----@param event EventData.on_gui_confirmed
----@return nil
-function SurfaceConfigTabGuiConfirmed(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local tags = event.element.tags
-
-    if (tags.action ~= "oarc_surface_config_tab") then
-        return
-    end
-
-    if (tags.item_number_textfield) then
-        player.print("Selected item: " .. tags.item_name .. " count: " .. event.element.text)
-
+        local resource_name = tags.resource_name --[[@as string]]
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
-        local item_name = tags.item_name --[[@as string]]
 
-        -- Check if an item is selected first.
-        if (tags.item_name == "") then
-            player.print("Please select an item first!")
-            event.element.text = "0"
-            return
+        -- Nil the entry
+        player.print("Remove resource: " .. resource_name .. " for surface " .. surface_name)
+        global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name] = nil
+
+        -- Delete the row by removing the child elements from the table.
+        for _, child in pairs(parent.children) do
+            if (child.tags.resource_name == resource_name) then
+                child.destroy()
+            end
+        end
+    
+    elseif (tags.resource_add_row_button) then
+
+        local parent = event.element.parent
+        local setting_name = parent.tags.setting --[[@as string]]
+
+        if (parent == nil) then
+            error("Parent is nil? This shouldn't happen on add row button click! " .. setting_name)
         end
 
-        -- Update the count
-        local count = tonumber(event.element.text) or 0
-        global.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = count
+        player.print("Add resource row: " .. setting_name)
 
-        event.element.style = "textbox"
-        event.element.style.width = 40
+        -- Delete the button and add a new row and then add the button back.
+        event.element.destroy()
+        SolidResourcesConfigDisplayRow(parent, nil, 0, 0)
+
+        -- Add the add row button back.
+        SurfaceConfigSolidResourcesAddRowButton(parent)
+    
     end
 end

@@ -1346,10 +1346,10 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                 end
             end
 
-            -- Create a tree ring
-            if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
-                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
-            end
+            -- -- Create a tree ring
+            -- if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
+            --     surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            -- end
 
             -- Fill moat with water.
             if (moat) then
@@ -1369,6 +1369,16 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     end
 
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
+            if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+        end
+    end
 end
 
 ---` spawn shape (handles land, trees and moat) (Curtesy of jvmguy)
@@ -1404,10 +1414,10 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
                 end
             end
 
-            -- Create a tree ring
-            if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
-                surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
-            end
+            -- -- Create a tree ring
+            -- if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
+            --     surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
+            -- end
 
             -- Fill moat with water
             if (moat) then
@@ -1426,6 +1436,19 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
         end
     end
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local distVar1 = math.floor(math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j)))
+            local distVar2 = math.floor(math.abs(centerPos.x - i) + math.abs(centerPos.y - j))
+            local distVar = math.max(distVar1, distVar2 * 0.707);
+
+            if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
+                surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
+            end
+        end
+    end
 end
 
 ---Square spawn shape (handles land, trees and moat) 
@@ -1460,10 +1483,10 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
                 end
             end
 
-            -- Create a tree ring
-            if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
-                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
-            end
+            -- -- Create a tree ring
+            -- if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
+            --     surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            -- end
 
             -- Fill moat with water
             if (moat) then
@@ -1483,6 +1506,16 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
     end
 
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local max_distance = math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j))
+            if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+        end
+    end
 end
 
 ---Add a circle of water
