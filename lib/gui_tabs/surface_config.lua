@@ -8,6 +8,8 @@ function CreateSurfaceConfigTab(tab_container, player)
 
     local note = AddLabel(tab_container, nil, "This lets you configure the surface settings, it is only available to admins. These settings are NOT available in the mod settings page. If you want to automatically set these on the start of a new game using a custom file, please check out the included template scenario in the mod folder. I really question my sanity for bothering to make this GUI interface. Send help.", my_note_style) -- TODO: Localize
     note.style.maximal_width = 700
+    local warn = AddLabel(tab_container, nil, "WARNING: These settings are NOT sanitized, you might crash the game if you pick bad values!", my_warning_style) -- TODO: Localize
+    warn.style.maximal_width = 700
 
     -- Drop down to select surface that you want to configure
     local selected_surface_name = CreateSurfaceDropdown(tab_container)
@@ -687,6 +689,13 @@ function SurfaceConfigTabGuiElemChanged(event)
         if (new_resource_name == nil) then
             return
         end
+
+        if (game.entity_prototypes[new_resource_name].resource_category ~= "basic-solid") then
+            player.print("Resource must be a solid resource! " .. new_resource_name)
+            event.element.elem_value = nil
+            return
+        end
+
 
         local old_resource_name = tags.resource_name --[[@as string]]
 
