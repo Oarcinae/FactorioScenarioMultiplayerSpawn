@@ -36,7 +36,10 @@ function CreateSettingsControlsTab(tab_container, player)
     scroll_pane_right.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
     scroll_pane_right.style.padding = 5
     scroll_pane_right.style.left_margin = 2
+    
     CreateSurfaceSettingsSection(scroll_pane_right, player)
+    AddSpacerLine(scroll_pane_right)
+    CreateSettingsExportSection(scroll_pane_right, player)
 end
 
 ---Create the content for the mod settings section
@@ -98,6 +101,53 @@ function CreateSurfaceSettingsSection(container, player)
     
 end
 
+---Create the content for the settings export section. Exports the entire global.ocfg table into a string.
+---@param container LuaGuiElement
+---@param player LuaPlayer
+---@return nil
+function CreateSettingsExportSection(container, player)
+    AddLabel(container, nil, { "oarc-settings-tab-title-export" }, my_label_header2_style)
+
+    local horizontal_flow = container.add {
+        type = "flow",
+        direction = "horizontal",
+    }
+
+    local export_button = horizontal_flow.add {
+        type = "button",
+        caption = { "oarc-settings-tab-export-button" },
+        style = "green_button",
+        tooltip = { "oarc-settings-tab-export-button-tooltip" },
+        tags = {
+            action = "oarc_settings_tab_right_pane",
+            setting = "oarc_settings_export"
+        },
+    }
+
+    local import_button = horizontal_flow.add {
+        type = "button",
+        caption = { "oarc-settings-tab-import-button" },
+        tooltip = { "oarc-settings-tab-import-button-tooltip" },
+        style = "red_button",
+        tags = {
+            action = "oarc_settings_tab_right_pane",
+            setting = "oarc_settings_import"
+        },
+    }
+
+    local export_textfield = container.add {
+        type = "textfield",
+        name = "export_textfield",
+        text = " ",
+        tags = {
+            action = "oarc_settings_tab_right_pane",
+            setting = "oarc_settings_textfield"
+        },
+    }
+    export_textfield.style.horizontally_stretchable = true
+    export_textfield.style.maximal_width = 500
+end
+
 ---Handles the click event for the tab used by AddOarcGuiTab
 ---@param event EventData.on_gui_click
 ---@return nil
@@ -105,7 +155,7 @@ function SettingsControlsTabGuiClick(event)
     if not (event.element.valid) then return end
 
     local gui_elem = event.element
-    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    if (gui_elem.tags.action ~= "oarc_settings_tab_left_pane") then return end
     local index = gui_elem.tags.setting
 
     local entry = OCFG_KEYS[index]
@@ -121,7 +171,7 @@ function SettingsControlsTabGuiTextChanged(event)
     if not (event.element.valid) then return end
 
     local gui_elem = event.element
-    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    if (gui_elem.tags.action ~= "oarc_settings_tab_left_pane") then return end
     local index = gui_elem.tags.setting
     local value = gui_elem.text
     local entry = OCFG_KEYS[index]
@@ -141,7 +191,7 @@ function SettingsControlsTabGuiTextconfirmed(event)
     if not (event.element.valid) then return end
 
     local gui_elem = event.element
-    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    if (gui_elem.tags.action ~= "oarc_settings_tab_left_pane") then return end
     local index = gui_elem.tags.setting
     local value = gui_elem.text
     local entry = OCFG_KEYS[index]
@@ -260,7 +310,7 @@ function AddCheckboxSetting(tab_container, index, entry, enabled)
         state = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
         tooltip = { "mod-setting-description."..entry.mod_key },
-        tags = { action = "oarc_settings_tab", setting = index },
+        tags = { action = "oarc_settings_tab_left_pane", setting = index },
     }
 end
 
@@ -293,7 +343,7 @@ function AddTextfieldSetting(tab_container, index, entry, enabled)
         text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
         tooltip = tooltip,
-        tags = { action = "oarc_settings_tab", setting = index  },
+        tags = { action = "oarc_settings_tab_left_pane", setting = index  },
     }
 end
 
@@ -340,7 +390,7 @@ function AddIntegerSetting(tab_container, index, entry, enabled)
         text = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
         tooltip = tooltip,
-        tags = { action = "oarc_settings_tab", setting = index },
+        tags = { action = "oarc_settings_tab_left_pane", setting = index },
     }
     textfield.style.width = 50
 end
@@ -389,7 +439,7 @@ function AddDoubleSetting(tab_container, index, entry, enabled)
         text = string.format("%.2f", GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys)),
         enabled = enabled,
         tooltip = tooltip,
-        tags = { action = "oarc_settings_tab", setting = index },
+        tags = { action = "oarc_settings_tab_left_pane", setting = index },
     }
     textfield.style.width = 50
 end
@@ -431,7 +481,7 @@ function AddStringListDropdownSetting(tab_container, index, entry, enabled)
         selected_index = selected_index,
         enabled = enabled,
         tooltip = { "mod-setting-description."..entry.mod_key },
-        tags = { action = "oarc_settings_tab", setting = index },
+        tags = { action = "oarc_settings_tab_left_pane", setting = index },
     }
 end
 
@@ -448,7 +498,7 @@ function AddSurfaceCheckboxSetting(parent, surface_name, setting_name, state, ad
         name = surface_name.."_"..setting_name,
         type = "checkbox",
         state = state,
-        tags = { action = "oarc_settings_tab_surfaces", setting = setting_name, surface = surface_name },
+        tags = { action = "oarc_settings_tab_right_pane", setting = setting_name, surface = surface_name },
         enabled = admin,
         tooltip = tooltip,
     }
@@ -461,11 +511,11 @@ function SettingsSurfaceControlsTabGuiClick(event)
     if not (event.element.valid) then return end
 
     local gui_elem = event.element
-    if (gui_elem.tags.action ~= "oarc_settings_tab_surfaces") then return end
+    if (gui_elem.tags.action ~= "oarc_settings_tab_right_pane") then return end
     local setting_name = gui_elem.tags.setting
-    local surface_name = gui_elem.tags.surface --[[@as string]]
 
     if (setting_name == "spawn_enabled") then
+        local surface_name = gui_elem.tags.surface --[[@as string]]
         global.oarc_surfaces[surface_name] = gui_elem.state
 
         if (#GetAllowedSurfaces() == 0) then
@@ -473,7 +523,9 @@ function SettingsSurfaceControlsTabGuiClick(event)
             global.oarc_surfaces[global.ocfg.gameplay.default_surface] = true
             event.element.parent[global.ocfg.gameplay.default_surface.."_spawn_enabled"].state = true
         end
+  
     elseif (setting_name == "regrowth_enabled") then
+        local surface_name = gui_elem.tags.surface --[[@as string]]
 
         if (gui_elem.state) then
             if not IsRegrowthEnabledOnSurface(surface_name) then
@@ -484,7 +536,34 @@ function SettingsSurfaceControlsTabGuiClick(event)
                 RegrowthDisableSurface(surface_name)
             end
         end
+
+    elseif (setting_name == "oarc_settings_textfield") then
+        gui_elem.select_all() -- Select all text when clicked
+
+    elseif (setting_name == "oarc_settings_export") then
+
+        log("Exported settings!")
+        local export_textfield = gui_elem.parent.parent["export_textfield"]
+        export_textfield.text = serpent.line(global.ocfg, {compact = true, sparse = true})
+    
+    elseif (setting_name == "oarc_settings_import") then
+        local player = game.players[event.player_index]
+        local export_textfield = gui_elem.parent.parent["export_textfield"]
+        local import_text = export_textfield.text
+        local ok, copy = serpent.load(import_text)
+        if (not ok) or (type(copy) ~= "table") or (next(copy) == nil) then
+            log("Error importing settings!")
+            player.print("Error importing settings!")
+        else
+            global.ocfg = table.deepcopy(copy)
+            ValidateSettings() -- Some basic validation, not 100% foolproof
+            SyncModSettingsToOCFG() -- Sync the mod settings.
+            log("Imported settings!")
+            player.print("Imported settings!")
+            OarcGuiRefreshContent(player)
+        end
     end
+
 end
 
 
@@ -495,7 +574,7 @@ function SettingsControlsTabGuiSelectionStateChanged(event)
     if not (event.element.valid) then return end
 
     local gui_elem = event.element
-    if (gui_elem.tags.action ~= "oarc_settings_tab") then return end
+    if (gui_elem.tags.action ~= "oarc_settings_tab_left_pane") then return end
     local index = gui_elem.tags.setting
     local entry = OCFG_KEYS[index]
 

@@ -178,10 +178,57 @@ function ValidateAndLoadConfig()
 
     GetScenarioOverrideSettings() -- Get any scenario settings and overwrite both the mod settings and OARC_CFG.
 
+    SyncModSettingsToOCFG() -- Make sure mod settings are in sync with global.ocfg table.
+
     ValidateSettings() -- These are validation checks that can't be done within the mod settings natively.
 end
 
+---DO some basic validation checks on the config settings.
+---@return nil
 function ValidateSettings()
+
+    -- Verify the major sections exist. Not exhaustive but should catch missing sections.
+    if (global.ocfg["server_info"] == nil) then
+        log("ERROR - Missing server_info section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing server_info section in config! Loading defaults instead!")
+        global.ocfg.server_info = table.deepcopy(OCFG.server_info)
+    end
+    if (global.ocfg["gameplay"] == nil) then
+        log("ERROR - Missing gameplay section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing gameplay section in config! Loading defaults instead!")
+        global.ocfg.gameplay = table.deepcopy(OCFG.gameplay)
+    end
+    if (global.ocfg["regrowth"] == nil) then
+        log("ERROR - Missing regrowth section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing regrowth section in config! Loading defaults instead!")
+        global.ocfg.regrowth = table.deepcopy(OCFG.regrowth)
+    end
+    if (global.ocfg["spawn_general"] == nil) then
+        log("ERROR - Missing spawn_general section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing spawn_general section in config! Loading defaults instead!")
+        global.ocfg.spawn_general = table.deepcopy(OCFG.spawn_general)
+    end
+    if (global.ocfg["resource_placement"] == nil) then
+        log("ERROR - Missing resource_placement section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing resource_placement section in config! Loading defaults instead!")
+        global.ocfg.resource_placement = table.deepcopy(OCFG.resource_placement)
+    end
+    if (global.ocfg["surfaces_config"] == nil) then
+        log("ERROR - Missing surfaces_config section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing surfaces_config section in config! Loading defaults instead!")
+        global.ocfg.surfaces_config = table.deepcopy(OCFG.surfaces_config)
+    end
+    if (global.ocfg["surfaces_blacklist"] == nil) then
+        log("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!")
+        global.ocfg.surfaces_blacklist = table.deepcopy(OCFG.surfaces_blacklist)
+    end
+    if (global.ocfg["surfaces_blacklist_match"] == nil) then
+        log("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
+        global.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
+    end
+
 
     -- Validate enable_main_team and enable_separate_teams.
     -- Force enable_main_team if both are disabled.
@@ -229,7 +276,7 @@ function ValidateSettings()
         end
 
         if (table_size(surface_config.starting_items.crashed_ship_wreakage) > MAX_CRASHED_SHIP_WRECKAGE_ITEMS) then
-            error("Too many items in player_start_items for surface: " .. surface_name)
+            error("Too many items in crashed_ship_wreakage for surface: " .. surface_name)
         end
     end
 end
@@ -252,6 +299,8 @@ function CacheModSettings()
     global.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value --[[@as string]]
 end
 
+---Get the scenario settings from the scenario if it exists.
+---@return nil
 function GetScenarioOverrideSettings()
 
     if remote.interfaces["oarc_scenario"] then
@@ -261,25 +310,30 @@ function GetScenarioOverrideSettings()
 
         -- Overwrite the non mod settings with the scenario settings.
         global.ocfg = scenario_settings
-
-        -- Override the mod settings with the scenario settings!
-        for _,entry in pairs(OCFG_KEYS) do
-            if (entry.type ~= "header") and (entry.type ~= "subheader") then
-                local mod_key = entry.mod_key
-                local oarc_key = entry.ocfg_keys
-                local scenario_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
-                if (scenario_value ~= nil) then
-                    local ok,result = pcall(function() settings.global[mod_key] = { value = scenario_value } end)
-                    if not ok then
-                        error("Error setting mod setting: " .. mod_key .. " = " .. tostring(scenario_value) .. "\n" .. "If you see this, you probably picked an invalid value for a setting override in the custom scenario.")
-                    end
-                end
-            end
-        end
-
     else
         log("No scenario settings found.")
     end
+end
+
+---Syncs all mod settings to the OARC config table.
+---@return nil
+function SyncModSettingsToOCFG()
+
+    -- Override the mod settings with the the global.ocfg settings.
+    for _,entry in pairs(OCFG_KEYS) do
+        if (entry.type ~= "header") and (entry.type ~= "subheader") then
+            local mod_key = entry.mod_key
+            local oarc_key = entry.ocfg_keys
+            local scenario_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
+            if (scenario_value ~= nil) then
+                local ok,result = pcall(function() settings.global[mod_key] = { value = scenario_value } end)
+                if not ok then
+                    error("Error setting mod setting: " .. mod_key .. " = " .. tostring(scenario_value) .. "\n" .. "If you see this, you probably picked an invalid value for a setting override in the custom scenario.")
+                end
+            end
+        end
+    end
+
 end
 
 ---Handles the event when a mod setting is changed in the mod settings menu.
