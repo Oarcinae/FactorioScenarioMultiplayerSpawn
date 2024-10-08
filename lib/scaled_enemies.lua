@@ -132,11 +132,11 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
     }
 
     -- Make chunks near a spawn safe by removing enemies
-    if (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius) then
+    if (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius * CHUNK_SIZE) then
         RemoveEnemiesInArea(surface, chunk_area)
 
         -- Create a warning area with heavily reduced enemies
-    elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.warn_radius) then
+    elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
 
         -- TODO: Refactor this to reduce calls to find_entities_filtered!
         ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.warn_reduction)
@@ -144,7 +144,7 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
         ConvertEnemiesToOtherForceInArea(surface, chunk_area, ENEMY_FORCE_EASY)
 
         -- Create a third area with moderately reduced enemies
-    elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.danger_radius) then
+    elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
 
         -- TODO: Refactor this to reduce calls to find_entities_filtered!
         ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.danger_reduction)
@@ -287,15 +287,15 @@ function ChangeEnemySpawnersToOtherForceOnBuilt(event)
     if (closest_spawn == nil) then return end
 
     -- No enemies inside safe radius!
-    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.safe_radius) then
+    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.safe_radius * CHUNK_SIZE) then
         event.entity.destroy()
 
     -- Warn distance should be EASY
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius) then
+    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
         event.entity.force = game.forces[ENEMY_FORCE_EASY]
 
     -- Danger distance should be MEDIUM
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius) then
+    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
         event.entity.force = game.forces[ENEMY_FORCE_MEDIUM]
     
     -- Otherwise make sure they are on the base enemy force (stops easy enemies from spreading out too far).
@@ -328,11 +328,11 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 
     -- No enemies inside safe radius!
-    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.safe_radius) then
+    if (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.safe_radius * CHUNK_SIZE) then
         event.entity.destroy()
 
         -- Warn distance is all SMALL only.
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius) then
+    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
         if ((enemy_name == "biter-spawner") or (enemy_name == "spitter-spawner")) then
             event.entity.force = game.forces["enemy-easy"]
         
@@ -351,7 +351,7 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
         end
 
         -- Danger distance is MEDIUM max.
-    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius) then
+    elseif (util.distance(enemy_pos, closest_spawn.position) < global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
         if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
             event.entity.destroy()
             surface.create_entity { name = "medium-biter", position = enemy_pos, force = game.forces.enemy }

@@ -208,11 +208,12 @@ end
 ---@return string
 function FormatTimeHoursSecs(ticks)
   local seconds = ticks / 60
-  local minutes = math.floor((seconds)/60)
-  local hours   = math.floor((minutes)/60)
-  local minutes = math.floor(minutes - 60*hours)
+  local total_minutes = math.floor((seconds)/60)
+  local hours   = math.floor((total_minutes)/60)
+  local minutes = math.floor(total_minutes - 60*hours)
   return string.format("%dh:%02dm", hours, minutes)
 end
+
 
 -- -- Simple math clamp
 -- function clamp(val, min, max)
@@ -1345,10 +1346,10 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                 end
             end
 
-            -- Create a tree ring
-            if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
-                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
-            end
+            -- -- Create a tree ring
+            -- if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
+            --     surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            -- end
 
             -- Fill moat with water.
             if (moat) then
@@ -1357,12 +1358,27 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                     -- land connections if the spawn is on or near land.
                 elseif ((distSqr < moat_radius_sqr) and (distSqr > tile_radius_sqr)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
+                    
+                    --5% chance of fish in water
+                    if (math.random(1,20) == 1) then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
                 end
             end
         end
     end
 
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
+            if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+        end
+    end
 end
 
 ---` spawn shape (handles land, trees and moat) (Curtesy of jvmguy)
@@ -1398,10 +1414,10 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
                 end
             end
 
-            -- Create a tree ring
-            if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
-                surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
-            end
+            -- -- Create a tree ring
+            -- if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
+            --     surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
+            -- end
 
             -- Fill moat with water
             if (moat) then
@@ -1410,11 +1426,29 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
                     -- land connections if the spawn is on or near land.
                 elseif ((distVar > tileRadius) and (distVar <= moat_width_outer)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
+                    
+                    --5% chance of fish in water
+                    if (math.random(1,20) == 1) then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
                 end
             end
         end
     end
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local distVar1 = math.floor(math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j)))
+            local distVar2 = math.floor(math.abs(centerPos.x - i) + math.abs(centerPos.y - j))
+            local distVar = math.max(distVar1, distVar2 * 0.707);
+
+            if ((distVar < tileRadius) and (distVar >= tree_distance_inner)) then
+                surface.create_entity({ name = "tree-01", amount = 1, position = { i, j } })
+            end
+        end
+    end
 end
 
 ---Square spawn shape (handles land, trees and moat) 
@@ -1449,10 +1483,10 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
                 end
             end
 
-            -- Create a tree ring
-            if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
-                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
-            end
+            -- -- Create a tree ring
+            -- if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
+            --     surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            -- end
 
             -- Fill moat with water
             if (moat) then
@@ -1461,12 +1495,27 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
                     -- land connections if the spawn is on or near land.
                 elseif ((max_distance > tileRadius) and (max_distance <= moat_width_outer)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
+
+                    --5% chance of fish in water
+                    if (math.random(1,20) == 1) then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
                 end
             end
         end
     end
 
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local max_distance = math.max(math.abs(centerPos.x - i), math.abs(centerPos.y - j))
+            if ((max_distance < tileRadius) and (max_distance >= tree_distance_inner)) then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+        end
+    end
 end
 
 ---Add a circle of water

@@ -19,7 +19,7 @@ function OarcModifyEnemyGroup(event)
 
     -- Check validity
     if ((group == nil) or (group.command == nil) or not TableContains(ENEMY_FORCES_NAMES, group.force.name)) then
-        log("OarcModifyEnemyGroup ignoring INVALID group/command")
+        log("WARN - OarcModifyEnemyGroup ignoring INVALID group/command " .. serpent.block(group))
         return
     end
 
@@ -72,7 +72,7 @@ function OarcModifyEnemyGroup(event)
         -- This is unexpected, not sure under which conditions this would happen.
         if (group.command.type == defines.command.attack_area) then
             -- SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!? " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, group.command.destination))
-            log("ERROR - OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?")
+            log("ERROR - OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?" .. serpent.block(group))
             -- for _,member in pairs(group.members) do
             --     member.destroy()
             -- end
@@ -95,7 +95,7 @@ function OarcModifyEnemyGroup(event)
     -- I don't think this should happen ever...
     if ((target_player == nil) or (not target_player.valid)) then
         -- SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position))
-        log("ERROR - OarcModifyEnemyGroup target_player nil/invalid?")
+        log("ERROR - OarcModifyEnemyGroup target_player nil/invalid?" .. serpent.block(group))
         -- for _,member in pairs(group.members) do
         --     member.destroy()
         -- end
@@ -125,6 +125,6 @@ function OarcModifyEnemyGroup(event)
         member.destroy()
     end
     -- SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
-    log("OarcModifyEnemyGroup REMOVED enemy group since nobody was online? " .. target_player.name)
+    -- log("OarcModifyEnemyGroup REMOVED enemy group since nobody was online? " .. target_player.name)
     
 end

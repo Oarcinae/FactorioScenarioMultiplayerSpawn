@@ -92,7 +92,7 @@ end
 ---Server info gui click event handler
 ---@param event EventData.on_gui_click
 ---@return nil
-function ServerInfoGuiClick(event)
+function ServerInfoTabGuiClick(event)
     if not event.element.valid then return end
     local player = game.players[event.player_index]
     local tags = event.element.tags

@@ -80,9 +80,9 @@ data:extend({
         type = "int-setting",
         name = "oarc-mod-minimum-distance-to-existing-chunks",
         setting_type = "runtime-global",
-        default_value = 10,
+        default_value = 20,
         minimum_value = 5,
-        maximum_value = 25,
+        maximum_value = 50,
         order = "c1"
     },
     {
@@ -341,7 +341,7 @@ data:extend({
         type = "double-setting",
         name = "oarc-mod-resource-placement-angle-offset",
         setting_type = "runtime-global",
-        default_value = 2.32,
+        default_value = 2.09,
         minimum_value = 0,
         maximum_value = 6.28,
         order = "i3"
@@ -350,7 +350,7 @@ data:extend({
         type = "double-setting",
         name = "oarc-mod-resource-placement-angle-final",
         setting_type = "runtime-global",
-        default_value = 4.46,
+        default_value = 4.18,
         minimum_value = 0,
         maximum_value = 6.28,
         order = "i4"

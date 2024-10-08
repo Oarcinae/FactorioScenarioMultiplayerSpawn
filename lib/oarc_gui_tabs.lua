@@ -5,6 +5,8 @@ require("lib/gui_tabs/server_info")
 require("lib/gui_tabs/spawn_controls")
 require("lib/gui_tabs/settings_controls")
 require("lib/gui_tabs/mod_info_faq")
+require("lib/gui_tabs/player_list")
+require("lib/gui_tabs/surface_config")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -18,17 +20,23 @@ OARC_SERVER_INFO_TAB_NAME = "server_info"
 OARC_SPAWN_CTRL_TAB_NAME = "spawn_controls"
 OARC_CONFIG_CTRL_TAB_NAME = "settings"
 OARC_MOD_INFO_CTRL_TAB_NAME = "mod_info"
+OARC_MOD_PLAYER_LIST_TAB_NAME = "player_list"
+OARC_SURFACE_CONFIG_TAB_NAME = "surface_config"
 
 OARC_SERVER_INFO_TAB_LOCALIZED = {"oarc-server-info-tab-title"}
 OARC_SPAWN_CTRL_TAB_LOCALIZED = {"oarc-spawn-ctrls-tab-title"}
 OARC_CONFIG_CTRL_TAB_LOCALIZED = {"oarc-settings-tab-title"}
 OARC_MOD_INFO_CTRL_TAB_LOCALIZED = {"oarc-mod-info-tab-title"}
+OARC_PLAYER_LIST_TAB_LOCALIZED = {"oarc-player-list-tab-title"}
+OARC_SURFACE_CONFIG_TAB_LOCALIZED = {"oarc-surface-config-tab-title"}
 
 local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
     [OARC_SERVER_INFO_TAB_NAME] = CreateServerInfoTab,
     [OARC_SPAWN_CTRL_TAB_NAME] = CreateSpawnControlsTab,
     [OARC_MOD_INFO_CTRL_TAB_NAME] = CreateModInfoTab,
     [OARC_CONFIG_CTRL_TAB_NAME] = CreateSettingsControlsTab,
+    [OARC_MOD_PLAYER_LIST_TAB_NAME] = CreatePlayerListTab,
+    [OARC_SURFACE_CONFIG_TAB_NAME] = CreateSurfaceConfigTab,
 }
 
 ---@param player LuaPlayer
@@ -56,6 +64,16 @@ function InitOarcGuiTabs(player)
     -- Settings control tab
     AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME, OARC_CONFIG_CTRL_TAB_LOCALIZED)
     SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
+
+    -- Player list tab
+    AddOarcGuiTab(player, OARC_MOD_PLAYER_LIST_TAB_NAME, OARC_PLAYER_LIST_TAB_LOCALIZED)
+    SetOarcGuiTabEnabled(player, OARC_MOD_PLAYER_LIST_TAB_NAME, true)
+
+    -- Surface config tab
+    if (player.admin) then
+        AddOarcGuiTab(player, OARC_SURFACE_CONFIG_TAB_NAME, OARC_SURFACE_CONFIG_TAB_LOCALIZED)
+        SetOarcGuiTabEnabled(player, OARC_SURFACE_CONFIG_TAB_NAME, true)
+    end
 
     HideOarcGui(player)
 end
@@ -142,12 +160,7 @@ function ClickOarcGuiButton(event)
     end
 end
 
----@param event EventData.on_gui_selected_tab_changed
----@return nil
-function OarcGuiSelectedTabChanged(event)
-    if (event.element.name ~= "oarc_tabs") then return end
-    OarcGuiCreateContentOfTab(game.players[event.player_index])
-end
+
 
 ---Set tab content to currently selected tab, clears all other tab content and refreshes the selected tab content!
 ---Safe to call just to refresh the current tab.
@@ -298,9 +311,107 @@ function SwitchOarcGuiTab(player, tab_name)
     end
 end
 
---@param event EventData.on_gui_closed
+---Completely destroys and recreates the OARC GUI for a player.
+---@param player LuaPlayer
+---@return nil
+function RecreateOarcGui(player)
+    if (mod_gui.get_button_flow(player).oarc_button ~= nil) then
+        mod_gui.get_button_flow(player).oarc_button.destroy()
+    end
+
+    if (mod_gui.get_frame_flow(player)[OARC_GUI] ~= nil) then
+        mod_gui.get_frame_flow(player)[OARC_GUI].destroy()
+    end
+
+    InitOarcGuiTabs(player)
+end
+
+--[[
+  _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___ 
+ | __\ \ / / __| \| |_   _| | || | /_\ | \| |   \| |  | __| _ \/ __|
+ | _| \ V /| _|| .` | | |   | __ |/ _ \| .` | |) | |__| _||   /\__ \
+ |___| \_/ |___|_|\_| |_|   |_||_/_/ \_\_|\_|___/|____|___|_|_\|___/
+
+]]
+
+---Handles the closing of the OARC GUI.
+---@param event EventData.on_gui_closed
+---@return nil
 function OarcGuiClosed(event)
     if (event.element and (event.element.name == "oarc_gui")) then
         HideOarcGui(game.players[event.player_index])
     end
+end
+
+---@param event EventData.on_gui_selected_tab_changed
+---@return nil
+function OarcGuiTabsSelectedTabChanged(event)
+    if (event.element.name ~= "oarc_tabs") then return end
+    OarcGuiCreateContentOfTab(game.players[event.player_index])
+end
+
+---All gui tabs click event handler
+---@param event EventData.on_gui_click
+---@return nil
+function OarcGuiTabsClick(event)
+    if not event.element.valid then return end
+    ClickOarcGuiButton(event)
+    ServerInfoTabGuiClick(event)
+    SpawnCtrlTabGuiClick(event)
+    SettingsControlsTabGuiClick(event)
+    SettingsSurfaceControlsTabGuiClick(event)
+    PlayerListTabGuiClick(event)
+    SurfaceConfigTabGuiClick(event)
+end
+
+---All gui tabs on_gui_checked_state_changed event handler
+---@param event EventData.on_gui_checked_state_changed
+---@return nil
+function OarcGuiTabsCheckedStateChanged(event)
+    if not event.element.valid then return end
+    SpawnCtrlGuiOptionsCheckedStateChanged(event)
+end
+
+
+---Handles the `on_gui_value_changed` event.
+---@param event EventData.on_gui_value_changed
+---@return nil
+function OarcGuiTabsValueChanged(event)
+    if not event.element.valid then return end
+    SettingsControlsTabGuiValueChanged(event)
+end
+
+---Handles the `on_gui_selection_state_changed` event.
+---@param event EventData.on_gui_selection_state_changed
+---@return nil
+function OarcGuiTabsSelectionStateChanged(event)
+    if not event.element.valid then return end
+    SettingsControlsTabGuiSelectionStateChanged(event)
+    SurfaceConfigTabGuiSelect(event)
+end
+
+---Handles the `on_gui_text_changed` event.
+---@param event EventData.on_gui_text_changed
+---@return nil
+function OarcGuiTabsTextChanged(event)
+    if not event.element.valid then return end
+    SettingsControlsTabGuiTextChanged(event)
+    SurfaceConfigTabGuiTextChanged(event)
+end
+
+---Handles the `on_gui_confirmed` event.
+---@param event EventData.on_gui_confirmed
+---@return nil
+function OarcGuiTabsConfirmed(event)
+    if not event.element.valid then return end
+    SettingsControlsTabGuiTextconfirmed(event)
+    SurfaceConfigTabGuiConfirmed(event)
+end
+
+---Handles the `on_gui_elem_changed` event.
+---@param event EventData.on_gui_elem_changed
+---@return nil
+function OarcGuiTabsElemChanged(event)
+    if not event.element.valid then return end
+    SurfaceConfigTabGuiElemChanged(event)
 end

@@ -26,6 +26,10 @@ SPAWN_SHAPE_CHOICE_SQUARE = "square"
 RESOURCES_SHAPE_CHOICE_CIRCLE = "circle"
 RESOURCES_SHAPE_CHOICE_SQUARE = "square"
 
+MAX_CRASHED_SHIP_RESOURCES_ITEMS = 5
+MAX_CRASHED_SHIP_WRECKAGE_ITEMS = 1
+
+-- THIS is used as the default starting items on all surfaces if no other settings are provided!
 ---@type OarcConfigStartingItems
 NAUVIS_STARTER_ITEMS =
 {
@@ -54,6 +58,7 @@ NAUVIS_STARTER_ITEMS =
     },
 }
 
+-- THIS is used as the default spawn config  on all surfaces if no other settings are provided!
 ---@type OarcConfigSpawn
 NAUVIS_SPAWN_CONFIG =
 {
@@ -62,19 +67,19 @@ NAUVIS_SPAWN_CONFIG =
     safe_area =
     {
         -- Safe area has no aliens
-        -- This is the radius in tiles of safe area.
-        safe_radius = CHUNK_SIZE*6,
+        -- This is the radius in chunks of safe area.
+        safe_radius = 6,
 
         -- Warning area has significantly reduced aliens
-        -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*12,
+        -- This is the radius in chunks of warning area.
+        warn_radius = 12,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 20,
 
         -- Danger area has slightly reduced aliens
-        -- This is the radius in tiles of danger area.
-        danger_radius = CHUNK_SIZE*32,
+        -- This is the radius in chunks of danger area.
+        danger_radius = 32,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         danger_reduction = 5,
@@ -109,24 +114,32 @@ NAUVIS_SPAWN_CONFIG =
         ["iron-ore"] = {
             amount = 1500,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -29,
             y_offset = 16
         },
         ["copper-ore"] = {
             amount = 1200,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -28,
             y_offset = -3
         },
         ["stone"] = {
             amount = 1200,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -27,
             y_offset = -34
         },
         ["coal"] = {
             amount = 1200,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -27,
             y_offset = -20
         }
@@ -141,6 +154,8 @@ NAUVIS_SPAWN_CONFIG =
         {
             num_patches = 2,
             amount = 900000,
+
+            -- These are only used if not using automatic placing.
             -- Starting position offset (relative to bottom/south of spawn area)
             x_offset_start = -3,
             y_offset_start = -10,
@@ -202,7 +217,7 @@ OCFG = {
         -- chunks. It ensures the spawn area isn't too near generated/explored/existing
         -- area. The larger you make this, the further away players will spawn from
         -- generated map area (even if it is not visible on the map!).
-        minimum_distance_to_existing_chunks = 10,
+        minimum_distance_to_existing_chunks = 20,
 
         -- The range in which a player can select how close to the center of the map they want to spawn.
         near_spawn_distance = 100,
@@ -330,11 +345,11 @@ OCFG = {
         -- At what angle (in radians) do resources start.
         -- 0 means starts directly east.
         -- Resources are placed clockwise from there.
-        angle_offset = 2.32, -- 2.32 is approx SSW.
+        angle_offset = 2.09, -- Approx SSW.
 
         -- At what andle do we place the last resource.
         -- angle_offset and angle_final determine spacing and placement.
-        angle_final = 4.46, -- 4.46 is approx NNW.
+        angle_final = 4.18, -- Approx NNW.
 
         -- Vertical offset in tiles for the deposit resource placement. Starting from top-left corner.
         -- Only applicable for square spawns.
@@ -364,22 +379,22 @@ OCFG = {
             starting_items = NAUVIS_STARTER_ITEMS,
             spawn_config = NAUVIS_SPAWN_CONFIG
         },
-        ["vulcanus"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["fulgora"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["gleba"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["aquilo"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        }
+        -- ["vulcanus"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["fulgora"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["gleba"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["aquilo"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- }
     },
 
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
@@ -490,10 +505,10 @@ OCFG = {
 ---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
 
 ---@class OarcConfigSpawnSafeArea
----@field safe_radius number Safe area has no aliens This is the radius in tiles of safe area.
----@field warn_radius number Warning area has significantly reduced aliens This is the radius in tiles of warning area.
+---@field safe_radius number Safe area has no aliens This is the radius in chunks of safe area.
+---@field warn_radius number Warning area has significantly reduced aliens This is the radius in chunks of warning area.
 ---@field warn_reduction number 1 : X (spawners alive : spawners destroyed) in this area
----@field danger_radius number Danger area has slightly reduce aliens This is the radius in tiles of danger area.
+---@field danger_radius number Danger area has slightly reduce aliens This is the radius in chunks of danger area.
 ---@field danger_reduction number 1 : X (spawners alive : spawners destroyed) in this area
 
 ---@class OarcConfigSpawnWater
