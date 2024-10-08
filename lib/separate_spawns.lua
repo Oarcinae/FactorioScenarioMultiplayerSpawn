@@ -417,7 +417,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     local spawn_config = ocfg.surfaces_config[delayed_spawn.surface].spawn_config
 
     -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(delayed_spawn.position, spawn_config.safe_area.safe_radius,
+    ClearNearbyEnemies(delayed_spawn.position, spawn_config.safe_area.safe_radius * CHUNK_SIZE,
         game.surfaces[delayed_spawn.surface])
 
     -- Generate water strip only if we don't have a moat.
@@ -649,7 +649,7 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
 
     local distance = util.distance(chunkArea.left_top, closestSpawn.position)
     -- Adjust multiplier to bring it in or out
-    local modifier = (distance / (global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * 1)) ^ 3
+    local modifier = (distance / (global.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * CHUNK_SIZE * 1)) ^ 3
     if modifier < 0.1 then modifier = 0.1 end
     if modifier > 1 then return end
 
