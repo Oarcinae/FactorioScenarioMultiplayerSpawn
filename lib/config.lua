@@ -217,7 +217,7 @@ OCFG = {
         -- chunks. It ensures the spawn area isn't too near generated/explored/existing
         -- area. The larger you make this, the further away players will spawn from
         -- generated map area (even if it is not visible on the map!).
-        minimum_distance_to_existing_chunks = 10,
+        minimum_distance_to_existing_chunks = 20,
 
         -- The range in which a player can select how close to the center of the map they want to spawn.
         near_spawn_distance = 100,

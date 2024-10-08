@@ -80,9 +80,9 @@ data:extend({
         type = "int-setting",
         name = "oarc-mod-minimum-distance-to-existing-chunks",
         setting_type = "runtime-global",
-        default_value = 10,
+        default_value = 20,
         minimum_value = 5,
-        maximum_value = 25,
+        maximum_value = 50,
         order = "c1"
     },
     {
