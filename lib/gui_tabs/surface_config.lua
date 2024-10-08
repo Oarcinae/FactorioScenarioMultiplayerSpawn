@@ -310,10 +310,10 @@ function CreateSafeAreaConfig(container, surface_name)
     header.tooltip = "This controls how safe the area around the spawns is." -- TODO: Localize
 
      -- TODO: Localize
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Safe Area Radius", "safe_area", "safe_radius", "This is the radius in tiles around the spawn in which no enemies will spawn.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Radius", "safe_area", "warn_radius", "This is the radius in tiles around the spawn in which enemies will be significantly reduced.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Safe Area Radius", "safe_area", "safe_radius", "This is the radius in chunks around the spawn in which no enemies will spawn.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Radius", "safe_area", "warn_radius", "This is the radius in chunks around the spawn in which enemies will be significantly reduced.")
     CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Reduction", "safe_area", "warn_reduction", "This is the reduction factor to reduce the number of enemies in the warn area. 10 means (1/10)th the number of enemies.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Radius", "safe_area", "danger_radius", "This is the radius in tiles around the spawn in which enemies will be slightly reduced.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Radius", "safe_area", "danger_radius", "This is the radius in chunks around the spawn in which enemies will be slightly reduced.")
     CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Reduction", "safe_area", "danger_reduction", "This is the reduction factor to reduce the number of enemies in the danger area. 10 means (1/10)th the number of enemies.")
 end
 

@@ -67,19 +67,19 @@ NAUVIS_SPAWN_CONFIG =
     safe_area =
     {
         -- Safe area has no aliens
-        -- This is the radius in tiles of safe area.
-        safe_radius = CHUNK_SIZE*6,
+        -- This is the radius in chunks of safe area.
+        safe_radius = 6,
 
         -- Warning area has significantly reduced aliens
-        -- This is the radius in tiles of warning area.
-        warn_radius = CHUNK_SIZE*12,
+        -- This is the radius in chunks of warning area.
+        warn_radius = 12,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         warn_reduction = 20,
 
         -- Danger area has slightly reduced aliens
-        -- This is the radius in tiles of danger area.
-        danger_radius = CHUNK_SIZE*32,
+        -- This is the radius in chunks of danger area.
+        danger_radius = 32,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         danger_reduction = 5,
@@ -505,10 +505,10 @@ OCFG = {
 ---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
 
 ---@class OarcConfigSpawnSafeArea
----@field safe_radius number Safe area has no aliens This is the radius in tiles of safe area.
----@field warn_radius number Warning area has significantly reduced aliens This is the radius in tiles of warning area.
+---@field safe_radius number Safe area has no aliens This is the radius in chunks of safe area.
+---@field warn_radius number Warning area has significantly reduced aliens This is the radius in chunks of warning area.
 ---@field warn_reduction number 1 : X (spawners alive : spawners destroyed) in this area
----@field danger_radius number Danger area has slightly reduce aliens This is the radius in tiles of danger area.
+---@field danger_radius number Danger area has slightly reduce aliens This is the radius in chunks of danger area.
 ---@field danger_reduction number 1 : X (spawners alive : spawners destroyed) in this area
 
 ---@class OarcConfigSpawnWater
