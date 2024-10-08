@@ -345,11 +345,11 @@ OCFG = {
         -- At what angle (in radians) do resources start.
         -- 0 means starts directly east.
         -- Resources are placed clockwise from there.
-        angle_offset = 2.32, -- 2.32 is approx SSW.
+        angle_offset = 2.09, -- Approx SSW.
 
         -- At what andle do we place the last resource.
         -- angle_offset and angle_final determine spacing and placement.
-        angle_final = 4.46, -- 4.46 is approx NNW.
+        angle_final = 4.18, -- Approx NNW.
 
         -- Vertical offset in tiles for the deposit resource placement. Starting from top-left corner.
         -- Only applicable for square spawns.
