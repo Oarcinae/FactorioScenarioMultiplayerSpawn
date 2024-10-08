@@ -11,6 +11,7 @@ function CreatePlayerListTab(tab_container, player)
         direction = "vertical",
         vertical_scroll_policy = "always",
     }
+    scroll_pane.style.maximal_height = 500
 
 
     -- Make a table: player name, force name, home surface, time played, gps button
