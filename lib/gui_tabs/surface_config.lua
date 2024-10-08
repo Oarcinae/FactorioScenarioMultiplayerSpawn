@@ -681,8 +681,6 @@ function SurfaceConfigTabGuiSelect(event)
         -- Recreate the content section
         content_flow.clear()
         CreateSurfaceConfigContent(content_flow, selected_surface_name)
-
-        player.print("Selected surface: " .. selected_surface_name)
     end
 end
 
@@ -725,7 +723,6 @@ function SurfaceConfigTabGuiConfirmed(event)
     end
 
     if (tags.item_number_textfield) then
-        player.print("Selected item: " .. tags.item_name .. " count: " .. event.element.text)
 
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
@@ -747,7 +744,6 @@ function SurfaceConfigTabGuiConfirmed(event)
         event.element.style.width = 40
 
     elseif (tags.resource_amount_textfield or tags.resource_size_textfield) then
-        -- player.print("Selected resource: " .. tags.resource_name .. " amount: " .. event.element.text)
 
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
@@ -774,7 +770,6 @@ function SurfaceConfigTabGuiConfirmed(event)
         event.element.style.width = 50
 
     elseif (tags.fluid_resource_count_textfield or tags.fluid_resource_amount_textfield) then
-        -- player.print("Selected fluid resource: " .. tags.resource_name .. " count: " .. event.element.text)
 
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
@@ -829,7 +824,6 @@ function SurfaceConfigTabGuiElemChanged(event)
 
     if (tags.elem_button) then
         local new_item_name = event.element.elem_value --[[@as string]]
-        player.print("Selected item: " .. new_item_name)
 
         if (new_item_name == nil) then
             return
@@ -855,11 +849,9 @@ function SurfaceConfigTabGuiElemChanged(event)
 
         -- Update the item name in the list, keep the old count.
         if (old_item_name ~= "") then
-            player.print("Update item: " .. old_item_name .. " to " .. new_item_name .. " for surface " .. surface_name)
             global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name]
             global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name] = nil
         else
-            player.print("Add item: " .. new_item_name .. " for surface " .. surface_name)
             global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = 0
         end
 
@@ -874,7 +866,6 @@ function SurfaceConfigTabGuiElemChanged(event)
     
     elseif (tags.resource_elem_button) then
         local new_resource_name = event.element.elem_value --[[@as string]]
-        player.print("Selected resource: " .. event.element.elem_value)
 
         if (new_resource_name == nil) then
             return
@@ -885,7 +876,6 @@ function SurfaceConfigTabGuiElemChanged(event)
             event.element.elem_value = nil
             return
         end
-
 
         local old_resource_name = tags.resource_name --[[@as string]]
 
@@ -907,11 +897,9 @@ function SurfaceConfigTabGuiElemChanged(event)
 
         -- Update the resource name in the list, keep the old amount and size.
         if (old_resource_name ~= "") then
-            player.print("Update resource: " .. old_resource_name .. " to " .. new_resource_name .. " for surface " .. surface_name)
             global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
             global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
         else
-            player.print("Add resource: " .. new_resource_name .. " for surface " .. surface_name)
             global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {amount=0, size=0, x_offset=0, y_offset=0}
         end
 
@@ -926,7 +914,6 @@ function SurfaceConfigTabGuiElemChanged(event)
 
     elseif (tags.fluid_resource_elem_button) then
         local new_resource_name = event.element.elem_value --[[@as string]]
-        player.print("Selected fluid resource: " .. event.element.elem_value)
 
         if (new_resource_name == nil) then
             return
@@ -958,11 +945,9 @@ function SurfaceConfigTabGuiElemChanged(event)
 
         -- Update the resource name in the list, keep the old amount and size.
         if (old_resource_name ~= "") then
-            player.print("Update resource: " .. old_resource_name .. " to " .. new_resource_name .. " for surface " .. surface_name)
             global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
             global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
         else
-            player.print("Add resource: " .. new_resource_name .. " for surface " .. surface_name)
             global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {num_patches=0, amount=0, x_offset=0, y_offset=0}
         end
 
@@ -990,7 +975,6 @@ function SurfaceConfigTabGuiClick(event)
     end
 
     if (tags.remove_row_button) then
-        player.print("Remove item: " .. tags.item_name)
         
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
@@ -999,7 +983,6 @@ function SurfaceConfigTabGuiClick(event)
         local max_count = parent.tags.max_count --[[@as integer]]
 
         -- Nil the entry
-        player.print("Remove item: " .. item_name .. " for surface " .. surface_name)
         global.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = nil
 
         -- Delete the row by removing the child elements from the table.
@@ -1027,8 +1010,6 @@ function SurfaceConfigTabGuiClick(event)
             error("Parent is nil? This shouldn't happen on add row button click! " .. setting_name)
         end
 
-        player.print("Add row: " .. setting_name)
-
         -- Delete the button and add a new row and then add the button back.
         event.element.destroy()
         SurfaceConfigItemListDisplayRow(parent)
@@ -1041,7 +1022,6 @@ function SurfaceConfigTabGuiClick(event)
 
     elseif (tags.setting == "crashed_ship_enabled") then
         local surface_name = tags.surface_name --[[@as string]]
-        player.print("Crashed Ship Enabled: " .. tostring(event.element.state))
         global.ocfg.surfaces_config[surface_name].starting_items.crashed_ship = event.element.state
 
     elseif (tags.setting == "revert_to_default") then
@@ -1069,7 +1049,7 @@ function SurfaceConfigTabGuiClick(event)
             return
         end
 
-        player.print("Copy Nauvis: " .. surface_name)
+        player.print("Copy nauvis to " .. surface_name)
         global.ocfg.surfaces_config[surface_name].starting_items = global.ocfg.surfaces_config["nauvis"].starting_items
         global.ocfg.surfaces_config[surface_name].spawn_config = global.ocfg.surfaces_config["nauvis"].spawn_config
 
@@ -1082,15 +1062,12 @@ function SurfaceConfigTabGuiClick(event)
         CreateSurfaceConfigContent(content_flow, surface_name)
 
     elseif (tags.resource_remove_row_button) then
-        player.print("Remove resource: " .. tags.resource_name)
-
         local resource_name = tags.resource_name --[[@as string]]
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
 
         -- Nil the entry
-        player.print("Remove resource: " .. resource_name .. " for surface " .. surface_name)
         global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name] = nil
 
         -- Delete the row by removing the child elements from the table.
@@ -1109,8 +1086,6 @@ function SurfaceConfigTabGuiClick(event)
             error("Parent is nil? This shouldn't happen on add row button click! " .. setting_name)
         end
 
-        player.print("Add resource row: " .. setting_name)
-
         -- Delete the button and add a new row and then add the button back.
         event.element.destroy()
         SolidResourcesConfigDisplayRow(parent, nil, 0, 0)
@@ -1126,8 +1101,6 @@ function SurfaceConfigTabGuiClick(event)
         if (parent == nil) then
             error("Parent is nil? This shouldn't happen on add row button click! " .. setting_name)
         end
-
-        player.print("Add fluid resource row: " .. setting_name)
 
         -- Delete the button and add a new row and then add the button back.
         event.element.destroy()

@@ -1,4 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.2
+Date: 2024-10-08
+  Major Features:
+    - Added a new GUI config for all surface specific settings that can't be made available in the mod settings. This will let you easily configure all available settings via the in game custom GUI now. It is also possible to import and export settings as a serialized string. (You can still use a custom scenario to configure all settings as well using the template provided.)
+    - Added a player list tab to the custom GUI so you can see all players on the server, and their locations.
+  Bugfixes:
+    - Fixed a minor issue with resource placement not calculating the angle correctly when placing solid resources.
+    - Removed log spam related to offline enemy protection.
+    - Fixed an issue with regrowth that was causing log spam about chunks not being tracked properly.
+  Info:
+    - Added fish to moats.
+    - Doubled the default value for "minimum distance to existing chunks". There were some concerns bases might spawn too close together in some cases, this should help alleviate that.
+    - Changed safe_area radii config to use chunks instead of tiles. Makes more sense for the setting and is easier to visualize distance in chunks. (Older configs should get migrated automatically, but you may want to double check your settings.)
+---------------------------------------------------------------------------------------------------
 Version: 2.0.1
 Date: 2024-09-25
   Bugfixes:
