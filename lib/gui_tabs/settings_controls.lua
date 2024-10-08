@@ -39,7 +39,10 @@ function CreateSettingsControlsTab(tab_container, player)
     
     CreateSurfaceSettingsSection(scroll_pane_right, player)
     AddSpacerLine(scroll_pane_right)
-    CreateSettingsExportSection(scroll_pane_right, player)
+
+    if (player.admin) then
+        CreateSettingsExportSection(scroll_pane_right, player)
+    end
 end
 
 ---Create the content for the mod settings section
