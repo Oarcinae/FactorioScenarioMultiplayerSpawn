@@ -26,6 +26,10 @@ SPAWN_SHAPE_CHOICE_SQUARE = "square"
 RESOURCES_SHAPE_CHOICE_CIRCLE = "circle"
 RESOURCES_SHAPE_CHOICE_SQUARE = "square"
 
+MAX_CRASHED_SHIP_RESOURCES_ITEMS = 5
+MAX_CRASHED_SHIP_WRECKAGE_ITEMS = 1
+
+-- THIS is used as the default starting items on all surfaces if no other settings are provided!
 ---@type OarcConfigStartingItems
 NAUVIS_STARTER_ITEMS =
 {
@@ -54,6 +58,7 @@ NAUVIS_STARTER_ITEMS =
     },
 }
 
+-- THIS is used as the default spawn config  on all surfaces if no other settings are provided!
 ---@type OarcConfigSpawn
 NAUVIS_SPAWN_CONFIG =
 {
@@ -109,24 +114,32 @@ NAUVIS_SPAWN_CONFIG =
         ["iron-ore"] = {
             amount = 1500,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -29,
             y_offset = 16
         },
         ["copper-ore"] = {
             amount = 1200,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -28,
             y_offset = -3
         },
         ["stone"] = {
             amount = 1200,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -27,
             y_offset = -34
         },
         ["coal"] = {
             amount = 1200,
             size = 21,
+
+            -- These are only used if not using automatic placing.
             x_offset = -27,
             y_offset = -20
         }
@@ -141,6 +154,8 @@ NAUVIS_SPAWN_CONFIG =
         {
             num_patches = 2,
             amount = 900000,
+
+            -- These are only used if not using automatic placing.
             -- Starting position offset (relative to bottom/south of spawn area)
             x_offset_start = -3,
             y_offset_start = -10,
@@ -364,22 +379,22 @@ OCFG = {
             starting_items = NAUVIS_STARTER_ITEMS,
             spawn_config = NAUVIS_SPAWN_CONFIG
         },
-        ["vulcanus"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["fulgora"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["gleba"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        },
-        ["aquilo"] = {
-            starting_items = NAUVIS_STARTER_ITEMS,
-            spawn_config = NAUVIS_SPAWN_CONFIG
-        }
+        -- ["vulcanus"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["fulgora"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["gleba"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- },
+        -- ["aquilo"] = {
+        --     starting_items = NAUVIS_STARTER_ITEMS,
+        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        -- }
     },
 
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)

@@ -141,10 +141,10 @@ function SeparateSpawnsInitSurface(surface_name)
         global.oarc_surfaces[surface_name] = (surface_name == global.ocfg.gameplay.default_surface)
     end
 
-    -- Make sure it has a surface configuration entry
-    if (global.oarc_surfaces[surface_name] and global.ocfg.surfaces_config[surface_name] == nil) then
+    -- Make sure it has a surface configuration entry!
+    if (global.ocfg.surfaces_config[surface_name] == nil) then
         log("Surface does NOT have a config entry, defaulting to nauvis entry for new surface: " .. surface_name)
-        global.ocfg.surfaces_config[surface_name] = global.ocfg.surfaces_config["nauvis"]
+        global.ocfg.surfaces_config[surface_name] = table.deepcopy(global.ocfg.surfaces_config["nauvis"])
     end
 end
 
@@ -272,37 +272,62 @@ function GenerateStartingResources(surface, position)
     local amount_mod = global.ocfg.resource_placement.amount_multiplier
 
     -- Generate all resource tile patches
-    if (not global.ocfg.resource_placement.enabled) then
-        for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
-            local pos = { x = position.x + r_data.x_offset, y = position.y + r_data.y_offset }
-            GenerateResourcePatch(surface, r_name, r_data.size * size_mod, pos, r_data.amount * amount_mod)
-        end
-
-        -- Generate resources in random order around the spawn point. Tweak in config.lua
-    else
-        
+    -- Generate resources in random order around the spawn point.
+    if global.ocfg.resource_placement.enabled then
         if (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
             PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         elseif (global.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
         end
+    
+    -- Generate resources using specified offsets if auto placement is disabled.
+    else
+        for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
+            local pos = { x = position.x + r_data.x_offset, y = position.y + r_data.y_offset }
+            GenerateResourcePatch(surface, r_name, r_data.size * size_mod, pos, r_data.amount * amount_mod)
+        end
     end
 
     -- Generate special fluid resource patches (oil)
+    -- Autoplace using spacing and vertical offset.
     -- Reference position is the bottom of the spawn area.
-    local fluid_ref_pos = { x = position.x,
-                            y = position.y + global.ocfg.spawn_general.spawn_radius_tiles }
-    for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
-        local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
-        local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
-        for i = 1, r_data.num_patches do
-            surface.create_entity({
-                name = r_name,
-                amount = r_data.amount,
-                position = { oil_patch_x, oil_patch_y }
-            })
-            oil_patch_x = oil_patch_x + r_data.x_offset_next
-            oil_patch_y = oil_patch_y + r_data.y_offset_next
+    if global.ocfg.resource_placement.enabled then
+        local y_offset = global.ocfg.resource_placement.distance_to_edge
+        local spacing = 4 -- HARDCODED FLUID PATCH SPACING SIZE!
+        local fluid_ref_pos = { x = position.x, y = position.y + global.ocfg.spawn_general.spawn_radius_tiles - y_offset }
+
+        for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
+
+            local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
+            local oil_patch_y = fluid_ref_pos.y
+
+            for i = 1, r_data.num_patches do
+                surface.create_entity({
+                    name = "crude-oil",
+                    amount = r_data.amount,
+                    position = { oil_patch_x, oil_patch_y }
+                })
+                oil_patch_x = oil_patch_x + spacing
+            end
+
+            fluid_ref_pos.y = fluid_ref_pos.y - spacing
+        end
+
+    -- This places using specified offsets if auto placement is disabled.
+    else
+        local fluid_ref_pos = { x = position.x, y = position.y + global.ocfg.spawn_general.spawn_radius_tiles }
+        for r_name, r_data in pairs(global.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
+            local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
+            local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
+            for i = 1, r_data.num_patches do
+                surface.create_entity({
+                    name = r_name,
+                    amount = r_data.amount,
+                    position = { oil_patch_x, oil_patch_y }
+                })
+                oil_patch_x = oil_patch_x + r_data.x_offset_next
+                oil_patch_y = oil_patch_y + r_data.y_offset_next
+            end
         end
     end
 end
@@ -329,7 +354,7 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     -- This places resources in a semi-circle
     local angle_offset = global.ocfg.resource_placement.angle_offset
     local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
-    local theta = ((global.ocfg.resource_placement.angle_final - global.ocfg.resource_placement.angle_offset) / num_resources);
+    local theta = ((global.ocfg.resource_placement.angle_final - global.ocfg.resource_placement.angle_offset) / (num_resources-1));
     local count = 0
 
     local radius = global.ocfg.spawn_general.spawn_radius_tiles - global.ocfg.resource_placement.distance_to_edge

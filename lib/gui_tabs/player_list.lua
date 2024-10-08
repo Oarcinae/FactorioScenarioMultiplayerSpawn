@@ -11,6 +11,7 @@ function CreatePlayerListTab(tab_container, player)
         direction = "vertical",
         vertical_scroll_policy = "always",
     }
+    scroll_pane.style.maximal_height = 500
 
 
     -- Make a table: player name, force name, home surface, time played, gps button
@@ -108,7 +109,7 @@ end
 ---Handle the gui click of the player list tab in the Oarc GUI.
 ---@param event EventData.on_gui_click
 ---@return nil
-function PlayerListGuiClick(event)
+function PlayerListTabGuiClick(event)
     if not event.element.valid then return end
     local player = game.players[event.player_index]
     local tags = event.element.tags

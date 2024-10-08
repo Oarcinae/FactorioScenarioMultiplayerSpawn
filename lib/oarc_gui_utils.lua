@@ -58,6 +58,7 @@ my_note_style = {
     top_padding = 0,
     bottom_padding = 0
 }
+
 ---@type LuaStyle
 ---@diagnostic disable-next-line: missing-fields
 my_warning_style = {
