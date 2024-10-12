@@ -375,8 +375,13 @@ function GivePlayerRespawnItems(player)
         error("GivePlayerRespawnItems - Missing surface config! " .. surface_name)
         return
     end
-
-    local respawnItems = global.ocfg.surfaces_config[surface_name].starting_items.player_respawn_items
+    
+    local respawnItems = {};
+    for key,value in global.ocfg.surfaces_config[surface_name].starting_items.player_respawn_items do
+        if(value > 0) then
+            respawnItems[key] = value;
+        end
+    end
 
     util.insert_safe(player, respawnItems)
 end
@@ -391,7 +396,12 @@ function GivePlayerStarterItems(player)
         return
     end
 
-    local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
+    local startItems = {};
+    for key,value in global.ocfg.surfaces_config[surface_name].starting_items.player_start_items do
+        if(value > 0) then
+            startItems[key] = value;
+        end
+    end
 
     util.insert_safe(player, startItems)
 end
@@ -402,7 +412,12 @@ end
 function RemovePlayerStarterItems(player)
     local surface_name = player.surface.name
     if (global.ocfg.surfaces_config[surface_name]) ~= nil then
-        local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
+        local startItems = {};
+        for key,value in global.ocfg.surfaces_config[surface_name].starting_items.player_start_items do
+            if(value > 0) then
+                startItems[key] = value;
+            end
+        end
         util.remove_safe(player, startItems)
     end
 end
