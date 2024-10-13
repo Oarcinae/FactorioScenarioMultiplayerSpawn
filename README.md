@@ -2,7 +2,8 @@
 A Factorio mod for allowing separate spawn locations in multiplayer. Designed for Co-op and PvE. 
 
 ## WORK IN PROGRESS
-This is the currently in development branch for Factorio V2.0. It is not yet complete. If you want a stable version, please use the latest release.
+The mod should mostly be stable now for use in V1.1.110+
+Factorio V2.0 is not yet released so once it is out, it will take me some time to make sure this mod works with V2.0 and Space Age.
 
 ## Read the WIKI
 The github wiki page will have the most up to date information. If you have questions, go there first, otherwise just ask.
