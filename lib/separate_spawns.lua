@@ -760,6 +760,11 @@ function RemoveOrResetPlayer(player, remove_player)
     if (remove_player) then
         game.remove_offline_players({ player })
     end
+
+    -- Refresh the shared spawn spawn gui for all players
+    for _,p in pairs(game.connected_players) do
+        RefreshSharedSpawnFrameIfExist(p)
+    end
 end
 
 ---Searches all unique spawns for the primary one for a player. This will return null if they joined someeone else's spawn.
@@ -771,6 +776,7 @@ function FindPrimaryUniqueSpawn(player_name)
             return spawns[player_name]
         end
     end
+    return nil
 end
 
 ---Find the primary home spawn of a player, if one exists. It could be they joined a shared spawn.
@@ -1311,7 +1317,7 @@ end
 function SendPlayerToSpawn(surface_name, player)
     local spawn = global.player_respawns[player.name][surface_name]
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
-    player.permission_group = game.permissions.get_group("default")
+    player.permission_group = game.permissions.get_group("Default")
 end
 
 -- ---Send player to a random spawn point.

@@ -46,6 +46,8 @@ OCFG_KEYS =
     ["gameplay.enable_shared_team_chat"] = {mod_key = "oarc-mod-enable-shared-team-chat" , ocfg_keys = {"gameplay", "enable_shared_team_chat"}, type = "boolean"},
     ["gameplay.enable_shared_power"] = {mod_key = "oarc-mod-enable-shared-power" , ocfg_keys = {"gameplay", "enable_shared_power"}, type = "boolean"},
     ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
+    ["gameplay.enable_coin_shop"] = {mod_key = "oarc-mod-enable-coin-shop" , ocfg_keys = {"gameplay", "enable_coin_shop"}, type = "boolean"},
+
 
     ["regrowth_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-regrowth"}},
     ["regrowth_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-regrowth-warning"}},
@@ -80,68 +82,21 @@ OCFG_KEYS =
 
 ---Easy reverse lookup for mod settings keys.
 ---@type table<string, string>
-OCFG_MOD_KEYS =
-{
-    ["oarc-mod-welcome-msg-title"] = "server_info.welcome_msg_title",
-    ["oarc-mod-welcome-msg"] = "server_info.welcome_msg",
-    ["oarc-mod-discord-invite"] = "server_info.discord_invite",
+local OCFG_MOD_KEYS = {}
 
-    ["oarc-mod-enable-main-team"] = "gameplay.enable_main_team",
-    ["oarc-mod-enable-separate-teams"] = "gameplay.enable_separate_teams",
-    -- STARTUP ["oarc-mod-default-allow-spawning-on-other-surfaces"] = " ["gameplay.enable_spawning_on_other_surfaces",
-    ["oarc-mod-allow-moats-around-spawns"] = "gameplay.allow_moats_around_spawns",
-    ["oarc-mod-enable-moat-bridging"] = "gameplay.enable_moat_bridging",
-    ["oarc-mod-minimum-distance-to-existing-chunks"] = "gameplay.minimum_distance_to_existing_chunks",
-    ["oarc-mod-near-spawn-distance"] = "gameplay.near_spawn_distance",
-    ["oarc-mod-far-spawn-distance"] = "gameplay.far_spawn_distance",
-
-    ["oarc-mod-enable-buddy-spawn"] = "gameplay.enable_buddy_spawn",
-    ["oarc-mod-enable-offline-protection"] = "gameplay.enable_offline_protection",
-    ["oarc-mod-enable-shared-team-vision"] = "gameplay.enable_shared_team_vision",
-    ["oarc-mod-enable-shared-team-chat"] = "gameplay.enable_shared_team_chat",
-    ["oarc-mod-enable-shared-spawns"] = "gameplay.enable_shared_spawns",
-    ["oarc-mod-number-of-players-per-shared-spawn"] = "gameplay.number_of_players_per_shared_spawn",
-    ["oarc-mod-enable-friendly-fire"] = "gameplay.enable_friendly_fire",
-
-    -- STARTUP ["oarc-mod-main-force-name"] = "gameplay.main_force_name",
-    ["oarc-mod-default-surface"] = "gameplay.default_surface",
-    ["oarc-mod-enable-secondary-spawns"] = "gameplay.enable_secondary_spawns",
-
-    ["oarc-mod-scale-resources-around-spawns"] = "gameplay.scale_resources_around_spawns",
-    ["oarc-mod-modified-enemy-spawning"] = "gameplay.modified_enemy_spawning",
-    ["oarc-mod-modified-enemy-easy-evo"] = "gameplay.modified_enemy_easy_evo",
-    ["oarc-mod-modified-enemy-medium-evo"] = "gameplay.modified_enemy_medium_evo",
-
-    ["oarc-mod-minimum-online-time"] = "gameplay.minimum_online_time",
-    ["oarc-mod-respawn-cooldown-min"] = "gameplay.respawn_cooldown_min",
-    ["oarc-mod-enable-shared-power"] = "gameplay.enable_shared_power",
-    ["oarc-mod-enable-shared-chest"] = "gameplay.enable_shared_chest",
-
-    ["oarc-mod-enable-regrowth"] = "regrowth.enable_regrowth",
-    ["oarc-mod-enable-world-eater"] = "regrowth.enable_world_eater",
-    ["oarc-mod-enable-abandoned-base-cleanup"] = "regrowth.enable_abandoned_base_cleanup",
-    ["oarc-mod-regrowth-cleanup-interval-min"] = "regrowth.cleanup_interval",
-
-    ["oarc-mod-spawn-general-radius-tiles"] = "spawn_general.spawn_radius_tiles",
-    ["oarc-mod-spawn-general-moat-width-tiles"] = "spawn_general.moat_width_tiles",
-    ["oarc-mod-spawn-general-tree-width-tiles"] = "spawn_general.tree_width_tiles",
-    ["oarc-mod-spawn-general-enable-resources-circle-shape"] = "spawn_general.resources_shape",
-    ["oarc-mod-spawn-general-enable-force-grass"] = "spawn_general.force_grass",
-    ["oarc-mod-spawn-general-shape"] = "spawn_general.shape",
-
-    ["oarc-mod-resource-placement-enabled"] = "resource_placement.enabled",
-    ["oarc-mod-resource-placement-distance-to-edge"] = "resource_placement.distance_to_edge",
-    ["oarc-mod-resource-placement-angle-offset"] = "resource_placement.angle_offset",
-    ["oarc-mod-resource-placement-angle-final"] = "resource_placement.angle_final",
-    ["oarc-mod-resource-placement-vertical-offset"] = "resource_placement.vertical_offset",
-    ["oarc-mod-resource-placement-horizontal-offset"] = "resource_placement.horizontal_offset",
-    ["oarc-mod-resource-placement-linear-spacing"] = "resource_placement.linear_spacing",
-    ["oarc-mod-resource-placement-size-multiplier"] = "resource_placement.size_multiplier",
-    ["oarc-mod-resource-placement-amount-multiplier"] = "resource_placement.amount_multiplier"
-}
-
+---Create the reverse lookup table.
+---@return nil
+function SetupOCFGModKeys()
+    for key,entry in pairs(OCFG_KEYS) do
+        if (entry.type ~= "header") and (entry.type ~= "subheader") then
+            OCFG_MOD_KEYS[entry.mod_key] = key
+        end
+    end
+end
 
 function ValidateAndLoadConfig()
+
+    SetupOCFGModKeys()
 
     -- Check that each of the OCFG_MOD_KEYS has a corresponding OCFG_KEYS entry.
     for mod_key,ocfg_key in pairs(OCFG_MOD_KEYS) do
@@ -227,6 +182,11 @@ function ValidateSettings()
         log("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
         global.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
+    end
+    if (global.ocfg["shop_items"] == nil) then
+        log("ERROR - Missing shop_items section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing shop_items section in config! Loading defaults instead!")
+        global.ocfg.shop_items = table.deepcopy(OCFG.shop_items)
     end
 
 
@@ -362,6 +322,12 @@ function RuntimeModSettingChanged(event)
     else
         ValidateSettings()
         ApplyRuntimeChanges(OCFG_MOD_KEYS[event.setting])
+    end
+
+    --Exception for coin shop, update the GUI if the setting is changed
+    if (event.setting == "oarc-mod-enable-coin-shop") then
+        local new_value = global.ocfg.gameplay.enable_coin_shop
+        AddRemoveOarcGuiTabForAllPlayers(OARC_ITEM_SHOP_TAB_NAME, settings.global[event.setting].value --[[@as boolean]], true)
     end
 end
 

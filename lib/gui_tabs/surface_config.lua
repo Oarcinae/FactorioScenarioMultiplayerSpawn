@@ -396,7 +396,6 @@ function CreateSolidResourcesConfig(container, surface_name)
     AddLabel(table, nil, "", my_label_style)
 
     for resource_name, resource_data in pairs(solid_resources) do
-        log("Resource: " .. resource_name)
         SolidResourcesConfigDisplayRow(table, resource_name, resource_data.amount, resource_data.size)
     end
 

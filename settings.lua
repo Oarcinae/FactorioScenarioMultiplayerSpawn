@@ -237,6 +237,13 @@ data:extend({
         default_value = false,
         order = "f11"
     },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-enable-coin-shop",
+        setting_type = "runtime-global",
+        default_value = false,
+        order = "f12"
+    },
 
 
     {

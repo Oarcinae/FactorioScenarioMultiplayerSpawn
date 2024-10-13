@@ -366,6 +366,40 @@ function ChartArea(force, position, chunkDist, surface)
                 position.y + (CHUNK_SIZE * chunkDist) } })
 end
 
+--- Better than util.insert_safe because we also check for 0 count items.
+---@param entity LuaEntity|LuaPlayer
+---@param item_dict table
+---@return nil
+function OarcsSaferInsert(entity, item_dict)
+    if not (entity and entity.valid and item_dict) then return end
+    local items = game.item_prototypes
+    local insert = entity.insert
+    for name, count in pairs(item_dict) do
+        if items[name] and count > 0 then
+            insert { name = name, count = count }
+        else
+            log("Item to insert not valid: " .. name)
+        end
+    end
+end
+
+--- Better than util.remove_safe because we also check for 0 count items.
+---@param entity LuaEntity|LuaPlayer
+---@param item_dict table
+---@return nil
+function OarcsSaferRemove(entity, item_dict)
+    if not (entity and entity.valid and item_dict) then return end
+    local items = game.item_prototypes
+    local remove = entity.remove_item
+    for name, count in pairs(item_dict) do
+        if items[name] and count > 0 then
+            remove { name = name, count = count }
+        else
+            log("Item to remove not valid: " .. name)
+        end
+    end
+end
+
 ---Gives the player the respawn items if there are any
 ---@param player LuaPlayer
 ---@return nil
@@ -378,7 +412,7 @@ function GivePlayerRespawnItems(player)
 
     local respawnItems = global.ocfg.surfaces_config[surface_name].starting_items.player_respawn_items
 
-    util.insert_safe(player, respawnItems)
+    OarcsSaferInsert(player, respawnItems)
 end
 
 ---Gives the player the starter items if there are any
@@ -393,7 +427,7 @@ function GivePlayerStarterItems(player)
 
     local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
 
-    util.insert_safe(player, startItems)
+    OarcsSaferInsert(player, startItems)
 end
 
 ---Half-heartedly attempts to remove starter items from the player. Probably more trouble than it's worth.
@@ -403,7 +437,7 @@ function RemovePlayerStarterItems(player)
     local surface_name = player.surface.name
     if (global.ocfg.surfaces_config[surface_name]) ~= nil then
         local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
-        util.remove_safe(player, startItems)
+        OarcsSaferRemove(player, startItems)
     end
 end
 

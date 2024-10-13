@@ -63,6 +63,14 @@ script.on_init(function(event)
     end
 end)
 
+
+--------------------------------------------------------------------------------
+-- On Load - Only for setting up some table stuff that shouldn't change during gameplay!
+--------------------------------------------------------------------------------
+script.on_load(function()
+    SetupOCFGModKeys()
+end)
+
 --------------------------------------------------------------------------------
 -- On Configuration Changed - Only runs when the mod configuration changes
 --------------------------------------------------------------------------------
@@ -249,6 +257,17 @@ script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
         OarcModifyEnemyGroup(event)
     end
 end)
+
+----------------------------------------
+-- On enemies killed
+-- For coin generation and stuff
+----------------------------------------
+script.on_event(defines.events.on_post_entity_died, function(event)
+    if global.ocfg.coin_generation.enabled then
+        CoinsFromEnemiesOnPostEntityDied(event)
+    end
+end,
+{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
 
 ----------------------------------------
 -- Gui Events

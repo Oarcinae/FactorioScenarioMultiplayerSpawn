@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.3
+Date: 2024-10-13
+  Major Features:
+    - Return of the "coin shop" feature (including biters dropping coins).
+    - Marking RSO as incompatible because I can't easily make it compatible.
+  Bugfixes:
+    - Fixed crash when player with shared spawn leaves and another player in the spawn menu selects that spawn.
+    - Fixed crash when starting items has an entry with count 0.
+    - Fixed not setting player back to the "Default" permissions group when they spawn.
+    - Remove log spam from surface config settings GUI.
+  Info:
+    - Updated comments in config file and scenario template to be more clear.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.2
 Date: 2024-10-08
   Major Features:
