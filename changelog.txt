@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.3
+Date: 2024-10-13
+  Major Features:
+    - Return of the "coin shop" feature.
+    - Marking RSO as incompatible because I can't easily make it compatible.
+  Info:
+    - Updated comments in config file and scenario template to be more clear.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.2
 Date: 2024-10-08
   Major Features:

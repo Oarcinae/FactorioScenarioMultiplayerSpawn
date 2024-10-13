@@ -7,6 +7,7 @@ require("lib/gui_tabs/settings_controls")
 require("lib/gui_tabs/mod_info_faq")
 require("lib/gui_tabs/player_list")
 require("lib/gui_tabs/surface_config")
+require("lib/gui_tabs/item_shop")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -15,28 +16,44 @@ require("lib/gui_tabs/surface_config")
 -- NAME of the top level element (outer frame)
 OARC_GUI = "oarc_gui"
 
--- LIST of all implemented tabs and their content Functions
+-- All tabs and their content Functions
 OARC_SERVER_INFO_TAB_NAME = "server_info"
 OARC_SPAWN_CTRL_TAB_NAME = "spawn_controls"
 OARC_CONFIG_CTRL_TAB_NAME = "settings"
 OARC_MOD_INFO_CTRL_TAB_NAME = "mod_info"
 OARC_MOD_PLAYER_LIST_TAB_NAME = "player_list"
 OARC_SURFACE_CONFIG_TAB_NAME = "surface_config"
+OARC_ITEM_SHOP_TAB_NAME = "item_shop"
 
-OARC_SERVER_INFO_TAB_LOCALIZED = {"oarc-server-info-tab-title"}
-OARC_SPAWN_CTRL_TAB_LOCALIZED = {"oarc-spawn-ctrls-tab-title"}
-OARC_CONFIG_CTRL_TAB_LOCALIZED = {"oarc-settings-tab-title"}
-OARC_MOD_INFO_CTRL_TAB_LOCALIZED = {"oarc-mod-info-tab-title"}
-OARC_PLAYER_LIST_TAB_LOCALIZED = {"oarc-player-list-tab-title"}
-OARC_SURFACE_CONFIG_TAB_LOCALIZED = {"oarc-surface-config-tab-title"}
-
-local OARC_GUI_TAB_CONTENT_FUNCTIONS = {
-    [OARC_SERVER_INFO_TAB_NAME] = CreateServerInfoTab,
-    [OARC_SPAWN_CTRL_TAB_NAME] = CreateSpawnControlsTab,
-    [OARC_MOD_INFO_CTRL_TAB_NAME] = CreateModInfoTab,
-    [OARC_CONFIG_CTRL_TAB_NAME] = CreateSettingsControlsTab,
-    [OARC_MOD_PLAYER_LIST_TAB_NAME] = CreatePlayerListTab,
-    [OARC_SURFACE_CONFIG_TAB_NAME] = CreateSurfaceConfigTab,
+local OARC_GUI_TAB_CONTENT = {
+    [OARC_SERVER_INFO_TAB_NAME] = {
+        create_tab_function = CreateServerInfoTab,
+        localized_name = {"oarc-server-info-tab-title"}
+    },
+    [OARC_SPAWN_CTRL_TAB_NAME] = {
+        create_tab_function = CreateSpawnControlsTab,
+        localized_name = {"oarc-spawn-ctrls-tab-title"}
+    },
+    [OARC_MOD_INFO_CTRL_TAB_NAME] = {
+        create_tab_function = CreateModInfoTab,
+        localized_name = {"oarc-mod-info-tab-title"}
+    },
+    [OARC_CONFIG_CTRL_TAB_NAME] = {
+        create_tab_function = CreateSettingsControlsTab,
+        localized_name = {"oarc-settings-tab-title"}
+    },
+    [OARC_MOD_PLAYER_LIST_TAB_NAME] = {
+        create_tab_function = CreatePlayerListTab,
+        localized_name = {"oarc-player-list-tab-title"}
+    },
+    [OARC_SURFACE_CONFIG_TAB_NAME] = {
+        create_tab_function = CreateSurfaceConfigTab,
+        localized_name = {"oarc-surface-config-tab-title"}
+    },
+    [OARC_ITEM_SHOP_TAB_NAME] = {
+        create_tab_function = CreateItemShopTab,
+        localized_name = {"oarc-item-shop-tab-title"}
+    }
 }
 
 ---@param player LuaPlayer
@@ -51,27 +68,33 @@ function InitOarcGuiTabs(player)
     CreateOarcGuiButton(player)
 
     -- Add general info tab
-    AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME, OARC_SERVER_INFO_TAB_LOCALIZED)
+    AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_SERVER_INFO_TAB_NAME, true)
 
     -- Spawn control tab, disabled by default
-    AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME, OARC_SPAWN_CTRL_TAB_LOCALIZED)
+    AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
 
     -- Regrowth control tab
-    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME, OARC_MOD_INFO_CTRL_TAB_LOCALIZED)
+    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_MOD_INFO_CTRL_TAB_NAME, true)
 
     -- Settings control tab
-    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME, OARC_CONFIG_CTRL_TAB_LOCALIZED)
+    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
 
     -- Player list tab
-    AddOarcGuiTab(player, OARC_MOD_PLAYER_LIST_TAB_NAME, OARC_PLAYER_LIST_TAB_LOCALIZED)
+    AddOarcGuiTab(player, OARC_MOD_PLAYER_LIST_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_MOD_PLAYER_LIST_TAB_NAME, true)
+
+    -- Item shop tab
+    if (global.ocfg.gameplay.enable_coin_shop) then
+        AddOarcGuiTab(player, OARC_ITEM_SHOP_TAB_NAME)
+        SetOarcGuiTabEnabled(player, OARC_ITEM_SHOP_TAB_NAME, true)
+    end
 
     -- Surface config tab
     if (player.admin) then
-        AddOarcGuiTab(player, OARC_SURFACE_CONFIG_TAB_NAME, OARC_SURFACE_CONFIG_TAB_LOCALIZED)
+        AddOarcGuiTab(player, OARC_SURFACE_CONFIG_TAB_NAME)
         SetOarcGuiTabEnabled(player, OARC_SURFACE_CONFIG_TAB_NAME, true)
     end
 
@@ -177,7 +200,7 @@ function OarcGuiCreateContentOfTab(player)
     for _,t in ipairs(otabs.tabs) do
         t.content.clear()
         if (t.tab.name == tab_name) then
-            OARC_GUI_TAB_CONTENT_FUNCTIONS[tab_name](t.content, player)
+            OARC_GUI_TAB_CONTENT[tab_name].create_tab_function(t.content, player)
         end
     end
 end
@@ -232,8 +255,7 @@ end
 -- It adds whatever it wants to the provided scroll-pane.
 ---@param player LuaPlayer
 ---@param tab_name string
----@param localized_name LocalisedString
-function AddOarcGuiTab(player, tab_name, localized_name)
+function AddOarcGuiTab(player, tab_name)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
     end
@@ -247,7 +269,7 @@ function AddOarcGuiTab(player, tab_name, localized_name)
     local new_tab = otabs.add{
         type="tab",
         name=tab_name,
-        caption=localized_name}
+        caption=OARC_GUI_TAB_CONTENT[tab_name].localized_name,}
 
     -- Create inside frame for content
     local tab_inside_frame = otabs.add{
@@ -275,6 +297,54 @@ function AddOarcGuiTab(player, tab_name, localized_name)
     if (otabs.selected_tab_index == nil) then
         otabs.selected_tab_index = 1
     end
+end
+
+-- https://forums.factorio.com/viewtopic.php?f=7&t=115901
+-- ---Removes a tab from the GUI.
+-- ---@param player LuaPlayer
+-- ---@param tab_name string
+-- function RemoveOarcGuiTab(player, tab_name)
+--     if (not DoesOarcGuiExist(player)) then return end
+
+--     local otabs = GetOarcGuiTabsPane(player)
+
+--     local selected_tab_name = otabs.tabs[otabs.selected_tab_index].tab.name
+
+--     for _,t in ipairs(otabs.tabs) do
+--         if (t.tab.name == tab_name) then
+
+--             local tab = t.tab
+--             local content = t.content
+--             otabs.remove_tab(t.tab)
+--             tab.destroy()
+--             content.destroy()
+
+--             --TODO: I haven't figured out how to do this nicely, but removing tabs fucks up the tab view.
+--             -- So for now, we just recreate the GUI.
+
+--             OarcGuiCreateContentOfTab(player)
+
+--             return
+--         end
+--     end
+-- end
+
+---Check if tab exists in the GUI.
+---@param player LuaPlayer
+---@param tab_name string
+---@return boolean
+function DoesOarcGuiTabExist(player, tab_name)
+    if (not DoesOarcGuiExist(player)) then return false end
+
+    local otabs = GetOarcGuiTabsPane(player)
+
+    for _,t in ipairs(otabs.tabs) do
+        if (t.tab.name == tab_name) then
+            return true
+        end
+    end
+
+    return false
 end
 
 ---This sets the enable state of a tab.
@@ -326,6 +396,23 @@ function RecreateOarcGui(player)
     InitOarcGuiTabs(player)
 end
 
+---Add or remove a tab for all players.
+---@param tab_name string
+---@param add boolean If true, add the tab. If false, remove the tab.
+---@param enable boolean If true, enables the tab. If false, disable the tab. Only used if adding the tab.
+---@return nil
+function AddRemoveOarcGuiTabForAllPlayers(tab_name, add, enable)
+    for _,player in pairs(game.players) do
+        if (add and not DoesOarcGuiTabExist(player, tab_name)) then
+            AddOarcGuiTab(player, tab_name)
+            SetOarcGuiTabEnabled(player, tab_name, true)
+        elseif (not add and DoesOarcGuiTabExist(player, tab_name)) then
+            -- RemoveOarcGuiTab(player, tab_name) -- SEE https://forums.factorio.com/viewtopic.php?f=7&t=115901
+            RecreateOarcGui(player) -- Assumes a ocfg setting change, so just recreate the whole thing.
+        end
+    end
+end
+
 --[[
   _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___ 
  | __\ \ / / __| \| |_   _| | || | /_\ | \| |   \| |  | __| _ \/ __|
@@ -362,6 +449,7 @@ function OarcGuiTabsClick(event)
     SettingsSurfaceControlsTabGuiClick(event)
     PlayerListTabGuiClick(event)
     SurfaceConfigTabGuiClick(event)
+    OarcItemShopGuiClick(event)
 end
 
 ---All gui tabs on_gui_checked_state_changed event handler

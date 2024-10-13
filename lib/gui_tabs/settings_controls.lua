@@ -164,6 +164,11 @@ function SettingsControlsTabGuiClick(event)
     local entry = OCFG_KEYS[index]
     if (entry.type == "boolean") then
         settings.global[entry.mod_key] = { value = gui_elem.state }
+
+        --Exception for coin shop, update the GUI if the setting is changed
+        if (entry.mod_key == "oarc-mod-enable-coin-shop") then
+            AddRemoveOarcGuiTabForAllPlayers(OARC_ITEM_SHOP_TAB_NAME, gui_elem.state, true)
+        end
     end
 end
 

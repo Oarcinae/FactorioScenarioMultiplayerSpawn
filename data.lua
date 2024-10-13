@@ -25,3 +25,6 @@ data:extend({
     },
     oarc_linked_chest, oarc_linked_power
 })
+
+-- Make coins not hidden
+data.raw["item"]["coin"].flags = {}
