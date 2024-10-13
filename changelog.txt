@@ -8,6 +8,7 @@ Date: 2024-10-13
     - Fixed crash when player with shared spawn leaves and another player in the spawn menu selects that spawn.
     - Fixed crash when starting items has an entry with count 0.
     - Fixed not setting player back to the "Default" permissions group when they spawn.
+    - Remove log spam from surface config settings GUI.
   Info:
     - Updated comments in config file and scenario template to be more clear.
 ---------------------------------------------------------------------------------------------------
