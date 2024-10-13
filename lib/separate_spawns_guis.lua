@@ -842,7 +842,9 @@ function SharedSpawnSelect(gui_element, player)
         local button = gui_element.parent.join_other_spawn
 
         local primary_spawn = FindPrimaryUniqueSpawn(host_name)
-        if (IsSharedSpawnOpen(primary_spawn.surface_name, host_name) and not IsSharedSpawnFull(primary_spawn.surface_name, host_name)) then
+        if (primary_spawn and 
+                IsSharedSpawnOpen(primary_spawn.surface_name, host_name) and
+                not IsSharedSpawnFull(primary_spawn.surface_name, host_name)) then
             global.spawn_choices[player.name].host = host_name
             button.enabled = true
             button.caption = { "oarc-join-shared-button-enable", host_name, primary_spawn.surface_name }
