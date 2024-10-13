@@ -11,3 +11,5 @@ end
 if global.ocfg.coin_generation == nil then
     global.ocfg.coin_generation = table.deepcopy(OCFG.coin_generation)
 end
+
+SetupOCFGModKeys()

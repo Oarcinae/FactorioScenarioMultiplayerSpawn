@@ -63,6 +63,14 @@ script.on_init(function(event)
     end
 end)
 
+
+--------------------------------------------------------------------------------
+-- On Load - Only for setting up some table stuff that shouldn't change during gameplay!
+--------------------------------------------------------------------------------
+script.on_load(function()
+    SetupOCFGModKeys()
+end)
+
 --------------------------------------------------------------------------------
 -- On Configuration Changed - Only runs when the mod configuration changes
 --------------------------------------------------------------------------------

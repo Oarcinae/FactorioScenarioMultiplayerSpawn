@@ -396,7 +396,6 @@ OCFG = {
         enable_shared_chest = false,
 
         -- Enable the coin shop GUI for players to buy items with coins.
-        -- This makes biters drop coins on death.
         enable_coin_shop = false,
     },
 
@@ -597,7 +596,7 @@ OCFG = {
 ---@field respawn_cooldown_min number Respawn cooldown in minutes.
 ---@field enable_shared_power boolean Enable shared power between bases. Creates a special power pole for cross surface connections.
 ---@field enable_shared_chest boolean Enables a single shared chest using the native linked-chest entity in factorio.
----@field enable_coin_shop boolean Enable the coin shop GUI for players to buy items with coins. This makes biters drop coins on death.
+---@field enable_coin_shop boolean Enable the coin shop GUI for players to buy items with coins.
 
 ---@class OarcConfigRegrowth
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.
