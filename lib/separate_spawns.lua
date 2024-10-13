@@ -1317,7 +1317,7 @@ end
 function SendPlayerToSpawn(surface_name, player)
     local spawn = global.player_respawns[player.name][surface_name]
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
-    player.permission_group = game.permissions.get_group("default")
+    player.permission_group = game.permissions.get_group("Default")
 end
 
 -- ---Send player to a random spawn point.
