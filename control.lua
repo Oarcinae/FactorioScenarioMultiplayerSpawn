@@ -251,6 +251,17 @@ script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
 end)
 
 ----------------------------------------
+-- On enemies killed
+-- For coin generation and stuff
+----------------------------------------
+script.on_event(defines.events.on_post_entity_died, function(event)
+    if global.ocfg.coin_generation.enabled then
+        CoinsFromEnemiesOnPostEntityDied(event)
+    end
+end,
+{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
+
+----------------------------------------
 -- Gui Events
 ----------------------------------------
 script.on_event(defines.events.on_gui_click, function(event)

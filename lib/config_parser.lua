@@ -46,6 +46,8 @@ OCFG_KEYS =
     ["gameplay.enable_shared_team_chat"] = {mod_key = "oarc-mod-enable-shared-team-chat" , ocfg_keys = {"gameplay", "enable_shared_team_chat"}, type = "boolean"},
     ["gameplay.enable_shared_power"] = {mod_key = "oarc-mod-enable-shared-power" , ocfg_keys = {"gameplay", "enable_shared_power"}, type = "boolean"},
     ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
+    ["gameplay.enable_coin_shop"] = {mod_key = "oarc-mod-enable-coin-shop" , ocfg_keys = {"gameplay", "enable_coin_shop"}, type = "boolean"},
+
 
     ["regrowth_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-regrowth"}},
     ["regrowth_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-regrowth-warning"}},
@@ -116,6 +118,7 @@ OCFG_MOD_KEYS =
     ["oarc-mod-respawn-cooldown-min"] = "gameplay.respawn_cooldown_min",
     ["oarc-mod-enable-shared-power"] = "gameplay.enable_shared_power",
     ["oarc-mod-enable-shared-chest"] = "gameplay.enable_shared_chest",
+    ["oarc-mod-enable-coin-shop"] = "gameplay.enable_coin_shop",
 
     ["oarc-mod-enable-regrowth"] = "regrowth.enable_regrowth",
     ["oarc-mod-enable-world-eater"] = "regrowth.enable_world_eater",
@@ -227,6 +230,11 @@ function ValidateSettings()
         log("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
         global.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
+    end
+    if (global.ocfg["shop_items"] == nil) then
+        log("ERROR - Missing shop_items section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing shop_items section in config! Loading defaults instead!")
+        global.ocfg.shop_items = table.deepcopy(OCFG.shop_items)
     end
 
 
