@@ -9,7 +9,7 @@ function CreatePlayerListTab(tab_container, player)
     local scroll_pane = tab_container.add {
         type = "scroll-pane",
         direction = "vertical",
-        vertical_scroll_policy = "always",
+        vertical_scroll_policy = "auto",
     }
     scroll_pane.style.maximal_height = 500
 

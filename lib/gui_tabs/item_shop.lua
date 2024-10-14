@@ -9,11 +9,17 @@ function CreateItemShopTab(tab_container, player)
     local player_inv = player.get_main_inventory()
     if (player_inv == nil) then return end
 
-    local wallet = player_inv.get_item_count("coin")
-    AddLabel(tab_container,
+    local wallet_count = player_inv.get_item_count("coin")
+    local wallet_lable = AddLabel(tab_container,
         "player_store_wallet_lbl",
-        "Coins Available: " .. wallet .. "  [item=coin]",
+        "Coins Available: " .. wallet_count .. "  [item=coin]",
         {top_margin=5, bottom_margin=5})
+    
+    -- if (global.wallet_gui == nil) then
+    --     global.wallet_gui = {}
+    -- end
+    -- global.wallet_gui[player.name] = wallet_lable
+
     AddLabel(tab_container, "coin_info", "Players start with some coins. Earn more coins by killing enemies.", my_note_style)
     AddLabel(tab_container, nil, "Locked items become available after playing for awhile...", my_note_style)
     if (player.admin) then
@@ -24,27 +30,89 @@ function CreateItemShopTab(tab_container, player)
     line.style.top_margin = 5
     line.style.bottom_margin = 5
 
+    -- Create a tabbed pane for the different item categories
+    local tabbed_pane = tab_container.add{type="tabbed-pane", name="item_shop_tabbed_pane"}
+
+    local test_tabs = {
+        "Weapons",
+        "Ammo",
+        "Armor",
+        "Tools",
+    }
+
+    -- For each section, add a tab
+    for _,category in pairs(test_tabs) do
+        local tab = tabbed_pane.add{type="tab", caption=category}
+        local container = tabbed_pane.add{type="flow", direction="vertical", name=category}
+        CreateItemShopTable(container, player, wallet_count)
+        container.style.top_margin = 5
+        container.style.bottom_margin = 5
+        container.style.left_margin = 5
+        container.style.right_margin = 5
+        tabbed_pane.add_tab(tab, container)
+    end
+end
+
+---Create the items table for the player shop.
+---@param tab_container LuaGuiElement
+---@param player LuaPlayer
+---@param wallet_count integer
+---@return nil
+function CreateItemShopTable(tab_container, player, wallet_count)
+
+    -- Used to determine if the player has played long enough to unlock certain items
+    local player_time_unlocked = player.online_time > TICKS_PER_MINUTE*15
+
+    -- First figure out how many columns we need
+    local max_columns = 0
+    for _,section in pairs(global.ocfg.shop_items) do
+        local count = table_size(section)
+        if (count > max_columns) then
+            max_columns = count
+        end
+    end
+
+    -- Create the table and frame with nice styles
+    local button_frame = tab_container.add{type="frame", direction="horizontal", style="slot_button_deep_frame"}
+    button_frame.style.horizontally_stretchable = true
+    button_frame.style.vertically_stretchable = true
+    local table = button_frame.add{type="table", style = "filter_slot_table", column_count=max_columns}
+
+    -- For each section, add a row to the table, fill with empty elements if needed
     for category,section in pairs(global.ocfg.shop_items) do
-        local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
+
+        local column_count = max_columns
+
         for item_name,item in pairs(section) do
 
+            column_count = column_count - 1
+
             -- Validate if item exists
-            if (not game.item_prototypes[item_name]) then
+            local prototype = game.item_prototypes[item_name]
+            if (not prototype) then
                 log("ERROR: Item not found in global.ocfg.shop_items: " .. item_name)
                 goto continue
             end
-
+            
+            -- Color helps indicate if player can afford item
             local color = "[color=green]"
-            if (item.cost > wallet) then
+            if (item.cost > wallet_count) then
                 color = "[color=red]"
             end
-            local btn = flow.add{
+
+            -- Extra message if time locked
+            local is_time_locked = item.play_time_locked and not player_time_unlocked
+            local time_locked_text = ""
+            if is_time_locked then
+                time_locked_text = " [color=red]Locked until 15 minutes of playtime.[/color]"
+            end
+
+            local button = table.add{
                 name=item_name,
                 type="sprite-button",
                 number=item.count,
                 sprite="item/"..item_name,
-                tooltip=item_name .. " Cost: "..color..item.cost.."[/color] [item=coin]",
-                -- style=mod_gui.button_style,
+                tooltip={"", prototype.localised_name, " Cost: ", color, item.cost, "[/color] [item=coin]", time_locked_text} ,
                 style="slot_button",
                 tags = {
                     action = "store_item",
@@ -53,17 +121,25 @@ function CreateItemShopTab(tab_container, player)
                     category = category
                 }
             }
-            if (item.play_time_locked and (player.online_time < TICKS_PER_MINUTE*15)) then
-                btn.enabled = false
+
+            -- Color the button if player can't afford it or it's time locked
+            if (item.cost > wallet_count) or is_time_locked then
+                button.style = "red_slot_button"
             end
 
             ::continue::
         end
-        local line2 = tab_container.add{type="line", direction="horizontal"}
-        line2.style.top_margin = 5
-        line2.style.bottom_margin = 5
+
+        -- For remaining count, add empty elements
+        if (column_count > 0) then
+            for i=1, column_count do
+                table.add{type="empty-widget"}
+                -- log("Adding empty element")
+            end
+        end
     end
 end
+
 
 ---Handles the player clicking on an item in the store.
 ---@param event EventData.on_gui_click
@@ -73,25 +149,34 @@ function OarcItemShopGuiClick(event)
     local button = event.element
     local player = game.players[event.player_index]
 
-
     if (button.tags.action == "store_item") then
-        local item_name = button.tags.item
-        local item_cost = button.tags.cost
-        local category = button.tags.category
+        local item_name = button.tags.item --[[@as string]]
+        -- local item_cost = button.tags.cost --[[@as integer]]
+        local category = button.tags.category --[[@as string]]
 
         local item = global.ocfg.shop_items[category][button.name]
 
         local player_inv = player.get_inventory(defines.inventory.character_main)
         if (player_inv == nil) then return end
 
-        if (player_inv.get_item_count("coin") >= item.cost) then
-            player_inv.insert({name = button.name, count = item.count})
+        -- Check playtime lock first
+        if (item.play_time_locked and player.online_time < TICKS_PER_MINUTE*15) then
+            player.print("This item is locked until you have played for at least 15 minutes.")
+
+        -- Check if player has enough coins
+        elseif (player_inv.get_item_count("coin") >= item.cost) then
+            player_inv.insert({name = item_name, count = item.count})
             player_inv.remove({name = "coin", count = item.cost})
 
-            if (button.parent and button.parent.parent and button.parent.parent.player_store_wallet_lbl) then
-                local wallet = player_inv.get_item_count("coin")
-                button.parent.parent.player_store_wallet_lbl.caption = "Coins Available: " .. wallet .. "  [item=coin]"
-            end
+            -- Recreate the item shop table to update the button colors?
+            OarcGuiRefreshContent(player)
+
+            -- local wallet_lable = global.wallet_gui[player.name]
+            -- if (wallet_lable) then
+            --     local wallet = player_inv.get_item_count("coin")
+            --     wallet_lable.caption = "Coins Available: " .. wallet .. "  [item=coin]"
+            -- end
+
         else
             player.print("You're broke! Go kill some enemies or beg for change...")
         end
