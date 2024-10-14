@@ -36,6 +36,24 @@ local oarc_scenario_interface =
         modified_settings.server_info.welcome_msg_title = "THIS IS A TEMPLATE SCENARIO"
         modified_settings.server_info.welcome_msg = "This is a template scenario. You can modify the settings in the control.lua file. If you are seeing this message, you did not modify the scenario correctly."
 
+        modified_settings.gameplay.enable_moat_bridging = true
+
+        modified_settings.gameplay.enable_shared_chest = true
+        modified_settings.gameplay.enable_shared_power = true
+        modified_settings.gameplay.enable_coin_shop = true
+
+        modified_settings.regrowth.enable_regrowth = true
+        modified_settings.regrowth.enable_world_eater = true
+
+        ---@type OarcConfigSurface
+        local nauvis_config = modified_settings.surfaces_config["nauvis"]
+        nauvis_config.starting_items.player_start_items["coin"] = 2500
+        nauvis_config.spawn_config.safe_area.safe_radius = 8
+        nauvis_config.spawn_config.safe_area.warn_radius = 16
+
+        modified_settings.coin_generation.enabled = true
+        modified_settings.coin_generation.auto_decon_coins = false
+
         -- modified_settings.spawn_general.shape = "circle"
 
         -- Some examples of overriding surface config (which is not accessible from the mod settings!)

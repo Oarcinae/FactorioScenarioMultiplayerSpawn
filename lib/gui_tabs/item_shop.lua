@@ -15,15 +15,12 @@ function CreateItemShopTab(tab_container, player)
         "Coins Available: " .. wallet_count .. "  [item=coin]",
         {top_margin=5, bottom_margin=5})
     
-    -- if (global.wallet_gui == nil) then
-    --     global.wallet_gui = {}
-    -- end
-    -- global.wallet_gui[player.name] = wallet_lable
+
 
     AddLabel(tab_container, "coin_info", "Players start with some coins. Earn more coins by killing enemies.", my_note_style)
     AddLabel(tab_container, nil, "Locked items become available after playing for awhile...", my_note_style)
     if (player.admin) then
-        AddLabel(tab_container, nil,  "Currently, the item list can only be edited via custom scenario or by directly setting the global.ocfg.shop_items table.", my_note_style)
+        AddLabel(tab_container, nil,  "Currently, the item list can only be edited via custom scenario or by directly\n setting the global.ocfg.shop_items table.", my_note_style)
     end
 
     local line = tab_container.add{type="line", direction="horizontal"}
@@ -33,32 +30,39 @@ function CreateItemShopTab(tab_container, player)
     -- Create a tabbed pane for the different item categories
     local tabbed_pane = tab_container.add{type="tabbed-pane", name="item_shop_tabbed_pane"}
 
-    local test_tabs = {
-        "Weapons",
-        "Ammo",
-        "Armor",
-        "Tools",
-    }
+    if (global.shop_selected_tab == nil) then
+        global.shop_selected_tab = {}
+        if global.shop_selected_tab[player.name] == nil then
+            global.shop_selected_tab[player.name] = 1
+        end
+    end
 
     -- For each section, add a tab
-    for _,category in pairs(test_tabs) do
-        local tab = tabbed_pane.add{type="tab", caption=category}
-        local container = tabbed_pane.add{type="flow", direction="vertical", name=category}
-        CreateItemShopTable(container, player, wallet_count)
+    local tab_index = 1
+    for shop_category,category_items in pairs(global.ocfg.shop_items) do
+        local tab = tabbed_pane.add{type="tab", caption=shop_category}
+        local container = tabbed_pane.add{type="flow", direction="vertical"}
+        CreateItemShopTable(container, player, shop_category, category_items, wallet_count, tab_index)
         container.style.top_margin = 5
         container.style.bottom_margin = 5
         container.style.left_margin = 5
         container.style.right_margin = 5
         tabbed_pane.add_tab(tab, container)
+        tab_index = tab_index + 1
     end
+
+    tabbed_pane.selected_tab_index = global.shop_selected_tab[player.name]
 end
 
 ---Create the items table for the player shop.
 ---@param tab_container LuaGuiElement
 ---@param player LuaPlayer
+---@param category_name string
+---@param category_items OarcStoreCategory
 ---@param wallet_count integer
+---@param tab_index integer
 ---@return nil
-function CreateItemShopTable(tab_container, player, wallet_count)
+function CreateItemShopTable(tab_container, player, category_name, category_items, wallet_count, tab_index)
 
     -- Used to determine if the player has played long enough to unlock certain items
     local player_time_unlocked = player.online_time > TICKS_PER_MINUTE*15
@@ -78,12 +82,11 @@ function CreateItemShopTable(tab_container, player, wallet_count)
     button_frame.style.vertically_stretchable = true
     local table = button_frame.add{type="table", style = "filter_slot_table", column_count=max_columns}
 
-    -- For each section, add a row to the table, fill with empty elements if needed
-    for category,section in pairs(global.ocfg.shop_items) do
+    for row_name, row in pairs(category_items) do
 
         local column_count = max_columns
 
-        for item_name,item in pairs(section) do
+        for item_name, item in pairs(row) do
 
             column_count = column_count - 1
 
@@ -118,7 +121,9 @@ function CreateItemShopTable(tab_container, player, wallet_count)
                     action = "store_item",
                     item = item_name,
                     cost = item.cost,
-                    category = category
+                    category_name = category_name,
+                    row_name = row_name,
+                    tab_index = tab_index,
                 }
             }
 
@@ -152,9 +157,10 @@ function OarcItemShopGuiClick(event)
     if (button.tags.action == "store_item") then
         local item_name = button.tags.item --[[@as string]]
         -- local item_cost = button.tags.cost --[[@as integer]]
-        local category = button.tags.category --[[@as string]]
+        local category_name = button.tags.category_name --[[@as string]]
+        local row_name = button.tags.row_name --[[@as string]]
 
-        local item = global.ocfg.shop_items[category][button.name]
+        local item = global.ocfg.shop_items[category_name][row_name][item_name]
 
         local player_inv = player.get_inventory(defines.inventory.character_main)
         if (player_inv == nil) then return end
@@ -169,13 +175,8 @@ function OarcItemShopGuiClick(event)
             player_inv.remove({name = "coin", count = item.cost})
 
             -- Recreate the item shop table to update the button colors?
+            global.shop_selected_tab[player.name] = button.tags.tab_index -- Return to the same tab
             OarcGuiRefreshContent(player)
-
-            -- local wallet_lable = global.wallet_gui[player.name]
-            -- if (wallet_lable) then
-            --     local wallet = player_inv.get_item_count("coin")
-            --     wallet_lable.caption = "Coins Available: " .. wallet .. "  [item=coin]"
-            -- end
 
         else
             player.print("You're broke! Go kill some enemies or beg for change...")

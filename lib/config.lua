@@ -176,87 +176,108 @@ NAUVIS_SURFACE_CONFIG =
 ---@type OarcStoreList
 OARC_SHOP_ITEMS =
 {
-    ["Guns"] = {
-        ["pistol"] = {cost = 1, count = 1, play_time_locked=false},
-        ["shotgun"] = {cost = 5, count = 1, play_time_locked=false},
-        ["submachine-gun"] = {cost = 10, count = 1, play_time_locked=false},
-        ["flamethrower"] = {cost = 50, count = 1, play_time_locked=true},
-        ["rocket-launcher"] = {cost = 50, count = 1, play_time_locked=true},
-        -- ["railgun"] = {cost = 250, count = 1, play_time_locked=true}, -- Was removed awhile ago, but might return with 2.0?
+    ["Logistics"] = {
+        ["Robots"] = {
+            ["construction-robot"] = { cost = 100, count = 10, play_time_locked = false },
+            ["logistic-chest-storage"] = { cost = 100, count = 1, play_time_locked = false },
+            ["roboport"] = { cost = 1000, count = 1, play_time_locked = false },
+        },
+        ["Vehicles"] = {
+            ["spidertron"] = { cost = 5000, count = 1, play_time_locked = false },
+            ["spidertron-remote"] = { cost = 500, count = 1, play_time_locked = false },
+        },
+        ["Tiles"] = {
+            ["cliff-explosives"] = { cost = 20, count = 10, play_time_locked = true },
+        }
     },
 
-    ["Turrets"] = {
-        ["gun-turret"] = {cost = 25, count = 1, play_time_locked=false},
-        ["flamethrower-turret"] = {cost = 50, count = 1, play_time_locked=false},
-        ["laser-turret"] = {cost = 75, count = 1, play_time_locked=false},
-        ["artillery-turret"] = {cost = 500, count = 1, play_time_locked=true},
+    ["Production"] = {
+        ["Repair"] = {
+            ["repair-pack"] = { cost = 1, count = 1, play_time_locked = false },
+        },
     },
 
-    ["Ammo"] = {
-        ["firearm-magazine"] = {cost = 10, count = 10, play_time_locked=false},
-        ["piercing-rounds-magazine"] = {cost = 30, count = 10, play_time_locked=false},
-        ["shotgun-shell"] = {cost = 10, count = 10, play_time_locked=false},
-        ["flamethrower-ammo"] = {cost = 50, count = 10, play_time_locked=true},
-        ["rocket"] = {cost = 100, count = 10, play_time_locked=true},
-        -- ["railgun-dart"] = {cost = 250, count = 10, play_time_locked=true}, -- Was removed awhile ago, but might return with 2.0?
-        ["atomic-bomb"] = {cost = 1000, count = 1, play_time_locked=true},
-        ["artillery-shell"] = {cost = 50, count = 1, play_time_locked=true},
-
+    ["Intermediates"] = {
+        ["Fish"] = {
+            ["raw-fish"] = { cost = 1, count = 1, play_time_locked = false },
+        }
     },
 
-    ["Special"] = {
-        ["repair-pack"] = {cost = 1, count = 1, play_time_locked=false},
-        ["raw-fish"] = {cost = 1, count = 1, play_time_locked=false},
-        ["grenade"] = {cost = 20, count = 10, play_time_locked=true},
-        ["cliff-explosives"] = {cost = 20, count = 10, play_time_locked=true},
-        ["artillery-targeting-remote"] = {cost = 500, count = 1, play_time_locked=true},
-    },
+    ["Combat"] = {
+        ["Guns"] = {
+            ["pistol"] = { cost = 1, count = 1, play_time_locked = false },
+            ["shotgun"] = { cost = 5, count = 1, play_time_locked = false },
+            ["submachine-gun"] = { cost = 10, count = 1, play_time_locked = false },
+            ["flamethrower"] = { cost = 50, count = 1, play_time_locked = true },
+            ["rocket-launcher"] = { cost = 50, count = 1, play_time_locked = true },
+            -- ["railgun"] = {cost = 250, count = 1, play_time_locked=true}, -- Was removed awhile ago, but might return with 2.0?
+        },
 
-    ["Capsules/Mines"] = {
-        ["land-mine"] = {cost = 20, count = 10, play_time_locked=false},
-        ["defender-capsule"] = {cost = 20, count = 10, play_time_locked=false},
-        ["distractor-capsule"] = {cost = 40, count = 10, play_time_locked=false},
-        ["destroyer-capsule"] = {cost = 60, count = 10, play_time_locked=false},
-        ["poison-capsule"] = {cost = 50, count = 10, play_time_locked=false},
-        ["slowdown-capsule"] = {cost = 25, count = 10, play_time_locked=false},
-    },
+        ["Turrets"] = {
+            ["gun-turret"] = { cost = 25, count = 1, play_time_locked = false },
+            ["flamethrower-turret"] = { cost = 50, count = 1, play_time_locked = false },
+            ["laser-turret"] = { cost = 75, count = 1, play_time_locked = false },
+            ["artillery-turret"] = { cost = 500, count = 1, play_time_locked = true },
+        },
 
-    ["Armor"] = {
-        ["light-armor"] = {cost = 10, count = 1, play_time_locked=false},
-        ["heavy-armor"] = {cost = 20, count = 1, play_time_locked=false},
-        ["modular-armor"] = {cost = 200, count = 1, play_time_locked=false},
-        ["power-armor"] = {cost = 1000, count = 1, play_time_locked=false},
-        ["power-armor-mk2"] = {cost = 5000, count = 1, play_time_locked=false},
-    },
+        ["Ammo"] = {
+            ["firearm-magazine"] = { cost = 10, count = 10, play_time_locked = false },
+            ["piercing-rounds-magazine"] = { cost = 30, count = 10, play_time_locked = false },
+            ["shotgun-shell"] = { cost = 10, count = 10, play_time_locked = false },
+            ["flamethrower-ammo"] = { cost = 50, count = 10, play_time_locked = true },
+            ["rocket"] = { cost = 100, count = 10, play_time_locked = true },
+            -- ["railgun-dart"] = {cost = 250, count = 10, play_time_locked=true}, -- Was removed awhile ago, but might return with 2.0?
+            ["atomic-bomb"] = { cost = 1000, count = 1, play_time_locked = true },
+            ["artillery-shell"] = { cost = 50, count = 1, play_time_locked = true },
 
-    ["Power Equipment"] = {
-        ["fusion-reactor-equipment"] = {cost = 1000, count = 1, play_time_locked=false},
-        ["battery-equipment"] = {cost = 100, count = 1, play_time_locked=false},
-        ["battery-mk2-equipment"] = {cost = 1000, count = 1, play_time_locked=false},
-        ["solar-panel-equipment"] = {cost = 10, count = 1, play_time_locked=false},
-    },
+        },
 
-    ["Bot Equipment"] = {
-        ["personal-roboport-equipment"] = {cost = 100, count = 1, play_time_locked=false},
-        ["personal-roboport-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
-        ["construction-robot"] = {cost = 100, count = 10, play_time_locked=false},
-        ["roboport"] = {cost = 1000, count = 1, play_time_locked=false},
-        ["logistic-chest-storage"] = {cost = 100, count = 1, play_time_locked=false},
-    },
+        ["Special"] = {
+            ["grenade"] = { cost = 20, count = 10, play_time_locked = true },
+            ["artillery-targeting-remote"] = { cost = 500, count = 1, play_time_locked = true },
+        },
 
-    ["Misc Equipment"] = {
-        ["belt-immunity-equipment"] = {cost = 10, count = 1, play_time_locked=false},
-        ["exoskeleton-equipment"] = {cost = 100, count = 1, play_time_locked=false},
-        ["night-vision-equipment"] = {cost = 50, count = 1, play_time_locked=false},
+        ["Capsules/Mines"] = {
+            ["land-mine"] = { cost = 20, count = 10, play_time_locked = false },
+            ["defender-capsule"] = { cost = 20, count = 10, play_time_locked = false },
+            ["distractor-capsule"] = { cost = 40, count = 10, play_time_locked = false },
+            ["destroyer-capsule"] = { cost = 60, count = 10, play_time_locked = false },
+            ["poison-capsule"] = { cost = 50, count = 10, play_time_locked = false },
+            ["slowdown-capsule"] = { cost = 25, count = 10, play_time_locked = false },
+        },
 
-        ["personal-laser-defense-equipment"] = {cost = 100, count = 1, play_time_locked=false},
-        ["energy-shield-equipment"] = {cost = 50, count = 1, play_time_locked=false},
-        ["energy-shield-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
-    },
+        ["Armor"] = {
+            ["light-armor"] = { cost = 10, count = 1, play_time_locked = false },
+            ["heavy-armor"] = { cost = 20, count = 1, play_time_locked = false },
+            ["modular-armor"] = { cost = 200, count = 1, play_time_locked = false },
+            ["power-armor"] = { cost = 1000, count = 1, play_time_locked = false },
+            ["power-armor-mk2"] = { cost = 5000, count = 1, play_time_locked = false },
+        },
 
-    ["Spidertron"] = {
-        ["spidertron"] = {cost = 5000, count = 1, play_time_locked=false},
-        ["spidertron-remote"] = {cost = 500, count = 1, play_time_locked=false},
+        ["Power Equipment"] = {
+            ["fusion-reactor-equipment"] = { cost = 1000, count = 1, play_time_locked = false },
+            ["battery-equipment"] = { cost = 100, count = 1, play_time_locked = false },
+            ["battery-mk2-equipment"] = { cost = 1000, count = 1, play_time_locked = false },
+            ["solar-panel-equipment"] = { cost = 10, count = 1, play_time_locked = false },
+        },
+
+        ["Bot Equipment"] = {
+            ["personal-roboport-equipment"] = { cost = 100, count = 1, play_time_locked = false },
+            ["personal-roboport-mk2-equipment"] = { cost = 500, count = 1, play_time_locked = false },
+
+        },
+
+        ["Misc Equipment"] = {
+            ["belt-immunity-equipment"] = { cost = 10, count = 1, play_time_locked = false },
+            ["exoskeleton-equipment"] = { cost = 100, count = 1, play_time_locked = false },
+            ["night-vision-equipment"] = { cost = 50, count = 1, play_time_locked = false },
+
+            ["personal-laser-defense-equipment"] = { cost = 100, count = 1, play_time_locked = false },
+            ["energy-shield-equipment"] = { cost = 50, count = 1, play_time_locked = false },
+            ["energy-shield-mk2-equipment"] = { cost = 500, count = 1, play_time_locked = false },
+        },
+
+
     },
 }
 
@@ -664,7 +685,8 @@ OCFG = {
 ---@field count integer
 ---@field play_time_locked boolean
 
----@alias OarcStoreCategory table<string, OarcStoreItem>
+---@alias OarcStoreRow table<string, OarcStoreItem>
+---@alias OarcStoreCategory table<string, OarcStoreRow>
 ---@alias OarcStoreList table<string, OarcStoreCategory>
 
 
