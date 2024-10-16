@@ -14,8 +14,6 @@ function CreateItemShopTab(tab_container, player)
         "player_store_wallet_lbl",
         "Coins Available: " .. wallet_count .. "  [item=coin]",
         {top_margin=5, bottom_margin=5})
-    
-
 
     AddLabel(tab_container, "coin_info", "Players start with some coins. Earn more coins by killing enemies.", my_note_style)
     AddLabel(tab_container, nil, "Locked items become available after playing for awhile...", my_note_style)
@@ -37,12 +35,34 @@ function CreateItemShopTab(tab_container, player)
         end
     end
 
+    -- For each recipe prototype, add entries to a test table
+    local test_table = {} --[[@type table<string,table<string,table<string,string>>>]]
+    for _,recipe in pairs(game.recipe_prototypes) do
+        local group_name = recipe.group.name
+        local subgroup = recipe.subgroup.order
+        local order = recipe.order
+
+        if test_table[group_name] == nil then
+            test_table[group_name] = {}
+        end
+
+        if test_table[group_name][subgroup] == nil then
+            test_table[group_name][subgroup] = {}
+        end
+
+        test_table[group_name][subgroup][order] = recipe.name
+    end
+    log(serpent.block(test_table))
+
+    -- Item Group Order: ["logistics", "production", "intermediate-products", "combat"]
+    local group_order = {"logistics", "production", "intermediate-products", "combat"}
+
     -- For each section, add a tab
     local tab_index = 1
-    for shop_category,category_items in pairs(global.ocfg.shop_items) do
-        local tab = tabbed_pane.add{type="tab", caption=shop_category}
+    for _,group_name in pairs(group_order) do
+        local tab = tabbed_pane.add{type="tab", caption=group_name}
         local container = tabbed_pane.add{type="flow", direction="vertical"}
-        CreateItemShopTable(container, player, shop_category, category_items, wallet_count, tab_index)
+        CreateItemShopTable(container, player, group_name, test_table[group_name], wallet_count, tab_index)
         container.style.top_margin = 5
         container.style.bottom_margin = 5
         container.style.left_margin = 5
@@ -52,25 +72,50 @@ function CreateItemShopTab(tab_container, player)
     end
 
     tabbed_pane.selected_tab_index = global.shop_selected_tab[player.name]
+    
+
+    -- -- For each section, add a tab
+    -- local tab_index = 1
+    -- for shop_category,category_items in pairs(global.ocfg.shop_items) do
+    --     local tab = tabbed_pane.add{type="tab", caption=shop_category}
+    --     local container = tabbed_pane.add{type="flow", direction="vertical"}
+    --     CreateItemShopTable(container, player, shop_category, category_items, wallet_count, tab_index)
+    --     container.style.top_margin = 5
+    --     container.style.bottom_margin = 5
+    --     container.style.left_margin = 5
+    --     container.style.right_margin = 5
+    --     tabbed_pane.add_tab(tab, container)
+    --     tab_index = tab_index + 1
+    -- end
+
+    -- tabbed_pane.selected_tab_index = global.shop_selected_tab[player.name]
 end
 
 ---Create the items table for the player shop.
 ---@param tab_container LuaGuiElement
 ---@param player LuaPlayer
 ---@param category_name string
----@param category_items OarcStoreCategory
+---@param category_items table<string, table<string, string>>
 ---@param wallet_count integer
 ---@param tab_index integer
 ---@return nil
 function CreateItemShopTable(tab_container, player, category_name, category_items, wallet_count, tab_index)
+
+    -- Sort the category_items by sorting the keys
+    
+    local keys = {}
+    for k,_ in pairs(category_items) do
+        table.insert(keys, k)
+    end
+    table.sort(keys)
 
     -- Used to determine if the player has played long enough to unlock certain items
     local player_time_unlocked = player.online_time > TICKS_PER_MINUTE*15
 
     -- First figure out how many columns we need
     local max_columns = 0
-    for _,section in pairs(global.ocfg.shop_items) do
-        local count = table_size(section)
+    for _, row in pairs(category_items) do
+        local count = table_size(row)
         if (count > max_columns) then
             max_columns = count
         end
@@ -82,13 +127,12 @@ function CreateItemShopTable(tab_container, player, category_name, category_item
     button_frame.style.vertically_stretchable = true
     local table = button_frame.add{type="table", style = "filter_slot_table", column_count=max_columns}
 
-    for row_name, row in pairs(category_items) do
+    for _, row_key in pairs(keys) do
 
+        local row = category_items[row_key]
         local column_count = max_columns
 
-        for item_name, item in pairs(row) do
-
-            column_count = column_count - 1
+        for item_order, item_name in pairs(row) do
 
             -- Validate if item exists
             local prototype = game.item_prototypes[item_name]
@@ -96,41 +140,43 @@ function CreateItemShopTable(tab_container, player, category_name, category_item
                 log("ERROR: Item not found in global.ocfg.shop_items: " .. item_name)
                 goto continue
             end
+
+            column_count = column_count - 1
             
             -- Color helps indicate if player can afford item
             local color = "[color=green]"
-            if (item.cost > wallet_count) then
-                color = "[color=red]"
-            end
+            -- if (item.cost > wallet_count) then
+            --     color = "[color=red]"
+            -- end
 
             -- Extra message if time locked
-            local is_time_locked = item.play_time_locked and not player_time_unlocked
+            -- local is_time_locked = item.play_time_locked and not player_time_unlocked
             local time_locked_text = ""
-            if is_time_locked then
-                time_locked_text = " [color=red]Locked until 15 minutes of playtime.[/color]"
-            end
+            -- if is_time_locked then
+            --     time_locked_text = " [color=red]Locked until 15 minutes of playtime.[/color]"
+            -- end
 
             local button = table.add{
                 name=item_name,
                 type="sprite-button",
-                number=item.count,
+                -- number=item.count,
                 sprite="item/"..item_name,
-                tooltip={"", prototype.localised_name, " Cost: ", color, item.cost, "[/color] [item=coin]", time_locked_text} ,
+                -- tooltip={"", prototype.localised_name, " Cost: ", color, item.cost, "[/color] [item=coin]", time_locked_text} ,
                 style="slot_button",
                 tags = {
                     action = "store_item",
                     item = item_name,
-                    cost = item.cost,
+                    -- cost = item.cost,
                     category_name = category_name,
-                    row_name = row_name,
+                    -- row_name = row_name,
                     tab_index = tab_index,
                 }
             }
 
             -- Color the button if player can't afford it or it's time locked
-            if (item.cost > wallet_count) or is_time_locked then
-                button.style = "red_slot_button"
-            end
+            -- if (item.cost > wallet_count) or is_time_locked then
+            --     button.style = "red_slot_button"
+            -- end
 
             ::continue::
         end
