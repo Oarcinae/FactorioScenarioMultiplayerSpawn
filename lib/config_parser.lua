@@ -2,7 +2,7 @@
 -- DON'T JUDGE ME! I wanted to try and make a nice in game setting GUI since the native mod settings GUI is so limited.
 
 ---Provides a way to look up the config settings key from the mod settings key.
----@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string, text: LocalisedString? }
+---@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string, text: LocalisedString?, caption: LocalisedString?, tooltip: LocalisedString?  }
 
 ---@type table<string, OarcSettingsLookup>
 OCFG_KEYS =
@@ -48,7 +48,6 @@ OCFG_KEYS =
     ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
     ["gameplay.enable_coin_shop"] = {mod_key = "oarc-mod-enable-coin-shop" , ocfg_keys = {"gameplay", "enable_coin_shop"}, type = "boolean"},
 
-
     ["regrowth_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-regrowth"}},
     ["regrowth_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-regrowth-warning"}},
     ["regrowth.enable_regrowth"] = {mod_key = "oarc-mod-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
@@ -78,6 +77,12 @@ OCFG_KEYS =
     ["resource_placement.vertical_offset"] = {mod_key = "oarc-mod-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},
     ["resource_placement.horizontal_offset"] = {mod_key = "oarc-mod-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer"},
     ["resource_placement.linear_spacing"] = {mod_key = "oarc-mod-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
+
+    -- These are settings that aren't included in the games mod settings.
+    ["non_mod_settings_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = "Additional Settings (Not available in the mod settings menu.)"},
+    ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = "Coin Generation"},
+    ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = "Coin Generation", tooltip = "Enemies drop coins when killed."},
+    ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = "Auto Decon Coins", tooltip = "Automatically marks coins dropped by enemies for deconstruction so robots will pick them up."},
 }
 
 ---Easy reverse lookup for mod settings keys.
@@ -118,7 +123,7 @@ function ValidateAndLoadConfig()
     -- Check that each entry in OCFG matches the default value of the mod setting. This is just for my own sanity.
     -- Helps make sure mod default settings and my internal config are in sync.
     for _,entry in pairs(OCFG_KEYS) do
-        if (entry.type ~= "header") and (entry.type ~= "subheader") then
+        if (entry.mod_key ~= "") then
             local mod_key = entry.mod_key
             local oarc_key = entry.ocfg_keys
             local mod_value = game.mod_setting_prototypes[mod_key].default_value
@@ -249,7 +254,7 @@ function CacheModSettings()
     -- Copy the global settings from the mod settings.
     -- Find the matching OARC setting and update it.
     for _,entry in pairs(OCFG_KEYS) do
-        if (entry.type ~= "header") and (entry.type ~= "subheader") then
+        if (entry.mod_key ~= "") then
             SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, settings.global[entry.mod_key].value)
         end
     end
@@ -281,7 +286,7 @@ function SyncModSettingsToOCFG()
 
     -- Override the mod settings with the the global.ocfg settings.
     for _,entry in pairs(OCFG_KEYS) do
-        if (entry.type ~= "header") and (entry.type ~= "subheader") then
+        if (entry.mod_key ~= "") then
             local mod_key = entry.mod_key
             local oarc_key = entry.ocfg_keys
             local scenario_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
@@ -384,7 +389,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     ---Handle changing enable_shared_team_vision
     if (oarc_setting_index == "gameplay.enable_shared_team_vision") then
         for _,force in pairs(game.forces) do
-            if (force.name ~= "neutral") and (force.name ~= "enemy") and (force.name ~= "enemy-easy") then
+            if (not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, force.name)) then
                 force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
             end
         end
@@ -392,7 +397,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     ---Handle changing enable_friendly_fire
     elseif (oarc_setting_index == "gameplay.enable_friendly_fire") then
         for _,force in pairs(game.forces) do
-            if (force.name ~= "neutral") and (force.name ~= "enemy") and (force.name ~= "enemy-easy") then
+            if (not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, force.name)) then
                 force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
             end
         end

@@ -36,7 +36,7 @@ function CreateSettingsControlsTab(tab_container, player)
     scroll_pane_right.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
     scroll_pane_right.style.padding = 5
     scroll_pane_right.style.left_margin = 2
-    
+
     CreateSurfaceSettingsSection(scroll_pane_right, player)
     AddSpacerLine(scroll_pane_right)
 
@@ -163,7 +163,11 @@ function SettingsControlsTabGuiClick(event)
 
     local entry = OCFG_KEYS[index]
     if (entry.type == "boolean") then
-        settings.global[entry.mod_key] = { value = gui_elem.state }
+        if (entry.mod_key ~= "") then
+            settings.global[entry.mod_key] = { value = gui_elem.state }
+        else
+            SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, gui_elem.state)
+        end
     end
 end
 
@@ -307,14 +311,31 @@ end
 ---@param enabled boolean
 ---@return nil
 function AddCheckboxSetting(tab_container, index, entry, enabled)
+    local caption, tooltip = GetCaptionAndTooltip(entry)
     tab_container.add{
         type = "checkbox",
-        caption = { "mod-setting-name."..entry.mod_key },
+        caption = caption,
         state = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
-        tooltip = { "mod-setting-description."..entry.mod_key },
+        tooltip = tooltip,
         tags = { action = "oarc_settings_tab_left_pane", setting = index },
     }
+end
+
+---Gets the caption and tooltip for a setting entry whether it is a mod setting or not.
+---@param entry OarcSettingsLookup
+---@return LocalisedString, LocalisedString
+function GetCaptionAndTooltip(entry)
+    local caption
+    local tooltip
+    if (entry.mod_key == "") then
+        caption = entry.caption
+        tooltip = entry.tooltip
+    else
+        caption = { "mod-setting-name."..entry.mod_key }
+        tooltip = { "mod-setting-description."..entry.mod_key }
+    end
+    return caption, tooltip
 end
 
 ---Creates a textfield setting
