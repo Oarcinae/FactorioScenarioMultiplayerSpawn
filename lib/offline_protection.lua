@@ -18,33 +18,25 @@ function OarcModifyEnemyGroup(event)
     local group = event.group
 
     -- Check validity
-    if ((group == nil) or (group.command == nil) or not TableContains(ENEMY_FORCES_NAMES, group.force.name)) then
+    if ((group.command == nil) or (group.force.name ~= "enemy")) then
         log("WARN - OarcModifyEnemyGroup ignoring INVALID group/command " .. serpent.block(group))
         return
     end
 
     -- Make sure the attack is of a TYPE that we care about.
-    if ((group.command.type == defines.command.attack_area) or 
-        (group.command.type == defines.command.build_base)) then
-        -- log("OarcModifyEnemyGroup MODIFYING command TYPE=" .. group.command.type)
-    else
+    if ((group.command.type ~= defines.command.attack_area) and
+        (group.command.type ~= defines.command.build_base)) then
         -- log("OarcModifyEnemyGroup ignoring command TYPE=" .. group.command.type)
         return
     end
 
-    -- (group.command.type == defines.command.attack) or  
-    -- defines.command.attack --> target --> target.position
-    -- if (group.command.type == defines.command.attack) then
-    --     log("OarcModifyEnemyGroup defines.command.attack NOT IMPLEMENTED YET!")
-    --     return
-    -- end
-
-    -- defines.command.attack_area --> destination --> closest enemy (within 3 chunk radius?)
-    -- defines.command.build_base --> destination --> closest enemy (expansion chunk distance?)
+    -- For these 2 commands, we look around to find the nearest player.
+    -- defines.command.attack_area --> destination --> closest player (within 3 chunk radius?)
+    -- defines.command.build_base --> destination --> closest player (expansion chunk distance?)
 
     local destination = group.command.destination
 
-    local search_radius = CHUNK_SIZE*3
+    local search_radius = CHUNK_SIZE * 3 -- Just a reasonable default search size I think?
     if (group.command.type == defines.command.build_base) then
         search_radius = CHUNK_SIZE * (game.map_settings.enemy_expansion.max_expansion_distance)
     end
