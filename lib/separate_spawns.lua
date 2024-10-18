@@ -1395,6 +1395,7 @@ function CreatePlayerForce(force_name)
         new_force = game.create_force(force_name)
         new_force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
         new_force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
+        new_force.research_queue_enabled = true
         -- SetCeaseFireBetweenAllPlayerForces()
         -- SetFriendlyBetweenAllPlayerForces()
         ConfigurePlayerForceRelationships(true, true)
