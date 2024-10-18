@@ -185,24 +185,24 @@ data:extend({
         default_value = true,
         order = "f2"
     },
-    {
-        type = "double-setting",
-        name = "oarc-mod-modified-enemy-easy-evo",
-        setting_type = "runtime-global",
-        default_value = 0,
-        minimum_value = 0,
-        maximum_value = 1,
-        order = "f21"
-    },
-    {
-        type = "double-setting",
-        name = "oarc-mod-modified-enemy-medium-evo",
-        setting_type = "runtime-global",
-        default_value = 0.3,
-        minimum_value = 0,
-        maximum_value = 1,
-        order = "f22"
-    },
+    -- {
+    --     type = "double-setting",
+    --     name = "oarc-mod-modified-enemy-easy-evo",
+    --     setting_type = "runtime-global",
+    --     default_value = 0,
+    --     minimum_value = 0,
+    --     maximum_value = 1,
+    --     order = "f21"
+    -- },
+    -- {
+    --     type = "double-setting",
+    --     name = "oarc-mod-modified-enemy-medium-evo",
+    --     setting_type = "runtime-global",
+    --     default_value = 0.3,
+    --     minimum_value = 0,
+    --     maximum_value = 1,
+    --     order = "f22"
+    -- },
 
     {
         type = "int-setting",

@@ -69,9 +69,6 @@ function InitSpawnGlobalsAndForces()
     game.create_force(ABANDONED_FORCE_NAME)
     -- game.create_force(DESTROYED_FORCE_NAME)
 
-    -- Special enemy forces for scaling down enemies near player bases.
-    -- CreateEnemyForces() -- TODO: Desync testing to see if this is the issue.
-
     -- Name a new force to be the default force.
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreatePlayerForce(global.ocfg.gameplay.main_force_name)

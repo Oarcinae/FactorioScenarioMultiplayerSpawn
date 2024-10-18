@@ -65,10 +65,7 @@ function OarcModifyEnemyGroup(event)
         if (group.command.type == defines.command.attack_area) then
             -- SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!? " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, group.command.destination))
             log("ERROR - OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?" .. serpent.block(group))
-            -- for _,member in pairs(group.members) do
-            --     member.destroy()
-            -- end
-        
+
         -- This is fine, as the enemy group is just expanding / building bases
         else
             -- log("OarcModifyEnemyGroup find_nearest_enemy did not find anything!")
@@ -79,14 +76,8 @@ function OarcModifyEnemyGroup(event)
     -- Most common target will be a built entity with a "last_user"
     local target_player = target_entity.last_user
 
-    -- -- Target could also be a player character (more rare)
-    -- if (target_player == nil) and (target_entity.type == "character") then
-    --     target_player = target_entity.player
-    -- end
-
     -- I don't think this should happen ever...
     if ((target_player == nil) or (not target_player.valid)) then
-        -- SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position))
         log("ERROR - OarcModifyEnemyGroup target_player nil/invalid?" .. serpent.block(group))
         -- for _,member in pairs(group.members) do
         --     member.destroy()
@@ -96,7 +87,6 @@ function OarcModifyEnemyGroup(event)
 
     -- Is the target player online? Then the attack can go through.
     if (target_player.connected) then
-        -- SendBroadcastMsg("Enemy group released (player): " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
         -- log("OarcModifyEnemyGroup RELEASING enemy group since player is ONLINE " .. target_player.name)
         return
     end
@@ -107,7 +97,6 @@ function OarcModifyEnemyGroup(event)
 
     -- Is someone in the group online?
     if (#online_players > 0) then
-        -- SendBroadcastMsg("Enemy group released (shared): " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
         -- log("OarcModifyEnemyGroup RELEASING enemy group since someone in the group is ONLINE " .. target_player.name)
         return
     end
@@ -116,7 +105,5 @@ function OarcModifyEnemyGroup(event)
     for _,member in pairs(group.members) do
         member.destroy()
     end
-    -- SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
     -- log("OarcModifyEnemyGroup REMOVED enemy group since nobody was online? " .. target_player.name)
-    
 end

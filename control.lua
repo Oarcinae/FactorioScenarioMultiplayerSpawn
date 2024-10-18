@@ -134,11 +134,6 @@ script.on_event(defines.events.on_tick, function(event)
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
-
-    -- TODO: Desync testing to see if this is the issue.
-    -- if global.ocfg.gameplay.modified_enemy_spawning then
-    --     RestrictEnemyEvolutionOnTick()
-    -- end
 end)
 
 ----------------------------------------
@@ -193,10 +188,6 @@ script.on_event(defines.events.on_built_entity, function(event)
 
     -- For tracking spidertrons...
     RegrowthOnBuiltEntity(event)
-
-    -- if global.ocfg.enable_anti_grief then
-    --     SetItemBlueprintTimeToLive(event)
-    -- end
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function (event)
@@ -245,7 +236,6 @@ end)
 script.on_event(defines.events.on_biter_base_built, function(event)
     if (global.ocfg.gameplay.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
-        -- ChangeEnemySpawnersToOtherForceOnBuilt(event) -- TODO: Desync testing to see if this is the issue.
     end
 end)
 

@@ -375,11 +375,11 @@ OCFG = {
         -- If you're trying out the vanilla spawning, you might want to disable this.
         modified_enemy_spawning = true,
 
-        -- Enemy evolution factor for the easy force (inside warning area).
-        modified_enemy_easy_evo = 0.0,
+        -- -- Enemy evolution factor for the easy force (inside warning area).
+        -- modified_enemy_easy_evo = 0.0,
 
-        -- Enemy evolution factor for the medium force (inside danger area).
-        modified_enemy_medium_evo = 0.3,
+        -- -- Enemy evolution factor for the medium force (inside danger area).
+        -- modified_enemy_medium_evo = 0.3,
 
         -- Require playes to be online for at least X minutes
         -- Else their character is removed and their spawn point is freed up for use
@@ -590,8 +590,8 @@ OCFG = {
 ---@field enable_secondary_spawns boolean Enable secondary spawns for players. This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.
----@field modified_enemy_easy_evo number Enemy evolution factor for the easy force (inside warning area).
----@field modified_enemy_medium_evo number Enemy evolution factor for the medium force (inside danger area).
+----@field modified_enemy_easy_evo number Enemy evolution factor for the easy force (inside warning area).
+----@field modified_enemy_medium_evo number Enemy evolution factor for the medium force (inside danger area).
 ---@field minimum_online_time number Require playes to be online for at least X minutes Else their character is removed and their spawn point is freed up for use
 ---@field respawn_cooldown_min number Respawn cooldown in minutes.
 ---@field enable_shared_power boolean Enable shared power between bases. Creates a special power pole for cross surface connections.
