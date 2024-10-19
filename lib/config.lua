@@ -302,7 +302,7 @@ OCFG = {
         -- Default setting for enabling spawning on other surfaces other than the default_surface.
         -- This is a STARTUP setting, so it can't be changed in game!!
         -- This is a STARTUP setting, so it can't be changed in game!!
-        default_allow_spawning_on_other_surfaces = true,
+        default_allow_spawning_on_other_surfaces = false,
 
         -- The name of the main force.
         -- This is a STARTUP setting, so it can't be changed in game!!
@@ -375,11 +375,11 @@ OCFG = {
         -- If you're trying out the vanilla spawning, you might want to disable this.
         modified_enemy_spawning = true,
 
-        -- Enemy evolution factor for the easy force (inside warning area).
-        modified_enemy_easy_evo = 0.0,
+        -- -- Enemy evolution factor for the easy force (inside warning area).
+        -- modified_enemy_easy_evo = 0.0,
 
-        -- Enemy evolution factor for the medium force (inside danger area).
-        modified_enemy_medium_evo = 0.3,
+        -- -- Enemy evolution factor for the medium force (inside danger area).
+        -- modified_enemy_medium_evo = 0.3,
 
         -- Require playes to be online for at least X minutes
         -- Else their character is removed and their spawn point is freed up for use
@@ -456,14 +456,14 @@ OCFG = {
         -- Distance in tiles from the edge of spawn that resources are placed. Only applicable for circular spawns.
         distance_to_edge = 20,
 
-        -- At what angle (in radians) do resources start.
+        -- At what angle (in degrees) do resources start.
         -- 0 means starts directly east.
         -- Resources are placed clockwise from there.
-        angle_offset = 2.09, -- Approx SSW.
+        angle_offset = 120, -- Approx SSW.
 
         -- At what andle do we place the last resource.
         -- angle_offset and angle_final determine spacing and placement.
-        angle_final = 4.18, -- Approx NNW.
+        angle_final = 240, -- Approx NNW.
 
         -- Vertical offset in tiles for the deposit resource placement. Starting from top-left corner.
         -- Only applicable for square spawns.
@@ -590,8 +590,8 @@ OCFG = {
 ---@field enable_secondary_spawns boolean Enable secondary spawns for players. This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.
----@field modified_enemy_easy_evo number Enemy evolution factor for the easy force (inside warning area).
----@field modified_enemy_medium_evo number Enemy evolution factor for the medium force (inside danger area).
+----@field modified_enemy_easy_evo number Enemy evolution factor for the easy force (inside warning area).
+----@field modified_enemy_medium_evo number Enemy evolution factor for the medium force (inside danger area).
 ---@field minimum_online_time number Require playes to be online for at least X minutes Else their character is removed and their spawn point is freed up for use
 ---@field respawn_cooldown_min number Respawn cooldown in minutes.
 ---@field enable_shared_power boolean Enable shared power between bases. Creates a special power pole for cross surface connections.
@@ -648,8 +648,8 @@ OCFG = {
 ---@class OarcConfigSpawnResourcePlacementSettings
 ---@field enabled boolean Autoplace resources. This will ignore the fixed x_offset/y_offset values in solid_resources. Only works for solid_resources at the moment, not oil patches/water.
 ---@field distance_to_edge number Distance in tiles from the edge of spawn that resources are placed. Only applicable for circular spawns.
----@field angle_offset number At what angle (in radians) do resources start. 0 means starts directly east. Resources are placed clockwise from there. Only applicable for circular spawns.
----@field angle_final number At what andle do we place the last resource. angle_offset and angle_final determine spacing and placement. Only applicable for circular spawns.
+---@field angle_offset integer At what angle (in degrees) do resources start. 0 means starts directly east. Resources are placed clockwise from there. Only applicable for circular spawns.
+---@field angle_final integer At what andle do we place the last resource. angle_offset and angle_final determine spacing and placement. Only applicable for circular spawns.
 ---@field vertical_offset number Vertical offset in tiles for the deposit resource placement. Only applicable for square spawns.
 ---@field horizontal_offset number Horizontal offset in tiles for the deposit resource placement. Only applicable for square spawns.
 ---@field linear_spacing number Spacing between resource deposits in tiles. Only applicable for square spawns.

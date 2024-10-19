@@ -185,24 +185,24 @@ data:extend({
         default_value = true,
         order = "f2"
     },
-    {
-        type = "double-setting",
-        name = "oarc-mod-modified-enemy-easy-evo",
-        setting_type = "runtime-global",
-        default_value = 0,
-        minimum_value = 0,
-        maximum_value = 1,
-        order = "f21"
-    },
-    {
-        type = "double-setting",
-        name = "oarc-mod-modified-enemy-medium-evo",
-        setting_type = "runtime-global",
-        default_value = 0.3,
-        minimum_value = 0,
-        maximum_value = 1,
-        order = "f22"
-    },
+    -- {
+    --     type = "double-setting",
+    --     name = "oarc-mod-modified-enemy-easy-evo",
+    --     setting_type = "runtime-global",
+    --     default_value = 0,
+    --     minimum_value = 0,
+    --     maximum_value = 1,
+    --     order = "f21"
+    -- },
+    -- {
+    --     type = "double-setting",
+    --     name = "oarc-mod-modified-enemy-medium-evo",
+    --     setting_type = "runtime-global",
+    --     default_value = 0.3,
+    --     minimum_value = 0,
+    --     maximum_value = 1,
+    --     order = "f22"
+    -- },
 
     {
         type = "int-setting",
@@ -345,21 +345,21 @@ data:extend({
         order = "i2"
     },
     {
-        type = "double-setting",
-        name = "oarc-mod-resource-placement-angle-offset",
+        type = "int-setting",
+        name = "oarc-mod-resource-placement-degrees-offset",
         setting_type = "runtime-global",
-        default_value = 2.09,
+        default_value = 120,
         minimum_value = 0,
-        maximum_value = 6.28,
+        maximum_value = 359,
         order = "i3"
     },
     {
-        type = "double-setting",
-        name = "oarc-mod-resource-placement-angle-final",
+        type = "int-setting",
+        name = "oarc-mod-resource-placement-degrees-final",
         setting_type = "runtime-global",
-        default_value = 4.18,
+        default_value = 240,
         minimum_value = 0,
-        maximum_value = 6.28,
+        maximum_value = 359,
         order = "i4"
     },
     {
