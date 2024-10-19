@@ -137,6 +137,9 @@ function IsRegrowthEnabledOnSurface(surface_name)
     return global.rg[surface_name].active
 end
 
+---Enables a surface by initializing it.
+---@param surface_name string - The surface name to act on
+---@return nil
 function RegrowthEnableSurface(surface_name)
     InitSurface(surface_name)
 end
