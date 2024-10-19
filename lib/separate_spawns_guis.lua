@@ -1122,7 +1122,10 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     local requesting_buddy = game.players[requesting_buddy_name]
     local surface = game.surfaces[spawn_choices.surface]
 
-    global.spawn_choices[player.name].host = nil -- N/A for buddy spawns so clear it.
+    -- Copy the buddy's spawn choices to the accepting player
+    spawn_choices.host = nil -- N/A for buddy spawns so clear it.
+    global.spawn_choices[player.name] = table.deepcopy(spawn_choices)
+    global.spawn_choices[player.name].buddy = requesting_buddy_name
 
     -- Find coordinates of a good place to spawn
     local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
@@ -1159,12 +1162,12 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
         x_offset = x_offset + 10
     end
     buddySpawn = { x = spawn_position.x + x_offset, y = spawn_position.y }
-    SetPlayerRespawn(player.name, spawn_choices.surface, spawn_position, true)
-    SetPlayerRespawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, true)
+    SetPlayerRespawn(player.name, spawn_choices.surface, buddySpawn, true)
+    SetPlayerRespawn(requesting_buddy_name, spawn_choices.surface, spawn_position, true)
 
     -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, requesting_buddy_name)
-    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, player.name)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, requesting_buddy_name)
+    QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, player.name)
     SendBroadcastMsg({"", {"oarc-buddies-are-joining", requesting_buddy_name, player.name, spawn_choices.surface}, " ", GetGPStext(spawn_choices.surface, spawn_position)})
 
     -- Unlock spawn control gui tab
