@@ -553,7 +553,7 @@ function ConfigurePlayerForceRelationships(cease_fire, friends)
     local player_forces = {}
 
     for name, force in pairs(game.forces) do
-        if name ~= "neutral" and name ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES, name) then
+        if name ~= ABANDONED_FORCE_NAME and not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, name) then
             table.insert(player_forces, force)
         end
     end

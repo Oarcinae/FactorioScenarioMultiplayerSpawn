@@ -18,33 +18,25 @@ function OarcModifyEnemyGroup(event)
     local group = event.group
 
     -- Check validity
-    if ((group == nil) or (group.command == nil) or not TableContains(ENEMY_FORCES_NAMES, group.force.name)) then
+    if ((group.command == nil) or (group.force.name ~= "enemy")) then
         log("WARN - OarcModifyEnemyGroup ignoring INVALID group/command " .. serpent.block(group))
         return
     end
 
     -- Make sure the attack is of a TYPE that we care about.
-    if ((group.command.type == defines.command.attack_area) or 
-        (group.command.type == defines.command.build_base)) then
-        -- log("OarcModifyEnemyGroup MODIFYING command TYPE=" .. group.command.type)
-    else
+    if ((group.command.type ~= defines.command.attack_area) and
+        (group.command.type ~= defines.command.build_base)) then
         -- log("OarcModifyEnemyGroup ignoring command TYPE=" .. group.command.type)
         return
     end
 
-    -- (group.command.type == defines.command.attack) or  
-    -- defines.command.attack --> target --> target.position
-    -- if (group.command.type == defines.command.attack) then
-    --     log("OarcModifyEnemyGroup defines.command.attack NOT IMPLEMENTED YET!")
-    --     return
-    -- end
-
-    -- defines.command.attack_area --> destination --> closest enemy (within 3 chunk radius?)
-    -- defines.command.build_base --> destination --> closest enemy (expansion chunk distance?)
+    -- For these 2 commands, we look around to find the nearest player.
+    -- defines.command.attack_area --> destination --> closest player (within 3 chunk radius?)
+    -- defines.command.build_base --> destination --> closest player (expansion chunk distance?)
 
     local destination = group.command.destination
 
-    local search_radius = CHUNK_SIZE*3
+    local search_radius = CHUNK_SIZE * 3 -- Just a reasonable default search size I think?
     if (group.command.type == defines.command.build_base) then
         search_radius = CHUNK_SIZE * (game.map_settings.enemy_expansion.max_expansion_distance)
     end
@@ -73,10 +65,7 @@ function OarcModifyEnemyGroup(event)
         if (group.command.type == defines.command.attack_area) then
             -- SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!? " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, group.command.destination))
             log("ERROR - OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?" .. serpent.block(group))
-            -- for _,member in pairs(group.members) do
-            --     member.destroy()
-            -- end
-        
+
         -- This is fine, as the enemy group is just expanding / building bases
         else
             -- log("OarcModifyEnemyGroup find_nearest_enemy did not find anything!")
@@ -87,14 +76,8 @@ function OarcModifyEnemyGroup(event)
     -- Most common target will be a built entity with a "last_user"
     local target_player = target_entity.last_user
 
-    -- -- Target could also be a player character (more rare)
-    -- if (target_player == nil) and (target_entity.type == "character") then
-    --     target_player = target_entity.player
-    -- end
-
     -- I don't think this should happen ever...
     if ((target_player == nil) or (not target_player.valid)) then
-        -- SendBroadcastMsg("ERROR?? target_player nil/invalid " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position))
         log("ERROR - OarcModifyEnemyGroup target_player nil/invalid?" .. serpent.block(group))
         -- for _,member in pairs(group.members) do
         --     member.destroy()
@@ -104,7 +87,6 @@ function OarcModifyEnemyGroup(event)
 
     -- Is the target player online? Then the attack can go through.
     if (target_player.connected) then
-        -- SendBroadcastMsg("Enemy group released (player): " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
         -- log("OarcModifyEnemyGroup RELEASING enemy group since player is ONLINE " .. target_player.name)
         return
     end
@@ -115,7 +97,6 @@ function OarcModifyEnemyGroup(event)
 
     -- Is someone in the group online?
     if (#online_players > 0) then
-        -- SendBroadcastMsg("Enemy group released (shared): " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
         -- log("OarcModifyEnemyGroup RELEASING enemy group since someone in the group is ONLINE " .. target_player.name)
         return
     end
@@ -124,7 +105,5 @@ function OarcModifyEnemyGroup(event)
     for _,member in pairs(group.members) do
         member.destroy()
     end
-    -- SendBroadcastMsg("Enemy group deleted: " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, target_entity.position) .. " " .. target_player.name)
     -- log("OarcModifyEnemyGroup REMOVED enemy group since nobody was online? " .. target_player.name)
-    
 end

@@ -33,8 +33,8 @@ OCFG_KEYS =
     ["gameplay.enable_offline_protection"] = {mod_key = "oarc-mod-enable-offline-protection" , ocfg_keys = {"gameplay", "enable_offline_protection"}, type = "boolean"},
     ["gameplay.scale_resources_around_spawns"] = {mod_key = "oarc-mod-scale-resources-around-spawns" , ocfg_keys = {"gameplay", "scale_resources_around_spawns"}, type = "boolean"},
     ["gameplay.modified_enemy_spawning"] = {mod_key = "oarc-mod-modified-enemy-spawning" , ocfg_keys = {"gameplay", "modified_enemy_spawning"}, type = "boolean"},
-    ["gameplay.modified_enemy_easy_evo"] = {mod_key = "oarc-mod-modified-enemy-easy-evo" , ocfg_keys = {"gameplay", "modified_enemy_easy_evo"}, type = "double"},
-    ["gameplay.modified_enemy_medium_evo"] = {mod_key = "oarc-mod-modified-enemy-medium-evo" , ocfg_keys = {"gameplay", "modified_enemy_medium_evo"}, type = "double"},
+    -- ["gameplay.modified_enemy_easy_evo"] = {mod_key = "oarc-mod-modified-enemy-easy-evo" , ocfg_keys = {"gameplay", "modified_enemy_easy_evo"}, type = "double"},
+    -- ["gameplay.modified_enemy_medium_evo"] = {mod_key = "oarc-mod-modified-enemy-medium-evo" , ocfg_keys = {"gameplay", "modified_enemy_medium_evo"}, type = "double"},
 
     ["gameplay_misc_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-gameplay-misc"}},
     ["gameplay.enable_friendly_fire"] = {mod_key = "oarc-mod-enable-friendly-fire" , ocfg_keys = {"gameplay", "enable_friendly_fire"}, type = "boolean"},
