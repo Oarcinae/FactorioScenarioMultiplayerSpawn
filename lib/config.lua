@@ -302,7 +302,7 @@ OCFG = {
         -- Default setting for enabling spawning on other surfaces other than the default_surface.
         -- This is a STARTUP setting, so it can't be changed in game!!
         -- This is a STARTUP setting, so it can't be changed in game!!
-        default_allow_spawning_on_other_surfaces = true,
+        default_allow_spawning_on_other_surfaces = false,
 
         -- The name of the main force.
         -- This is a STARTUP setting, so it can't be changed in game!!
@@ -456,14 +456,14 @@ OCFG = {
         -- Distance in tiles from the edge of spawn that resources are placed. Only applicable for circular spawns.
         distance_to_edge = 20,
 
-        -- At what angle (in radians) do resources start.
+        -- At what angle (in degrees) do resources start.
         -- 0 means starts directly east.
         -- Resources are placed clockwise from there.
-        angle_offset = 2.09, -- Approx SSW.
+        angle_offset = 120, -- Approx SSW.
 
         -- At what andle do we place the last resource.
         -- angle_offset and angle_final determine spacing and placement.
-        angle_final = 4.18, -- Approx NNW.
+        angle_final = 240, -- Approx NNW.
 
         -- Vertical offset in tiles for the deposit resource placement. Starting from top-left corner.
         -- Only applicable for square spawns.
@@ -648,8 +648,8 @@ OCFG = {
 ---@class OarcConfigSpawnResourcePlacementSettings
 ---@field enabled boolean Autoplace resources. This will ignore the fixed x_offset/y_offset values in solid_resources. Only works for solid_resources at the moment, not oil patches/water.
 ---@field distance_to_edge number Distance in tiles from the edge of spawn that resources are placed. Only applicable for circular spawns.
----@field angle_offset number At what angle (in radians) do resources start. 0 means starts directly east. Resources are placed clockwise from there. Only applicable for circular spawns.
----@field angle_final number At what andle do we place the last resource. angle_offset and angle_final determine spacing and placement. Only applicable for circular spawns.
+---@field angle_offset integer At what angle (in degrees) do resources start. 0 means starts directly east. Resources are placed clockwise from there. Only applicable for circular spawns.
+---@field angle_final integer At what andle do we place the last resource. angle_offset and angle_final determine spacing and placement. Only applicable for circular spawns.
 ---@field vertical_offset number Vertical offset in tiles for the deposit resource placement. Only applicable for square spawns.
 ---@field horizontal_offset number Horizontal offset in tiles for the deposit resource placement. Only applicable for square spawns.
 ---@field linear_spacing number Spacing between resource deposits in tiles. Only applicable for square spawns.

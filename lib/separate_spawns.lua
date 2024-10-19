@@ -20,7 +20,7 @@ ABANDONED_FORCE_NAME = "_ABANDONED_"
 function InitSpawnGlobalsAndForces()
 
     -- Contains a table of entries for each surface. This tracks which surfaces allow spawning?
-    --[[@type table<string, boolean>]]
+    --[[@type table<string, OarcSurfaceSpawnSetting>]]
     global.oarc_surfaces = {}
     for _, surface in pairs(game.surfaces) do
         SeparateSpawnsInitSurface(surface.name)
@@ -131,11 +131,14 @@ function SeparateSpawnsInitSurface(surface_name)
 
     -- Add the surface to the list of surfaces that allow spawns with value from config.
     if global.ocfg.gameplay.default_allow_spawning_on_other_surfaces then
-        global.oarc_surfaces[surface_name] = true
+        global.oarc_surfaces[surface_name] = { primary = true, secondary = true }
 
     -- Otherwise only allow the default surface (by default)
     else
-        global.oarc_surfaces[surface_name] = (surface_name == global.ocfg.gameplay.default_surface)
+        global.oarc_surfaces[surface_name] = {
+            primary = (surface_name == global.ocfg.gameplay.default_surface),
+            secondary = false
+        }
     end
 
     -- Make sure it has a surface configuration entry!
@@ -210,7 +213,7 @@ function SeparateSpawnsPlayerRespawned(event)
     if (player.surface.name == HOLDING_PEN_SURFACE_NAME) then return end
 
     -- If the mod isn't active on this surface, then ignore it.
-    if (not global.oarc_surfaces[surface_name]) then return end
+    if (global.oarc_surfaces[surface_name] == nil) then return end
 
     SendPlayerToSpawn(surface_name, player)
     GivePlayerRespawnItems(player)
@@ -236,16 +239,22 @@ function SeparateSpawnsPlayerChangedSurface(event)
     if (not global.ocfg.gameplay.enable_secondary_spawns) then return end
 
     local player = game.players[event.player_index]
+    local surface_name = player.surface.name
 
     -- Check if player has been init'd yet. If not, then ignore it.
     if (global.player_respawns[player.name] == nil) then return end
 
     -- If the mod isn't active on this surface, then ignore it.
-    if (not global.oarc_surfaces[player.surface.name]) then return end
+    if (global.oarc_surfaces[surface_name] == nil) then return end
 
-    -- If this is their first time on the planet, create a secondary spawn point for them.
-    -- TODO: Check for buddy and shared spawn hosts?
-    if (global.unique_spawns[player.surface.name] == nil) or (global.unique_spawns[player.surface.name][player.name] == nil) then
+    -- If the mod is configured to not allow secondary spawns here, then ignore it.
+    if (not global.oarc_surfaces[surface_name].secondary) then return end
+
+    -- Check if there is already a spawn for them on this surface
+    -- Could be a buddy spawn, or a shared spawn, or a unique spawn.
+    local player_spawn = FindPlayerSpawnOnSurface(player.name, surface_name)
+
+    if (player_spawn == nil) then
         log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
         SecondarySpawn(player, player.surface)
     end
@@ -349,15 +358,16 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     local shuffled_list = FYShuffle(r_list)
 
     -- This places resources in a semi-circle
-    local angle_offset = global.ocfg.resource_placement.angle_offset
+    local angle_offset_radians = math.rad(global.ocfg.resource_placement.angle_offset)
+    local angle_final_radians = math.rad(global.ocfg.resource_placement.angle_final)
     local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
-    local theta = ((global.ocfg.resource_placement.angle_final - global.ocfg.resource_placement.angle_offset) / (num_resources-1));
+    local theta = ((angle_final_radians - angle_offset_radians) / (num_resources-1));
     local count = 0
 
     local radius = global.ocfg.spawn_general.spawn_radius_tiles - global.ocfg.resource_placement.distance_to_edge
 
     for _, r_name in pairs(shuffled_list) do
-        local angle = (theta * count) + angle_offset;
+        local angle = (theta * count) + angle_offset_radians;
 
         local tx = (radius * math.cos(angle)) + position.x
         local ty = (radius * math.sin(angle)) + position.y
@@ -789,6 +799,19 @@ function FindPlayerHomeSpawn(player_name)
     end
 end
 
+---Find the spawn of a player, if one exists, on a specific surface.
+---@param player_name string
+---@param surface_name string
+---@return OarcUniqueSpawn?
+function FindPlayerSpawnOnSurface(player_name, surface_name)
+    if (global.unique_spawns[surface_name] == nil) then return nil end
+    for _,spawn in pairs(global.unique_spawns[surface_name]) do
+        if ((spawn.host_name == player_name) or TableContains(spawn.joiners, player_name)) then
+            return spawn
+        end
+    end
+end
+
 ---Searches all unique spawns for a list of secondary ones for a player.
 ---@param player_name string
 ---@return table<string, OarcUniqueSpawn> -- Indexed by surface name!
@@ -861,12 +884,10 @@ function CleanupPlayerGlobals(player_name)
             for index, joiner in pairs(spawn.joiners) do
                 if (player_name == joiner) then
                     global.unique_spawns[surface_index][player_index].joiners[index] = nil
-                    goto LOOP_BREAK -- Nest loop break. Assumes only one entry per player is possible.
                 end
             end
         end
     end
-    ::LOOP_BREAK::
 
     -- Clear their personal spawn point info
     if (global.player_respawns[player_name] ~= nil) then
@@ -1270,10 +1291,31 @@ function SecondarySpawn(player, surface)
         player.print({ "oarc-no-ungenerated-land-error" })
         return
     end
-    
+
     -- Add new spawn point for the new surface
     SetPlayerRespawn(player.name, surface.name, spawn_position, false) -- Do not reset cooldown
     QueuePlayerForDelayedSpawn(player.name, surface.name, spawn_position, spawn_choices.moat, false, nil)
+
+    -- TODO: Temporary for space age, buddies get a single spawn point for secondary spawns.
+    if (spawn_choices.buddy) then
+        SetPlayerRespawn(spawn_choices.buddy, surface.name, spawn_position, false)
+
+        -- Add buddy to the shared spawn?
+        global.unique_spawns[surface.name][player.name].joiners = { spawn_choices.buddy }
+
+        log("Buddy secondary spawn NOT IMPLEMENTED YET!")
+    end
+
+    -- -- If it is a buddy spawn, we need to setup both areas TOGETHER
+    -- if spawn_choices.buddy then
+    --     -- The x_offset must be big enough to ensure the spawns DO NOT overlap!
+    --     local x_offset = (global.ocfg.spawn_general.spawn_radius_tiles * 2)
+    --     if (spawn_choices.moat) then
+    --         x_offset = x_offset + 10
+    --     end
+    --     local buddy_spawn_position = { x = spawn_position.x + x_offset, y = spawn_position.y }
+    --     SetPlayerRespawn(spawn_choices.buddy, spawn_choices.surface, buddy_spawn_position, true)
+    -- end
 
     -- Send them to the holding pen
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
@@ -1346,7 +1388,7 @@ end
 ---@param player_name string
 ---@return boolean
 function PlayerHasDelayedSpawn(player_name)
-    for _,delayedSpawn in pairs(global.delayed_spawns --[[@as OarcDelayedSpawnsTable]]) do
+    for _,delayedSpawn in pairs(global.delayed_spawns) do
         if (delayedSpawn.playerName == player_name) then
             return true
         end
@@ -1354,13 +1396,13 @@ function PlayerHasDelayedSpawn(player_name)
     return false
 end
 
----Get the list of surfaces that are allowed for spawning.
+---Get the list of surfaces that are allowed for primary spawning.
 ---@return string[]
 function GetAllowedSurfaces()
     ---@type string[]
     local surfaceList = {}
-    for surfaceName,allowed in pairs(global.oarc_surfaces --[[@as table<string, boolean>]]) do
-        if allowed then
+    for surfaceName, allowed in pairs(global.oarc_surfaces) do
+        if allowed.primary then
             table.insert(surfaceList, surfaceName)
         end
     end
@@ -1392,6 +1434,7 @@ function CreatePlayerForce(force_name)
         new_force = game.create_force(force_name)
         new_force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
         new_force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
+        new_force.research_queue_enabled = true
         -- SetCeaseFireBetweenAllPlayerForces()
         -- SetFriendlyBetweenAllPlayerForces()
         ConfigurePlayerForceRelationships(true, true)
@@ -1470,7 +1513,18 @@ SPAWN_TEAM_CHOICE = {
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 
 ---This contains the spawn choices for a player in the spawn menu.
----@alias OarcSpawnChoices { surface: string, team: SpawnTeamChoice, moat: boolean, buddy: string?, distance: integer, host: string?, buddy_team: boolean }
+---Class representing the spawn choices for a player in the spawn menu.
+---@class OarcSpawnChoices
+---@field surface string The surface on which the player wants to spawn.
+---@field team SpawnTeamChoice The team choice for the player. Main team or own team.
+---@field moat boolean Whether the player wants a moat around their spawn.
+---@field buddy string? The buddy player name if the player wants to spawn with a buddy.
+---@field distance integer The distance from the center of the map where the player wants to spawn.
+---@field host string? The host player name if the player wants to join a shared spawn.
+---@field buddy_team boolean Whether the player wants to join a buddy's team. This means both players will be on the same team.
+
 ---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.
 ---@alias OarcSpawnChoicesTable table<string, OarcSpawnChoices>
 
+---Primary means a player can spawn for the first time on this surface, secondary they can land here and also receive a custom spawn area.
+---@alias OarcSurfaceSpawnSetting { primary: boolean, secondary: boolean}

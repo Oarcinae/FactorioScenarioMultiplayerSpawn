@@ -137,6 +137,9 @@ function IsRegrowthEnabledOnSurface(surface_name)
     return global.rg[surface_name].active
 end
 
+---Enables a surface by initializing it.
+---@param surface_name string - The surface name to act on
+---@return nil
 function RegrowthEnableSurface(surface_name)
     InitSurface(surface_name)
 end
@@ -497,8 +500,12 @@ function OarcRegrowthRemoveAllChunks()
 
             elseif (global.rg[surface_name].map[c_pos.x][c_pos.y] == REGROWTH_FLAG_REMOVAL) then
 
+                -- If regrowth is disabled, remove the chunnk from the map without deleting it.
+                if (not global.ocfg.regrowth.enable_regrowth or  not global.rg[surface_name].active) then
+                    global.rg[surface_name].map[c_pos.x][c_pos.y] = nil
+
                 -- If it is a normal timeout removal, don't do it if there is pollution in the chunk.
-                if (game.surfaces[surface_name].get_pollution({ c_pos.x * 32, c_pos.y * 32 }) > 0) then
+                elseif (game.surfaces[surface_name].get_pollution({ c_pos.x * 32, c_pos.y * 32 }) > 0) then
                     global.rg[surface_name].map[c_pos.x][c_pos.y] = game.tick
 
                 -- Else delete the chunk

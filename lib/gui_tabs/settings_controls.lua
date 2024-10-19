@@ -36,7 +36,7 @@ function CreateSettingsControlsTab(tab_container, player)
     scroll_pane_right.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
     scroll_pane_right.style.padding = 5
     scroll_pane_right.style.left_margin = 2
-    
+
     CreateSurfaceSettingsSection(scroll_pane_right, player)
     AddSpacerLine(scroll_pane_right)
 
@@ -83,20 +83,24 @@ function CreateSurfaceSettingsSection(container, player)
     local surface_table = container.add {
         type = "table",
         name = "surface_table",
-        column_count = 3,
+        column_count = 4,
         style = "bordered_table",
     }
 
     --- Add the header row
     AddLabel(surface_table, nil, {"oarc-settings-tab-surface-column-header"}, "caption_label")
     AddLabel(surface_table, nil, {"oarc-settings-tab-surface-spawning-enabled"}, "caption_label")
+    AddLabel(surface_table, nil, {"oarc-settings-tab-surface-secondary-enabled"}, "caption_label")
     AddLabel(surface_table, nil, {"oarc-settings-tab-surface-regrowth-enabled"}, "caption_label")
 
     --- Add the rows
-    for name, allowed in pairs(global.oarc_surfaces --[[@as table<string, boolean>]]) do
+    for name, allowed in pairs(global.oarc_surfaces) do
         AddLabel(surface_table, nil, name, my_label_style)
-        AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed, player.admin,
+        AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed.primary, player.admin,
                                     { "oarc-settings-tab-surface-checkbox-tooltip" })
+        AddSurfaceCheckboxSetting(surface_table, name, "secondary_enabled", allowed.secondary, player.admin,
+                                    { "oarc-settings-tab-surface-secondary-checkbox-tooltip" })
+        
         local regrowth_enabled = TableContains(global.rg.active_surfaces, name)
         AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", regrowth_enabled, player.admin,
                                     {"oarc-settings-tab-surface-regrowth-checkbox-tooltip"})
@@ -163,7 +167,11 @@ function SettingsControlsTabGuiClick(event)
 
     local entry = OCFG_KEYS[index]
     if (entry.type == "boolean") then
-        settings.global[entry.mod_key] = { value = gui_elem.state }
+        if (entry.mod_key ~= "") then
+            settings.global[entry.mod_key] = { value = gui_elem.state }
+        else
+            SetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys, gui_elem.state)
+        end
     end
 end
 
@@ -307,14 +315,31 @@ end
 ---@param enabled boolean
 ---@return nil
 function AddCheckboxSetting(tab_container, index, entry, enabled)
+    local caption, tooltip = GetCaptionAndTooltip(entry)
     tab_container.add{
         type = "checkbox",
-        caption = { "mod-setting-name."..entry.mod_key },
+        caption = caption,
         state = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
-        tooltip = { "mod-setting-description."..entry.mod_key },
+        tooltip = tooltip,
         tags = { action = "oarc_settings_tab_left_pane", setting = index },
     }
+end
+
+---Gets the caption and tooltip for a setting entry whether it is a mod setting or not.
+---@param entry OarcSettingsLookup
+---@return LocalisedString, LocalisedString
+function GetCaptionAndTooltip(entry)
+    local caption
+    local tooltip
+    if (entry.mod_key == "") then
+        caption = entry.caption
+        tooltip = entry.tooltip
+    else
+        caption = { "mod-setting-name."..entry.mod_key }
+        tooltip = { "mod-setting-description."..entry.mod_key }
+    end
+    return caption, tooltip
 end
 
 ---Creates a textfield setting
@@ -519,14 +544,19 @@ function SettingsSurfaceControlsTabGuiClick(event)
 
     if (setting_name == "spawn_enabled") then
         local surface_name = gui_elem.tags.surface --[[@as string]]
-        global.oarc_surfaces[surface_name] = gui_elem.state
+        global.oarc_surfaces[surface_name].primary = gui_elem.state
 
         if (#GetAllowedSurfaces() == 0) then
             log("Warning - GetAllowedSurfaces() - No surfaces found! Forcing default surface!")
-            global.oarc_surfaces[global.ocfg.gameplay.default_surface] = true
+            global.oarc_surfaces[global.ocfg.gameplay.default_surface].primary = true
             event.element.parent[global.ocfg.gameplay.default_surface.."_spawn_enabled"].state = true
         end
-  
+
+    elseif (setting_name == "secondary_enabled") then
+        local surface_name = gui_elem.tags.surface --[[@as string]]
+        global.oarc_surfaces[surface_name].secondary = gui_elem.state
+
+
     elseif (setting_name == "regrowth_enabled") then
         local surface_name = gui_elem.tags.surface --[[@as string]]
 
