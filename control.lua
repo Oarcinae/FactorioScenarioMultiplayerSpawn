@@ -339,7 +339,7 @@ end)
 local oarc_mod_interface =
 {
   get_mod_settings = function()
-    return OCFG
+    return global.ocfg
   end
 }
 
