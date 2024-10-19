@@ -302,7 +302,7 @@ OCFG = {
         -- Default setting for enabling spawning on other surfaces other than the default_surface.
         -- This is a STARTUP setting, so it can't be changed in game!!
         -- This is a STARTUP setting, so it can't be changed in game!!
-        default_allow_spawning_on_other_surfaces = true,
+        default_allow_spawning_on_other_surfaces = false,
 
         -- The name of the main force.
         -- This is a STARTUP setting, so it can't be changed in game!!
