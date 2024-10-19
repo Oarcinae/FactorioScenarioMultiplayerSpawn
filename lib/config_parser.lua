@@ -70,8 +70,8 @@ OCFG_KEYS =
 
     ["resource_placement_circle_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-circular"}},
     ["resource_placement.distance_to_edge"] = {mod_key = "oarc-mod-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer"},
-    ["resource_placement.angle_offset"] = {mod_key = "oarc-mod-resource-placement-angle-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "integer"},
-    ["resource_placement.angle_final"] = {mod_key = "oarc-mod-resource-placement-angle-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "integer"},
+    ["resource_placement.angle_offset"] = {mod_key = "oarc-mod-resource-placement-degrees-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "integer"},
+    ["resource_placement.angle_final"] = {mod_key = "oarc-mod-resource-placement-degrees-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "integer"},
 
     ["resource_placement_square_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-square"}},
     ["resource_placement.vertical_offset"] = {mod_key = "oarc-mod-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},

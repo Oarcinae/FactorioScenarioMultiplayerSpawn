@@ -346,7 +346,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-angle-offset",
+        name = "oarc-mod-resource-placement-degrees-offset",
         setting_type = "runtime-global",
         default_value = 120,
         minimum_value = 0,
@@ -355,7 +355,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-angle-final",
+        name = "oarc-mod-resource-placement-degrees-final",
         setting_type = "runtime-global",
         default_value = 240,
         minimum_value = 0,
