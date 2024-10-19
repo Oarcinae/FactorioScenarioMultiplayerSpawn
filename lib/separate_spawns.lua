@@ -352,15 +352,16 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     local shuffled_list = FYShuffle(r_list)
 
     -- This places resources in a semi-circle
-    local angle_offset = global.ocfg.resource_placement.angle_offset
+    local angle_offset_radians = math.rad(global.ocfg.resource_placement.angle_offset)
+    local angle_final_radians = math.rad(global.ocfg.resource_placement.angle_final)
     local num_resources = table_size(global.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
-    local theta = ((global.ocfg.resource_placement.angle_final - global.ocfg.resource_placement.angle_offset) / (num_resources-1));
+    local theta = ((angle_final_radians - angle_offset_radians) / (num_resources-1));
     local count = 0
 
     local radius = global.ocfg.spawn_general.spawn_radius_tiles - global.ocfg.resource_placement.distance_to_edge
 
     for _, r_name in pairs(shuffled_list) do
-        local angle = (theta * count) + angle_offset;
+        local angle = (theta * count) + angle_offset_radians;
 
         local tx = (radius * math.cos(angle)) + position.x
         local ty = (radius * math.sin(angle)) + position.y
