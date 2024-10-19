@@ -345,21 +345,21 @@ data:extend({
         order = "i2"
     },
     {
-        type = "double-setting",
+        type = "int-setting",
         name = "oarc-mod-resource-placement-angle-offset",
         setting_type = "runtime-global",
-        default_value = 2.09,
+        default_value = 120,
         minimum_value = 0,
-        maximum_value = 6.28,
+        maximum_value = 359,
         order = "i3"
     },
     {
-        type = "double-setting",
+        type = "int-setting",
         name = "oarc-mod-resource-placement-angle-final",
         setting_type = "runtime-global",
-        default_value = 4.18,
+        default_value = 240,
         minimum_value = 0,
-        maximum_value = 6.28,
+        maximum_value = 359,
         order = "i4"
     },
     {
