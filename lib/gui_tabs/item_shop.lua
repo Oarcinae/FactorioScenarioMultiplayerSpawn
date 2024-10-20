@@ -17,20 +17,20 @@ function CreateItemShopTab(tab_container, player)
     AddLabel(tab_container, "coin_info", "Players start with some coins. Earn more coins by killing enemies.", my_note_style)
     AddLabel(tab_container, nil, "Locked items become available after playing for awhile...", my_note_style)
     if (player.admin) then
-        AddLabel(tab_container, nil,  "Currently, the item list can only be edited via custom scenario or by directly setting the global.ocfg.shop_items table.", my_note_style)
+        AddLabel(tab_container, nil,  "Currently, the item list can only be edited via custom scenario or by directly setting the storage.ocfg.shop_items table.", my_note_style)
     end
 
     local line = tab_container.add{type="line", direction="horizontal"}
     line.style.top_margin = 5
     line.style.bottom_margin = 5
 
-    for category,section in pairs(global.ocfg.shop_items) do
+    for category,section in pairs(storage.ocfg.shop_items) do
         local flow = tab_container.add{name = category, type="flow", direction="horizontal"}
         for item_name,item in pairs(section) do
 
             -- Validate if item exists
             if (not game.item_prototypes[item_name]) then
-                log("ERROR: Item not found in global.ocfg.shop_items: " .. item_name)
+                log("ERROR: Item not found in storage.ocfg.shop_items: " .. item_name)
                 goto continue
             end
 
@@ -79,7 +79,7 @@ function OarcItemShopGuiClick(event)
         local item_cost = button.tags.cost
         local category = button.tags.category
 
-        local item = global.ocfg.shop_items[category][button.name]
+        local item = storage.ocfg.shop_items[category][button.name]
 
         local player_inv = player.get_inventory(defines.inventory.character_main)
         if (player_inv == nil) then return end
@@ -104,7 +104,7 @@ end
 ---@param event EventData.on_post_entity_died
 ---@return nil
 function CoinsFromEnemiesOnPostEntityDied(event)
-    local coin_generation_entry = global.ocfg.coin_generation.coin_generation_table[event.prototype.name]
+    local coin_generation_entry = storage.ocfg.coin_generation.coin_generation_table[event.prototype.name]
     if (coin_generation_entry) then
         DropCoins(event.surface_index, event.position, coin_generation_entry, event.force)
     end
@@ -128,12 +128,12 @@ function DropCoins(surface_index, pos, count, force)
     -- If count is 1 or more, it represents a probability to drop at least that amount and up to multiplier times
     -- that amount.
     elseif (count >= 1) then
-        drop_amount = math.random(count,count * global.ocfg.coin_generation.coin_multiplier)
+        drop_amount = math.random(count,count * storage.ocfg.coin_generation.coin_multiplier)
     end
 
     if drop_amount == 0 then return end
 
-    if global.ocfg.coin_generation.auto_decon_coins then
+    if storage.ocfg.coin_generation.auto_decon_coins then
         game.surfaces[surface_index].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, force, false)
     else
         game.surfaces[surface_index].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, nil, false)

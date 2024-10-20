@@ -18,7 +18,7 @@ function CreateSpawnControlsTab(tab_container, player)
     CreateSecondarySpawnInfo(player, spwnCtrls)
     CreateSetRespawnLocationButton(player, spwnCtrls)
 
-    if global.ocfg.gameplay.enable_shared_spawns then
+    if storage.ocfg.gameplay.enable_shared_spawns then
         CreateSharedSpawnControls(player, spwnCtrls)
         CreateJoinQueueControls(player, spwnCtrls)
     end
@@ -125,7 +125,7 @@ function CreateSetRespawnLocationButton(player, container)
     AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
     --[[@type OarcPlayerSpawn]]
-    local respawn_info = global.player_respawns[player.name][player.surface.name]
+    local respawn_info = storage.player_respawns[player.name][player.surface.name]
 
     if (respawn_info == nil) then
         log("ERROR: No respawn info for player: " .. player.name)
@@ -153,8 +153,8 @@ function CreateSetRespawnLocationButton(player, container)
     CreateGPSButton(horizontal_flow, respawn_surface_name, respawn_position)
 
     -- Sets the player's custom spawn point to their current location
-    if ((game.tick - global.player_cooldowns[player.name].setRespawn) >
-            (global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE)) then
+    if ((game.tick - storage.player_cooldowns[player.name].setRespawn) >
+            (storage.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE)) then
         local change_respawn_button = container.add {
             type = "button",
             tags = { action = "oarc_spawn_ctrl_tab", setting = "set_respawn_location" },
@@ -166,8 +166,8 @@ function CreateSetRespawnLocationButton(player, container)
         change_respawn_button.style.font = "default-small-semibold"
     else
         AddLabel(container, nil,
-            { "oarc-set-respawn-loc-cooldown", FormatTime((global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE) -
-                (game.tick - global.player_cooldowns[player.name].setRespawn)) }, my_note_style)
+            { "oarc-set-respawn-loc-cooldown", FormatTime((storage.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE) -
+                (game.tick - storage.player_cooldowns[player.name].setRespawn)) }, my_note_style)
     end
     AddLabel(container, nil, { "oarc-set-respawn-note" }, my_label_style)
     AddSpacerLine(container)
@@ -269,7 +269,7 @@ function SpawnCtrlGuiOptionsCheckedStateChanged(event)
             SendBroadcastMsg({ "oarc-stop-shared-base", player.name })
         end
         local primary_spawn = FindPrimaryUniqueSpawn(player.name)
-        global.unique_spawns[primary_spawn.surface_name][player.name].open_access = event.element.state
+        storage.unique_spawns[primary_spawn.surface_name][player.name].open_access = event.element.state
         OarcGuiRefreshContent(player)
 
         -- Refresh the shared spawn spawn gui for all players
@@ -344,7 +344,7 @@ function SpawnCtrlTabGuiClick(event)
         elseif (tags.setting == "accept_player_request") then
             
             -- Check if there is space first
-            if (table_size(primary_spawn.joiners) >= global.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
+            if (table_size(primary_spawn.joiners) >= storage.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
                 player.print({ "oarc-shared-spawn-full" })
                 return
             end
@@ -362,7 +362,7 @@ function SpawnCtrlTabGuiClick(event)
             SetPlayerRespawn(joining_player.name, primary_spawn.surface_name, primary_spawn.position, true)
             SendPlayerToSpawn(primary_spawn.surface_name, joining_player)
             GivePlayerStarterItems(joining_player)
-            table.insert(global.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)
+            table.insert(storage.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)
             joining_player.force = game.players[player.name].force
 
             -- Render some welcoming text...

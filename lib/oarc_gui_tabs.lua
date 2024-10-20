@@ -87,7 +87,7 @@ function InitOarcGuiTabs(player)
     SetOarcGuiTabEnabled(player, OARC_MOD_PLAYER_LIST_TAB_NAME, true)
 
     -- Item shop tab
-    if (global.ocfg.gameplay.enable_coin_shop) then
+    if (storage.ocfg.gameplay.enable_coin_shop) then
         AddOarcGuiTab(player, OARC_ITEM_SHOP_TAB_NAME)
         SetOarcGuiTabEnabled(player, OARC_ITEM_SHOP_TAB_NAME, true)
     end

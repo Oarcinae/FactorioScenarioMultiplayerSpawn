@@ -94,21 +94,21 @@ function CreateSurfaceSettingsSection(container, player)
     AddLabel(surface_table, nil, {"oarc-settings-tab-surface-regrowth-enabled"}, "caption_label")
 
     --- Add the rows
-    for name, allowed in pairs(global.oarc_surfaces) do
+    for name, allowed in pairs(storage.oarc_surfaces) do
         AddLabel(surface_table, nil, name, my_label_style)
         AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed.primary, player.admin,
                                     { "oarc-settings-tab-surface-checkbox-tooltip" })
         AddSurfaceCheckboxSetting(surface_table, name, "secondary_enabled", allowed.secondary, player.admin,
                                     { "oarc-settings-tab-surface-secondary-checkbox-tooltip" })
         
-        local regrowth_enabled = TableContains(global.rg.active_surfaces, name)
+        local regrowth_enabled = TableContains(storage.rg.active_surfaces, name)
         AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", regrowth_enabled, player.admin,
                                     {"oarc-settings-tab-surface-regrowth-checkbox-tooltip"})
     end
     
 end
 
----Create the content for the settings export section. Exports the entire global.ocfg table into a string.
+---Create the content for the settings export section. Exports the entire storage.ocfg table into a string.
 ---@param container LuaGuiElement
 ---@param player LuaPlayer
 ---@return nil
@@ -544,17 +544,17 @@ function SettingsSurfaceControlsTabGuiClick(event)
 
     if (setting_name == "spawn_enabled") then
         local surface_name = gui_elem.tags.surface --[[@as string]]
-        global.oarc_surfaces[surface_name].primary = gui_elem.state
+        storage.oarc_surfaces[surface_name].primary = gui_elem.state
 
         if (#GetAllowedSurfaces() == 0) then
             log("Warning - GetAllowedSurfaces() - No surfaces found! Forcing default surface!")
-            global.oarc_surfaces[global.ocfg.gameplay.default_surface].primary = true
-            event.element.parent[global.ocfg.gameplay.default_surface.."_spawn_enabled"].state = true
+            storage.oarc_surfaces[storage.ocfg.gameplay.default_surface].primary = true
+            event.element.parent[storage.ocfg.gameplay.default_surface.."_spawn_enabled"].state = true
         end
 
     elseif (setting_name == "secondary_enabled") then
         local surface_name = gui_elem.tags.surface --[[@as string]]
-        global.oarc_surfaces[surface_name].secondary = gui_elem.state
+        storage.oarc_surfaces[surface_name].secondary = gui_elem.state
 
 
     elseif (setting_name == "regrowth_enabled") then
@@ -577,7 +577,7 @@ function SettingsSurfaceControlsTabGuiClick(event)
 
         log("Exported settings!")
         local export_textfield = gui_elem.parent.parent["export_textfield"]
-        export_textfield.text = serpent.line(global.ocfg, {compact = true, sparse = true})
+        export_textfield.text = serpent.line(storage.ocfg, {compact = true, sparse = true})
     
     elseif (setting_name == "oarc_settings_import") then
         local player = game.players[event.player_index]
@@ -588,7 +588,7 @@ function SettingsSurfaceControlsTabGuiClick(event)
             log("Error importing settings!")
             player.print("Error importing settings!")
         else
-            global.ocfg = table.deepcopy(copy)
+            storage.ocfg = table.deepcopy(copy)
             ValidateSettings() -- Some basic validation, not 100% foolproof
             SyncModSettingsToOCFG() -- Sync the mod settings.
             log("Imported settings!")

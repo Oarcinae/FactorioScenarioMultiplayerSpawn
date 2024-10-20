@@ -106,7 +106,7 @@ end
 ---@return nil
 function PlaceResourcesInSemiCircleHoldingPen(surface, position, size_mod, amount_mod)
 
-    local resources = global.ocfg.surfaces_config["nauvis"].spawn_config.solid_resources
+    local resources = storage.ocfg.surfaces_config["nauvis"].spawn_config.solid_resources
 
     -- Create list of resource tiles
     ---@type table<string>

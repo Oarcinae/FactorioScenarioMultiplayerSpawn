@@ -11,22 +11,22 @@ Y_OFFSET_SHARING_POLE = 20
 ---@return nil
 function CreateSharedPowerPolePair(surface, position)
 
-    if global.shared_power_poles == nil then
+    if storage.shared_power_poles == nil then
         ---@type LuaEntity[]
-        global.shared_power_poles = {}
+        storage.shared_power_poles = {}
     end
 
     --Get an open sharing pole from the holding pen surface if one exists, otherwise create a new one.
     local hidden_pole = FindSharedPowerPole()
     if not hidden_pole then
-        local poles_count = table_size(global.shared_power_poles)
+        local poles_count = table_size(storage.shared_power_poles)
         local new_position = { x = poles_count + STARTING_X_OFFSET_SHARING_POLE, y = Y_OFFSET_SHARING_POLE }
         hidden_pole = CreateSpecialPole(game.surfaces[HOLDING_PEN_SURFACE_NAME], new_position)
         if not hidden_pole then
             log("ERROR - Failed to create shared power poles!? " .. serpent.block(position) .. " on " .. surface.name)
             return
         end
-        table.insert(global.shared_power_poles, hidden_pole)
+        table.insert(storage.shared_power_poles, hidden_pole)
     end
 
     --Create the base pole on the new spawn area surface and connect it to the hidden pole.
@@ -49,9 +49,9 @@ end
 ---Find the first shared power pole that doesn't exceed the max number of connections.
 ---@return LuaEntity?
 function FindSharedPowerPole()
-    if global.shared_power_poles == nil then return nil end
+    if storage.shared_power_poles == nil then return nil end
 
-    for _,pole in pairs(global.shared_power_poles) do
+    for _,pole in pairs(storage.shared_power_poles) do
         -- 5 is the hard coded engine limit and we need to leave one open for the connection to the next hidden pole.
         if pole.neighbours["copper"] and table_size(pole.neighbours["copper"]) < 4  then
             return pole

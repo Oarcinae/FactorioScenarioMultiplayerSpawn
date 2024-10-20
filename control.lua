@@ -115,7 +115,7 @@ end)
 -- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
-    if (global.ocfg.gameplay.enable_shared_team_chat) then
+    if (storage.ocfg.gameplay.enable_shared_team_chat) then
         if (event.player_index ~= nil) then
             ShareChatBetweenForces(game.players[event.player_index], event.message)
         end
@@ -130,7 +130,7 @@ script.on_event(defines.events.on_tick, function(event)
     DelayedSpawnOnTick()
     FadeoutRenderOnTick()
 
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
@@ -140,14 +140,14 @@ end)
 -- Chunk Generation
 ----------------------------------------
 script.on_event(defines.events.on_chunk_generated, function(event)
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
     
     CreateHoldingPenChunks(event)
     SeparateSpawnsGenerateChunk(event)
 
-    if global.ocfg.gameplay.modified_enemy_spawning then
+    if storage.ocfg.gameplay.modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
         DowngradeAndReduceEnemiesOnChunkGenerate(event)
     end
@@ -157,7 +157,7 @@ end)
 -- Radar Scanning
 ----------------------------------------
 script.on_event(defines.events.on_sector_scanned, function (event)   
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthSectorScan(event)
     end
 end)
@@ -182,7 +182,7 @@ end)
 -- Various on "built" events
 ----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 
@@ -191,13 +191,13 @@ script.on_event(defines.events.on_built_entity, function(event)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function (event)
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
     end
 end)
 
 script.on_event(defines.events.on_player_built_tile, function (event)
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         for _,v in pairs(event.tiles) do
             RegrowthMarkAreaSafeGivenTilePos(game.surfaces[event.surface_index].name, v.position, 2, false)
         end
@@ -207,7 +207,7 @@ end)
 --If a player gets in or out of a vehicle, mark the area as safe so we don't delete the vehicle by accident.
 --Only world eater will clean up these chunks over time if it is enabled.
 script.on_event(defines.events.on_player_driving_changed_state, function (event)
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 1, false)
     end
 end)
@@ -218,7 +218,7 @@ end)
 -- Specifically FARL.
 ----------------------------------------
 script.on_event(defines.events.script_raised_built, function(event)
-    if global.ocfg.regrowth.enable_regrowth then
+    if storage.ocfg.regrowth.enable_regrowth then
         RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 2, false)
     end
 end)
@@ -228,13 +228,13 @@ end)
 -- This is where I modify biter spawning based on location and other factors.
 ----------------------------------------
 script.on_event(defines.events.on_entity_spawned, function(event)
-    if (global.ocfg.gameplay.modified_enemy_spawning) then
+    if (storage.ocfg.gameplay.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 end)
 
 script.on_event(defines.events.on_biter_base_built, function(event)
-    if (global.ocfg.gameplay.modified_enemy_spawning) then
+    if (storage.ocfg.gameplay.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
     end
 end)
@@ -244,7 +244,7 @@ end)
 -- This is where I remove biter waves on offline players
 ----------------------------------------
 script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
-    if (global.ocfg.gameplay.enable_offline_protection) then
+    if (storage.ocfg.gameplay.enable_offline_protection) then
         OarcModifyEnemyGroup(event)
     end
 end)
@@ -254,7 +254,7 @@ end)
 -- For coin generation and stuff
 ----------------------------------------
 script.on_event(defines.events.on_post_entity_died, function(event)
-    if global.ocfg.coin_generation.enabled then
+    if storage.ocfg.coin_generation.enabled then
         CoinsFromEnemiesOnPostEntityDied(event)
     end
 end,
@@ -330,7 +330,7 @@ end)
 local oarc_mod_interface =
 {
   get_mod_settings = function()
-    return global.ocfg
+    return storage.ocfg
   end
 }
 
