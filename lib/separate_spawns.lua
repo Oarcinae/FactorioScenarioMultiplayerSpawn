@@ -236,6 +236,9 @@ end
 ---@param event EventData.on_player_changed_surface
 ---@return nil
 function SeparateSpawnsPlayerChangedSurface(event)
+
+    log("SeparateSpawnsPlayerChangedSurface - " .. event.surface_index)
+
     if (not storage.ocfg.gameplay.enable_secondary_spawns) then return end
 
     local player = game.players[event.player_index]
@@ -453,7 +456,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     }
 
     -- Create shared power poles
-    if (ocfg.gameplay.enable_shared_power) then
+    if (ocfg.gameplay.enable_shared_power and delayed_spawn.primary) then
         local power_pole_position = {
             x = sharing_ref_pos.x + spawn_config.shared_power_pole_position.x_offset,
             y = sharing_ref_pos.y + spawn_config.shared_power_pole_position.y_offset }
@@ -461,7 +464,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     end
 
     -- Create shared chest
-    if (ocfg.gameplay.enable_shared_chest) then
+    if (ocfg.gameplay.enable_shared_chest and delayed_spawn.primary) then
         local chest_position = {
             x = sharing_ref_pos.x + spawn_config.shared_chest_position.x_offset,
             y = sharing_ref_pos.y + spawn_config.shared_chest_position.y_offset }
@@ -501,7 +504,7 @@ function DisplayWelcomeGroundTextAtSpawn(player, surface, position)
     -- Render some welcoming text...
     local tcolor = { 0.9, 0.7, 0.3, 0.8 }
     local ttl = 2000
-    local rid1 = rendering.draw_text { text = "Welcome",
+    local render_object_1 = rendering.draw_text { text = "Welcome",
         surface = surface,
         target = { x = position.x - 21, y = position.y - 15 },
         color = tcolor,
@@ -514,7 +517,7 @@ function DisplayWelcomeGroundTextAtSpawn(player, surface, position)
         -- alignment=center,
         scale_with_zoom = false,
         only_in_alt_mode = false }
-    local rid2 = rendering.draw_text { text = "Home",
+    local render_object_2 = rendering.draw_text { text = "Home",
         surface = surface,
         target = { x = position.x - 14, y = position.y - 5 },
         color = tcolor,
@@ -527,6 +530,8 @@ function DisplayWelcomeGroundTextAtSpawn(player, surface, position)
         -- alignment=center,
         scale_with_zoom = false,
         only_in_alt_mode = false }
+    local rid1 = render_object_1.id
+    local rid2 = render_object_2.id
 
     table.insert(storage.oarc_renders_fadeout, rid1)
     table.insert(storage.oarc_renders_fadeout, rid2)
@@ -1241,15 +1246,16 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
     final_chunk.y = final_chunk.y + spawn_chunk_radius
 
     ---@type OarcDelayedSpawn
-    local delayedSpawn = {}
-    delayedSpawn.playerName = player_name
-    delayedSpawn.surface = surface
-    delayedSpawn.position = spawn_position
-    delayedSpawn.moat = moat_enabled
-    delayedSpawn.delayedTick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND
-    delayedSpawn.final_chunk_generated = final_chunk
+    local delayed_spawn = {}
+    delayed_spawn.playerName = player_name
+    delayed_spawn.surface = surface
+    delayed_spawn.position = spawn_position
+    delayed_spawn.moat = moat_enabled
+    delayed_spawn.delayedTick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND
+    delayed_spawn.final_chunk_generated = final_chunk
+    delayed_spawn.primary = primary
 
-    table.insert(storage.delayed_spawns, delayedSpawn)
+    table.insert(storage.delayed_spawns, delayed_spawn)
 
     HideOarcGui(game.players[player_name])
     DisplayPleaseWaitForSpawnDialog(game.players[player_name], delay_spawn_seconds, game.surfaces[surface], spawn_position)
@@ -1259,7 +1265,7 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
 
     -- Chart the area to be able to display the minimap while the player waits.
     ChartArea(game.players[player_name].force,
-        delayedSpawn.position,
+        delayed_spawn.position,
         spawn_chunk_radius,
         surface
     )
@@ -1434,7 +1440,6 @@ function CreatePlayerForce(force_name)
         new_force = game.create_force(force_name)
         new_force.share_chart = storage.ocfg.gameplay.enable_shared_team_vision
         new_force.friendly_fire = storage.ocfg.gameplay.enable_friendly_fire
-        new_force.research_queue_enabled = true
         -- SetCeaseFireBetweenAllPlayerForces()
         -- SetFriendlyBetweenAllPlayerForces()
         ConfigurePlayerForceRelationships(true, true)
@@ -1508,7 +1513,15 @@ SPAWN_TEAM_CHOICE = {
 ---@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
 
 ---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
----@alias OarcDelayedSpawn { surface: string, playerName: string, position: MapPosition, moat: boolean, delayedTick: number, final_chunk_generated: ChunkPosition }
+---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
+---@class OarcDelayedSpawn
+---@field surface string The surface on which the player will spawn.
+---@field playerName string The name of the player.
+---@field position MapPosition The position where the player will spawn.
+---@field moat boolean Whether the spawn has a moat or not.
+---@field delayedTick number The game tick when the spawn will be ready.
+---@field final_chunk_generated ChunkPosition The final chunk position that needs to be generated.
+---@field primary boolean Whether this is the primary spawn point for a player, this is the first surface they spawn on. All other spawns are secondary.
 ---Table of [OarcDelayedSpawn](lua://OarcDelayedSpawn) indexed by player name.
 ---@alias OarcDelayedSpawnsTable table<string, OarcDelayedSpawn>
 

@@ -126,7 +126,7 @@ function ValidateAndLoadConfig()
         if (entry.mod_key ~= "") then
             local mod_key = entry.mod_key
             local oarc_key = entry.ocfg_keys
-            local mod_value = game.mod_setting_prototypes[mod_key].default_value
+            local mod_value = prototypes.mod_setting[mod_key].default_value
             local oarc_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
             if (mod_value ~= oarc_value) then
                 error("OCFG value does not match mod setting: " .. mod_key .. " = " .. tostring(mod_value) .. " -> " .. serpent.block(oarc_key) .. " = " .. tostring(oarc_value))

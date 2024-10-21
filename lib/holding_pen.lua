@@ -12,8 +12,8 @@ function CreateHoldingPenSurface()
     ---@type MapGenSettings
     ---@diagnostic disable-next-line: missing-fields
     local map_settings = {}
-    map_settings.terrain_segmentation = "none"
-    map_settings.water = "none"
+    -- map_settings.terrain_segmentation = "none"
+    -- map_settings.water = "none"
     map_settings.starting_area = "none"
     map_settings.peaceful_mode = true
     map_settings.width = 64
@@ -25,6 +25,7 @@ function CreateHoldingPenSurface()
     holding_pen_surface.always_day = true
     holding_pen_surface.show_clouds = false
     holding_pen_surface.generate_with_lab_tiles = true
+    holding_pen_surface.localised_name = {"oarc-holding-pen-surface"}
 
     RenderPermanentGroundText(holding_pen_surface, {x=9,y=-7}, 5, "O", {0.9, 0.7, 0.3, 0.5}, "center")
     RenderPermanentGroundText(holding_pen_surface, {x=9,y=-4}, 5, "A", {0.9, 0.7, 0.3, 0.5}, "center")
@@ -93,6 +94,11 @@ function CreateHoldingPenChunks(event)
             amount = 90000,
             position = { 0, 9 }
         })
+
+        -- Create special power pole if sharing is enabled (it will be created later when first requested otherwise)
+        if (storage.ocfg.gameplay.enable_shared_power) then
+            InitSharingPowerPoles()
+        end
     end
 end
 

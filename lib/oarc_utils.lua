@@ -88,7 +88,7 @@ end
 ---@param alignment TextAlign?
 ---@return nil
 function TemporaryHelperText(text, surface, position, ttl, alignment)
-    local rid = rendering.draw_text { text = text,
+    local render_object = rendering.draw_text { text = text,
         surface = surface,
         target = position,
         color = { 0.7, 0.7, 0.7, 0.7 },
@@ -97,6 +97,7 @@ function TemporaryHelperText(text, surface, position, ttl, alignment)
         time_to_live = ttl,
         alignment = alignment,
         draw_on_ground = false }
+    local rid = render_object.id
     table.insert(storage.oarc_renders_fadeout, rid)
 end
 
@@ -121,12 +122,13 @@ end
 function FadeoutRenderOnTick()
     if (storage.oarc_renders_fadeout and (#storage.oarc_renders_fadeout > 0)) then
         for k, rid in pairs(storage.oarc_renders_fadeout) do
-            if (rendering.is_valid(rid)) then
-                local ttl = rendering.get_time_to_live(rid)
+            local render_object = rendering.get_object_by_id(rid)
+            if (render_object and render_object.valid) then
+                local ttl = render_object.time_to_live
                 if ((ttl > 0) and (ttl < 200)) then
-                    local color = rendering.get_color(rid)
+                    local color = render_object.color
                     if (color.a > 0.005) then
-                        rendering.set_color(rid, { r = color.r, g = color.g, b = color.b, a = color.a - 0.005 })
+                        render_object.color = { r = color.r, g = color.g, b = color.b, a = color.a - 0.005 }
                     end
                 end
             else
@@ -372,7 +374,7 @@ end
 ---@return nil
 function OarcsSaferInsert(entity, item_dict)
     if not (entity and entity.valid and item_dict) then return end
-    local items = game.item_prototypes
+    local items = prototypes.item
     local insert = entity.insert
     for name, count in pairs(item_dict) do
         if items[name] and count > 0 then
@@ -389,7 +391,7 @@ end
 ---@return nil
 function OarcsSaferRemove(entity, item_dict)
     if not (entity and entity.valid and item_dict) then return end
-    local items = game.item_prototypes
+    local items = prototypes.item
     local remove = entity.remove_item
     for name, count in pairs(item_dict) do
         if items[name] and count > 0 then
@@ -1374,7 +1376,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
             -- Fill in all unexpected water (or force grass)
             if (distSqr <= tile_radius_sqr) then
-                if (surface.get_tile(i, j).collides_with("water-tile") or
+                if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
@@ -1442,7 +1444,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
 
             -- Fill in all unexpected water (or force grass)
             if (distVar <= tileRadius) then
-                if (surface.get_tile(i, j).collides_with("water-tile") or
+                if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
@@ -1511,7 +1513,7 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
             -- Fill in all unexpected water (or force grass)
             if (max_distance <= tileRadius) then
-                if (surface.get_tile(i, j).collides_with("water-tile") or
+                if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end

@@ -371,7 +371,7 @@ function RegrowthSectorScan(event)
     if (storage.rg[surface_name] == nil) then return end
 
     ---@type integer
-    local radar_range = event.radar.prototype.max_distance_of_nearby_sector_revealed --TODO: Space age quality might affect this?
+    local radar_range = event.radar.prototype.get_max_distance_of_nearby_sector_revealed(event.radar.quality) --TODO: Space age quality might affect this?
     RefreshAreaChunkPosition(surface_name, event.chunk_position, radar_range, 0)
 end
 
@@ -694,7 +694,7 @@ function RegrowthOnBuiltEntity(event)
         log("Added spidertron to regrowth tracking")
 
         if storage.rg.spidertron_chunk_radius == nil then
-            storage.rg.spidertron_chunk_radius = game.entity_prototypes["spidertron"].chunk_exploration_radius
+            storage.rg.spidertron_chunk_radius = prototypes.entity["spidertron"].chunk_exploration_radius
         end
     end
 end

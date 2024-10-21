@@ -167,7 +167,10 @@ end)
 ----------------------------------------
 -- This is not called when the default surface "nauvis" is created as it will always exist!
 script.on_event(defines.events.on_surface_created, function(event)
-    log("Surface created: " .. game.surfaces[event.surface_index].name)
+    local surface = game.surfaces[event.surface_index]
+    log("Surface created: " .. surface.name)
+    if (surface.platform) then return end -- WE IGNORE PLATFORMS!
+
     SeparateSpawnsSurfaceCreated(event)
     RegrowthSurfaceCreated(event)
 end)
@@ -183,7 +186,7 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
     if storage.ocfg.regrowth.enable_regrowth then
-        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
+        RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 2, false)
     end
 
     -- For tracking spidertrons...
@@ -192,7 +195,7 @@ end)
 
 script.on_event(defines.events.on_robot_built_entity, function (event)
     if storage.ocfg.regrowth.enable_regrowth then
-        RegrowthMarkAreaSafeGivenTilePos(event.created_entity.surface.name, event.created_entity.position, 2, false)
+        RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 2, false)
     end
 end)
 

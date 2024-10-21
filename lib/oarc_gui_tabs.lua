@@ -238,8 +238,20 @@ function CreateOarcGuiTabsPane(player)
         local subhead = inside_frame.add{
             type="frame",
             name="sub_header",
-            style = "changelog_subheader_frame"
+            style = "subheader_frame"
         }
+        subhead.style.horizontally_stretchable = true
+
+        -- changelog_subheader_frame =
+        -- {
+        --   type = "frame_style",
+        --   parent = "subheader_frame",
+        --   left_padding = 12,
+        --   right_padding = 12,
+        --   top_padding = 4,
+        --   horizontally_stretchable = "on"
+        -- }
+
         AddLabel(subhead, nil, {"oarc-gui-tab-header-label"}, "subheader_caption_label")
 
         -- TABBED PANE

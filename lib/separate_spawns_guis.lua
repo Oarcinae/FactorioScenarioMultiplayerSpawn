@@ -58,8 +58,9 @@ function DisplayWelcomeTextGui(player)
 
     local dragger = button_flow.add {
         type = "empty-widget",
-        style = "draggable_space_with_no_left_margin",
+        style = "draggable_space",
     }
+    dragger.style.left_margin = 0
     dragger.style.horizontally_stretchable = true
     dragger.style.height = 30
 
@@ -117,9 +118,19 @@ function CreateSpawnMenuGuiFrame(player)
     local subhead = inside_frame.add{
         type="frame",
         name="sub_header",
-        style = "changelog_subheader_frame"
+        style = "subheader_frame"
     }
     subhead.style.height = 46
+    subhead.style.horizontally_stretchable = true
+    -- changelog_subheader_frame =
+    -- {
+    --   type = "frame_style",
+    --   parent = "subheader_frame",
+    --   left_padding = 12,
+    --   right_padding = 12,
+    --   top_padding = 4,
+    --   horizontally_stretchable = "on"
+    -- }
     AddLabel(subhead, "warning_lbl1", { "oarc-click-info-btn-help" }, my_note_style)
 
     return inside_frame
@@ -956,7 +967,8 @@ function DisplaySharedSpawnJoinWaitMenu(player)
         style = "back_button"
     }
 
-    local dragger = button_flow.add{type="empty-widget", style="draggable_space_with_no_right_margin"}
+    local dragger = button_flow.add{type="empty-widget", style="draggable_space"}
+    dragger.style.right_margin = 0
     dragger.style.horizontally_stretchable = true
     dragger.style.height = 30
 end
@@ -1009,7 +1021,8 @@ function DisplayBuddySpawnWaitMenu(player)
         tooltip = { "oarc-return-to-previous-tooltip" },
     }
 
-    local dragger = button_flow.add{type="empty-widget", style="draggable_space_with_no_right_margin"}
+    local dragger = button_flow.add{type="empty-widget", style="draggable_space"}
+    dragger.style.right_margin = 0
     dragger.style.horizontally_stretchable = true
     dragger.style.height = 30
 end

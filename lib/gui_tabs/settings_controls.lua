@@ -217,7 +217,7 @@ function SettingsControlsTabGuiTextconfirmed(event)
     elseif (entry.type == "integer") then
         local safe_value = GetSafeIntValueForModSetting(value, entry.mod_key)
         if not pcall(function() settings.global[entry.mod_key] = { value = safe_value } end) then
-            settings.global[entry.mod_key] = { value = game.mod_setting_prototypes[entry.mod_key].default_value }
+            settings.global[entry.mod_key] = { value = prototypes.mod_setting[entry.mod_key].default_value }
             log("Error setting value for " .. entry.mod_key .. " to " .. safe_value)
         end
         gui_elem.text = tostring(settings.global[entry.mod_key].value)
@@ -229,7 +229,7 @@ function SettingsControlsTabGuiTextconfirmed(event)
     elseif (entry.type == "double") then
         local safe_value = GetSafeDoubleValueForModSetting(value, entry.mod_key)
         if not pcall(function() settings.global[entry.mod_key] = { value = safe_value } end) then
-            settings.global[entry.mod_key] = { value = game.mod_setting_prototypes[entry.mod_key].default_value }
+            settings.global[entry.mod_key] = { value = prototypes.mod_setting[entry.mod_key].default_value }
             log("Error setting value for " .. entry.mod_key .. " to " .. safe_value)
         end
         gui_elem.text = string.format("%.2f", settings.global[entry.mod_key].value)
@@ -272,10 +272,10 @@ end
 function GetSafeIntValueForModSetting(input, mod_key)
     local value_num = tonumber(input)
     if not value_num then
-        value_num = tonumber(game.mod_setting_prototypes[mod_key].default_value)
+        value_num = tonumber(prototypes.mod_setting[mod_key].default_value)
     else
-        local minimum = game.mod_setting_prototypes[mod_key].minimum_value
-        local maximum = game.mod_setting_prototypes[mod_key].maximum_value
+        local minimum = prototypes.mod_setting[mod_key].minimum_value
+        local maximum = prototypes.mod_setting[mod_key].maximum_value
         if minimum ~= nil then
             value_num = math.max(value_num, minimum)
         end
@@ -294,10 +294,10 @@ end
 function GetSafeDoubleValueForModSetting(input, mod_key)
     local value_num = tonumber(input)
     if not value_num then
-        value_num = tonumber(game.mod_setting_prototypes[mod_key].default_value)
+        value_num = tonumber(prototypes.mod_setting[mod_key].default_value)
     else
-        local minimum = game.mod_setting_prototypes[mod_key].minimum_value
-        local maximum = game.mod_setting_prototypes[mod_key].maximum_value
+        local minimum = prototypes.mod_setting[mod_key].minimum_value
+        local maximum = prototypes.mod_setting[mod_key].maximum_value
         if minimum ~= nil then
             value_num = math.max(value_num, minimum)
         end
@@ -399,8 +399,8 @@ function AddIntegerSetting(tab_container, index, entry, enabled)
     local slider = horizontal_flow.add {
         name = "slider",
         type = "slider",
-        minimum_value = game.mod_setting_prototypes[entry.mod_key].minimum_value,
-        maximum_value = game.mod_setting_prototypes[entry.mod_key].maximum_value,
+        minimum_value = prototypes.mod_setting[entry.mod_key].minimum_value,
+        maximum_value = prototypes.mod_setting[entry.mod_key].maximum_value,
         value = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
         tooltip = { "mod-setting-description."..entry.mod_key },
@@ -447,8 +447,8 @@ function AddDoubleSetting(tab_container, index, entry, enabled)
     local slider = horizontal_flow.add {
         name = "slider",
         type = "slider",
-        minimum_value = game.mod_setting_prototypes[entry.mod_key].minimum_value,
-        maximum_value = game.mod_setting_prototypes[entry.mod_key].maximum_value,
+        minimum_value = prototypes.mod_setting[entry.mod_key].minimum_value,
+        maximum_value = prototypes.mod_setting[entry.mod_key].maximum_value,
         value = GetGlobalOarcConfigUsingKeyTable(entry.ocfg_keys),
         enabled = enabled,
         tooltip = { "mod-setting-description."..entry.mod_key },
@@ -493,7 +493,7 @@ function AddStringListDropdownSetting(tab_container, index, entry, enabled)
     }
     dragger.style.horizontally_stretchable = true
 
-    local allowed_values = game.mod_setting_prototypes[entry.mod_key].allowed_values --[[@as string[] ]]
+    local allowed_values = prototypes.mod_setting[entry.mod_key].allowed_values --[[@as string[] ]]
     
     local selected_index = 1
     for i,v in pairs(allowed_values) do

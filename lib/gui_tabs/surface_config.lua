@@ -870,7 +870,7 @@ function SurfaceConfigTabGuiElemChanged(event)
             return
         end
 
-        if (game.entity_prototypes[new_resource_name].resource_category ~= "basic-solid") then
+        if (prototypes.entity[new_resource_name].resource_category ~= "basic-solid") then
             player.print("Resource must be a solid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
@@ -918,7 +918,7 @@ function SurfaceConfigTabGuiElemChanged(event)
             return
         end
 
-        if (game.entity_prototypes[new_resource_name].resource_category ~= "basic-fluid") then
+        if (prototypes.entity[new_resource_name].resource_category ~= "basic-fluid") then
             player.print("Resource must be a fluid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return

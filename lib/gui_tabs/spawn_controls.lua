@@ -301,8 +301,9 @@ function SpawnCtrlTabGuiClick(event)
     elseif (tags.setting == "show_location") then
         local surface_name = tags.surface --[[@as string]]
         local position = tags.position --[[@as MapPosition]]
-        player.open_map(position, 0.05)  -- TODO: Update this for spage age!
-        player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
+
+        player.set_controller{type = defines.controllers.remote, position = position, surface = surface_name}
+        -- player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
 
     -- Accept or reject pending player join requests to a shared base
     elseif ((tags.setting == "accept_player_request") or (tags.setting == "reject_player_request")) then

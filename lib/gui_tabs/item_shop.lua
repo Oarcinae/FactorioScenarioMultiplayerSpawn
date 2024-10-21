@@ -6,8 +6,16 @@
 ---@return nil
 function CreateItemShopTab(tab_container, player)
 
-    local player_inv = player.get_main_inventory()
-    if (player_inv == nil) then return end
+    if (player.character == nil) then
+        AddLabel(tab_container, nil, "Player character not available right now.", my_warning_style)
+        return
+    end
+
+    local player_inv = player.character.get_main_inventory()
+    if (player_inv == nil) then 
+        AddLabel(tab_container, nil, "Player main inventory not available right now.", my_warning_style)
+        return
+    end
 
     local wallet = player_inv.get_item_count("coin")
     AddLabel(tab_container,
@@ -29,7 +37,7 @@ function CreateItemShopTab(tab_container, player)
         for item_name,item in pairs(section) do
 
             -- Validate if item exists
-            if (not game.item_prototypes[item_name]) then
+            if (not prototypes.item[item_name]) then
                 log("ERROR: Item not found in storage.ocfg.shop_items: " .. item_name)
                 goto continue
             end
@@ -134,8 +142,24 @@ function DropCoins(surface_index, pos, count, force)
     if drop_amount == 0 then return end
 
     if storage.ocfg.coin_generation.auto_decon_coins then
-        game.surfaces[surface_index].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, force, false)
+        game.surfaces[surface_index].spill_item_stack{
+            position=pos,
+            stack={name="coin", count=math.floor(drop_amount)},
+            enable_looted=true,
+            force=force,
+            -- allow_belts?=false,
+            -- max_radius?=…,
+            -- use_start_position_on_failure?=false
+        }
     else
-        game.surfaces[surface_index].spill_item_stack(pos, {name="coin", count=math.floor(drop_amount)}, true, nil, false)
+        game.surfaces[surface_index].spill_item_stack{
+            position=pos,
+            stack={name="coin", count=math.floor(drop_amount)},
+            enable_looted=true,
+            force=nil,
+            -- allow_belts?=false,
+            -- max_radius?=…,
+            -- use_start_position_on_failure?=false
+        }
     end
 end
