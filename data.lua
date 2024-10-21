@@ -6,14 +6,12 @@ oarc_linked_chest.type="linked-container"
 oarc_linked_chest.name="oarc-linked-chest"
 oarc_linked_chest.inventory_type="with_filters_and_bar"
 oarc_linked_chest.inventory_size=settings.startup["oarc-mod-linked-chest-size"].value --[[@as integer]]
-oarc_linked_chest.picture.layers[1].filename = "__oarc-mod__/graphics/oarc-linked-chest.png"
-oarc_linked_chest.picture.layers[1].hr_version.filename = "__oarc-mod__/graphics/hr-oarc-linked-chest.png"
+oarc_linked_chest.picture.layers[1].filename = "__oarc-mod__/graphics/hr-oarc-linked-chest.png"
 
 
 local oarc_linked_power=table.deepcopy(data.raw["electric-pole"]["small-electric-pole"])
 oarc_linked_power.name="oarc-linked-power"
-oarc_linked_power.pictures.layers[1].filename = "__oarc-mod__/graphics/oarc-electric-pole.png"
-oarc_linked_power.pictures.layers[1].hr_version.filename = "__oarc-mod__/graphics/hr-oarc-electric-pole.png"
+oarc_linked_power.pictures.layers[1].filename = "__oarc-mod__/graphics/hr-oarc-electric-pole.png"
 
 data:extend({
     {
@@ -27,4 +25,4 @@ data:extend({
 })
 
 -- Make coins not hidden
-data.raw["item"]["coin"].flags = {}
+data.raw["item"]["coin"].hidden = false

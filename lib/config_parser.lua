@@ -118,7 +118,7 @@ function ValidateAndLoadConfig()
 
     -- Load the template config into the global table.
     ---@class OarcConfig
-    global.ocfg = table.deepcopy(OCFG)
+    storage.ocfg = table.deepcopy(OCFG)
 
     -- Check that each entry in OCFG matches the default value of the mod setting. This is just for my own sanity.
     -- Helps make sure mod default settings and my internal config are in sync.
@@ -126,7 +126,7 @@ function ValidateAndLoadConfig()
         if (entry.mod_key ~= "") then
             local mod_key = entry.mod_key
             local oarc_key = entry.ocfg_keys
-            local mod_value = game.mod_setting_prototypes[mod_key].default_value
+            local mod_value = prototypes.mod_setting[mod_key].default_value
             local oarc_value = GetGlobalOarcConfigUsingKeyTable(oarc_key)
             if (mod_value ~= oarc_value) then
                 error("OCFG value does not match mod setting: " .. mod_key .. " = " .. tostring(mod_value) .. " -> " .. serpent.block(oarc_key) .. " = " .. tostring(oarc_value))
@@ -138,7 +138,7 @@ function ValidateAndLoadConfig()
 
     GetScenarioOverrideSettings() -- Get any scenario settings and overwrite both the mod settings and OARC_CFG.
 
-    SyncModSettingsToOCFG() -- Make sure mod settings are in sync with global.ocfg table.
+    SyncModSettingsToOCFG() -- Make sure mod settings are in sync with storage.ocfg table.
 
     ValidateSettings() -- These are validation checks that can't be done within the mod settings natively.
 end
@@ -148,94 +148,94 @@ end
 function ValidateSettings()
 
     -- Verify the major sections exist. Not exhaustive but should catch missing sections.
-    if (global.ocfg["server_info"] == nil) then
+    if (storage.ocfg["server_info"] == nil) then
         log("ERROR - Missing server_info section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing server_info section in config! Loading defaults instead!")
-        global.ocfg.server_info = table.deepcopy(OCFG.server_info)
+        storage.ocfg.server_info = table.deepcopy(OCFG.server_info)
     end
-    if (global.ocfg["gameplay"] == nil) then
+    if (storage.ocfg["gameplay"] == nil) then
         log("ERROR - Missing gameplay section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing gameplay section in config! Loading defaults instead!")
-        global.ocfg.gameplay = table.deepcopy(OCFG.gameplay)
+        storage.ocfg.gameplay = table.deepcopy(OCFG.gameplay)
     end
-    if (global.ocfg["regrowth"] == nil) then
+    if (storage.ocfg["regrowth"] == nil) then
         log("ERROR - Missing regrowth section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing regrowth section in config! Loading defaults instead!")
-        global.ocfg.regrowth = table.deepcopy(OCFG.regrowth)
+        storage.ocfg.regrowth = table.deepcopy(OCFG.regrowth)
     end
-    if (global.ocfg["spawn_general"] == nil) then
+    if (storage.ocfg["spawn_general"] == nil) then
         log("ERROR - Missing spawn_general section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing spawn_general section in config! Loading defaults instead!")
-        global.ocfg.spawn_general = table.deepcopy(OCFG.spawn_general)
+        storage.ocfg.spawn_general = table.deepcopy(OCFG.spawn_general)
     end
-    if (global.ocfg["resource_placement"] == nil) then
+    if (storage.ocfg["resource_placement"] == nil) then
         log("ERROR - Missing resource_placement section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing resource_placement section in config! Loading defaults instead!")
-        global.ocfg.resource_placement = table.deepcopy(OCFG.resource_placement)
+        storage.ocfg.resource_placement = table.deepcopy(OCFG.resource_placement)
     end
-    if (global.ocfg["surfaces_config"] == nil) then
+    if (storage.ocfg["surfaces_config"] == nil) then
         log("ERROR - Missing surfaces_config section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing surfaces_config section in config! Loading defaults instead!")
-        global.ocfg.surfaces_config = table.deepcopy(OCFG.surfaces_config)
+        storage.ocfg.surfaces_config = table.deepcopy(OCFG.surfaces_config)
     end
-    if (global.ocfg["surfaces_blacklist"] == nil) then
+    if (storage.ocfg["surfaces_blacklist"] == nil) then
         log("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!")
-        global.ocfg.surfaces_blacklist = table.deepcopy(OCFG.surfaces_blacklist)
+        storage.ocfg.surfaces_blacklist = table.deepcopy(OCFG.surfaces_blacklist)
     end
-    if (global.ocfg["surfaces_blacklist_match"] == nil) then
+    if (storage.ocfg["surfaces_blacklist_match"] == nil) then
         log("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
-        global.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
+        storage.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
     end
-    if (global.ocfg["shop_items"] == nil) then
+    if (storage.ocfg["shop_items"] == nil) then
         log("ERROR - Missing shop_items section in config! Loading defaults instead!")
         SendBroadcastMsg("ERROR - Missing shop_items section in config! Loading defaults instead!")
-        global.ocfg.shop_items = table.deepcopy(OCFG.shop_items)
+        storage.ocfg.shop_items = table.deepcopy(OCFG.shop_items)
     end
 
 
     -- Validate enable_main_team and enable_separate_teams.
     -- Force enable_main_team if both are disabled.
-    if (not global.ocfg.gameplay.enable_main_team and not global.ocfg.gameplay.enable_separate_teams) then
+    if (not storage.ocfg.gameplay.enable_main_team and not storage.ocfg.gameplay.enable_separate_teams) then
         log("Both main force and separate teams are disabled! Enabling main force. Please check your mod settings or config!")
-        global.ocfg.gameplay.enable_main_team = true
+        storage.ocfg.gameplay.enable_main_team = true
         settings.global["oarc-mod-enable-main-team"] = { value = true }
         SendBroadcastMsg("Invalid setting! Both main force and separate teams are disabled! Enabling main force.")
     end
 
     -- Validate minimum is less than maximums
-    if (global.ocfg.gameplay.near_spawn_distance >= global.ocfg.gameplay.far_spawn_distance) then
+    if (storage.ocfg.gameplay.near_spawn_distance >= storage.ocfg.gameplay.far_spawn_distance) then
         log("Near spawn min distance is greater than or equal to near spawn max distance! Please check your mod settings or config!")
-        global.ocfg.gameplay.far_spawn_distance = global.ocfg.gameplay.near_spawn_distance + 1
-        settings.global["oarc-mod-far-spawn-distance"] = { value = global.ocfg.gameplay.far_spawn_distance }
+        storage.ocfg.gameplay.far_spawn_distance = storage.ocfg.gameplay.near_spawn_distance + 1
+        settings.global["oarc-mod-far-spawn-distance"] = { value = storage.ocfg.gameplay.far_spawn_distance }
         SendBroadcastMsg("Invalid setting! Near spawn min distance is greater than or equal to near spawn max distance!")
     end
 
     -- Validate that regrowth is enabled if world eater is enabled.
-    if (global.ocfg.regrowth.enable_world_eater and not global.ocfg.regrowth.enable_regrowth) then
+    if (storage.ocfg.regrowth.enable_world_eater and not storage.ocfg.regrowth.enable_regrowth) then
         log("World eater is enabled but regrowth is not! Disabling world eater. Please check your mod settings or config!")
-        global.ocfg.regrowth.enable_world_eater = false
+        storage.ocfg.regrowth.enable_world_eater = false
         settings.global["oarc-mod-enable-world-eater"] = { value = false }
         SendBroadcastMsg("Invalid setting! World eater is enabled but regrowth is not! Disabling world eater.")
     end
 
     -- Validate that default surface exists.
-    if (game.surfaces[global.ocfg.gameplay.default_surface] == nil) then
+    if (game.surfaces[storage.ocfg.gameplay.default_surface] == nil) then
         log("Default surface does not exist! Please check your mod settings or config!")
-        global.ocfg.gameplay.default_surface = "nauvis"
+        storage.ocfg.gameplay.default_surface = "nauvis"
         settings.global["oarc-mod-default-surface"] = { value = "nauvis" }
         SendBroadcastMsg("Invalid setting! Default surface does not exist! Setting to nauvis.")
     end
 
     -- Validate that a "nauvis" surface config exists (nauvis is the default config fallback)
     -- This should only break with a bad scenario custom config.
-    if (global.ocfg.surfaces_config["nauvis"] == nil) then
+    if (storage.ocfg.surfaces_config["nauvis"] == nil) then
         error("nauvis surface config does not exist! Please check your mod settings or config!")
     end
 
     -- Very for each surface config that the item counts are valid.
-    for surface_name,surface_config in pairs(global.ocfg.surfaces_config) do
+    for surface_name,surface_config in pairs(storage.ocfg.surfaces_config) do
         if (table_size(surface_config.starting_items.crashed_ship_resources) > MAX_CRASHED_SHIP_RESOURCES_ITEMS) then
             error("Too many items in crashed_ship_resources for surface: " .. surface_name)
         end
@@ -260,8 +260,8 @@ function CacheModSettings()
     end
 
     -- Special case for startup settings
-    global.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value  --[[@as boolean]]
-    global.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value --[[@as string]]
+    storage.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value  --[[@as boolean]]
+    storage.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value --[[@as string]]
 end
 
 ---Get the scenario settings from the scenario if it exists.
@@ -274,7 +274,7 @@ function GetScenarioOverrideSettings()
         local scenario_settings = remote.call("oarc_scenario", "get_scenario_settings")
 
         -- Overwrite the non mod settings with the scenario settings.
-        global.ocfg = scenario_settings
+        storage.ocfg = scenario_settings
     else
         log("No scenario settings found.")
     end
@@ -284,7 +284,7 @@ end
 ---@return nil
 function SyncModSettingsToOCFG()
 
-    -- Override the mod settings with the the global.ocfg settings.
+    -- Override the mod settings with the the storage.ocfg settings.
     for _,entry in pairs(OCFG_KEYS) do
         if (entry.mod_key ~= "") then
             local mod_key = entry.mod_key
@@ -331,51 +331,51 @@ function RuntimeModSettingChanged(event)
 
     --Exception for coin shop, update the GUI if the setting is changed
     if (event.setting == "oarc-mod-enable-coin-shop") then
-        local new_value = global.ocfg.gameplay.enable_coin_shop
+        local new_value = storage.ocfg.gameplay.enable_coin_shop
         AddRemoveOarcGuiTabForAllPlayers(OARC_ITEM_SHOP_TAB_NAME, settings.global[event.setting].value --[[@as boolean]], true)
     end
 end
 
----A probably quit stupid function to let me lookup and set the global.ocfg entries using a key table.
+---A probably quit stupid function to let me lookup and set the storage.ocfg entries using a key table.
 ---@param key_table table<integer, string>
 ---@param value any
 function SetGlobalOarcConfigUsingKeyTable(key_table, value)
     local number_of_keys = #key_table
 
     if (number_of_keys == 1) then
-        global.ocfg[key_table[1]] = value
+        storage.ocfg[key_table[1]] = value
     elseif (number_of_keys == 2) then
-        global.ocfg[key_table[1]][key_table[2]] = value
+        storage.ocfg[key_table[1]][key_table[2]] = value
     elseif (number_of_keys == 3) then
-        global.ocfg[key_table[1]][key_table[2]][key_table[3]] = value
+        storage.ocfg[key_table[1]][key_table[2]][key_table[3]] = value
     else
         error("Invalid key_table length: " .. number_of_keys .. "\n" .. serpent.block(key_table))
     end
 end
 
----An equally stupid function to let me lookup the global.ocfg entries using a key table.
+---An equally stupid function to let me lookup the storage.ocfg entries using a key table.
 ---@param key_table table<integer, string>
 ---@return any
 function GetGlobalOarcConfigUsingKeyTable(key_table)
     local number_of_keys = #key_table
 
     if (number_of_keys == 1) then
-        if (global.ocfg[key_table[1]] == nil) then
+        if (storage.ocfg[key_table[1]] == nil) then
             error("Invalid key_table 1: " .. serpent.block(key_table))
         end
-        return global.ocfg[key_table[1]]
+        return storage.ocfg[key_table[1]]
     elseif (number_of_keys == 2) then
-        if (global.ocfg[key_table[1]] == nil) or (global.ocfg[key_table[1]][key_table[2]] == nil) then
+        if (storage.ocfg[key_table[1]] == nil) or (storage.ocfg[key_table[1]][key_table[2]] == nil) then
             error("Invalid key_table 2: " .. serpent.block(key_table))
         end
-        return global.ocfg[key_table[1]][key_table[2]]
+        return storage.ocfg[key_table[1]][key_table[2]]
     elseif (number_of_keys == 3) then
-        if (global.ocfg[key_table[1]] == nil) or
-            (global.ocfg[key_table[1]][key_table[2]] == nil) or 
-            (global.ocfg[key_table[1]][key_table[2]][key_table[3]] == nil) then
+        if (storage.ocfg[key_table[1]] == nil) or
+            (storage.ocfg[key_table[1]][key_table[2]] == nil) or 
+            (storage.ocfg[key_table[1]][key_table[2]][key_table[3]] == nil) then
             error("Invalid key_table 3: " .. serpent.block(key_table))
         end
-        return global.ocfg[key_table[1]][key_table[2]][key_table[3]]
+        return storage.ocfg[key_table[1]][key_table[2]][key_table[3]]
     else
         error("Invalid key_table length: " .. number_of_keys .. "\n" .. serpent.block(key_table))
     end
@@ -390,7 +390,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     if (oarc_setting_index == "gameplay.enable_shared_team_vision") then
         for _,force in pairs(game.forces) do
             if (not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, force.name)) then
-                force.share_chart = global.ocfg.gameplay.enable_shared_team_vision
+                force.share_chart = storage.ocfg.gameplay.enable_shared_team_vision
             end
         end
 
@@ -398,7 +398,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     elseif (oarc_setting_index == "gameplay.enable_friendly_fire") then
         for _,force in pairs(game.forces) do
             if (not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, force.name)) then
-                force.friendly_fire = global.ocfg.gameplay.enable_friendly_fire
+                force.friendly_fire = storage.ocfg.gameplay.enable_friendly_fire
             end
         end
 

@@ -7,13 +7,13 @@
 function CreateServerInfoTab(tab_container, player)
 
     -- General Server Info:
-    if (global.ocfg.server_info.welcome_msg ~= " ") then
+    if (storage.ocfg.server_info.welcome_msg ~= " ") then
         AddLabel(tab_container, nil, {"oarc-server-info-tab-welcome-msg-title"}, "caption_label")
-        AddLabel(tab_container, nil, global.ocfg.server_info.welcome_msg, my_longer_label_style)
+        AddLabel(tab_container, nil, storage.ocfg.server_info.welcome_msg, my_longer_label_style)
         AddSpacerLine(tab_container)
     end
 
-    if (global.ocfg.server_info.discord_invite ~= " ") then
+    if (storage.ocfg.server_info.discord_invite ~= " ") then
         local horizontal_flow = tab_container.add{
             type="flow", direction="horizontal"
         }
@@ -21,7 +21,7 @@ function CreateServerInfoTab(tab_container, player)
         horizontal_flow.add{
             type="textfield",
             tooltip={"oarc-server-info-tab-discord-invite-tooltip"},
-            text=global.ocfg.server_info.discord_invite
+            text=storage.ocfg.server_info.discord_invite
         }
         AddSpacerLine(tab_container)
     end
@@ -30,8 +30,8 @@ function CreateServerInfoTab(tab_container, player)
     AddLabel(tab_container, nil,  {"oarc-server-info-tab-server-run-time", FormatTimeHoursSecs(game.tick)}, my_label_style)
     --TODO: Add more stuff here maybe? Like in the old version?
 
-    if (global.ocfg.regrowth.enable_abandoned_base_cleanup) then
-        local label = AddLabel(tab_container, nil, {"oarc-server-info-leave-warning", global.ocfg.gameplay.minimum_online_time}, my_longer_label_style)
+    if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
+        local label = AddLabel(tab_container, nil, {"oarc-server-info-leave-warning", storage.ocfg.gameplay.minimum_online_time}, my_longer_label_style)
         label.style.font_color=my_color_red
     end
 

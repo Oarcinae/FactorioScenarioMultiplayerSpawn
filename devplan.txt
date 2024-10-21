@@ -78,6 +78,7 @@ Added LuaForce::copy_from() and copy_chart() methods.
 ------------------------------------------------------------------------------------------------------------------------
 
 Other Ideas, Not Committed:
+- Look into checking if a force has a chunk visible (for regrowth)
 - Add option to spawn on existing chunks (look for chunks with any entities in them, or use regrowth logic)
 - Add option for spawn pen to be on a specified surface (not sure this serves any real purpose)
 - Change "search for ungenerated spawn point" to be a "roll" button that the player can re-roll? Maybe it shows on the map in an icon where they might go first?
