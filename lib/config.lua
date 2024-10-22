@@ -521,6 +521,8 @@ OCFG = {
     -- (Ignore these surfaces completely for spawning and regrowth!)
     ---@type table<integer, string>
     surfaces_blacklist_match = {
+        -- Space Age
+        "platform-",
         -- Factorissimo Mod Surfaces
         "factory-power",
         "factory-floor",

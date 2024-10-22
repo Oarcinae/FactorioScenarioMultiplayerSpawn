@@ -122,7 +122,7 @@ function PlayerListTabGuiClick(event)
     if (tags.setting == "show_location") then
         local player_name = tags.player_name --[[@as string]]
         local target_player = game.players[player_name]
-        
-        player.open_map(target_player.position, 0.05) -- TODO: Update this for spage age!
+
+        player.set_controller{type = defines.controllers.remote, position = target_player.character.position, surface = target_player.character.surface}
     end
 end

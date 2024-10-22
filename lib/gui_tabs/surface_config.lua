@@ -71,7 +71,7 @@ end
 ---@param surface_name string
 ---@return nil
 function CreateCrashSiteEnable(container, surface_name)
-    local crashed_ship_enabled = global.ocfg.surfaces_config[surface_name].starting_items.crashed_ship
+    local crashed_ship_enabled = storage.ocfg.surfaces_config[surface_name].starting_items.crashed_ship
 
     local crashed_ship_flow = container.add {
         type = "flow",
@@ -97,7 +97,7 @@ end
 ---@return string --The default selected surface name
 function CreateSurfaceDropdown(container)
     local surface_names = {}
-    for surface_name,_ in pairs(global.ocfg.surfaces_config) do
+    for surface_name,_ in pairs(storage.ocfg.surfaces_config) do
         table.insert(surface_names, surface_name)
     end
     table.sort(surface_names)
@@ -163,7 +163,7 @@ end
 ---@return nil
 function CreateItemsSection(container, surface_name, header, setting_name, max_count)
 
-    local items = global.ocfg.surfaces_config[surface_name].starting_items[setting_name]
+    local items = storage.ocfg.surfaces_config[surface_name].starting_items[setting_name]
 
     if (items == nil) then
         error("No items found for setting: " .. setting_name .. " for surface: " .. surface_name)
@@ -328,7 +328,7 @@ end
 ---@return nil
 function CreateSpawnConfigIntegerField(container, surface_name, label, setting_name, entry_name, tooltip)
 
-    local value = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][entry_name]
+    local value = storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][entry_name]
 
     local flow = container.add {
         type = "flow",
@@ -365,7 +365,7 @@ end
 ---@return nil
 function CreateSolidResourcesConfig(container, surface_name)
 
-    local solid_resources = global.ocfg.surfaces_config[surface_name].spawn_config.solid_resources
+    local solid_resources = storage.ocfg.surfaces_config[surface_name].spawn_config.solid_resources
 
     local solid_resources_flow = container.add {
         type = "frame",
@@ -408,7 +408,7 @@ end
 ---@return nil
 function CreateFluidResourcesConfig(container, surface_name)
 
-    local fluid_resources = global.ocfg.surfaces_config[surface_name].spawn_config.fluid_resources
+    local fluid_resources = storage.ocfg.surfaces_config[surface_name].spawn_config.fluid_resources
 
     local fluid_resources_flow = container.add {
         type = "frame",
@@ -737,7 +737,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Update the count
         local count = tonumber(event.element.text) or 0
-        global.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = count
+        storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = count
 
         event.element.style = "textbox"
         event.element.style.width = 40
@@ -760,9 +760,9 @@ function SurfaceConfigTabGuiConfirmed(event)
         local count = tonumber(event.element.text) or 0
 
         if (tags.resource_amount_textfield) then
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].amount = count
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].amount = count
         elseif (tags.resource_size_textfield) then
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].size = count
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].size = count
         end
 
         event.element.style = "textbox"
@@ -787,10 +787,10 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         event.element.style = "textbox"
         if (tags.fluid_resource_count_textfield) then
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].num_patches = count
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].num_patches = count
             event.element.style.width = 40
         elseif (tags.fluid_resource_amount_textfield) then
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].amount = count
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name].amount = count
             event.element.style.width = 60
         end
 
@@ -801,7 +801,7 @@ function SurfaceConfigTabGuiConfirmed(event)
         local entry_name = tags.entry --[[@as string]]
 
         local value = tonumber(event.element.text) or 0
-        global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][entry_name] = value
+        storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][entry_name] = value
 
         event.element.style = "textbox"
         event.element.style.width = 50
@@ -840,7 +840,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
 
-        if (global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name]) then
+        if (storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name]) then
             player.print("Item already exists in list! " .. new_item_name)
             event.element.elem_value = nil
             return
@@ -848,10 +848,10 @@ function SurfaceConfigTabGuiElemChanged(event)
 
         -- Update the item name in the list, keep the old count.
         if (old_item_name ~= "") then
-            global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name]
-            global.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name] = nil
+            storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name]
+            storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][old_item_name] = nil
         else
-            global.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = 0
+            storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name] = 0
         end
 
         -- Update all tags with the new item name.
@@ -870,7 +870,7 @@ function SurfaceConfigTabGuiElemChanged(event)
             return
         end
 
-        if (game.entity_prototypes[new_resource_name].resource_category ~= "basic-solid") then
+        if (prototypes.entity[new_resource_name].resource_category ~= "basic-solid") then
             player.print("Resource must be a solid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
@@ -888,7 +888,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
 
-        if (global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
+        if (storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
             player.print("Resource already exists in list! " .. new_resource_name)
             event.element.elem_value = nil
             return
@@ -896,10 +896,10 @@ function SurfaceConfigTabGuiElemChanged(event)
 
         -- Update the resource name in the list, keep the old amount and size.
         if (old_resource_name ~= "") then
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
         else
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {amount=0, size=0, x_offset=0, y_offset=0}
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {amount=0, size=0, x_offset=0, y_offset=0}
         end
 
         -- Update all tags with the new resource name.
@@ -918,7 +918,7 @@ function SurfaceConfigTabGuiElemChanged(event)
             return
         end
 
-        if (game.entity_prototypes[new_resource_name].resource_category ~= "basic-fluid") then
+        if (prototypes.entity[new_resource_name].resource_category ~= "basic-fluid") then
             player.print("Resource must be a fluid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
@@ -936,7 +936,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
 
-        if (global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
+        if (storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
             player.print("Resource already exists in list! " .. new_resource_name)
             event.element.elem_value = nil
             return
@@ -944,10 +944,10 @@ function SurfaceConfigTabGuiElemChanged(event)
 
         -- Update the resource name in the list, keep the old amount and size.
         if (old_resource_name ~= "") then
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name]
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][old_resource_name] = nil
         else
-            global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {num_patches=0, amount=0, x_offset=0, y_offset=0}
+            storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name] = {num_patches=0, amount=0, x_offset=0, y_offset=0}
         end
 
         -- Update all tags with the new resource name.
@@ -982,7 +982,7 @@ function SurfaceConfigTabGuiClick(event)
         local max_count = parent.tags.max_count --[[@as integer]]
 
         -- Nil the entry
-        global.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = nil
+        storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][item_name] = nil
 
         -- Delete the row by removing the child elements from the table.
         local parent = event.element.parent --[[@as LuaGuiElement]] -- Ass(u)me that the parent is a table.
@@ -1021,15 +1021,15 @@ function SurfaceConfigTabGuiClick(event)
 
     elseif (tags.setting == "crashed_ship_enabled") then
         local surface_name = tags.surface_name --[[@as string]]
-        global.ocfg.surfaces_config[surface_name].starting_items.crashed_ship = event.element.state
+        storage.ocfg.surfaces_config[surface_name].starting_items.crashed_ship = event.element.state
 
     elseif (tags.setting == "revert_to_default") then
 
         local surface_name = event.element.parent["surface_dropdown"].items[event.element.parent["surface_dropdown"].selected_index] --[[@as string]]
 
         player.print("Revert to default: " .. surface_name)
-        global.ocfg.surfaces_config[surface_name].starting_items = table.deepcopy(NAUVIS_STARTER_ITEMS)
-        global.ocfg.surfaces_config[surface_name].spawn_config = table.deepcopy(NAUVIS_SPAWN_CONFIG)
+        storage.ocfg.surfaces_config[surface_name].starting_items = table.deepcopy(NAUVIS_STARTER_ITEMS)
+        storage.ocfg.surfaces_config[surface_name].spawn_config = table.deepcopy(NAUVIS_SPAWN_CONFIG)
 
         -- Recreate the content section
         local content_flow = event.element.parent.parent["surface_config_content_flow"]
@@ -1049,8 +1049,8 @@ function SurfaceConfigTabGuiClick(event)
         end
 
         player.print("Copy nauvis to " .. surface_name)
-        global.ocfg.surfaces_config[surface_name].starting_items = global.ocfg.surfaces_config["nauvis"].starting_items
-        global.ocfg.surfaces_config[surface_name].spawn_config = global.ocfg.surfaces_config["nauvis"].spawn_config
+        storage.ocfg.surfaces_config[surface_name].starting_items = storage.ocfg.surfaces_config["nauvis"].starting_items
+        storage.ocfg.surfaces_config[surface_name].spawn_config = storage.ocfg.surfaces_config["nauvis"].spawn_config
 
         -- Recreate the content section
         local content_flow = event.element.parent.parent["surface_config_content_flow"]
@@ -1067,7 +1067,7 @@ function SurfaceConfigTabGuiClick(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         -- Nil the entry
-        global.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name] = nil
+        storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][resource_name] = nil
 
         -- Delete the row by removing the child elements from the table.
         for _, child in pairs(parent.children) do

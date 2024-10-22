@@ -7,18 +7,18 @@
 function CreateSpawnControlsTab(tab_container, player)
     local spwnCtrls = tab_container.add {
         type = "scroll-pane",
-        name = "spwn_ctrl_panel",
-        caption = ""
+        vertical_scroll_policy = "auto",
     }
-    ApplyStyle(spwnCtrls, my_fixed_width_style)
-    spwnCtrls.style.maximal_height = 1000
-    spwnCtrls.horizontal_scroll_policy = "never"
+    -- ApplyStyle(spwnCtrls, my_fixed_width_style)
+    spwnCtrls.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
+    spwnCtrls.style.padding = 5
+
 
     CreatePrimarySpawnInfo(player, spwnCtrls)
     CreateSecondarySpawnInfo(player, spwnCtrls)
     CreateSetRespawnLocationButton(player, spwnCtrls)
 
-    if global.ocfg.gameplay.enable_shared_spawns then
+    if storage.ocfg.gameplay.enable_shared_spawns then
         CreateSharedSpawnControls(player, spwnCtrls)
         CreateJoinQueueControls(player, spwnCtrls)
     end
@@ -125,7 +125,7 @@ function CreateSetRespawnLocationButton(player, container)
     AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
     --[[@type OarcPlayerSpawn]]
-    local respawn_info = global.player_respawns[player.name][player.surface.name]
+    local respawn_info = storage.player_respawns[player.name][player.surface.name]
 
     if (respawn_info == nil) then
         log("ERROR: No respawn info for player: " .. player.name)
@@ -150,11 +150,19 @@ function CreateSetRespawnLocationButton(player, container)
     }
     dragger.style.horizontally_stretchable = true
 
+    local teleport_button = horizontal_flow.add {
+        type = "button",
+        tags = { action = "oarc_spawn_ctrl_tab", setting = "teleport_home", surface = respawn_surface_name, position = respawn_position },
+        caption = { "oarc-teleport-home" },
+        tooltip = { "oarc-teleport-home-tooltip" },
+        style = "green_button"
+    }
+    teleport_button.style.height = 26
     CreateGPSButton(horizontal_flow, respawn_surface_name, respawn_position)
 
     -- Sets the player's custom spawn point to their current location
-    if ((game.tick - global.player_cooldowns[player.name].setRespawn) >
-            (global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE)) then
+    if ((game.tick - storage.player_cooldowns[player.name].setRespawn) >
+            (storage.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE)) then
         local change_respawn_button = container.add {
             type = "button",
             tags = { action = "oarc_spawn_ctrl_tab", setting = "set_respawn_location" },
@@ -166,8 +174,8 @@ function CreateSetRespawnLocationButton(player, container)
         change_respawn_button.style.font = "default-small-semibold"
     else
         AddLabel(container, nil,
-            { "oarc-set-respawn-loc-cooldown", FormatTime((global.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE) -
-                (game.tick - global.player_cooldowns[player.name].setRespawn)) }, my_note_style)
+            { "oarc-set-respawn-loc-cooldown", FormatTime((storage.ocfg.gameplay.respawn_cooldown_min * TICKS_PER_MINUTE) -
+                (game.tick - storage.player_cooldowns[player.name].setRespawn)) }, my_note_style)
     end
     AddLabel(container, nil, { "oarc-set-respawn-note" }, my_label_style)
     AddSpacerLine(container)
@@ -269,7 +277,7 @@ function SpawnCtrlGuiOptionsCheckedStateChanged(event)
             SendBroadcastMsg({ "oarc-stop-shared-base", player.name })
         end
         local primary_spawn = FindPrimaryUniqueSpawn(player.name)
-        global.unique_spawns[primary_spawn.surface_name][player.name].open_access = event.element.state
+        storage.unique_spawns[primary_spawn.surface_name][player.name].open_access = event.element.state
         OarcGuiRefreshContent(player)
 
         -- Refresh the shared spawn spawn gui for all players
@@ -293,7 +301,15 @@ function SpawnCtrlTabGuiClick(event)
 
     -- Sets a new respawn point and resets the cooldown.
     if (tags.setting == "set_respawn_location") then
-        SetPlayerRespawn(player.name, player.surface.name, player.position, true)
+
+        -- Check if the surface is blacklisted
+        local surface_name = player.surface.name
+        if IsSurfaceBlacklisted(surface_name) then
+            player.print("Can't set a respawn point on this surface!")
+            return
+        end
+
+        SetPlayerRespawn(player.name, surface_name, player.position, true)
         OarcGuiRefreshContent(player)
         player.print({ "oarc-spawn-point-updated" })
 
@@ -301,8 +317,15 @@ function SpawnCtrlTabGuiClick(event)
     elseif (tags.setting == "show_location") then
         local surface_name = tags.surface --[[@as string]]
         local position = tags.position --[[@as MapPosition]]
-        player.open_map(position, 0.05)  -- TODO: Update this for spage age!
+
+        player.set_controller{type = defines.controllers.remote, position = position, surface = surface_name}
         player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
+
+    -- Teleports the player to their home base
+    elseif (tags.setting == "teleport_home") then
+        local surface_name = tags.surface --[[@as string]]
+        local position = tags.position --[[@as MapPosition]]
+        SafeTeleport(player, game.surfaces[surface_name], position)
 
     -- Accept or reject pending player join requests to a shared base
     elseif ((tags.setting == "accept_player_request") or (tags.setting == "reject_player_request")) then
@@ -344,7 +367,7 @@ function SpawnCtrlTabGuiClick(event)
         elseif (tags.setting == "accept_player_request") then
             
             -- Check if there is space first
-            if (table_size(primary_spawn.joiners) >= global.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
+            if (table_size(primary_spawn.joiners) >= storage.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
                 player.print({ "oarc-shared-spawn-full" })
                 return
             end
@@ -362,7 +385,7 @@ function SpawnCtrlTabGuiClick(event)
             SetPlayerRespawn(joining_player.name, primary_spawn.surface_name, primary_spawn.position, true)
             SendPlayerToSpawn(primary_spawn.surface_name, joining_player)
             GivePlayerStarterItems(joining_player)
-            table.insert(global.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)
+            table.insert(storage.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)
             joining_player.force = game.players[player.name].force
 
             -- Render some welcoming text...

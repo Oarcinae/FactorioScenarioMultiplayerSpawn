@@ -46,8 +46,8 @@ end
 -- -- Requires having an on_tick handler.
 -- function DisplaySpeechBubble(player, text, timeout_secs)
 
---     if (global.oarc_speech_bubbles == nil) then
---         global.oarc_speech_bubbles = {}
+--     if (storage.oarc_speech_bubbles == nil) then
+--         storage.oarc_speech_bubbles = {}
 --     end
 
 --     if (player and player.character) then
@@ -55,7 +55,7 @@ end
 --                                                 position = player.position,
 --                                                 text = text,
 --                                                 source = player.character}
---         table.insert(global.oarc_speech_bubbles, {entity=sp,
+--         table.insert(storage.oarc_speech_bubbles, {entity=sp,
 --                         timeout_tick=game.tick+(timeout_secs*TICKS_PER_SECOND)})
 --     end
 -- end
@@ -88,7 +88,7 @@ end
 ---@param alignment TextAlign?
 ---@return nil
 function TemporaryHelperText(text, surface, position, ttl, alignment)
-    local rid = rendering.draw_text { text = text,
+    local render_object = rendering.draw_text { text = text,
         surface = surface,
         target = position,
         color = { 0.7, 0.7, 0.7, 0.7 },
@@ -97,19 +97,20 @@ function TemporaryHelperText(text, surface, position, ttl, alignment)
         time_to_live = ttl,
         alignment = alignment,
         draw_on_ground = false }
-    table.insert(global.oarc_renders_fadeout, rid)
+    local rid = render_object.id
+    table.insert(storage.oarc_renders_fadeout, rid)
 end
 
 -- -- Every second, check a global table to see if we have any speech bubbles to kill.
 -- function TimeoutSpeechBubblesOnTick()
 --     if ((game.tick % (TICKS_PER_SECOND)) == 3) then
---         if (global.oarc_speech_bubbles and (#global.oarc_speech_bubbles > 0)) then
---             for k,sp in pairs(global.oarc_speech_bubbles) do
+--         if (storage.oarc_speech_bubbles and (#storage.oarc_speech_bubbles > 0)) then
+--             for k,sp in pairs(storage.oarc_speech_bubbles) do
 --                 if (game.tick > sp.timeout_tick) then
 --                     if (sp.entity ~= nil) and (sp.entity.valid) then
 --                         sp.entity.start_fading_out()
 --                     end
---                     table.remove(global.oarc_speech_bubbles, k)
+--                     table.remove(storage.oarc_speech_bubbles, k)
 --                 end
 --             end
 --         end
@@ -119,18 +120,19 @@ end
 ---Every tick, check a global table to see if we have any rendered thing that needs fading out.
 ---@return nil
 function FadeoutRenderOnTick()
-    if (global.oarc_renders_fadeout and (#global.oarc_renders_fadeout > 0)) then
-        for k, rid in pairs(global.oarc_renders_fadeout) do
-            if (rendering.is_valid(rid)) then
-                local ttl = rendering.get_time_to_live(rid)
+    if (storage.oarc_renders_fadeout and (#storage.oarc_renders_fadeout > 0)) then
+        for k, rid in pairs(storage.oarc_renders_fadeout) do
+            local render_object = rendering.get_object_by_id(rid)
+            if (render_object and render_object.valid) then
+                local ttl = render_object.time_to_live
                 if ((ttl > 0) and (ttl < 200)) then
-                    local color = rendering.get_color(rid)
+                    local color = render_object.color
                     if (color.a > 0.005) then
-                        rendering.set_color(rid, { r = color.r, g = color.g, b = color.b, a = color.a - 0.005 })
+                        render_object.color = { r = color.r, g = color.g, b = color.b, a = color.a - 0.005 }
                     end
                 end
             else
-                global.oarc_renders_fadeout[k] = nil
+                storage.oarc_renders_fadeout[k] = nil
             end
         end
     end
@@ -162,20 +164,20 @@ function StringStartsWith(string, start)
     return string:sub(1, #start) == start
 end
 
----Checks if a surface is blacklisted based on the global.ocfg settings
+---Checks if a surface is blacklisted based on the storage.ocfg settings
 ---@param surface_name string
 ---@return boolean --true if blacklisted
 function IsSurfaceBlacklisted(surface_name)
-    if (global.ocfg.surfaces_blacklist == nil) then
-        for _,name in pairs(global.ocfg.surfaces_blacklist) do
+    if (storage.ocfg.surfaces_blacklist ~= nil) then
+        for _,name in pairs(storage.ocfg.surfaces_blacklist) do
             if (name == surface_name) then
                 return true
             end
         end
     end
 
-    if (global.ocfg.surfaces_blacklist_match == nil) then
-        for _,match in pairs(global.ocfg.surfaces_blacklist_match) do
+    if (storage.ocfg.surfaces_blacklist_match ~= nil) then
+        for _,match in pairs(storage.ocfg.surfaces_blacklist_match) do
             if (StringStartsWith(surface_name, match)) then
                 return true
             end
@@ -188,7 +190,7 @@ end
 -- -- Simple way to write to a file. Always appends. Only server.
 -- -- Has a global setting for enable/disable
 -- function ServerWriteFile(filename, msg)
---     if (global.ocfg.enable_server_write_files) then
+--     if (storage.ocfg.enable_server_write_files) then
 --         game.write_file(filename, msg, true, 0)
 --     end
 -- end
@@ -372,7 +374,7 @@ end
 ---@return nil
 function OarcsSaferInsert(entity, item_dict)
     if not (entity and entity.valid and item_dict) then return end
-    local items = game.item_prototypes
+    local items = prototypes.item
     local insert = entity.insert
     for name, count in pairs(item_dict) do
         if items[name] and count > 0 then
@@ -389,7 +391,7 @@ end
 ---@return nil
 function OarcsSaferRemove(entity, item_dict)
     if not (entity and entity.valid and item_dict) then return end
-    local items = game.item_prototypes
+    local items = prototypes.item
     local remove = entity.remove_item
     for name, count in pairs(item_dict) do
         if items[name] and count > 0 then
@@ -405,12 +407,12 @@ end
 ---@return nil
 function GivePlayerRespawnItems(player)
     local surface_name = player.surface.name
-    if (global.ocfg.surfaces_config[surface_name] == nil) then
+    if (storage.ocfg.surfaces_config[surface_name] == nil) then
         error("GivePlayerRespawnItems - Missing surface config! " .. surface_name)
         return
     end
 
-    local respawnItems = global.ocfg.surfaces_config[surface_name].starting_items.player_respawn_items
+    local respawnItems = storage.ocfg.surfaces_config[surface_name].starting_items.player_respawn_items
 
     OarcsSaferInsert(player, respawnItems)
 end
@@ -420,12 +422,12 @@ end
 ---@return nil
 function GivePlayerStarterItems(player)
     local surface_name = player.surface.name
-    if (global.ocfg.surfaces_config[surface_name] == nil) then
+    if (storage.ocfg.surfaces_config[surface_name] == nil) then
         error("GivePlayerStarterItems - Missing surface config! " .. surface_name)
         return
     end
 
-    local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
+    local startItems = storage.ocfg.surfaces_config[surface_name].starting_items.player_start_items
 
     OarcsSaferInsert(player, startItems)
 end
@@ -435,8 +437,8 @@ end
 ---@return nil
 function RemovePlayerStarterItems(player)
     local surface_name = player.surface.name
-    if (global.ocfg.surfaces_config[surface_name]) ~= nil then
-        local startItems = global.ocfg.surfaces_config[surface_name].starting_items.player_start_items
+    if (storage.ocfg.surfaces_config[surface_name]) ~= nil then
+        local startItems = storage.ocfg.surfaces_config[surface_name].starting_items.player_start_items
         OarcsSaferRemove(player, startItems)
     end
 end
@@ -793,7 +795,7 @@ function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
     -- We check up to THIS many times, each jump moves out by minimum_distance_to_existing_chunks
     local jumps_count = 3
 
-    local minimum_distance_to_existing_chunks = global.ocfg.gameplay.minimum_distance_to_existing_chunks
+    local minimum_distance_to_existing_chunks = storage.ocfg.gameplay.minimum_distance_to_existing_chunks
 
     -- Keep checking chunks in the direction of the vector, assumes this terminates...
     while(true) do
@@ -1026,11 +1028,11 @@ end
 --         -- Get starting surface settings.
 --         local nauvis_settings =  game.surfaces["nauvis"].map_gen_settings
 
---         if global.ocfg.enable_vanilla_spawns then
---             nauvis_settings.starting_points = CreateVanillaSpawns(global.ocfg.vanilla_spawn_count, global.ocfg.vanilla_spawn_spacing)
+--         if storage.ocfg.enable_vanilla_spawns then
+--             nauvis_settings.starting_points = CreateVanillaSpawns(storage.ocfg.vanilla_spawn_count, storage.ocfg.vanilla_spawn_spacing)
 
 --             -- ENFORCE ISLAND MAP GEN
---             if (global.ocfg.silo_islands) then
+--             if (storage.ocfg.silo_islands) then
 --                 nauvis_settings.property_expression_names.elevation = "0_17-island"
 --             end
 --         end
@@ -1044,7 +1046,7 @@ end
 --     end
 
 --     -- Add surface and safe areas
---     if global.ocfg.enable_regrowth then
+--     if storage.ocfg.enable_regrowth then
 --         RegrowthMarkAreaSafeGivenChunkPos({x=0,y=0}, 4, true)
 --     end
 -- end
@@ -1129,16 +1131,16 @@ end
 -- end
 
 -- function SetForceGhostTimeToLive(force)
---     if global.ocfg.ghost_ttl ~= 0 then
---         force.ghost_time_to_live = global.ocfg.ghost_ttl+1
+--     if storage.ocfg.ghost_ttl ~= 0 then
+--         force.ghost_time_to_live = storage.ocfg.ghost_ttl+1
 --     end
 -- end
 
 -- function SetItemBlueprintTimeToLive(event)
 --     local type = event.created_entity.type
 --     if type == "entity-ghost" or type == "tile-ghost" then
---         if global.ocfg.ghost_ttl ~= 0 then
---             event.created_entity.time_to_live = global.ocfg.ghost_ttl
+--         if storage.ocfg.ghost_ttl ~= 0 then
+--             event.created_entity.time_to_live = storage.ocfg.ghost_ttl
 --         end
 --     end
 -- end
@@ -1357,10 +1359,10 @@ end
 function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
     local tile_radius_sqr = tileRadius ^ 2
 
-    local moat_width = global.ocfg.spawn_general.moat_width_tiles
+    local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local moat_radius_sqr = ((tileRadius + moat_width)^2)
 
-    local tree_width = global.ocfg.spawn_general.tree_width_tiles
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_radius_sqr_inner = ((tileRadius - 1 - tree_width) ^ 2) -- 1 less to make sure trees are inside the spawn area
     local tree_radius_sqr_outer = ((tileRadius - 1) ^ 2)
 
@@ -1374,8 +1376,8 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
             -- Fill in all unexpected water (or force grass)
             if (distSqr <= tile_radius_sqr) then
-                if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.spawn_general.force_grass) then
+                if (surface.get_tile(i, j).collides_with("water_tile") or
+                        storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1426,10 +1428,10 @@ end
 ---@return nil
 function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
 
-    local moat_width = global.ocfg.spawn_general.moat_width_tiles
+    local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local moat_width_outer = tileRadius + moat_width
 
-    local tree_width = global.ocfg.spawn_general.tree_width_tiles
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
 
     local dirtTiles = {}
@@ -1442,8 +1444,8 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
 
             -- Fill in all unexpected water (or force grass)
             if (distVar <= tileRadius) then
-                if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.spawn_general.force_grass) then
+                if (surface.get_tile(i, j).collides_with("water_tile") or
+                        storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1496,10 +1498,10 @@ end
 ---@return nil
 function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
 
-    local moat_width = global.ocfg.spawn_general.moat_width_tiles
+    local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local moat_width_outer = tileRadius + moat_width
 
-    local tree_width = global.ocfg.spawn_general.tree_width_tiles
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
 
     local dirtTiles = {}
@@ -1511,8 +1513,8 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
             -- Fill in all unexpected water (or force grass)
             if (max_distance <= tileRadius) then
-                if (surface.get_tile(i, j).collides_with("water-tile") or
-                        global.ocfg.spawn_general.force_grass) then
+                if (surface.get_tile(i, j).collides_with("water_tile") or
+                        storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
                 end
             end
@@ -1576,7 +1578,7 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge,
                 local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
 
                 -- Create a circle of water
-                if ((distVar < tileRadSqr + (1500 * global.ocfg.spawn_general.moat_width_tiles)) and
+                if ((distVar < tileRadSqr + (1500 * storage.ocfg.spawn_general.moat_width_tiles)) and
                         (distVar > tileRadSqr)) then
                     table.insert(tiles, { name = moatTile, position = { i, j } })
                 end
@@ -1612,7 +1614,7 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     end
 
     -- Right now only 2 shapes are supported. Circle and Square.
-    local square_shape = (global.ocfg.spawn_general.resources_shape == RESOURCES_SHAPE_CHOICE_SQUARE)
+    local square_shape = (storage.ocfg.spawn_general.resources_shape == RESOURCES_SHAPE_CHOICE_SQUARE)
 
     for y = -midPoint, midPoint do
         for x = -midPoint, midPoint do
@@ -1641,7 +1643,7 @@ end
 -- end
 
 -- function CreateHoldingPen(surface, chunkArea)
---     local radiusTiles = global.ocfg.spawn_config.general.spawn_radius_tiles-10
+--     local radiusTiles = storage.ocfg.spawn_config.general.spawn_radius_tiles-10
 --     if (((chunkArea.left_top.x >= -(radiusTiles+2*CHUNK_SIZE)) and (chunkArea.left_top.x <= (radiusTiles+2*CHUNK_SIZE))) and
 --         ((chunkArea.left_top.y >= -(radiusTiles+2*CHUNK_SIZE)) and (chunkArea.left_top.y <= (radiusTiles+2*CHUNK_SIZE)))) then
 
@@ -1665,9 +1667,9 @@ end
 -- -- Display messages to a user everytime they join
 -- function PlayerJoinedMessages(event)
 --     local player = game.players[event.player_index]
---     player.print(global.ocfg.welcome_msg)
---     if (global.oarc_announcements) then
---         player.print(global.oarc_announcements)
+--     player.print(storage.ocfg.welcome_msg)
+--     if (storage.oarc_announcements) then
+--         player.print(storage.oarc_announcements)
 --     end
 -- end
 
