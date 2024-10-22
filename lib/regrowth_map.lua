@@ -370,9 +370,8 @@ function RegrowthSectorScan(event)
     -- Surface not in regrowth map, ignore it.
     if (storage.rg[surface_name] == nil) then return end
 
-    ---@type integer
-    local radar_range = event.radar.prototype.get_max_distance_of_nearby_sector_revealed(event.radar.quality) --TODO: Space age quality might affect this?
-    RefreshAreaChunkPosition(surface_name, event.chunk_position, radar_range, 0)
+    local radar_range = event.radar.prototype.get_max_distance_of_nearby_sector_revealed(event.radar.quality)
+    RefreshAreaChunkPosition(surface_name, event.chunk_position, radar_range --[[@as integer]], 0) -- Should never be nil.
 end
 
 ---Refresh all chunks near a single player. Cyles through all connected players.
@@ -688,9 +687,9 @@ end
 ---@param event EventData.on_built_entity
 ---@return nil
 function RegrowthOnBuiltEntity(event)
-    if (event.created_entity and event.created_entity.valid and event.created_entity.type == "spider-vehicle") then
+    if (event.entity and event.entity.valid and event.entity.type == "spider-vehicle") then
         
-        table.insert(storage.rg.spidertrons, event.created_entity)
+        table.insert(storage.rg.spidertrons, event.entity)
         log("Added spidertron to regrowth tracking")
 
         if storage.rg.spidertron_chunk_radius == nil then

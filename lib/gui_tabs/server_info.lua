@@ -6,6 +6,9 @@
 ---@return nil
 function CreateServerInfoTab(tab_container, player)
 
+    AddLabel(tab_container, nil, { "oarc-experimental-warning" }, my_longer_label_style)
+    AddSpacerLine(tab_container)
+
     -- General Server Info:
     if (storage.ocfg.server_info.welcome_msg ~= " ") then
         AddLabel(tab_container, nil, {"oarc-server-info-tab-welcome-msg-title"}, "caption_label")

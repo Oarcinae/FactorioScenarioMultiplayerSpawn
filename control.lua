@@ -105,10 +105,15 @@ script.on_event(defines.events.on_player_left_game, function(event)
     SeparateSpawnsPlayerLeft(event)
 end)
 
-script.on_event(defines.events.on_player_changed_surface, function(event)
-    SeparateSpawnsPlayerChangedSurface(event)
-end)
+-- This does NOT do what I expected, it triggers anytime the VIEW changes, not the character moving.
+-- script.on_event(defines.events.on_player_changed_surface, function(event)
+--     SeparateSpawnsPlayerChangedSurface(event)
+-- end)
 
+-- script.on_event(defines.events.on_rocket_launched, function(event)
+--     log("Rocket launched!")
+--     log(serpent.block(event))
+-- end)
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
@@ -134,7 +139,31 @@ script.on_event(defines.events.on_tick, function(event)
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
+
+    TrackPlayerSurfacesOnTick() -- My work around for not having a proper event for changing surfaces.
 end)
+
+---This is a work around for not having a proper event for changing surfaces.
+---Every tick, it checks the player's surface and if it changes from the previous tick it triggers an event.
+---@return nil
+function TrackPlayerSurfacesOnTick()
+    if (storage.player_surfaces == nil) then
+        storage.player_surfaces = {}
+    end
+
+    for _,player in pairs(game.players) do
+        if (player.connected and player.character) then
+            if (storage.player_surfaces[player.name] ~= player.surface.name) then
+
+                local previous_surface_name = storage.player_surfaces[player.name]
+                local new_surface_name = player.surface.name
+                SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_surface_name)
+                storage.player_surfaces[player.name] = new_surface_name
+                -- script.raise_event(defines.events.on_player_changed_surface, {player_index=player.index})
+            end
+        end
+    end
+end
 
 ----------------------------------------
 -- Chunk Generation
@@ -168,15 +197,20 @@ end)
 -- This is not called when the default surface "nauvis" is created as it will always exist!
 script.on_event(defines.events.on_surface_created, function(event)
     local surface = game.surfaces[event.surface_index]
+
     log("Surface created: " .. surface.name)
-    if (surface.platform) then return end -- WE IGNORE PLATFORMS!
+    if IsSurfaceBlacklisted(surface.name) then return end
 
     SeparateSpawnsSurfaceCreated(event)
     RegrowthSurfaceCreated(event)
 end)
 
 script.on_event(defines.events.on_pre_surface_deleted, function(event)
-    log("Surface deleted: " .. game.surfaces[event.surface_index].name)
+    local surface = game.surfaces[event.surface_index]
+
+    log("Surface deleted: " .. surface.name)
+    if IsSurfaceBlacklisted(surface.name) then return end
+
     SeparateSpawnsSurfaceDeleted(event)
     RegrowthSurfaceDeleted(event)
 end)

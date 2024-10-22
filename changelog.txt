@@ -1,8 +1,13 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.0
-Date: ????
+Date: 2024-10-22
   Major Features:
-    - Support for Factorio 2.0 and Space Age DLC!
+    - EXPERIMENTAL Support for Factorio 2.0 and Space Age DLC! Currently, only spawning on Nauvis is supported. More features to support space age will be added in the near future.
+  Minor Features:
+    - Added a button to teleport back to your respawn point. This is useful if you get placed at 0,0 coming back from space.
+  Bugfixes:
+    - Fixed an issues with surface blacklist being ignored.
+    - Fixed an issue where I broke buddy spawn chunk gen.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.4
 Date: 2024-10-19

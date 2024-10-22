@@ -233,34 +233,47 @@ function SeparateSpawnsPlayerLeft(event)
 end
 
 ---If the player moves surfaces, check if we need to present them with new a new spawn.
----@param event EventData.on_player_changed_surface
+---@param player LuaPlayer
+---@param previous_surface_name string?
+---@param new_surface_name string
 ---@return nil
-function SeparateSpawnsPlayerChangedSurface(event)
+function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_surface_name)
 
-    log("SeparateSpawnsPlayerChangedSurface - " .. event.surface_index)
+    if (previous_surface_name == nil) then
+        log("SeparateSpawnsPlayerChangedSurface - No previous surface name!")
+        return
+    end
+    log("SeparateSpawnsPlayerChangedSurface from " .. previous_surface_name .. " to " .. new_surface_name)
+
+
+    -- If previous surface was a platform
+    local arriving_from_space = StringStartsWith(previous_surface_name, "platform-")
 
     if (not storage.ocfg.gameplay.enable_secondary_spawns) then return end
 
-    local player = game.players[event.player_index]
-    local surface_name = player.surface.name
+    -- local player = game.players[event.player_index]
+    -- local surface_name = player.surface.name
 
     -- Check if player has been init'd yet. If not, then ignore it.
     if (storage.player_respawns[player.name] == nil) then return end
 
     -- If the mod isn't active on this surface, then ignore it.
-    if (storage.oarc_surfaces[surface_name] == nil) then return end
+    if (storage.oarc_surfaces[new_surface_name] == nil) then return end
 
     -- If the mod is configured to not allow secondary spawns here, then ignore it.
-    if (not storage.oarc_surfaces[surface_name].secondary) then return end
+    if (not storage.oarc_surfaces[new_surface_name].secondary) then return end
 
     -- Check if there is already a spawn for them on this surface
     -- Could be a buddy spawn, or a shared spawn, or a unique spawn.
-    local player_spawn = FindPlayerSpawnOnSurface(player.name, surface_name)
+    local player_spawn = FindPlayerSpawnOnSurface(player.name, new_surface_name)
 
     if (player_spawn == nil) then
         log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
         SecondarySpawn(player, player.surface)
     end
+
+    --TODO: Check if they are near a cargo-landing-pad entity and if they are NOT, teleport them home to their spawn?
+
 end
 
 --[[
@@ -1246,14 +1259,15 @@ function QueuePlayerForDelayedSpawn(player_name, surface, spawn_position, moat_e
     final_chunk.y = final_chunk.y + spawn_chunk_radius
 
     ---@type OarcDelayedSpawn
-    local delayed_spawn = {}
-    delayed_spawn.playerName = player_name
-    delayed_spawn.surface = surface
-    delayed_spawn.position = spawn_position
-    delayed_spawn.moat = moat_enabled
-    delayed_spawn.delayedTick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND
-    delayed_spawn.final_chunk_generated = final_chunk
-    delayed_spawn.primary = primary
+    local delayed_spawn = {
+        playerName = player_name,
+        surface = surface,
+        position = spawn_position,
+        moat = moat_enabled,
+        delayedTick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND,
+        final_chunk_generated = final_chunk,
+        primary = primary
+    }
 
     table.insert(storage.delayed_spawns, delayed_spawn)
 

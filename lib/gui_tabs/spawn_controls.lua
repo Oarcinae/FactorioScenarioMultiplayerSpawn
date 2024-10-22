@@ -7,12 +7,12 @@
 function CreateSpawnControlsTab(tab_container, player)
     local spwnCtrls = tab_container.add {
         type = "scroll-pane",
-        name = "spwn_ctrl_panel",
-        caption = ""
+        vertical_scroll_policy = "auto",
     }
-    ApplyStyle(spwnCtrls, my_fixed_width_style)
-    spwnCtrls.style.maximal_height = 1000
-    spwnCtrls.horizontal_scroll_policy = "never"
+    -- ApplyStyle(spwnCtrls, my_fixed_width_style)
+    spwnCtrls.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
+    spwnCtrls.style.padding = 5
+
 
     CreatePrimarySpawnInfo(player, spwnCtrls)
     CreateSecondarySpawnInfo(player, spwnCtrls)
@@ -150,6 +150,14 @@ function CreateSetRespawnLocationButton(player, container)
     }
     dragger.style.horizontally_stretchable = true
 
+    local teleport_button = horizontal_flow.add {
+        type = "button",
+        tags = { action = "oarc_spawn_ctrl_tab", setting = "teleport_home", surface = respawn_surface_name, position = respawn_position },
+        caption = { "oarc-teleport-home" },
+        tooltip = { "oarc-teleport-home-tooltip" },
+        style = "green_button"
+    }
+    teleport_button.style.height = 26
     CreateGPSButton(horizontal_flow, respawn_surface_name, respawn_position)
 
     -- Sets the player's custom spawn point to their current location
@@ -293,7 +301,15 @@ function SpawnCtrlTabGuiClick(event)
 
     -- Sets a new respawn point and resets the cooldown.
     if (tags.setting == "set_respawn_location") then
-        SetPlayerRespawn(player.name, player.surface.name, player.position, true)
+
+        -- Check if the surface is blacklisted
+        local surface_name = player.surface.name
+        if IsSurfaceBlacklisted(surface_name) then
+            player.print("Can't set a respawn point on this surface!")
+            return
+        end
+
+        SetPlayerRespawn(player.name, surface_name, player.position, true)
         OarcGuiRefreshContent(player)
         player.print({ "oarc-spawn-point-updated" })
 
@@ -303,7 +319,13 @@ function SpawnCtrlTabGuiClick(event)
         local position = tags.position --[[@as MapPosition]]
 
         player.set_controller{type = defines.controllers.remote, position = position, surface = surface_name}
-        -- player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
+        player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
+
+    -- Teleports the player to their home base
+    elseif (tags.setting == "teleport_home") then
+        local surface_name = tags.surface --[[@as string]]
+        local position = tags.position --[[@as MapPosition]]
+        SafeTeleport(player, game.surfaces[surface_name], position)
 
     -- Accept or reject pending player join requests to a shared base
     elseif ((tags.setting == "accept_player_request") or (tags.setting == "reject_player_request")) then

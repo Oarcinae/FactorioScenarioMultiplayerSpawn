@@ -48,6 +48,8 @@ function DisplayWelcomeTextGui(player)
 
     -- Warnings about the scenario
     AddLabel(welcome_gui_if, nil, { "oarc-scenario-info-warn-msg" }, my_note_style)
+    AddSpacer(welcome_gui_if)
+    AddLabel(welcome_gui_if, nil, { "oarc-experimental-warning" }, my_label_style)
 
     -- Confirm button
     local button_flow = welcome_gui.add {
@@ -1178,9 +1180,9 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     SetPlayerRespawn(player.name, spawn_choices.surface, buddySpawn, true)
     SetPlayerRespawn(requesting_buddy_name, spawn_choices.surface, spawn_position, true)
 
-    -- Send the player there
-    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, requesting_buddy_name)
+    -- Send the player there (ORDER MATTERS! Otherwise sometimes chunks don't generate properly!)
     QueuePlayerForDelayedSpawn(requesting_buddy_name, spawn_choices.surface, spawn_position, spawn_choices.moat, true, player.name)
+    QueuePlayerForDelayedSpawn(player.name, spawn_choices.surface, buddySpawn, spawn_choices.moat, true, requesting_buddy_name)
     SendBroadcastMsg({"", {"oarc-buddies-are-joining", requesting_buddy_name, player.name, spawn_choices.surface}, " ", GetGPStext(spawn_choices.surface, spawn_position)})
 
     -- Unlock spawn control gui tab

@@ -168,7 +168,7 @@ end
 ---@param surface_name string
 ---@return boolean --true if blacklisted
 function IsSurfaceBlacklisted(surface_name)
-    if (storage.ocfg.surfaces_blacklist == nil) then
+    if (storage.ocfg.surfaces_blacklist ~= nil) then
         for _,name in pairs(storage.ocfg.surfaces_blacklist) do
             if (name == surface_name) then
                 return true
@@ -176,7 +176,7 @@ function IsSurfaceBlacklisted(surface_name)
         end
     end
 
-    if (storage.ocfg.surfaces_blacklist_match == nil) then
+    if (storage.ocfg.surfaces_blacklist_match ~= nil) then
         for _,match in pairs(storage.ocfg.surfaces_blacklist_match) do
             if (StringStartsWith(surface_name, match)) then
                 return true
