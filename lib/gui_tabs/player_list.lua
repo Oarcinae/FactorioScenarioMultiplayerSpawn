@@ -128,10 +128,15 @@ function PlayerListTabGuiClick(event)
             return
         end
 
+        local position, surface
         if (target_player.character) then
-            player.set_controller{type = defines.controllers.remote, position = target_player.character.position, surface = target_player.character.surface}
+            position = target_player.character.position
+            surface = target_player.character.surface
         else
-            player.set_controller{type = defines.controllers.remote, position = target_player.position, surface = target_player.surface}
+            position = target_player.position
+            surface = target_player.surface
         end
+        player.set_controller{type = defines.controllers.remote, position = position, surface = surface}
+        player.print({"", target_player.name, ": ", GetGPStext(surface.name, position)})
     end
 end
