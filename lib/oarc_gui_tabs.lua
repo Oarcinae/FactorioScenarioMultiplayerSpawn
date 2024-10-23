@@ -73,7 +73,8 @@ function InitOarcGuiTabs(player)
 
     -- Spawn control tab, enable if player is already spawned
     AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
-    local spawn_enabled = (storage.player_respawns[player.name] ~= nil) -- TODO: Maybe make a specific state flag or something more explicit?
+    local player_respawns = storage.player_respawns[player.name]
+    local spawn_enabled = (player_respawns ~= nil) and (next(player_respawns) ~= nil) -- TODO: Maybe make a specific state flag or something more explicit?
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, spawn_enabled)
 
     -- Regrowth control tab
