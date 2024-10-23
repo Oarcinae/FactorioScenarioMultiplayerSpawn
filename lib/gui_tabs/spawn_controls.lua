@@ -128,7 +128,7 @@ function CreateSetRespawnLocationButton(player, container)
     local respawn_info = storage.player_respawns[player.name][player.surface.name]
 
     if (respawn_info == nil) then
-        log("ERROR: No respawn info for player: " .. player.name)
+        AddLabel(container, nil, { "oarc-no-respawn-this-surface" }, my_warning_style)
         return
     end
 
@@ -325,6 +325,9 @@ function SpawnCtrlTabGuiClick(event)
     elseif (tags.setting == "teleport_home") then
         local surface_name = tags.surface --[[@as string]]
         local position = tags.position --[[@as MapPosition]]
+
+        --TODO Verify player is still on the same surface, if they leave the GUI open, they can teleport back from any surface.
+
         SafeTeleport(player, game.surfaces[surface_name], position)
 
     -- Accept or reject pending player join requests to a shared base

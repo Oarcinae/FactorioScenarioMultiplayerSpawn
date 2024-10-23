@@ -71,8 +71,11 @@ function InitOarcGuiTabs(player)
     AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_SERVER_INFO_TAB_NAME, true)
 
-    -- Spawn control tab, disabled by default
+    -- Spawn control tab, enable if player is already spawned
     AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
+    local player_respawns = storage.player_respawns[player.name]
+    local spawn_enabled = (player_respawns ~= nil) and (next(player_respawns) ~= nil) -- TODO: Maybe make a specific state flag or something more explicit?
+    SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, spawn_enabled)
 
     -- Regrowth control tab
     AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME)
@@ -419,7 +422,7 @@ function AddRemoveOarcGuiTabForAllPlayers(tab_name, add, enable)
             AddOarcGuiTab(player, tab_name)
             SetOarcGuiTabEnabled(player, tab_name, true)
         elseif (not add and DoesOarcGuiTabExist(player, tab_name)) then
-            -- RemoveOarcGuiTab(player, tab_name) -- SEE https://forums.factorio.com/viewtopic.php?f=7&t=115901
+            -- RemoveOarcGuiTab(player, tab_name) -- TODO: SEE https://forums.factorio.com/viewtopic.php?f=7&t=115901
             RecreateOarcGui(player) -- Assumes a ocfg setting change, so just recreate the whole thing.
         end
     end

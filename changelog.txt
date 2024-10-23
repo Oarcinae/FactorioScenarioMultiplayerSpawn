@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.2
+Date: 2024-10-23
+  Bugfixes:
+    - Fix spawn controls tab in custom GUI not being re-enabled when GUI is recreated (on mod update for example).
+  Info:
+    - Add a warning note explanation when the custom respawn feature is not available.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.1
 Date: 2024-10-23
   Bugfixes:
