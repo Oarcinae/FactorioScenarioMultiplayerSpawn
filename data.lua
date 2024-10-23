@@ -21,8 +21,40 @@ data:extend({
         width = 40,
         height = 40
     },
-    oarc_linked_chest, oarc_linked_power
+    oarc_linked_chest, oarc_linked_power,  
 })
+
+data:extend({
+    -- A spawn area was created (and is finished generating)
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-spawn-created",
+        -- Provides a data table called spawn_data
+    },
+
+    -- A spawn area was REQUESTED to be removed. (Not that it has been removed already.)
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-spawn-remove-request",
+        -- Provides a data table called spawn_data
+    },
+
+    -- A player was reset (also called when a player is removed)
+    -- If you want just player removed, use native on_player_removed and/or on_pre_player_removed
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-player-reset",
+        -- Provides a player_index
+    },
+
+    -- A player was spawned (sent to a new spawn OR joined a shared spawn)
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-player-spawned",
+        -- Provides a player_index
+    },
+})
+
 
 -- Make coins not hidden
 data.raw["item"]["coin"].hidden = false

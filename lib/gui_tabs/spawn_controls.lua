@@ -490,6 +490,7 @@ function SpawnCtrlTabGuiClick(event)
             local joining_player = game.players[join_queue_player_choice]
             SetPlayerRespawn(joining_player.name, primary_spawn.surface_name, primary_spawn.position, true)
             SendPlayerToSpawn(primary_spawn.surface_name, joining_player)
+            script.raise_event("oarc-mod-on-player-spawned", {player_index = joining_player.index})
             GivePlayerStarterItems(joining_player)
             table.insert(storage.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)
             joining_player.force = game.players[player.name].force

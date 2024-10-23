@@ -116,6 +116,33 @@ end)
 -- end)
 
 ----------------------------------------
+-- CUSTOM OARC Events (shown here for demo and logging purposes)
+----------------------------------------
+script.on_event("oarc-mod-on-spawn-created", function(event)
+    log("Custom event oarc-mod-on-spawn-created")
+    log(serpent.block(event))
+end)
+
+script.on_event("oarc-mod-on-spawn-remove-request", function(event)
+    log("Custom event oarc-mod-on-spawn-remove-request")
+    log(serpent.block(event))
+end)
+
+script.on_event("oarc-mod-on-player-reset", function(event)
+    log("Custom event oarc-mod-on-player-reset")
+    log(serpent.block(event))
+    if (game.players[event.player_index]) then
+        log("Player is still valid: " .. game.players[event.player_index].name)
+    end
+end)
+
+script.on_event("oarc-mod-on-player-spawned", function(event)
+    log("Custom event oarc-mod-on-player-spawned")
+    log(serpent.block(event))
+    log("Player spawned: " .. game.players[event.player_index].name)
+end)
+
+----------------------------------------
 -- Shared chat, so you don't have to type /s
 -- But you do lose your player colors across forces.
 ----------------------------------------
