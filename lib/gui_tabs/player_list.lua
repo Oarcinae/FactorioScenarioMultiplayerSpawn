@@ -123,6 +123,15 @@ function PlayerListTabGuiClick(event)
         local player_name = tags.player_name --[[@as string]]
         local target_player = game.players[player_name]
 
-        player.set_controller{type = defines.controllers.remote, position = target_player.character.position, surface = target_player.character.surface}
+        if (target_player == nil) then
+            player.print({"oarc-player-not-found", player_name})
+            return
+        end
+
+        if (target_player.character) then
+            player.set_controller{type = defines.controllers.remote, position = target_player.character.position, surface = target_player.character.surface}
+        else
+            player.set_controller{type = defines.controllers.remote, position = target_player.position, surface = target_player.surface}
+        end
     end
 end
