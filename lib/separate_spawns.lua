@@ -496,16 +496,24 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
     ChartArea(player.force, delayed_spawn.position, math.ceil(storage.ocfg.spawn_general.spawn_radius_tiles / CHUNK_SIZE),
         player.surface)
 
+    -- Remove waiting dialog
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then
         player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 
+    -- Create crash site if configured
     if (ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship) then
         crash_site.create_crash_site(game.surfaces[delayed_spawn.surface],
             { x = delayed_spawn.position.x + 15, y = delayed_spawn.position.y - 25 },
             ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_resources,
             ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_wreakage)
     end
+
+    -- Trigger the event that the spawn was created.
+    script.raise_event("oarc-mod-on-spawn-created", {spawn_data = delayed_spawn})
+
+    -- Trigger the event that player was spawned too.
+    script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index})
 end
 
 ---Displays some welcoming text at the spawn point on the ground. Fades out over time.
@@ -781,6 +789,9 @@ function RemoveOrResetPlayer(player, remove_player)
         game.merge_forces(player_old_force, "neutral")
     end
 
+    -- Trigger the event that the player was reset.
+    script.raise_event("oarc-mod-on-player-reset", {player_index = player.index})
+
     -- Remove the character completely
     if (remove_player) then
         game.remove_offline_players({ player })
@@ -872,6 +883,8 @@ function UniqueSpawnCleanupRemove(player_name)
         log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. primary_spawn.surface_name)
         RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, math.ceil(total_spawn_width / CHUNK_SIZE) + 1) -- +1 to match the spawn generation requested area
         TriggerCleanup()
+        -- Trigger event
+        script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = primary_spawn})
     end
 
     storage.unique_spawns[primary_spawn.surface_name][player_name] = nil
