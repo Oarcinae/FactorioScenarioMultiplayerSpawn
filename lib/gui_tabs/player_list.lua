@@ -137,6 +137,6 @@ function PlayerListTabGuiClick(event)
             surface = target_player.surface
         end
         player.set_controller{type = defines.controllers.remote, position = position, surface = surface}
-        player.print({"", target_player.name, " -> ", GetGPStext(surface.name, position)})
+        player.print({"", target_player.name, ": ", GetGPStext(surface.name, position)})
     end
 end
