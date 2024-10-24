@@ -153,6 +153,7 @@ NAUVIS_SPAWN_CONFIG =
         {
             num_patches = 2,
             amount = 900000,
+            spacing = 6, -- Spacing between each patch, only used for automatic placing.
 
             -- These are only used if not using automatic placing.
             -- Starting position offset (relative to bottom/south of spawn area)
@@ -658,8 +659,20 @@ OCFG = {
 ---@field size_multiplier number Size multiplier for the starting resource deposits.
 ---@field amount_multiplier number Amount multiplier for the starting resource deposits.
 
----@alias OarcConfigSolidResource { amount: integer, size: integer, x_offset: integer, y_offset: integer } Amount and placement of solid resource tiles in the spawn area.
----@alias OarcConfigFluidResource { num_patches: integer, amount: integer, x_offset_start: integer, y_offset_start: integer, x_offset_next: integer, y_offset_next: integer } Amount and placement of fluid resource patches in the spawn area.
+---@class OarcConfigSolidResource
+---@field amount integer
+---@field size integer
+---@field x_offset integer
+---@field y_offset integer
+
+---@class OarcConfigFluidResource
+---@field num_patches integer
+---@field amount integer
+---@field spacing integer
+---@field x_offset_start integer
+---@field y_offset_start integer
+---@field x_offset_next integer
+---@field y_offset_next integer
 
 ---@class OarcStoreItem
 ---@field cost integer
