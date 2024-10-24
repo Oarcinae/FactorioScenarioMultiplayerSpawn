@@ -6,6 +6,7 @@ Date: ????
   Changes:
     - Change default spacing between fluid resource patches (like crude-oil) to be 6 instead of 4.
     - Added config setting to control the spacing between fluid resource patches. (Not exposed in the GUI.)
+    - Set default starting items to be the same as Vanilla freeplay.
   Bugfixes:
     - Fixed logistics chest not shown in coin shop due to outdated item name.
 ---------------------------------------------------------------------------------------------------
