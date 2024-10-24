@@ -301,7 +301,7 @@ function GenerateStartingResources(surface, position)
         elseif (storage.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
         end
-    
+
     -- Generate resources using specified offsets if auto placement is disabled.
     else
         for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
@@ -315,11 +315,11 @@ function GenerateStartingResources(surface, position)
     -- Reference position is the bottom of the spawn area.
     if storage.ocfg.resource_placement.enabled then
         local y_offset = storage.ocfg.resource_placement.distance_to_edge
-        local spacing = 4 -- HARDCODED FLUID PATCH SPACING SIZE!
         local fluid_ref_pos = { x = position.x, y = position.y + storage.ocfg.spawn_general.spawn_radius_tiles - y_offset }
 
         for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
 
+            local spacing = r_data.spacing
             local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
             local oil_patch_y = fluid_ref_pos.y
 
