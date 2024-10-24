@@ -33,27 +33,24 @@ MAX_CRASHED_SHIP_WRECKAGE_ITEMS = 1
 NAUVIS_STARTER_ITEMS =
 {
     player_start_items = {
-        ["pistol"]=1,
-        ["firearm-magazine"]=200,
-        ["iron-plate"]=100,
-        ["burner-mining-drill"] = 4,
-        ["stone-furnace"] = 4,
-        ["coal"] = 50,
-        ["stone"] = 50,
+        ["iron-plate"] = 8,
+        ["wood"] = 1,
+        ["pistol"] = 1,
+        ["firearm-magazine"] = 10,
+        ["burner-mining-drill"] = 1,
+        ["stone-furnace"] = 1
     },
     player_respawn_items = {
-        -- ["pistol"]=1,
-        -- ["firearm-magazine"]=100,
+        ["pistol"] = 1,
+        ["firearm-magazine"] = 10
     },
 
     crashed_ship = true,
     crashed_ship_resources = {
-        ["electronic-circuit"] = 200,
-        ["iron-gear-wheel"] = 100,
-        ["copper-cable"] = 200
+        ["firearm-magazine"] = 8 -- Max of 5 inventory slots!
     },
     crashed_ship_wreakage = {
-        ["iron-plate"] = 100 -- I don't recommend more than 1 item type here!
+        ["iron-plate"] = 8 -- I don't recommend more than 1 item type here!
     },
 }
 
