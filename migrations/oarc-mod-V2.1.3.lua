@@ -8,3 +8,9 @@ for surface_name, surface_config in pairs(storage.ocfg.surfaces_config) do
         end
     end
 end
+
+--Add setting for letting players reset themselves.
+if storage.ocfg.gameplay.enable_player_self_reset == nil then
+    storage.ocfg.gameplay.enable_player_self_reset = true
+    log("Updating gameplay config with new 'enable_player_self_reset' setting.")
+end

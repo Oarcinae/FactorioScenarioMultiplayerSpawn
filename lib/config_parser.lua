@@ -83,6 +83,7 @@ OCFG_KEYS =
     ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = "Coin Generation"},
     ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = "Coin Generation", tooltip = "Enemies drop coins when killed."},
     ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = "Auto Decon Coins", tooltip = "Automatically marks coins dropped by enemies for deconstruction so robots will pick them up."},
+    ["gameplayer.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = "Player Self Reset", tooltip = "Allow players to reset themselves in the spawn controls."}
 }
 
 ---Easy reverse lookup for mod settings keys.

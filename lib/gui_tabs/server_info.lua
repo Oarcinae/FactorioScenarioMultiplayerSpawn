@@ -136,7 +136,6 @@ function ServerInfoTabGuiClick(event)
 
             log("Resetting " .. resetPlayer)
             RemoveOrResetPlayer(game.players[resetPlayer], false)
-            SeparateSpawnsInitPlayer(resetPlayer --[[@as string]])
         else
             SendMsg(player.name, {"oarc-player-none-selected"})
             return
