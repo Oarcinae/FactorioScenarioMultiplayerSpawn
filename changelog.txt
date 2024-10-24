@@ -6,6 +6,8 @@ Date: ????
   Changes:
     - Change default spacing between fluid resource patches (like crude-oil) to be 6 instead of 4.
     - Added config setting to control the spacing between fluid resource patches. (Not exposed in the GUI.)
+  Bugfixes:
+    - Fixed logistics chest not shown in coin shop due to outdated item name.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.2
 Date: 2024-10-23

@@ -242,7 +242,7 @@ OARC_SHOP_ITEMS =
         ["personal-roboport-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
         ["construction-robot"] = {cost = 100, count = 10, play_time_locked=false},
         ["roboport"] = {cost = 1000, count = 1, play_time_locked=false},
-        ["logistic-chest-storage"] = {cost = 100, count = 1, play_time_locked=false},
+        ["storage-chest"] = {cost = 100, count = 1, play_time_locked=false},
     },
 
     ["Misc Equipment"] = {
