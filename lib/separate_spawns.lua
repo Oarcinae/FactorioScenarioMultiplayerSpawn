@@ -782,8 +782,16 @@ function RemoveOrResetPlayer(player, remove_player)
     end
 
     -- Remove the character completely
-    if (remove_player) then
+    if (remove_player and not player.connected) then
         game.remove_offline_players({ player })
+
+    -- Otherwise, make sure to re-init them!
+    else
+        if (remove_player) then
+            log("ERROR! RemoveOrResetPlayer - Player not removed as they are still connected: " .. player.name)
+        end
+        SeparateSpawnsInitPlayer(player.index --[[@as string]])
+        SendBroadcastMsg({"oarc-player-was-reset-notify", player.name})
     end
 
     -- Refresh the shared spawn spawn gui for all players
@@ -866,11 +874,15 @@ function UniqueSpawnCleanupRemove(player_name)
         end
     end
 
+    -- TODO: Possibly limit this based on playtime? If player is on for a long time then don't remove it?
     -- Use regrowth mod to cleanup the area.
     local spawn_position = primary_spawn.position
     if (storage.ocfg.regrowth.enable_abandoned_base_cleanup and (not nearOtherSpawn)) then
         log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. primary_spawn.surface_name)
-        RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, math.ceil(total_spawn_width / CHUNK_SIZE) + 1) -- +1 to match the spawn generation requested area
+
+        -- Clear an area around the spawn that SHOULD not include any other bases.
+        local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
+        RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, clear_radius)
         TriggerCleanup()
     end
 

@@ -395,6 +395,9 @@ OCFG = {
 
         -- Enable the coin shop GUI for players to buy items with coins.
         enable_coin_shop = false,
+
+        -- Allow players to reset themselves in the spawn controls
+        enable_player_self_reset = true,
     },
 
     -- This is a separate feature that is part of the mod that helps keep the map size down. Not required but useful.
@@ -597,6 +600,7 @@ OCFG = {
 ---@field enable_shared_power boolean Enable shared power between bases. Creates a special power pole for cross surface connections.
 ---@field enable_shared_chest boolean Enables a single shared chest using the native linked-chest entity in factorio.
 ---@field enable_coin_shop boolean Enable the coin shop GUI for players to buy items with coins.
+---@field enable_player_self_reset boolean Allow players to reset themselves in the spawn controls
 
 ---@class OarcConfigRegrowth
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.

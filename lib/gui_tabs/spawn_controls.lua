@@ -1,5 +1,8 @@
 -- Spawn control tab in the Oarc GUI, for things like sharing your base with others.
 
+local RESET_GUI_MAX_WIDTH = 500
+local RESET_GUI_MAX_HEIGHT = 1000
+
 ---Provides the content of the spawn control tab in the Oarc GUI.
 ---@param tab_container LuaGuiElement
 ---@param player LuaPlayer
@@ -13,6 +16,11 @@ function CreateSpawnControlsTab(tab_container, player)
     spwnCtrls.style.maximal_height = GENERIC_GUI_MAX_HEIGHT
     spwnCtrls.style.padding = 5
 
+    -- Don't show anything WHILE they are still generating a spawn:
+    if PlayerHasDelayedSpawn(player.name--[[@as string]]) then
+        AddLabel(spwnCtrls, nil, { "oarc-spawn-controls-disabled-delayed" }, my_warning_style)
+        return
+    end
 
     CreatePrimarySpawnInfo(player, spwnCtrls)
     CreateSecondarySpawnInfo(player, spwnCtrls)
@@ -22,6 +30,8 @@ function CreateSpawnControlsTab(tab_container, player)
         CreateSharedSpawnControls(player, spwnCtrls)
         CreateJoinQueueControls(player, spwnCtrls)
     end
+
+    CreatePlayerResetControls(spwnCtrls)
 end
 
 ---Display some general info about the player's home base (different from respawn point).
@@ -51,8 +61,6 @@ function CreatePrimarySpawnInfo(player, container)
     dragger.style.horizontally_stretchable = true
 
     CreateGPSButton(horizontal_flow, primary_spawn.surface_name, primary_spawn.position)
-
-    AddSpacerLine(container)
 end
 
 ---Display some general info about the player's secondary spawn points.
@@ -63,6 +71,7 @@ function CreateSecondarySpawnInfo(player, container)
     local secondary_spawns = FindSecondaryUniqueSpawns(player.name)
     if (secondary_spawns == nil) or (table_size(secondary_spawns) == 0) then return end
 
+    AddSpacerLine(container)
     AddLabel(container, nil, { "oarc-secondary-spawn-info-header" }, "caption_label")
     AddLabel(container, nil, { "oarc-secondary-spawn-info-note" }, my_label_style)
 
@@ -83,8 +92,6 @@ function CreateSecondarySpawnInfo(player, container)
 
         CreateGPSButton(horizontal_flow, secondary_spawn.surface_name, secondary_spawn.position)
     end
-
-    AddSpacerLine(container)
 end
 
 ---Display the shared spawn controls
@@ -95,6 +102,7 @@ function CreateSharedSpawnControls(player, container)
     local primary_spawn = FindPrimaryUniqueSpawn(player.name)
     if (primary_spawn == nil) then return end
 
+    AddSpacerLine(container)
     AddLabel(container, nil, { "oarc-shared-spawn-controls" }, "caption_label")
 
     local shared_spawn_open = IsSharedSpawnOpen(primary_spawn.surface_name, player.name)
@@ -122,6 +130,8 @@ end
 ---@param container LuaGuiElement
 ---@return nil
 function CreateSetRespawnLocationButton(player, container)
+
+    AddSpacerLine(container)
     AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
     --[[@type OarcPlayerSpawn]]
@@ -178,7 +188,6 @@ function CreateSetRespawnLocationButton(player, container)
                 (game.tick - storage.player_cooldowns[player.name].setRespawn)) }, my_note_style)
     end
     AddLabel(container, nil, { "oarc-set-respawn-note" }, my_label_style)
-    AddSpacerLine(container)
 end
 
 ---Display a list of people in the join queue for a shared spawn.
@@ -257,6 +266,83 @@ function CreateGPSButton(container, surface_name, position)
     gps_button.style.height = 28
 end
 
+---Create the GUI controls for self-resetting the player.
+---@param container LuaGuiElement
+---@return nil
+function CreatePlayerResetControls(container)
+    if not storage.ocfg.gameplay.enable_player_self_reset then return end
+
+    AddSpacerLine(container)
+    AddLabel(container, nil, { "oarc-player-reset-header" }, "caption_label")
+    AddLabel(container, nil, { "oarc-player-reset-note" }, my_longer_label_style)
+
+    local horizontal_flow = container.add { type = "flow", direction = "horizontal" }
+    
+    local dragger = horizontal_flow.add {
+        type = "empty-widget",
+        style = "draggable_space_header"
+    }
+    dragger.style.horizontally_stretchable = true
+
+    local reset_button = horizontal_flow.add {
+        type = "button",
+        tags = { action = "oarc_spawn_ctrl_tab", setting = "player_reset" },
+        caption = { "oarc-player-reset" },
+        tooltip = { "oarc-player-reset-tooltip" },
+        style = "red_button"
+    }
+    reset_button.style.font = "default-small-semibold"
+end
+
+---Display a confirmation GUI for the player to reset themselves.
+---@param player LuaPlayer
+---@return nil
+function DisplayPlayerResetConfirmationGUI(player)
+    local self_reset_gui = player.gui.screen.add {
+        name = "self_reset_confirm",
+        type = "frame",
+        direction = "vertical",
+        caption = { "oarc-player-reset" }
+    }
+    self_reset_gui.auto_center = true
+    self_reset_gui.style.maximal_width = RESET_GUI_MAX_WIDTH
+    self_reset_gui.style.maximal_height = RESET_GUI_MAX_HEIGHT
+    self_reset_gui.style.padding = 5
+
+    local self_reset_gui_if = self_reset_gui.add {
+        type = "frame",
+        style = "inside_shallow_frame_with_padding",
+        direction = "vertical"
+    }
+
+    AddLabel(self_reset_gui_if, nil, { "oarc-player-reset-are-you-sure" }, my_warning_style)
+    AddSpacer(self_reset_gui_if)
+
+    local horizontal_flow = self_reset_gui_if.add { type = "flow", direction = "horizontal" }
+    horizontal_flow.style.horizontally_stretchable = true
+
+    local cancel_button = horizontal_flow.add {
+        type = "button",
+        tags = { action = "oarc_spawn_ctrl_tab", setting = "player_reset_cancel" },
+        caption = { "oarc-cancel-button-caption" },
+        style = "back_button"
+    }
+
+    local dragger = horizontal_flow.add {
+        type = "empty-widget",
+        style = "draggable_space_header"
+    }
+    dragger.style.horizontally_stretchable = true
+
+    local reset_button = horizontal_flow.add {
+        type = "button",
+        tags = { action = "oarc_spawn_ctrl_tab", setting = "player_reset_confirm" },
+        caption = { "oarc-confirm-button-caption" },
+        tooltip = { "oarc-player-reset" },
+        style = "confirm_button"
+    }
+end
+
 ---Handle the gui checkboxes & radio buttons of the spawn control tab in the Oarc GUI.
 ---@param event EventData.on_gui_checked_state_changed
 ---@return nil
@@ -329,6 +415,23 @@ function SpawnCtrlTabGuiClick(event)
         --TODO Verify player is still on the same surface, if they leave the GUI open, they can teleport back from any surface.
 
         SafeTeleport(player, game.surfaces[surface_name], position)
+
+    -- Self reset the player
+    elseif (tags.setting == "player_reset") then
+        DisplayPlayerResetConfirmationGUI(player)
+
+    -- Cancel the self reset
+    elseif (tags.setting == "player_reset_cancel") then
+        if (player.gui.screen.self_reset_confirm) then
+            player.gui.screen.self_reset_confirm.destroy()
+        end
+
+    -- Confirm the self reset
+    elseif (tags.setting == "player_reset_confirm") then
+        if (player.gui.screen.self_reset_confirm) then
+            player.gui.screen.self_reset_confirm.destroy()
+        end
+        RemoveOrResetPlayer(player, false)
 
     -- Accept or reject pending player join requests to a shared base
     elseif ((tags.setting == "accept_player_request") or (tags.setting == "reject_player_request")) then

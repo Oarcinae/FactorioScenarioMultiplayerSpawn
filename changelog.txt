@@ -3,6 +3,7 @@ Version: 2.1.3
 Date: ????
   Minor Features:
     - Add GPS ping for when player clicks on someone's location in the player list.
+    - Players can now reset themselves if they want a different spawn. Available in the spawn controls tab of the custom GUI. This feature is enabled by default but can be disabled with a setting.
   Changes:
     - Change default spacing between fluid resource patches (like crude-oil) to be 6 instead of 4.
     - Added config setting to control the spacing between fluid resource patches. (Not exposed in the GUI.)
