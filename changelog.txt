@@ -10,6 +10,8 @@ Date: ????
     - Set default starting items to be the same as Vanilla freeplay.
   Bugfixes:
     - Fixed logistics chest not shown in coin shop due to outdated item name.
+  Info:
+    - Rename and re-arrange the custom GUI tabs. (Surface Config --> Surface Settings)
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.2
 Date: 2024-10-23
