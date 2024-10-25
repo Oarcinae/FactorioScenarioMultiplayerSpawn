@@ -130,7 +130,21 @@ data:extend({
         name = "oarc-mod-enable-shared-team-chat",
         setting_type = "runtime-global",
         default_value = true,
-        order = "d4"
+        order = "d31"
+    },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-enable-friendly-teams",
+        setting_type = "runtime-global",
+        default_value = true,
+        order = "d32"
+    },
+    {
+        type = "bool-setting",
+        name = "oarc-mod-enable-cease-fire",
+        setting_type = "runtime-global",
+        default_value = true,
+        order = "d33"
     },
     {
         type = "bool-setting",

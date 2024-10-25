@@ -1468,7 +1468,8 @@ function CreatePlayerForce(force_name)
         new_force.friendly_fire = storage.ocfg.gameplay.enable_friendly_fire
         -- SetCeaseFireBetweenAllPlayerForces()
         -- SetFriendlyBetweenAllPlayerForces()
-        ConfigurePlayerForceRelationships(true, true)
+        ConfigurePlayerForceRelationships(storage.ocfg.gameplay.enable_friendly_teams,
+            storage.ocfg.gameplay.enable_cease_fire)
         -- ConfigureEnemyForceRelationshipsForNewPlayerForce(new_force)
     else
         log("TOO MANY FORCES!!! - CreatePlayerForce()")
