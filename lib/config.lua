@@ -346,6 +346,12 @@ OCFG = {
         -- But it also means you can't talk privately with your own team.
         enable_shared_team_chat = true,
 
+        -- Friendly teams can modify each other's buildings and view each other's map area.
+        enable_friendly_teams = true,
+
+        -- This means team's turrets won't shoot other team's stuff.
+        enable_cease_fire = true,
+
         -- Enable if players can allow others to join their base.
         -- And specify how many including the host are allowed.
         enable_shared_spawns = true,
@@ -584,8 +590,10 @@ OCFG = {
 ---@field far_spawn_distance number The furthest a player can spawn from the origin. (Not exact, but close).
 ---@field enable_buddy_spawn boolean Allow 2 players to spawn next to each other, each with their own starting area.
 ---@field enable_offline_protection boolean Inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
----@field enable_shared_team_vision boolean Enable shared vision between teams (all teams are COOP regardless)
+---@field enable_shared_team_vision boolean Enable shared vision between teams
 ---@field enable_shared_team_chat boolean Share local team chat with all teams
+---@field enable_friendly_teams boolean Friendly teams can modify each other's buildings.
+---@field enable_cease_fire boolean This means team's turrets won't shoot other team's stuff.
 ---@field enable_shared_spawns boolean Enable if players can allow others to join their spawn.
 ---@field number_of_players_per_shared_spawn number Number of players allowed to join a shared spawn.
 ---@field enable_friendly_fire boolean Set to true if you want to shoot your own chests and stuff.
