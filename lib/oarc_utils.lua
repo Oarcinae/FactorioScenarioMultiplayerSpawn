@@ -514,25 +514,14 @@ end
 ---@param surface LuaSurface
 ---@param target_pos MapPosition
 function SafeTeleport(player, surface, target_pos)
-    local safe_pos = surface.find_non_colliding_position("character", target_pos, 15, 1)
+    local safe_pos = surface.find_non_colliding_position("character", target_pos, CHUNK_SIZE, 1)
     if (not safe_pos) then
-        player.teleport(target_pos, surface)
+        player.teleport(target_pos, surface, true)
     else
-        player.teleport(safe_pos, surface)
+        player.teleport(safe_pos, surface, true)
     end
 end
 
--- Duplicate function ??
--- -- Create area given point and radius-distance
--- function GetAreaFromPointAndDistance(point, dist)
---     local area = {left_top=
---                     {x=point.x-dist,
---                      y=point.y-dist},
---                   right_bottom=
---                     {x=point.x+dist,
---                      y=point.y+dist}}
---     return area
--- end
 
 ---Check if given position is in area bounding box
 ---@param point MapPosition

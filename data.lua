@@ -29,14 +29,14 @@ data:extend({
     {
         type = "custom-event",
         name = "oarc-mod-on-spawn-created",
-        -- Provides a data table called spawn_data
+        -- Provides data table called spawn_data
     },
 
     -- A spawn area was REQUESTED to be removed. (Not that it has been removed already.)
     {
         type = "custom-event",
         name = "oarc-mod-on-spawn-remove-request",
-        -- Provides a data table called spawn_data
+        -- Provides data table called spawn_data
     },
 
     -- A player was reset (also called when a player is removed)
@@ -44,14 +44,21 @@ data:extend({
     {
         type = "custom-event",
         name = "oarc-mod-on-player-reset",
-        -- Provides a player_index
+        -- Provides player_index
     },
 
     -- A player was spawned (sent to a new spawn OR joined a shared spawn)
     {
         type = "custom-event",
         name = "oarc-mod-on-player-spawned",
-        -- Provides a player_index
+        -- Provides player_index
+    },
+
+    -- A player moved from surface to space platform
+    {
+        type = "custom-event",
+        name = "oarc-mod-character-surface-changed",
+        -- Provides player_index, old_surface_name, new_surface_name
     },
 })
 
