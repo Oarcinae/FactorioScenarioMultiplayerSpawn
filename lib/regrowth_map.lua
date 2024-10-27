@@ -380,12 +380,13 @@ function RefreshPlayerArea()
     player_index = GetNextConnectedPlayerIndex()
     if (player_index and game.connected_players[player_index]) then
         local player = game.connected_players[player_index]
-        local surface_name = player.surface.name
 
         if (not player.character) then return end
+        local surface_name = player.character.surface.name
+
         if (storage.rg[surface_name] == nil) or (not storage.rg[surface_name].active) then return end
 
-        RefreshArea(surface_name, player.position, REGROWTH_ACTIVE_AREA_AROUND_PLAYER, 0)
+        RefreshArea(surface_name, player.character.position, REGROWTH_ACTIVE_AREA_AROUND_PLAYER, 0)
     end
 end
 

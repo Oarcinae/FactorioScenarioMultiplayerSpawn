@@ -207,10 +207,10 @@ end
 ---@return nil
 function SeparateSpawnsPlayerRespawned(event)
     local player = game.players[event.player_index]
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
 
     -- It's possible if player is dead, and then resets, we don't want to do anything else.
-    if (player.surface.name == HOLDING_PEN_SURFACE_NAME) then return end
+    if (surface_name == HOLDING_PEN_SURFACE_NAME) then return end
 
     -- If the mod isn't active on this surface, then ignore it.
     local surface_config = storage.oarc_surfaces[surface_name]
@@ -246,6 +246,15 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     if (previous_surface_name == nil) then return end
     log("SeparateSpawnsPlayerChangedSurface from " .. previous_surface_name .. " to " .. new_surface_name)
 
+    -- TODO make sure this isn't too spammy?
+    local surface = game.surfaces[new_surface_name]
+    local platform = surface.platform
+    if (platform ~= nil) then
+        SendBroadcastMsg({ "oarc-player-on-platform", player.name, surface.platform.name })
+    else
+        SendBroadcastMsg({ "oarc-player-changed-surface", player.name, surface.name })
+    end
+
     -- Check if player has been init'd yet. If not, then ignore it.
     if (storage.player_respawns[player.name] == nil) then return end
 
@@ -255,7 +264,6 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
         (not surface_config.primary and not surface_config.secondary) then
         return
     end
-
 
     -- If previous surface was a platform
     -- local arriving_from_space = StringStartsWith(previous_surface_name, "platform-")
@@ -282,7 +290,32 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     -- TODO: Need to figure out buddy spawns and other stuff still!
 
     log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
-    SecondarySpawn(player, player.surface)
+    SecondarySpawn(player, game.surfaces[new_surface_name])
+end
+
+---Updates the player's surface and raises an event if it changes.
+---@param player LuaPlayer
+---@param new_surface_name string
+---@return nil
+function SeparateSpawnsUpdatePlayerSurface(player, new_surface_name)
+    if (storage.player_surfaces == nil) then
+        storage.player_surfaces = {}
+    end
+
+    local previous_surface_name = storage.player_surfaces[player.name]
+
+    if (previous_surface_name ~= new_surface_name) then
+        storage.player_surfaces[player.name] = new_surface_name
+
+        -- Raise event if previous surface isn't nil (avoids first spawn event)
+        if (previous_surface_name ~= nil) then 
+            script.raise_event("oarc-mod-character-surface-changed", {
+                player_index=player.index,
+                old_surface_name=previous_surface_name,
+                new_surface_name=new_surface_name
+            })
+        end
+    end
 end
 
 --[[
@@ -503,7 +536,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
 
     -- Chart the area.
     ChartArea(player.force, delayed_spawn.position, math.ceil(storage.ocfg.spawn_general.spawn_radius_tiles / CHUNK_SIZE),
-        player.surface)
+        player.character.surface)
 
     -- Remove waiting dialog
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then

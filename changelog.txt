@@ -1,18 +1,23 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.3
-Date: ????
+Date: 2024-10-27
   Minor Features:
     - Add GPS ping for when player clicks on someone's location in the player list.
     - Players can now reset themselves if they want a different spawn. Available in the spawn controls tab of the custom GUI. This feature is enabled by default but can be disabled with a setting.
     - New settings allow changing if player teams are friendly and/or have a cease fire. Exposed because friendly forces are problematic due to griefing. CooP is still the default setting.
+    - Add a broadcast message for when a player changes surfaces.
   Changes:
     - Change default spacing between fluid resource patches (like crude-oil) to be 6 instead of 4.
     - Added config setting to control the spacing between fluid resource patches. (Not exposed in the GUI.)
     - Set default starting items to be the same as Vanilla freeplay.
   Bugfixes:
     - Fixed logistics chest not shown in coin shop due to outdated item name.
+    - Fix crash when player dies and respawns on other surfaces.
+    - Fix allowing players to teleport home from anywhere if viewing their home surface remotely.
+    - Fixed a LOT of references to player where player.character should be used instead.
   Info:
     - Rename and re-arrange the custom GUI tabs. (Surface Config --> Surface Settings)
+    - Add several custom events to support future features and integration. These have lots of debug logging enabled currently, I'll disable these at a future date, for they are useful now to assist when issues come up with the new SA and 2.0 features.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.2
 Date: 2024-10-23

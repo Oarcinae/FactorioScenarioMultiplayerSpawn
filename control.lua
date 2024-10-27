@@ -142,7 +142,7 @@ end)
 ---@field player_index integer
 script.on_event("oarc-mod-on-player-reset", function(event)
     log("Custom event oarc-mod-on-player-reset")
-    log(serpent.block(event))
+    log(serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
     if (game.players[event.player_index]) then
         log("Player is still valid: " .. game.players[event.player_index].name)
     end
@@ -152,7 +152,7 @@ end)
 ---@field player_index integer
 script.on_event("oarc-mod-on-player-spawned", function(event)
     log("Custom event oarc-mod-on-player-spawned")
-    log(serpent.block(event))
+    log(serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
     log("Player spawned: " .. game.players[event.player_index].name)
 end)
 
@@ -162,7 +162,7 @@ end)
 ---@field new_surface_name string
 script.on_event("oarc-mod-character-surface-changed", function(event)
     log("Custom event oarc-mod-character-surface-changed")
-    log(serpent.block(event))
+    log(serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
 
     local player = game.players[event.player_index]
     SeparateSpawnsPlayerChangedSurface(player, event.old_surface_name, event.new_surface_name)
@@ -175,7 +175,7 @@ script.on_event(defines.events.script_raised_teleported, function(event)
 
     local entity = event.entity
     if entity.type == "character" and entity.player then
-        UpdatePlayerSurface(entity.player, entity.surface.name)
+        SeparateSpawnsUpdatePlayerSurface(entity.player, entity.surface.name)
     end
 end)
 
@@ -284,69 +284,23 @@ end)
 --If a player gets in or out of a vehicle, mark the area as safe so we don't delete the vehicle by accident.
 --Only world eater will clean up these chunks over time if it is enabled.
 script.on_event(defines.events.on_player_driving_changed_state, function (event)
-    if storage.ocfg.regrowth.enable_regrowth then
-        RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 1, false)
+    local entity = event.entity
+
+    if storage.ocfg.regrowth.enable_regrowth and (entity ~= nil) then
+        RegrowthMarkAreaSafeGivenTilePos(entity.surface.name, entity.position, 1, false)
     end
 
     log("Player driving changed state")
     log(serpent.block(event))
 
     local player = game.players[event.player_index]
+    log("Player vehicle: " .. serpent.block(player.vehicle))
 
-    -- Track the surfaces whenever driving state changes.
-    if (event.entity ~= nil) then
-        UpdatePlayerSurface(player, entity.surface.name)
+    -- Track the surfaces whenever driving state changes. This triggers events for surface changes.
+    if (entity ~= nil) then
+        SeparateSpawnsUpdatePlayerSurface(player, entity.surface.name)
     end
-
-    -- local entity = event.entity
-    -- if (entity ~= nil) and(entity.name == "cargo-pod") and
-    --     (entity.surface.name == "nauvis") and
-    --     (storage.player_surfaces[player.name] == "platform-1") then
-    --     log("Landing cargo pod on nauvis")
-    --     player.teleport({x=100,y=100})
-    -- end
-
-
-
-
--- --[[@type OarcPlayerSpawn]]
--- local respawn_info = storage.player_respawns[player.name][player.surface.name]
-
--- if (respawn_info == nil) then
---     log("ERROR: No respawn info for player: " .. player.name)
---     return
--- end
-
--- local respawn_surface_name = respawn_info.surface
--- local respawn_position = respawn_info.position
-
-
 end)
-
----Updates the player's surface and raises an event if it changes.
----@param player LuaPlayer
----@param new_surface_name string
----@return nil
-function UpdatePlayerSurface(player, new_surface_name)
-    if (storage.player_surfaces == nil) then
-        storage.player_surfaces = {}
-    end
-
-    local previous_surface_name = storage.player_surfaces[player.name]
-
-    if (previous_surface_name ~= new_surface_name) then
-        storage.player_surfaces[player.name] = new_surface_name
-
-        -- Raise event if previous surface isn't nil (avoids first spawn event)
-        if (previous_surface_name ~= nil) then 
-            script.raise_event("oarc-mod-character-surface-changed", {
-                player_index=player.index,
-                old_surface_name=previous_surface_name,
-                new_surface_name=new_surface_name
-            })
-        end
-    end
-end
 
 ----------------------------------------
 -- On script_raised_built. This should help catch mods that
