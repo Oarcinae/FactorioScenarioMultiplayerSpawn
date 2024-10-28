@@ -207,15 +207,19 @@ end
 ---@return nil
 function SeparateSpawnsPlayerRespawned(event)
     local player = game.players[event.player_index]
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
 
     -- It's possible if player is dead, and then resets, we don't want to do anything else.
-    if (player.surface.name == HOLDING_PEN_SURFACE_NAME) then return end
+    if (surface_name == HOLDING_PEN_SURFACE_NAME) then return end
 
     -- If the mod isn't active on this surface, then ignore it.
-    if (storage.oarc_surfaces[surface_name] == nil) then return end
+    local surface_config = storage.oarc_surfaces[surface_name]
+    if (surface_config == nil) or
+        (not surface_config.primary and not surface_config.secondary) then
+        return
+    end
 
-    SendPlayerToSpawn(surface_name, player)
+    SendPlayerToSpawn(surface_name, player, false)
     GivePlayerRespawnItems(player)
 end
 
@@ -239,41 +243,79 @@ end
 ---@return nil
 function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_surface_name)
 
-    if (previous_surface_name == nil) then
-        log("SeparateSpawnsPlayerChangedSurface - No previous surface name!")
-        return
-    end
+    if (previous_surface_name == nil) then return end
     log("SeparateSpawnsPlayerChangedSurface from " .. previous_surface_name .. " to " .. new_surface_name)
 
-
-    -- If previous surface was a platform
-    local arriving_from_space = StringStartsWith(previous_surface_name, "platform-")
-
-    if (not storage.ocfg.gameplay.enable_secondary_spawns) then return end
-
-    -- local player = game.players[event.player_index]
-    -- local surface_name = player.surface.name
+    -- TODO make sure this isn't too spammy?
+    local surface = game.surfaces[new_surface_name]
+    local platform = surface.platform
+    if (platform ~= nil) then
+        SendBroadcastMsg({ "oarc-player-on-platform", player.name, surface.platform.name })
+    else
+        SendBroadcastMsg({ "oarc-player-changed-surface", player.name, surface.name })
+    end
 
     -- Check if player has been init'd yet. If not, then ignore it.
     if (storage.player_respawns[player.name] == nil) then return end
 
     -- If the mod isn't active on this surface, then ignore it.
-    if (storage.oarc_surfaces[new_surface_name] == nil) then return end
-
-    -- If the mod is configured to not allow secondary spawns here, then ignore it.
-    if (not storage.oarc_surfaces[new_surface_name].secondary) then return end
-
-    -- Check if there is already a spawn for them on this surface
-    -- Could be a buddy spawn, or a shared spawn, or a unique spawn.
-    local player_spawn = FindPlayerSpawnOnSurface(player.name, new_surface_name)
-
-    if (player_spawn == nil) then
-        log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
-        SecondarySpawn(player, player.surface)
+    local surface_config = storage.oarc_surfaces[new_surface_name]
+    if (surface_config == nil) or
+        (not surface_config.primary and not surface_config.secondary) then
+        return
     end
 
-    --TODO: Check if they are near a cargo-landing-pad entity and if they are NOT, teleport them home to their spawn?
+    -- If previous surface was a platform
+    -- local arriving_from_space = StringStartsWith(previous_surface_name, "platform-")
 
+    -- If we are NOT arriving from space, then ignore the rest of this??
+    -- if (not arriving_from_space) then return end
+
+    local player_spawn = FindPlayerSpawnOnSurface(player.name, new_surface_name) -- Either they are host or joiner.
+
+    -- If there IS a spawn for them on their new surface, then just send them there.
+    if (player_spawn ~= nil) then
+        SendPlayerToSpawn(new_surface_name, player, false)
+        return
+    end
+
+    -- If there is no spawn for them on their new surface, generate one based on previous choices.
+
+    -- Check if secondary spawns are enabled (both globally and on this surface)
+    if (not storage.ocfg.gameplay.enable_secondary_spawns) or
+        (not storage.oarc_surfaces[new_surface_name].secondary) then
+        return
+    end
+
+    -- TODO: Need to figure out buddy spawns and other stuff still!
+
+    log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
+    SecondarySpawn(player, game.surfaces[new_surface_name])
+end
+
+---Updates the player's surface and raises an event if it changes.
+---@param player LuaPlayer
+---@param new_surface_name string
+---@return nil
+function SeparateSpawnsUpdatePlayerSurface(player, new_surface_name)
+    if (storage.player_surfaces == nil) then
+        storage.player_surfaces = {}
+    end
+
+    local previous_surface_name = storage.player_surfaces[player.name]
+
+    if (previous_surface_name ~= new_surface_name) then
+        storage.player_surfaces[player.name] = new_surface_name
+
+        -- Raise event if previous surface isn't nil (avoids first spawn event)
+        if (previous_surface_name ~= nil) then 
+            script.raise_event("oarc-mod-character-surface-changed", {
+                player_index=player.index,
+                old_surface_name=previous_surface_name,
+                new_surface_name=new_surface_name
+            })
+        end
+    end
 end
 
 --[[
@@ -301,7 +343,7 @@ function GenerateStartingResources(surface, position)
         elseif (storage.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
         end
-    
+
     -- Generate resources using specified offsets if auto placement is disabled.
     else
         for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
@@ -315,11 +357,11 @@ function GenerateStartingResources(surface, position)
     -- Reference position is the bottom of the spawn area.
     if storage.ocfg.resource_placement.enabled then
         local y_offset = storage.ocfg.resource_placement.distance_to_edge
-        local spacing = 4 -- HARDCODED FLUID PATCH SPACING SIZE!
         local fluid_ref_pos = { x = position.x, y = position.y + storage.ocfg.spawn_general.spawn_radius_tiles - y_offset }
 
         for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
 
+            local spacing = r_data.spacing
             local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
             local oil_patch_y = fluid_ref_pos.y
 
@@ -486,7 +528,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
 
     -- Send the player to that position
     local player = game.players[delayed_spawn.playerName]
-    SendPlayerToSpawn(delayed_spawn.surface, player)
+    SendPlayerToSpawn(delayed_spawn.surface, player, delayed_spawn.primary)
     GivePlayerStarterItems(player)
 
     -- Render some welcoming text...
@@ -494,18 +536,26 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
 
     -- Chart the area.
     ChartArea(player.force, delayed_spawn.position, math.ceil(storage.ocfg.spawn_general.spawn_radius_tiles / CHUNK_SIZE),
-        player.surface)
+        player.character.surface)
 
+    -- Remove waiting dialog
     if (player.gui.screen.wait_for_spawn_dialog ~= nil) then
         player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 
+    -- Create crash site if configured
     if (ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship) then
         crash_site.create_crash_site(game.surfaces[delayed_spawn.surface],
             { x = delayed_spawn.position.x + 15, y = delayed_spawn.position.y - 25 },
             ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_resources,
             ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_wreakage)
     end
+
+    -- Trigger the event that the spawn was created.
+    script.raise_event("oarc-mod-on-spawn-created", {spawn_data = storage.unique_spawns[delayed_spawn.surface][delayed_spawn.playerName]})
+
+    -- Trigger the event that player was spawned too.
+    script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index})
 end
 
 ---Displays some welcoming text at the spawn point on the ground. Fades out over time.
@@ -765,7 +815,7 @@ function RemoveOrResetPlayer(player, remove_player)
 
     -- If this player is staying in the game, lets make sure we don't delete them along with the map chunks being
     -- cleared.
-    player.teleport({x=0,y=0}, HOLDING_PEN_SURFACE_NAME)
+    SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
     local player_old_force = player.force
     player.force = storage.ocfg.gameplay.main_force_name
 
@@ -781,9 +831,20 @@ function RemoveOrResetPlayer(player, remove_player)
         game.merge_forces(player_old_force, "neutral")
     end
 
+    -- Trigger the event that the player was reset.
+    script.raise_event("oarc-mod-on-player-reset", {player_index = player.index})
+
     -- Remove the character completely
-    if (remove_player) then
+    if (remove_player and not player.connected) then
         game.remove_offline_players({ player })
+
+    -- Otherwise, make sure to re-init them!
+    else
+        if (remove_player) then
+            log("ERROR! RemoveOrResetPlayer - Player not removed as they are still connected: " .. player.name)
+        end
+        SeparateSpawnsInitPlayer(player.index --[[@as string]])
+        SendBroadcastMsg({"oarc-player-was-reset-notify", player.name})
     end
 
     -- Refresh the shared spawn spawn gui for all players
@@ -866,12 +927,18 @@ function UniqueSpawnCleanupRemove(player_name)
         end
     end
 
+    -- TODO: Possibly limit this based on playtime? If player is on for a long time then don't remove it?
     -- Use regrowth mod to cleanup the area.
     local spawn_position = primary_spawn.position
     if (storage.ocfg.regrowth.enable_abandoned_base_cleanup and (not nearOtherSpawn)) then
         log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. primary_spawn.surface_name)
-        RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, math.ceil(total_spawn_width / CHUNK_SIZE) + 1) -- +1 to match the spawn generation requested area
+
+        -- Clear an area around the spawn that SHOULD not include any other bases.
+        local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
+        RegrowthMarkAreaForRemoval(primary_spawn.surface_name, spawn_position, clear_radius)
         TriggerCleanup()
+        -- Trigger event
+        script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = primary_spawn})
     end
 
     storage.unique_spawns[primary_spawn.surface_name][player_name] = nil
@@ -1155,30 +1222,6 @@ function IsSharedSpawnFull(surface_name, owner_name)
     return (GetOnlinePlayersAtSharedSpawn(surface_name, owner_name) >= storage.ocfg.gameplay.number_of_players_per_shared_spawn)
 end
 
--- ---Checks if player has a custom spawn point set.
--- ---@param player LuaPlayer
--- ---@return boolean
--- function DoesPlayerHaveCustomSpawn(player)
---     for name,_ in pairs(storage.player_respawns --[[@as OarcPlayerRespawnsTable]]) do
---         if (player.name == name) then
---             return true
---         end
---     end
---     return false
--- end
-
--- ---Gets the custom spawn point for a player if they have one.
--- ---@param player LuaPlayer
--- ---@return OarcPlayerSpawn?
--- function GetPlayerCustomSpawn(player)
---     for name, player_spawn in pairs(storage.player_respawns --[[@as OarcPlayerRespawnsTable]]) do
---         if (player.name == name) then
---             return player_spawn
---         end
---     end
---     return nil
--- end
-
 ---Sets the custom spawn point for a player. They can have one per surface.
 ---@param player_name string
 ---@param surface_name string
@@ -1372,37 +1415,21 @@ end
 ---Send player to their custom spawn point
 ---@param surface_name string
 ---@param player LuaPlayer
+---@param first_spawn boolean
 ---@return nil
-function SendPlayerToSpawn(surface_name, player)
+function SendPlayerToSpawn(surface_name, player, first_spawn)
     local spawn = storage.player_respawns[player.name][surface_name]
+
+    if (spawn == nil) then
+        log("ERROR - SendPlayerToSpawn - No spawn point for player: " .. player.name .. " on surface: " .. surface_name .. " first_spawn: " .. tostring(first_spawn))
+        return
+    end
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
-    player.permission_group = game.permissions.get_group("Default")
+
+    if first_spawn then
+        player.permission_group = game.permissions.get_group("Default")
+    end
 end
-
--- ---Send player to a random spawn point.
--- ---@param player LuaPlayer
--- ---@return nil
--- function SendPlayerToRandomSpawn(player)
---     local numSpawns = #storage.oc--ore.unique--Spawns
---     local rndSpawn = math.random(0, numSpawns)
---     local counter = 0
-
---     if (rndSpawn == 0) then
---         local gameplayConfig = storage.ocfg.gameplay --[[@as OarcConfigGameplaySettings]]
---         player.teleport(
---         game.forces[gameplayConfig.main_force_name].get_spawn_position(gameplayConfig.default_surface),
---             gameplayConfig.default_surface)
---     else
---         counter = counter + 1
---         for name, spawn in pairs(storage.oc--ore.unique--Spawns --[[@as OarcUnique--SpawnsTable]]) do
---             if (counter == rndSpawn) then
---                 player.teleport(spawn.position)
---                 break
---             end
---             counter = counter + 1
---         end
---     end
--- end
 
 ---Check if a player has a delayed spawn
 ---@param player_name string
@@ -1456,7 +1483,8 @@ function CreatePlayerForce(force_name)
         new_force.friendly_fire = storage.ocfg.gameplay.enable_friendly_fire
         -- SetCeaseFireBetweenAllPlayerForces()
         -- SetFriendlyBetweenAllPlayerForces()
-        ConfigurePlayerForceRelationships(true, true)
+        ConfigurePlayerForceRelationships(storage.ocfg.gameplay.enable_cease_fire,
+            storage.ocfg.gameplay.enable_friendly_teams)
         -- ConfigureEnemyForceRelationshipsForNewPlayerForce(new_force)
     else
         log("TOO MANY FORCES!!! - CreatePlayerForce()")

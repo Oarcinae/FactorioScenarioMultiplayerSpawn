@@ -110,10 +110,74 @@ end)
 --     SeparateSpawnsPlayerChangedSurface(event)
 -- end)
 
--- script.on_event(defines.events.on_rocket_launched, function(event)
---     log("Rocket launched!")
---     log(serpent.block(event))
--- end)
+script.on_event(defines.events.on_rocket_launched, function(event)
+    log("Rocket launched!")
+    log(serpent.block(event))
+end)
+
+----------------------------------------
+-- CUSTOM OARC Events (shown here for demo and logging purposes)
+----------------------------------------
+
+---@class OarcCustomEventBase
+---@field mod_name string
+---@field name integer --For custom events, this is the event ID
+---@field tick integer
+
+---@class OarcModOnSpawnCreatedEvent: OarcCustomEventBase
+---@field spawn_data OarcUniqueSpawn
+script.on_event("oarc-mod-on-spawn-created", function(event)
+    log("Custom event oarc-mod-on-spawn-created")
+    log(serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
+end)
+
+---@class OarcModOnSpawnRemoveRequestEvent: OarcCustomEventBase
+---@field spawn_data OarcUniqueSpawn
+script.on_event("oarc-mod-on-spawn-remove-request", function(event)
+    log("Custom event oarc-mod-on-spawn-remove-request")
+    log(serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
+end)
+
+---@class OarcModOnPlayerResetEvent: OarcCustomEventBase
+---@field player_index integer
+script.on_event("oarc-mod-on-player-reset", function(event)
+    log("Custom event oarc-mod-on-player-reset")
+    log(serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
+    if (game.players[event.player_index]) then
+        log("Player is still valid: " .. game.players[event.player_index].name)
+    end
+end)
+
+---@class OarcModOnPlayerSpawnedEvent: OarcCustomEventBase
+---@field player_index integer
+script.on_event("oarc-mod-on-player-spawned", function(event)
+    log("Custom event oarc-mod-on-player-spawned")
+    log(serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
+    log("Player spawned: " .. game.players[event.player_index].name)
+end)
+
+---@class OarcModCharacterSurfaceChangedEvent: OarcCustomEventBase
+---@field player_index integer
+---@field old_surface_name string
+---@field new_surface_name string
+script.on_event("oarc-mod-character-surface-changed", function(event)
+    log("Custom event oarc-mod-character-surface-changed")
+    log(serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
+
+    local player = game.players[event.player_index]
+    SeparateSpawnsPlayerChangedSurface(player, event.old_surface_name, event.new_surface_name)
+end)
+
+-- I raise this event whenever teleporting the player!
+script.on_event(defines.events.script_raised_teleported, function(event)
+    log("script_raised_teleported")
+    log(serpent.block(event))
+
+    local entity = event.entity
+    if entity.type == "character" and entity.player then
+        SeparateSpawnsUpdatePlayerSurface(entity.player, entity.surface.name)
+    end
+end)
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
@@ -139,31 +203,7 @@ script.on_event(defines.events.on_tick, function(event)
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
-
-    TrackPlayerSurfacesOnTick() -- My work around for not having a proper event for changing surfaces.
 end)
-
----This is a work around for not having a proper event for changing surfaces.
----Every tick, it checks the player's surface and if it changes from the previous tick it triggers an event.
----@return nil
-function TrackPlayerSurfacesOnTick()
-    if (storage.player_surfaces == nil) then
-        storage.player_surfaces = {}
-    end
-
-    for _,player in pairs(game.players) do
-        if (player.connected and player.character) then
-            if (storage.player_surfaces[player.name] ~= player.surface.name) then
-
-                local previous_surface_name = storage.player_surfaces[player.name]
-                local new_surface_name = player.surface.name
-                SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_surface_name)
-                storage.player_surfaces[player.name] = new_surface_name
-                -- script.raise_event(defines.events.on_player_changed_surface, {player_index=player.index})
-            end
-        end
-    end
-end
 
 ----------------------------------------
 -- Chunk Generation
@@ -244,8 +284,21 @@ end)
 --If a player gets in or out of a vehicle, mark the area as safe so we don't delete the vehicle by accident.
 --Only world eater will clean up these chunks over time if it is enabled.
 script.on_event(defines.events.on_player_driving_changed_state, function (event)
-    if storage.ocfg.regrowth.enable_regrowth then
-        RegrowthMarkAreaSafeGivenTilePos(event.entity.surface.name, event.entity.position, 1, false)
+    local entity = event.entity
+
+    if storage.ocfg.regrowth.enable_regrowth and (entity ~= nil) then
+        RegrowthMarkAreaSafeGivenTilePos(entity.surface.name, entity.position, 1, false)
+    end
+
+    log("Player driving changed state")
+    log(serpent.block(event))
+
+    local player = game.players[event.player_index]
+    log("Player vehicle: " .. serpent.block(player.vehicle))
+
+    -- Track the surfaces whenever driving state changes. This triggers events for surface changes.
+    if (entity ~= nil) then
+        SeparateSpawnsUpdatePlayerSurface(player, entity.surface.name)
     end
 end)
 

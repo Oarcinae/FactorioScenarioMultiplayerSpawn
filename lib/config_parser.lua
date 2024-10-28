@@ -44,6 +44,8 @@ OCFG_KEYS =
     ["gameplay_sharing_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-sharing"}},
     ["gameplay.enable_shared_team_vision"] = {mod_key = "oarc-mod-enable-shared-team-vision" , ocfg_keys = {"gameplay", "enable_shared_team_vision"}, type = "boolean"},
     ["gameplay.enable_shared_team_chat"] = {mod_key = "oarc-mod-enable-shared-team-chat" , ocfg_keys = {"gameplay", "enable_shared_team_chat"}, type = "boolean"},
+    ["gameplay.enable_friendly_teams"] = {mod_key = "oarc-mod-enable-friendly-teams" , ocfg_keys = {"gameplay", "enable_friendly_teams"}, type = "boolean"},
+    ["gameplay.enable_cease_fire"] = {mod_key = "oarc-mod-enable-cease-fire" , ocfg_keys = {"gameplay", "enable_cease_fire"}, type = "boolean"},
     ["gameplay.enable_shared_power"] = {mod_key = "oarc-mod-enable-shared-power" , ocfg_keys = {"gameplay", "enable_shared_power"}, type = "boolean"},
     ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
     ["gameplay.enable_coin_shop"] = {mod_key = "oarc-mod-enable-coin-shop" , ocfg_keys = {"gameplay", "enable_coin_shop"}, type = "boolean"},
@@ -83,6 +85,7 @@ OCFG_KEYS =
     ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = "Coin Generation"},
     ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = "Coin Generation", tooltip = "Enemies drop coins when killed."},
     ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = "Auto Decon Coins", tooltip = "Automatically marks coins dropped by enemies for deconstruction so robots will pick them up."},
+    ["gameplayer.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = "Player Self Reset", tooltip = "Allow players to reset themselves in the spawn controls."}
 }
 
 ---Easy reverse lookup for mod settings keys.
@@ -386,7 +389,7 @@ end
 ---@return nil
 function ApplyRuntimeChanges(oarc_setting_index)
 
-    ---Handle changing enable_shared_team_vision
+    -- Handle changing enable_shared_team_vision
     if (oarc_setting_index == "gameplay.enable_shared_team_vision") then
         for _,force in pairs(game.forces) do
             if (not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, force.name)) then
@@ -394,7 +397,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
             end
         end
 
-    ---Handle changing enable_friendly_fire
+    -- Handle changing enable_friendly_fire
     elseif (oarc_setting_index == "gameplay.enable_friendly_fire") then
         for _,force in pairs(game.forces) do
             if (not TableContains(ENEMY_FORCES_NAMES_INCL_NEUTRAL, force.name)) then
@@ -402,5 +405,10 @@ function ApplyRuntimeChanges(oarc_setting_index)
             end
         end
 
+    -- Handle changing enable_friendly_teams or enable_cease_fire
+    elseif (oarc_setting_index == "gameplay.enable_friendly_teams") or
+              (oarc_setting_index == "gameplay.enable_cease_fire") then
+        ConfigurePlayerForceRelationships(storage.ocfg.gameplay.enable_cease_fire,
+            storage.ocfg.gameplay.enable_friendly_teams)
     end
 end

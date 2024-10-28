@@ -200,3 +200,35 @@ function CreateTestSurfaces()
     game.create_surface("aquilo")
 
 end
+
+
+---Searchs a 3x3 chunk around the map origin for "cargo-pod-container" entities and if they are on the same force
+---as the player it will teleport the cargo pod to the player.
+---@param player LuaPlayer
+---@return nil
+function DudeWheresMyCargoPod(player)
+
+    if not player.character then
+        player.print("Your character needs to be valid to use this! Make sure you are not inside a vehicle or dead!")
+        return
+    end
+
+    local surface = player.character.surface
+    local radius = CHUNK_SIZE*3
+    local search_area = {{-radius,-radius},{radius,radius}}
+
+    local pods = surface.find_entities_filtered{area=search_area, name="cargo-pod-container", force=player.force}
+
+    for _,cargo_pod in pairs(pods) do
+
+        local new_position = surface.find_non_colliding_position("cargo-pod-container", player.character.position, CHUNK_SIZE, 1)
+
+        if new_position == nil then
+            player.print("Could not find a safe place to teleport the cargo pod!")
+            return
+        end
+
+        cargo_pod.teleport(new_position)
+        player.print("Teleported cargo pod to you!")
+    end
+end

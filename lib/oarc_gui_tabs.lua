@@ -71,19 +71,15 @@ function InitOarcGuiTabs(player)
     AddOarcGuiTab(player, OARC_SERVER_INFO_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_SERVER_INFO_TAB_NAME, true)
 
+    -- Mod Info tab
+    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_MOD_INFO_CTRL_TAB_NAME, true)
+
     -- Spawn control tab, enable if player is already spawned
     AddOarcGuiTab(player, OARC_SPAWN_CTRL_TAB_NAME)
     local player_respawns = storage.player_respawns[player.name]
     local spawn_enabled = (player_respawns ~= nil) and (next(player_respawns) ~= nil) -- TODO: Maybe make a specific state flag or something more explicit?
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, spawn_enabled)
-
-    -- Regrowth control tab
-    AddOarcGuiTab(player, OARC_MOD_INFO_CTRL_TAB_NAME)
-    SetOarcGuiTabEnabled(player, OARC_MOD_INFO_CTRL_TAB_NAME, true)
-
-    -- Settings control tab
-    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
-    SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
 
     -- Player list tab
     AddOarcGuiTab(player, OARC_MOD_PLAYER_LIST_TAB_NAME)
@@ -94,6 +90,10 @@ function InitOarcGuiTabs(player)
         AddOarcGuiTab(player, OARC_ITEM_SHOP_TAB_NAME)
         SetOarcGuiTabEnabled(player, OARC_ITEM_SHOP_TAB_NAME, true)
     end
+
+    -- Settings control tab
+    AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
+    SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
 
     -- Surface config tab
     if (player.admin) then

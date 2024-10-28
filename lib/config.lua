@@ -33,27 +33,24 @@ MAX_CRASHED_SHIP_WRECKAGE_ITEMS = 1
 NAUVIS_STARTER_ITEMS =
 {
     player_start_items = {
-        ["pistol"]=1,
-        ["firearm-magazine"]=200,
-        ["iron-plate"]=100,
-        ["burner-mining-drill"] = 4,
-        ["stone-furnace"] = 4,
-        ["coal"] = 50,
-        ["stone"] = 50,
+        ["iron-plate"] = 8,
+        ["wood"] = 1,
+        ["pistol"] = 1,
+        ["firearm-magazine"] = 10,
+        ["burner-mining-drill"] = 1,
+        ["stone-furnace"] = 1
     },
     player_respawn_items = {
-        -- ["pistol"]=1,
-        -- ["firearm-magazine"]=100,
+        ["pistol"] = 1,
+        ["firearm-magazine"] = 10
     },
 
     crashed_ship = true,
     crashed_ship_resources = {
-        ["electronic-circuit"] = 200,
-        ["iron-gear-wheel"] = 100,
-        ["copper-cable"] = 200
+        ["firearm-magazine"] = 8 -- Max of 5 inventory slots!
     },
     crashed_ship_wreakage = {
-        ["iron-plate"] = 100 -- I don't recommend more than 1 item type here!
+        ["iron-plate"] = 8 -- I don't recommend more than 1 item type here!
     },
 }
 
@@ -153,6 +150,7 @@ NAUVIS_SPAWN_CONFIG =
         {
             num_patches = 2,
             amount = 900000,
+            spacing = 6, -- Spacing between each patch, only used for automatic placing.
 
             -- These are only used if not using automatic placing.
             -- Starting position offset (relative to bottom/south of spawn area)
@@ -241,7 +239,7 @@ OARC_SHOP_ITEMS =
         ["personal-roboport-mk2-equipment"] = {cost = 500, count = 1, play_time_locked=false},
         ["construction-robot"] = {cost = 100, count = 10, play_time_locked=false},
         ["roboport"] = {cost = 1000, count = 1, play_time_locked=false},
-        ["logistic-chest-storage"] = {cost = 100, count = 1, play_time_locked=false},
+        ["storage-chest"] = {cost = 100, count = 1, play_time_locked=false},
     },
 
     ["Misc Equipment"] = {
@@ -348,6 +346,12 @@ OCFG = {
         -- But it also means you can't talk privately with your own team.
         enable_shared_team_chat = true,
 
+        -- Friendly teams can modify each other's buildings and view each other's map area.
+        enable_friendly_teams = true,
+
+        -- This means team's turrets won't shoot other team's stuff.
+        enable_cease_fire = true,
+
         -- Enable if players can allow others to join their base.
         -- And specify how many including the host are allowed.
         enable_shared_spawns = true,
@@ -397,6 +401,9 @@ OCFG = {
 
         -- Enable the coin shop GUI for players to buy items with coins.
         enable_coin_shop = false,
+
+        -- Allow players to reset themselves in the spawn controls
+        enable_player_self_reset = true,
     },
 
     -- This is a separate feature that is part of the mod that helps keep the map size down. Not required but useful.
@@ -583,8 +590,10 @@ OCFG = {
 ---@field far_spawn_distance number The furthest a player can spawn from the origin. (Not exact, but close).
 ---@field enable_buddy_spawn boolean Allow 2 players to spawn next to each other, each with their own starting area.
 ---@field enable_offline_protection boolean Inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
----@field enable_shared_team_vision boolean Enable shared vision between teams (all teams are COOP regardless)
+---@field enable_shared_team_vision boolean Enable shared vision between teams
 ---@field enable_shared_team_chat boolean Share local team chat with all teams
+---@field enable_friendly_teams boolean Friendly teams can modify each other's buildings.
+---@field enable_cease_fire boolean This means team's turrets won't shoot other team's stuff.
 ---@field enable_shared_spawns boolean Enable if players can allow others to join their spawn.
 ---@field number_of_players_per_shared_spawn number Number of players allowed to join a shared spawn.
 ---@field enable_friendly_fire boolean Set to true if you want to shoot your own chests and stuff.
@@ -599,6 +608,7 @@ OCFG = {
 ---@field enable_shared_power boolean Enable shared power between bases. Creates a special power pole for cross surface connections.
 ---@field enable_shared_chest boolean Enables a single shared chest using the native linked-chest entity in factorio.
 ---@field enable_coin_shop boolean Enable the coin shop GUI for players to buy items with coins.
+---@field enable_player_self_reset boolean Allow players to reset themselves in the spawn controls
 
 ---@class OarcConfigRegrowth
 ---@field enable_regrowth boolean Cleans up unused chunks periodically. Helps keep map size down.
@@ -658,8 +668,20 @@ OCFG = {
 ---@field size_multiplier number Size multiplier for the starting resource deposits.
 ---@field amount_multiplier number Amount multiplier for the starting resource deposits.
 
----@alias OarcConfigSolidResource { amount: integer, size: integer, x_offset: integer, y_offset: integer } Amount and placement of solid resource tiles in the spawn area.
----@alias OarcConfigFluidResource { num_patches: integer, amount: integer, x_offset_start: integer, y_offset_start: integer, x_offset_next: integer, y_offset_next: integer } Amount and placement of fluid resource patches in the spawn area.
+---@class OarcConfigSolidResource
+---@field amount integer
+---@field size integer
+---@field x_offset integer
+---@field y_offset integer
+
+---@class OarcConfigFluidResource
+---@field num_patches integer
+---@field amount integer
+---@field spacing integer
+---@field x_offset_start integer
+---@field y_offset_start integer
+---@field x_offset_next integer
+---@field y_offset_next integer
 
 ---@class OarcStoreItem
 ---@field cost integer

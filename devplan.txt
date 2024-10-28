@@ -1,5 +1,8 @@
 ACTIVE ITEMS:
 
+-- Look into on_player_driving_changed_state for detecting player rocket/platform transitions.
+-- Look at rocket launch events and this: `event.rocket.cargo_pod`
+
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:

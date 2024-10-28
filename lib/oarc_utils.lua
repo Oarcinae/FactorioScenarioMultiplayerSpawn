@@ -406,7 +406,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerRespawnItems(player)
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name] == nil) then
         error("GivePlayerRespawnItems - Missing surface config! " .. surface_name)
         return
@@ -421,7 +421,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerStarterItems(player)
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name] == nil) then
         error("GivePlayerStarterItems - Missing surface config! " .. surface_name)
         return
@@ -436,7 +436,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function RemovePlayerStarterItems(player)
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name]) ~= nil then
         local startItems = storage.ocfg.surfaces_config[surface_name].starting_items.player_start_items
         OarcsSaferRemove(player, startItems)
@@ -514,25 +514,14 @@ end
 ---@param surface LuaSurface
 ---@param target_pos MapPosition
 function SafeTeleport(player, surface, target_pos)
-    local safe_pos = surface.find_non_colliding_position("character", target_pos, 15, 1)
+    local safe_pos = surface.find_non_colliding_position("character", target_pos, CHUNK_SIZE, 1)
     if (not safe_pos) then
-        player.teleport(target_pos, surface)
+        player.teleport(target_pos, surface, true)
     else
-        player.teleport(safe_pos, surface)
+        player.teleport(safe_pos, surface, true)
     end
 end
 
--- Duplicate function ??
--- -- Create area given point and radius-distance
--- function GetAreaFromPointAndDistance(point, dist)
---     local area = {left_top=
---                     {x=point.x-dist,
---                      y=point.y-dist},
---                   right_bottom=
---                     {x=point.x+dist,
---                      y=point.y+dist}}
---     return area
--- end
 
 ---Check if given position is in area bounding box
 ---@param point MapPosition
