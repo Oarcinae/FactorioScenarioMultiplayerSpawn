@@ -61,7 +61,8 @@ function AddPlayerRow(table, player_name, online)
         AddLabel(table, nil, player.force.name, my_label_style)
 
         -- List home surface name or holding pen
-        if (player.surface.name == HOLDING_PEN_SURFACE_NAME) then
+        local character = player.character
+        if character and (character.surface.name == HOLDING_PEN_SURFACE_NAME) then
             AddLabel(table, nil, {"oarc-player-waiting-to-spawn"}, my_label_style)
         else
             local spawn = FindPlayerHomeSpawn(player.name)

@@ -406,7 +406,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerRespawnItems(player)
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name] == nil) then
         error("GivePlayerRespawnItems - Missing surface config! " .. surface_name)
         return
@@ -421,7 +421,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function GivePlayerStarterItems(player)
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name] == nil) then
         error("GivePlayerStarterItems - Missing surface config! " .. surface_name)
         return
@@ -436,7 +436,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function RemovePlayerStarterItems(player)
-    local surface_name = player.surface.name
+    local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name]) ~= nil then
         local startItems = storage.ocfg.surfaces_config[surface_name].starting_items.player_start_items
         OarcsSaferRemove(player, startItems)

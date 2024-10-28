@@ -134,8 +134,21 @@ function CreateSetRespawnLocationButton(player, container)
     AddSpacerLine(container)
     AddLabel(container, nil, { "oarc-set-respawn-loc-header" }, "caption_label")
 
+    -- Check if player has a valid character
+    if (player.character == nil) then
+        AddLabel(container, nil, { "oarc-no-valid-player-character" }, my_warning_style)
+        return
+    end
+
+    -- Check if player is in a vehicle
+    if player.driving then
+        AddLabel(container, nil, { "oarc-player-character-in-vehicle" }, my_warning_style)
+        return
+    end
+
+    local surface_name = player.character.surface.name
     --[[@type OarcPlayerSpawn]]
-    local respawn_info = storage.player_respawns[player.name][player.surface.name]
+    local respawn_info = storage.player_respawns[player.name][surface_name]
 
     if (respawn_info == nil) then
         AddLabel(container, nil, { "oarc-no-respawn-this-surface" }, my_warning_style)
@@ -388,14 +401,26 @@ function SpawnCtrlTabGuiClick(event)
     -- Sets a new respawn point and resets the cooldown.
     if (tags.setting == "set_respawn_location") then
 
-        -- Check if the surface is blacklisted
-        local surface_name = player.surface.name
-        if IsSurfaceBlacklisted(surface_name) then
-            player.print("Can't set a respawn point on this surface!")
+        -- Check if player has a valid character
+        if (player.character == nil) then 
+            player.print({ "oarc-no-valid-player-character" })
             return
         end
 
-        SetPlayerRespawn(player.name, surface_name, player.position, true)
+        -- Check if player is in a vehicle
+        if player.driving then
+            player.print({ "oarc-player-character-in-vehicle" })
+            return
+        end
+
+        -- Check if the surface is blacklisted
+        local surface_name = player.character.surface.name
+        if IsSurfaceBlacklisted(surface_name) then
+            player.print({"oarc-no-respawn-this-surface"})
+            return
+        end
+
+        SetPlayerRespawn(player.name, surface_name, player.character.position, true)
         OarcGuiRefreshContent(player)
         player.print({ "oarc-spawn-point-updated" })
 
@@ -412,7 +437,17 @@ function SpawnCtrlTabGuiClick(event)
         local surface_name = tags.surface --[[@as string]]
         local position = tags.position --[[@as MapPosition]]
 
-        --TODO Verify player is still on the same surface, if they leave the GUI open, they can teleport back from any surface.
+        -- Check if player has a valid character
+        if (player.character == nil) then 
+            player.print({ "oarc-no-valid-player-character" })
+            return
+        end
+
+        -- Check if player is in a vehicle
+        if player.driving then
+            player.print({ "oarc-player-character-in-vehicle" })
+            return
+        end
 
         SafeTeleport(player, game.surfaces[surface_name], position)
 
