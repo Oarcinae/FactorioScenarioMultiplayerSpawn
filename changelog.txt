@@ -18,6 +18,7 @@ Date: 2024-10-27
   Info:
     - Rename and re-arrange the custom GUI tabs. (Surface Config --> Surface Settings)
     - Add several custom events to support future features and integration. These have lots of debug logging enabled currently, I'll disable these at a future date, for they are useful now to assist when issues come up with the new SA and 2.0 features.
+    - Add DE translation for the main locale file.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.2
 Date: 2024-10-23
