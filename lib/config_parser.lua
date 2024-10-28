@@ -408,7 +408,7 @@ function ApplyRuntimeChanges(oarc_setting_index)
     -- Handle changing enable_friendly_teams or enable_cease_fire
     elseif (oarc_setting_index == "gameplay.enable_friendly_teams") or
               (oarc_setting_index == "gameplay.enable_cease_fire") then
-        ConfigurePlayerForceRelationships(storage.ocfg.gameplay.enable_friendly_teams,
-            storage.ocfg.gameplay.enable_cease_fire)
+        ConfigurePlayerForceRelationships(storage.ocfg.gameplay.enable_cease_fire,
+            storage.ocfg.gameplay.enable_friendly_teams)
     end
 end
