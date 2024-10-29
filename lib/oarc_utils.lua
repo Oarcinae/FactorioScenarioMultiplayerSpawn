@@ -436,6 +436,7 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function RemovePlayerStarterItems(player)
+    if player == nil or player.character == nil then return end
     local surface_name = player.character.surface.name
     if (storage.ocfg.surfaces_config[surface_name]) ~= nil then
         local startItems = storage.ocfg.surfaces_config[surface_name].starting_items.player_start_items
