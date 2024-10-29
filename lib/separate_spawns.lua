@@ -367,7 +367,7 @@ function GenerateStartingResources(surface, position)
 
             for i = 1, r_data.num_patches do
                 surface.create_entity({
-                    name = "crude-oil",
+                    name = r_name,
                     amount = r_data.amount,
                     position = { oil_patch_x, oil_patch_y }
                 })
@@ -416,25 +416,41 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     local shuffled_list = FYShuffle(r_list)
 
     -- This places resources in a semi-circle
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
     local angle_offset_radians = math.rad(storage.ocfg.resource_placement.angle_offset)
     local angle_final_radians = math.rad(storage.ocfg.resource_placement.angle_final)
     local num_resources = table_size(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
-    local theta = ((angle_final_radians - angle_offset_radians) / (num_resources-1));
-    local count = 0
+    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * surface_config.spawn_config.radius_modifier - storage.ocfg.resource_placement.distance_to_edge
 
-    local radius = storage.ocfg.spawn_general.spawn_radius_tiles - storage.ocfg.resource_placement.distance_to_edge
-
-    for _, r_name in pairs(shuffled_list) do
-        local angle = (theta * count) + angle_offset_radians;
+    -- Special case for only one resource, place it in the middle of the semi-circle.
+    if (num_resources == 1) then
+        local r_name = shuffled_list[1]
+        local angle = ((angle_final_radians - angle_offset_radians) / 2) + angle_offset_radians;
 
         local tx = (radius * math.cos(angle)) + position.x
         local ty = (radius * math.sin(angle)) + position.y
 
         local pos = { x = math.floor(tx), y = math.floor(ty) }
 
-        local resourceConfig = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
+        local resourceConfig = surface_config.spawn_config.solid_resources[r_name]
         GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
-        count = count + 1
+    else
+        local theta = ((angle_final_radians - angle_offset_radians) / (num_resources-1));
+        local count = 0
+
+
+        for _, r_name in pairs(shuffled_list) do
+            local angle = (theta * count) + angle_offset_radians;
+
+            local tx = (radius * math.cos(angle)) + position.x
+            local ty = (radius * math.sin(angle)) + position.y
+
+            local pos = { x = math.floor(tx), y = math.floor(ty) }
+
+            local resourceConfig = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
+            GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
+            count = count + 1
+        end
     end
 end
 
@@ -493,12 +509,14 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
             x = delayed_spawn.position.x,
             y = delayed_spawn.position.y - storage.ocfg.spawn_general.spawn_radius_tiles
         }
-        CreateWaterStrip(game.surfaces[delayed_spawn.surface],
+        CreateTileStrip(game.surfaces[delayed_spawn.surface],
             { x = reference_pos.x + water_data.x_offset, y = reference_pos.y + water_data.y_offset },
-            water_data.length)
-        CreateWaterStrip(game.surfaces[delayed_spawn.surface],
+            water_data.length,
+            spawn_config.liquid_tile)
+        CreateTileStrip(game.surfaces[delayed_spawn.surface],
             { x = reference_pos.x + water_data.x_offset, y = reference_pos.y + water_data.y_offset + 1 },
-            water_data.length)
+            water_data.length,
+            spawn_config.liquid_tile)
     end
 
     -- Create the spawn resources here
@@ -526,10 +544,29 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
         CreateSharedChest(game.surfaces[delayed_spawn.surface], chest_position)
     end
 
+    -- Place randomized entities
+    if (delayed_spawn.surface == "fulgora") then
+        PlaceFulgoranLightningAttractors(game.surfaces[delayed_spawn.surface], delayed_spawn.position, 10)
+    end
+    
+    PlaceRandomEntities(game.surfaces[delayed_spawn.surface], delayed_spawn.position)
+
     -- Send the player to that position
     local player = game.players[delayed_spawn.playerName]
     SendPlayerToSpawn(delayed_spawn.surface, player, delayed_spawn.primary)
-    GivePlayerStarterItems(player)
+
+    -- Only primary spawns get starter items and a crashed ship.
+    if delayed_spawn.primary then
+        GivePlayerStarterItems(player)
+
+        -- Create crash site if configured
+        if (ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship) then
+            crash_site.create_crash_site(game.surfaces[delayed_spawn.surface],
+                { x = delayed_spawn.position.x + 15, y = delayed_spawn.position.y - 25 },
+                ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_resources,
+                ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_wreakage)
+        end
+    end
 
     -- Render some welcoming text...
     DisplayWelcomeGroundTextAtSpawn(player, delayed_spawn.surface, delayed_spawn.position)
@@ -543,19 +580,13 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
         player.gui.screen.wait_for_spawn_dialog.destroy()
     end
 
-    -- Create crash site if configured
-    if (ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship) then
-        crash_site.create_crash_site(game.surfaces[delayed_spawn.surface],
-            { x = delayed_spawn.position.x + 15, y = delayed_spawn.position.y - 25 },
-            ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_resources,
-            ocfg.surfaces_config[delayed_spawn.surface].starting_items.crashed_ship_wreakage)
-    end
-
     -- Trigger the event that the spawn was created.
     script.raise_event("oarc-mod-on-spawn-created", {spawn_data = storage.unique_spawns[delayed_spawn.surface][delayed_spawn.playerName]})
 
     -- Trigger the event that player was spawned too.
-    script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index})
+    if delayed_spawn.primary then
+        script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index})
+    end
 end
 
 ---Displays some welcoming text at the spawn point on the ground. Fades out over time.
@@ -623,6 +654,8 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     --[[@type OarcConfigSpawnGeneral]]
     local general_spawn_config = storage.ocfg.spawn_general
 
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
+
     local chunkAreaCenter = {
         x = chunkArea.left_top.x + (CHUNK_SIZE / 2),
         y = chunkArea.left_top.y + (CHUNK_SIZE / 2)
@@ -645,15 +678,15 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
 
         -- Remove trees/resources inside the spawn area
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
+            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree", "lightning-attractor", "simple-entity"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
+            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree", "lightning-attractor", "simple-entity"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
         end
 
         -- Fill in the spawn area with landfill and create a circle of trees around it.
         local fill_tile = "landfill"
         if general_spawn_config.force_grass then
-            fill_tile = "grass-1"
+            fill_tile = surface_config.spawn_config.fill_tile
         end
 
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then
@@ -661,7 +694,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
                 surface,
                 spawn.position,
                 chunkArea,
-                general_spawn_config.spawn_radius_tiles,
+                general_spawn_config.spawn_radius_tiles * surface_config.spawn_config.radius_modifier,
                 fill_tile,
                 spawn.moat,
                 storage.ocfg.gameplay.enable_moat_bridging
@@ -736,7 +769,7 @@ function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
             if (new_amount < 1) then
                 entity.destroy()
             else
-                if (entity.name ~= "crude-oil") then
+                if (entity.prototype.resource_category ~= "basic-fluid") then
                     entity.amount = math.min(new_amount, ore_per_tile_cap)
                 else
                     entity.amount = new_amount

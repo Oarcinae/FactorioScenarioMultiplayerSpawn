@@ -86,8 +86,8 @@ function CreateHoldingPenChunks(event)
 
         PlaceResourcesInSemiCircleHoldingPen(surface, {x=0,y=0}, 0.2, 0.1)
 
-        CreateWaterStrip(surface, {x=-2,y=-11}, 4)
-        CreateWaterStrip(surface, {x=-2,y=-10}, 4)
+        CreateTileStrip(surface, {x=-2,y=-11}, 4, "water")
+        CreateTileStrip(surface, {x=-2,y=-10}, 4, "water")
 
         surface.create_entity({
             name = "crude-oil",

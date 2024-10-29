@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.10
+Date: ????
+  Major Features:
+    - Adding support for secondary spawns on Fulgora.
+  Bugfixes:
+    - Fixed a crash if surface only had 1 basic-solid resource to place.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.9
 Date: 2024-11-06
   Bugfixes:

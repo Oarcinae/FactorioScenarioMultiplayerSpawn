@@ -232,3 +232,94 @@ function DudeWheresMyCargoPod(player)
         player.print({ "oarc-teleport-success" })
     end
 end
+
+
+
+---Allow players to reroll their spawn point, dangerous because this doesn't do a lot of checks.
+---@param player LuaPlayer
+---@return nil
+function RerollSpawn(player)
+
+    -- Make sure character is valid
+    if not player.character then
+        log("ERROR - RerollSpawn - No valid character for player: " .. player.name)
+        return
+    end
+
+    -- Ensure we still have their previous spawn choices
+    local spawn_choices = storage.spawn_choices[player.name]
+    if (spawn_choices == nil) then
+        log("ERROR - RerollSpawn - No spawn choices for player: " .. player.name)
+        return
+    end
+
+    local surface = player.character.surface
+
+    -- Confirm there is AN existing spawn point for this player on this surface
+    if (storage.unique_spawns[surface.name] == nil or storage.unique_spawns[surface.name][player.name] == nil) then
+        log("ERROR - RerollSpawn - Can't reroll? No existing spawn for " .. player.name)
+        return
+    end
+
+    -- Save a copy of the previous spawn point
+    local old_spawn_point = table.deepcopy(storage.unique_spawns[surface.name][player.name])
+
+    -- Find a new spawn point
+    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+    -- If that fails, just throw a warning and don't spawn them. They can try again.
+    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
+        player.print({ "oarc-no-ungenerated-land-error" })
+        return
+    end
+
+    -- Remove the old spawn point
+    if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
+        log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. old_spawn_point.surface_name)
+
+        -- Clear an area around the spawn that SHOULD not include any other bases.
+        local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
+        RegrowthMarkAreaForRemoval(old_spawn_point.surface_name, old_spawn_point.position, clear_radius)
+        TriggerCleanup()
+        -- Trigger event
+        script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = old_spawn_point})
+    end
+
+    -- Add new spawn point for the new surface
+    SetPlayerRespawn(player.name, surface.name, spawn_position, false) -- Do not reset cooldown
+    QueuePlayerForDelayedSpawn(player.name, surface.name, spawn_position, spawn_choices.moat, old_spawn_point.primary, nil)
+
+    -- Send them to the holding pen
+    SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+
+    -- Announce
+    SendBroadcastMsg({"", { "oarc-player-new-secondary", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
+end
+
+
+
+---Test out placing fulgoran stuff
+-- fulgurite-small
+-- fulgurite
+-- fulgoran-ruin-attractor
+-- fulgoran-ruin-small
+-- fulgoran-ruin-medium
+-- fulgoran-ruin-colossal
+-- fulgoran-ruin-stonehenge
+-- fulgoran-ruin-vault
+
+-- if (tree_entity == nil) then return end
+-- --Create trees (needs to be done after setting tiles!)
+-- for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+--     for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+--         local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
+--         if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
+
+--             local random_tree_index = math.random(1, #tree_entity)
+--             local pos = surface.find_non_colliding_position(tree_entity[random_tree_index], { i, j }, 2, 0.5)
+--             if (pos ~= nil) then
+--                 surface.create_entity({ name = tree_entity[random_tree_index], amount = 1, position = pos })
+--             end
+--             -- surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+--         end
+--     end
+-- end
