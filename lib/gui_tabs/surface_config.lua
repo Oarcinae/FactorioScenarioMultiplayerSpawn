@@ -253,13 +253,15 @@ function SurfaceConfigItemListDisplayRow(table, item_name, item_count)
     local remove_button = table.add {
         type = "sprite-button",
         sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Item", -- TODO: Localize
+        tooltip = { "oarc-remove-item" },
         tags = {
             action = "oarc_surface_config_tab",
             remove_row_button = true,
             item_name = item_name or ""
         }
     }
+
+
     remove_button.style.width = 28
     remove_button.style.height = 28
 end
@@ -303,15 +305,15 @@ function CreateSafeAreaConfig(container, surface_name)
     safe_area_flow.style.horizontally_stretchable = false
     safe_area_flow.style.vertically_stretchable = true
 
-    local header = AddLabel(safe_area_flow, nil, "Safe Area Config", my_label_header2_style) -- TODO: Localize
-    header.tooltip = "This controls how safe the area around the spawns is." -- TODO: Localize
+    local header = AddLabel(safe_area_flow, nil, { "oarc-safe-area-config" }, my_label_header2_style)
+    header.tooltip = { "oarc-safe-area-tooltip" }
 
-     -- TODO: Localize
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Safe Area Radius", "safe_area", "safe_radius", "This is the radius in chunks around the spawn in which no enemies will spawn.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Radius", "safe_area", "warn_radius", "This is the radius in chunks around the spawn in which enemies will be significantly reduced.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Reduction", "safe_area", "warn_reduction", "This is the reduction factor to reduce the number of enemies in the warn area. 10 means (1/10)th the number of enemies.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Radius", "safe_area", "danger_radius", "This is the radius in chunks around the spawn in which enemies will be slightly reduced.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Reduction", "safe_area", "danger_reduction", "This is the reduction factor to reduce the number of enemies in the danger area. 10 means (1/10)th the number of enemies.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-safe-area-radius" }, "safe_area", "safe_radius", { "oarc-safe-radius-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-warn-area-radius" }, "safe_area", "warn_radius", { "oarc-warn-radius-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-warn-area-reduction" }, "safe_area", "warn_reduction", { "oarc-warn-reduction-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-danger-area-radius" }, "safe_area", "danger_radius", { "oarc-danger-radius-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-danger-area-reduction" }, "safe_area", "danger_reduction", { "oarc-danger-reduction-tooltip" })
+
 end
 
 
@@ -373,8 +375,10 @@ function CreateSolidResourcesConfig(container, surface_name)
     solid_resources_flow.style.horizontally_stretchable = false
     solid_resources_flow.style.vertically_stretchable = true
 
-    local header = AddLabel(solid_resources_flow, nil, "Solid Resources Config", my_label_header2_style) -- TODO: Localize
-    header.tooltip = "This controls the resources that will spawn around the spawn area." -- TODO: Localize
+
+    local header = AddLabel(solid_resources_flow, nil, { "oarc-solid-resources-config" }, my_label_header2_style)
+    header.tooltip = { "oarc-solid-resources-tooltip" }
+
 
     -- Create a table to display the resources
     local table = solid_resources_flow.add {
@@ -415,9 +419,8 @@ function CreateFluidResourcesConfig(container, surface_name)
     fluid_resources_flow.style.padding = 5
     fluid_resources_flow.style.horizontally_stretchable = false
     fluid_resources_flow.style.vertically_stretchable = true
-
-    local header = AddLabel(fluid_resources_flow, nil, "Fluid Resources Config", my_label_header2_style) -- TODO: Localize
-    header.tooltip = "This controls the fluid resources that will spawn around the spawn area." -- TODO: Localize
+    local header = AddLabel(fluid_resources_flow, nil, { "oarc-fluid-resources-config" }, my_label_header2_style)
+    header.tooltip = { "oarc-fluid-resources-tooltip" }
 
     -- Create a table to display the resources
     local fluid_table = fluid_resources_flow.add {
@@ -430,9 +433,9 @@ function CreateFluidResourcesConfig(container, surface_name)
     }
 
     --Add headers
-    AddLabel(fluid_table, nil, "Type", my_label_style)
-    AddLabel(fluid_table, nil, "Count", my_label_style)
-    AddLabel(fluid_table, nil, "Amount", my_label_style)
+    AddLabel(fluid_table, nil, { "oarc-fluid-type" }, my_label_style)
+    AddLabel(fluid_table, nil, { "oarc-fluid-count" }, my_label_style)
+    AddLabel(fluid_table, nil, { "oarc-fluid-amount" }, my_label_style)
     AddLabel(fluid_table, nil, "", my_label_style)
 
     for resource_name, resource_data in pairs(fluid_resources) do
@@ -456,22 +459,23 @@ function CreateMiscConfig(container, surface_name)
     misc_flow.style.padding = 5
     misc_flow.style.horizontally_stretchable = false
 
-    AddLabel(misc_flow, nil, "Misc Config", my_label_header2_style) -- TODO: Localize
+     AddLabel(misc_flow, nil, { "oarc-misc-config" }, my_label_header2_style)
 
-    AddLabel(misc_flow, nil, "Water", my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Water Length", "water", "length", "This is the length in tiles of the water strip around the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Water X Offset", "water", "x_offset", "This is the x_offset in tiles, from the north of the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Water Y Offset", "water", "y_offset", "This is the y_offset in tiles, from the north of the spawn area.")
+    AddLabel(misc_flow, nil, { "oarc-water" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-length" }, "water", "length", { "oarc-water-length-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-x-offset" }, "water", "x_offset", { "oarc-water-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-y-offset" }, "water", "y_offset", { "oarc-water-y-offset-tooltip" })
     AddSpacerLine(misc_flow)
 
-    AddLabel(misc_flow, nil, "Shared Chest", my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Chest X Offset", "shared_chest_position", "x_offset", "This is the x_offset in tiles, from the east of the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Chest Y Offset", "shared_chest_position", "y_offset", "This is the y_offset in tiles, from the east of the spawn area.")
+    AddLabel(misc_flow, nil, { "oarc-shared-chest" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-chest-x-offset" }, "shared_chest_position", "x_offset", { "oarc-chest-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-chest-y-offset" }, "shared_chest_position", "y_offset", { "oarc-chest-y-offset-tooltip" })
     AddSpacerLine(misc_flow)
 
-    AddLabel(misc_flow, nil, "Shared Power Pole", my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Power X Offset", "shared_power_pole_position", "x_offset", "This is the x_offset in tiles, from the east of the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Power Y Offset", "shared_power_pole_position", "y_offset", "This is the y_offset in tiles, from the east of the spawn area.")
+    AddLabel(misc_flow, nil, { "oarc-shared-power-pole" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-power-x-offset" }, "shared_power_pole_position", "x_offset", { "oarc-power-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-power-y-offset" }, "shared_power_pole_position", "y_offset", { "oarc-power-y-offset-tooltip" })
+
 end
 
 ---Adds a row to a table with a resource, amount, and size
@@ -528,13 +532,14 @@ function SolidResourcesConfigDisplayRow(table, resource_name, amount, size)
     local remove_button = table.add {
         type = "sprite-button",
         sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Resource", -- TODO: Localize
+        tooltip = { "oarc-remove-resource" },
         tags = {
             action = "oarc_surface_config_tab",
             resource_remove_row_button = true,
             resource_name = resource_name or ""
         }
     }
+
     remove_button.style.width = 28
     remove_button.style.height = 28
 end
@@ -549,12 +554,13 @@ function SurfaceConfigSolidResourcesAddRowButton(table)
         elem_type = "entity",
         -- type = "sprite-button",
         -- sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
+        tooltip = { "oarc-add-item" },
         tags = {
             action = "oarc_surface_config_tab",
             resource_add_row_button = true
         }
     }
+
     add_row_button.style.width = 28
     add_row_button.style.height = 28
 end
@@ -615,7 +621,7 @@ function FluidResourcesConfigDisplayRow(table, resource_name, count, amount)
     local remove_button = table.add {
         type = "sprite-button",
         sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Resource",
+        tooltip = { "oarc-remove-resource" },
         tags = {
             action = "oarc_surface_config_tab",
             resource_remove_row_button = true,
@@ -636,7 +642,7 @@ function SurfaceConfigFluidResourcesAddRowButton(table)
         elem_type = "entity",
         -- type = "sprite-button",
         -- sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
+        tooltip = { "oarc-add-item" },
         tags = {
             action = "oarc_surface_config_tab",
             fluid_resource_add_row_button = true
