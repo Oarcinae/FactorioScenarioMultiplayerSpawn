@@ -42,6 +42,14 @@ require("lib/oarc_tests")
 -- On Init - Only runs once the first time the game starts
 --------------------------------------------------------------------------------
 script.on_init(function(event)
+
+    -- If init has already been run, we immediately hard error.
+    -- This is NOT supported. Checking for this force is just an easy dumb way to do it.
+    if (game.forces[ABANDONED_FORCE_NAME] ~= nil) then
+        error("It appears as though this mod is trying to re-run on_init. If you removed the mod and re-added it again, this is NOT supported. You have to rollback to a previous save where the mod was enabled.")
+        return
+    end
+
     ValidateAndLoadConfig()
     RegrowthInit()
 

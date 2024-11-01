@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.5
+Date: 2024-11-01
+  Changes:
+    - Provide a clear error message that it is NOT supported if the mod is removed and re-added.
+  Info:
+    - Add zh-CN translation files.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.4
 Date: 2024-10-29
   Bugfixes:
