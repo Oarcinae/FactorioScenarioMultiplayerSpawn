@@ -6,9 +6,9 @@
 ---@return nil
 function CreateSurfaceConfigTab(tab_container, player)
 
-    local note = AddLabel(tab_container, nil, "This lets you configure the surface settings, it is only available to admins. These settings are NOT available in the mod settings page. If you want to automatically set these on the start of a new game using a custom file, please check out the included template scenario in the mod folder. I really question my sanity for bothering to make this GUI interface. Send help.", my_note_style) -- TODO: Localize
+    local note = AddLabel(tab_container, nil, { "oarc-surface-settings-warning" }, my_note_style)
     note.style.maximal_width = 600
-    local warn = AddLabel(tab_container, nil, "WARNING: These settings are NOT sanitized, you might crash the game if you pick bad values!", my_warning_style) -- TODO: Localize
+    local warn = AddLabel(tab_container, nil, { "oarc-surface-settings-warning2" }, my_warning_style)
     warn.style.maximal_width = 600
 
     -- Drop down to select surface that you want to configure
@@ -182,7 +182,7 @@ function CreateItemsSection(container, surface_name, header, setting_name, max_c
     vertical_flow.style.padding = 5
     vertical_flow.style.horizontally_stretchable = false
     vertical_flow.style.vertically_stretchable = true
-    
+
     AddLabel(vertical_flow, nil, header, my_label_header2_style)
 
     local table = vertical_flow.add {
@@ -569,7 +569,7 @@ end
 ---@param amount integer
 ---@return nil
 function FluidResourcesConfigDisplayRow(table, resource_name, count, amount)
-    
+
     -- Create choose elem button
     local button = table.add {
         type = "choose-elem-button",
@@ -650,7 +650,7 @@ function SurfaceConfigFluidResourcesAddRowButton(table)
 end
 
 --[[
-  _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___ 
+  _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___
  | __\ \ / / __| \| |_   _| | || | /_\ | \| |   \| |  | __| _ \/ __|
  | _| \ V /| _|| .` | | |   | __ |/ _ \| .` | |) | |__| _||   /\__ \
  |___| \_/ |___|_|\_| |_|   |_||_/_/ \_\_|\_|___/|____|___|_|_\|___/
@@ -862,7 +862,7 @@ function SurfaceConfigTabGuiElemChanged(event)
                 child.tags = tags_copy
             end
         end
-    
+
     elseif (tags.resource_elem_button) then
         local new_resource_name = event.element.elem_value --[[@as string]]
 
@@ -974,7 +974,7 @@ function SurfaceConfigTabGuiClick(event)
     end
 
     if (tags.remove_row_button) then
-        
+
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
