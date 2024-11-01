@@ -6,9 +6,9 @@
 ---@return nil
 function CreateSurfaceConfigTab(tab_container, player)
 
-    local note = AddLabel(tab_container, nil, { "oarc-surface-settings-warning" }, my_note_style)
+    local note = AddLabel(tab_container, nil, { "oarc-surface-settings-info" }, my_note_style)
     note.style.maximal_width = 600
-    local warn = AddLabel(tab_container, nil, { "oarc-surface-settings-warning2" }, my_warning_style)
+    local warn = AddLabel(tab_container, nil, { "oarc-surface-settings-warning" }, my_warning_style)
     warn.style.maximal_width = 600
 
     -- Drop down to select surface that you want to configure
@@ -38,28 +38,24 @@ function CreateSurfaceConfigContent(container, surface_name)
     }
     scroll_pane.style.top_margin = 10
 
-    -- TODO: Localize EVERTYHING?
-
-    AddLabel(scroll_pane, nil, "Starting And Respawn Items", my_label_header2_style)
+    --  Localized
+    AddLabel(scroll_pane, nil, {"oarc-label-starting-respawn-items"}, my_label_header2_style)
     local starting_items_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
-    CreateItemsSection(starting_items_flow, surface_name, "Starting Items", "player_start_items")
-    CreateItemsSection(starting_items_flow, surface_name, "Respawn Items", "player_respawn_items")
+    CreateItemsSection(starting_items_flow, surface_name, {"oarc-label-starting-items"}, "player_start_items")
+    CreateItemsSection(starting_items_flow, surface_name, {"oarc-label-respawn-items"}, "player_respawn_items")
     AddSpacerLine(scroll_pane)
-
-    AddLabel(scroll_pane, nil, "Crashed Ship Items", my_label_header2_style)
+    AddLabel(scroll_pane, nil, {"oarc-label-crashed-ship-items"}, my_label_header2_style)
     CreateCrashSiteEnable(scroll_pane, surface_name)
     local crash_site_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
-    CreateItemsSection(crash_site_flow, surface_name, "Crashed Ship (Max 5)", "crashed_ship_resources", MAX_CRASHED_SHIP_RESOURCES_ITEMS)
-    CreateItemsSection(crash_site_flow, surface_name, "Ship Wreckage (Max 1)", "crashed_ship_wreakage", MAX_CRASHED_SHIP_WRECKAGE_ITEMS)
+    CreateItemsSection(crash_site_flow, surface_name, {"oarc-label-crashed-ship-max"}, "crashed_ship_resources", MAX_CRASHED_SHIP_RESOURCES_ITEMS)
+    CreateItemsSection(crash_site_flow, surface_name, {"oarc-label-ship-wreckage-max"}, "crashed_ship_wreakage", MAX_CRASHED_SHIP_WRECKAGE_ITEMS)
     AddSpacerLine(scroll_pane)
-
-    AddLabel(scroll_pane, nil, "Spawn Area Resources", my_label_header2_style)
+    AddLabel(scroll_pane, nil, {"oarc-label-spawn-area-resources"}, my_label_header2_style)
     local spawn_config_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
     CreateSolidResourcesConfig(spawn_config_flow, surface_name)
     CreateFluidResourcesConfig(spawn_config_flow, surface_name)
     AddSpacerLine(scroll_pane)
-
-    AddLabel(scroll_pane, nil, "Spawn Area Misc", my_label_header2_style)
+    AddLabel(scroll_pane, nil, {"oarc-label-spawn-area-misc"}, my_label_header2_style)
     local misc_config_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
     CreateMiscConfig(misc_config_flow, surface_name)
     CreateSafeAreaConfig(misc_config_flow, surface_name)
@@ -79,7 +75,7 @@ function CreateCrashSiteEnable(container, surface_name)
     }
     crashed_ship_flow.style.vertical_align = "center"
 
-    AddLabel(crashed_ship_flow, nil, "Enable Crashed Ship: ", "caption_label") -- TODO: Localize
+    AddLabel(crashed_ship_flow, nil, {"oarc-crash-site-enable-label"}, "caption_label")
     local crashed_ship_enabled_checkbox = crashed_ship_flow.add {
         type = "checkbox",
         state = crashed_ship_enabled,
@@ -88,7 +84,7 @@ function CreateCrashSiteEnable(container, surface_name)
             setting = "crashed_ship_enabled",
             surface_name = surface_name
         },
-        tooltip = "Enables the factorio style ship crash with items. If this is disabled, the crashed ship items and wreckage won't do anything." -- TODO: Localize
+        tooltip = {"oarc-crash-site-enable-tooltip"}
     }
 end
 
@@ -109,7 +105,8 @@ function CreateSurfaceDropdown(container)
         direction = "horizontal"
     }
     horizontal_flow.style.vertical_align = "center"
-    AddLabel(horizontal_flow, nil, "Select Surface: ", "caption_label")
+
+    AddLabel(horizontal_flow, nil, {"oarc-select-surface-label"}, "caption_label")
 
     local surface_dropdown = horizontal_flow.add {
         type = "drop-down",
@@ -120,7 +117,7 @@ function CreateSurfaceDropdown(container)
             action = "oarc_surface_config_tab",
             setting = "surface_dropdown"
         },
-        tooltip = "Select the surface you want to configure." -- TODO: Localize
+        tooltip = {"oarc-select-surface-tooltip"}
     }
 
     local dragger = horizontal_flow.add{ type="empty-widget", style="draggable_space_header" }
@@ -129,8 +126,8 @@ function CreateSurfaceDropdown(container)
     -- A button to revert config to default (from OCFG hardcoded.)
     local revert_button = horizontal_flow.add {
         type = "button",
-        caption = "Revert", -- TODO: Localize
-        tooltip = "Revert to default.", -- TODO: Localize
+        caption = {"oarc-revert-button"},
+        tooltip = {"oarc-revert-tooltip"},
         style = "red_button",
         tags = {
             action = "oarc_surface_config_tab",
@@ -141,8 +138,8 @@ function CreateSurfaceDropdown(container)
     -- Add button to copy nauvis config to current selected surface (if not nauvis)
     local copy_button = horizontal_flow.add {
         type = "button",
-        caption = "Copy Nauvis", -- TODO: Localize
-        tooltip = "Copy Nauvis settings to this surface.", -- TODO: Localize
+        caption = {"oarc-copy-nauvis-button"},
+        tooltip = {"oarc-copy-nauvis-tooltip"},
         style = "red_button",
         tags = {
             action = "oarc_surface_config_tab",
@@ -278,7 +275,7 @@ function SurfaceConfigItemListAddRowButton(table)
         elem_type = "entity",
         -- type = "sprite-button",
         -- sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
+        tooltip = {"oarc-add-item-tooltip"},
         tags = {
             action = "oarc_surface_config_tab",
             add_row_button = true
