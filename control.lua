@@ -123,6 +123,32 @@ script.on_event(defines.events.on_rocket_launched, function(event)
     log(serpent.block(event))
 end)
 
+script.on_event(defines.events.on_player_driving_changed_state, function (event)
+    local entity = event.entity
+
+    --If a player gets in or out of a vehicle, mark the area as safe so we don't delete the vehicle by accident.
+    --Only world eater will clean up these chunks over time if it is enabled.
+    if storage.ocfg.regrowth.enable_regrowth and (entity ~= nil) then
+        RegrowthMarkAreaSafeGivenTilePos(entity.surface.name, entity.position, 1, false)
+    end
+
+    log("Player driving changed state")
+    log(serpent.block(event))
+
+    -- Track the surfaces whenever driving state changes for a cargo-pod ONLY.
+    -- This triggers events for surface changes when using the standard space travel method.
+    if (entity ~= nil) and (entity.name == "cargo-pod") then
+        local player = game.players[event.player_index]
+
+        -- Check if driving flag is set
+        if (player.driving) then
+            log("Player is driving a cargo-pod")
+        end
+
+        SeparateSpawnsUpdatePlayerSurface(player, entity.surface.name)
+    end
+end)
+
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
 ----------------------------------------
@@ -286,27 +312,6 @@ script.on_event(defines.events.on_player_built_tile, function (event)
         for _,v in pairs(event.tiles) do
             RegrowthMarkAreaSafeGivenTilePos(game.surfaces[event.surface_index].name, v.position, 2, false)
         end
-    end
-end)
-
---If a player gets in or out of a vehicle, mark the area as safe so we don't delete the vehicle by accident.
---Only world eater will clean up these chunks over time if it is enabled.
-script.on_event(defines.events.on_player_driving_changed_state, function (event)
-    local entity = event.entity
-
-    if storage.ocfg.regrowth.enable_regrowth and (entity ~= nil) then
-        RegrowthMarkAreaSafeGivenTilePos(entity.surface.name, entity.position, 1, false)
-    end
-
-    log("Player driving changed state")
-    log(serpent.block(event))
-
-    local player = game.players[event.player_index]
-    log("Player vehicle: " .. serpent.block(player.vehicle))
-
-    -- Track the surfaces whenever driving state changes. This triggers events for surface changes.
-    if (entity ~= nil) then
-        SeparateSpawnsUpdatePlayerSurface(player, entity.surface.name)
     end
 end)
 
