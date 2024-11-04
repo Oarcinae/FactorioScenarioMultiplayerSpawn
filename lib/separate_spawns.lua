@@ -507,7 +507,7 @@ function SendPlayerToNewSpawnAndCreateIt(delayed_spawn)
         -- Reference position is the top of the spawn area.
         local reference_pos = {
             x = delayed_spawn.position.x,
-            y = delayed_spawn.position.y - storage.ocfg.spawn_general.spawn_radius_tiles
+            y = delayed_spawn.position.y - (storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier)
         }
         CreateTileStrip(game.surfaces[delayed_spawn.surface],
             { x = reference_pos.x + water_data.x_offset, y = reference_pos.y + water_data.y_offset },

@@ -1,14 +1,11 @@
 ACTIVE ITEMS:
 
--- Look into on_player_driving_changed_state for detecting player rocket/platform transitions.
--- Look at rocket launch events and this: `event.rocket.cargo_pod`
-
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
 
 Not specific:
-
+- Fix wording for "force grass" setting if I allow any tile to be used there...
 
 Minor:
 - If dead when resetting spawn... possibly delay the opening of the welcome GUI or block spawning until character is spawned?
@@ -22,7 +19,7 @@ Performance:
 - Rework world eater to use less find_entities_filtered
 
 Major:
-- Space Age Support (TBD)
+- Space Age Support (In Progress)
 
 
 ------------------------------------------------------SPACE AGE---------------------------------------------------------

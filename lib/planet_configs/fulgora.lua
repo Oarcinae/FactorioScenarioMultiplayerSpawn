@@ -1,10 +1,11 @@
--- THIS is used as the default starting items on all surfaces if no other settings are provided!
+-- This config is used as the default config for the planet fulgora.
+
 ---@type OarcConfigStartingItems
 FULGORA_STARTER_ITEMS = table.deepcopy(NO_STARTER_ITEMS)
 
 ---@type OarcConfigSpawn
 FULGORA_SPAWN_CONFIG = table.deepcopy(NAUVIS_SPAWN_CONFIG)
-FULGORA_SPAWN_CONFIG.fill_tile = "fulgoran-paving"
+FULGORA_SPAWN_CONFIG.fill_tile = "fulgoran-dunes"
 FULGORA_SPAWN_CONFIG.liquid_tile = "oil-ocean-deep"
 FULGORA_SPAWN_CONFIG.tree_entity = nil
 FULGORA_SPAWN_CONFIG.random_entities = {
@@ -22,7 +23,7 @@ FULGORA_SPAWN_CONFIG.radius_modifier = 0.7
 FULGORA_SPAWN_CONFIG.solid_resources =
 {
     ["scrap"] = {
-        amount = 10000,
+        amount = 2000,
         size = 25,
 
         -- These are only used if not using automatic placing.

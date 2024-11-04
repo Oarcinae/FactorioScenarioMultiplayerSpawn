@@ -1700,7 +1700,8 @@ function PlaceFulgoranLightningAttractors(surface, position, count)
         if (open_pos ~= nil) then
             surface.create_entity({
                 name = ATTRACTOR_NAME,
-                position = open_pos
+                position = open_pos,
+                force = "player" -- Same as native game
             })
         end
     end
