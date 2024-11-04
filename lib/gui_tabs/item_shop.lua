@@ -12,7 +12,7 @@ function CreateItemShopTab(tab_container, player)
     end
 
     local player_inv = player.character.get_main_inventory()
-    if (player_inv == nil) then 
+    if (player_inv == nil) then
         AddLabel(tab_container, nil, "Player main inventory not available right now.", my_warning_style)
         return
     end
@@ -98,10 +98,11 @@ function OarcItemShopGuiClick(event)
 
             if (button.parent and button.parent.parent and button.parent.parent.player_store_wallet_lbl) then
                 local wallet = player_inv.get_item_count("coin")
-                button.parent.parent.player_store_wallet_lbl.caption = "Coins Available: " .. wallet .. "  [item=coin]"
+                --button.parent.parent.player_store_wallet_lbl.caption = "Coins Available: " .. wallet .. "  [item=coin]"
+                button.parent.parent.player_store_wallet_lbl.caption = { "oarc-coins-available", wallet }
             end
         else
-            player.print("You're broke! Go kill some enemies or beg for change...")
+            player.print({ "oarc-broke-message" })
         end
     end
 end

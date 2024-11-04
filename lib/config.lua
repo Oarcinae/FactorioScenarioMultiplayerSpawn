@@ -533,6 +533,15 @@ OCFG = {
         -- Factorissimo Mod Surfaces
         "factory-power",
         "factory-floor",
+        -- Factorissimo 3 Surfaces (hardcoded for now...)
+        "factory-",
+        "nauvis-factory-",
+        "fulgora-factory-",
+        "gleba-factory-",
+        "vulcanus-factory-",
+        "aquilo-factory-",
+        -- Blueprint Sandboxes Surfaces
+        "bpsb-"
     },
 
     -- List of items available in the coin shop (if enabled).

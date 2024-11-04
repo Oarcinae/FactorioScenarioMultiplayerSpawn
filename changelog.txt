@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.6
+Date: 2024-11-04
+  Bugfixes:
+    - Fix player being teleported home when remote driving vehicles.
+    - Fix compatibility with blueprint sandboxes mod. (Dependency ordering and hiding of surfaces.)
+  Info:
+    - Big thanks to plexpt for helping me localize even more of the mod!
+---------------------------------------------------------------------------------------------------
 Version: 2.1.5
 Date: 2024-11-01
   Changes:

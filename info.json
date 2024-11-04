@@ -1,6 +1,6 @@
 {
   "name": "oarc-mod",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "factorio_version": "2.0",
   "title": "Oarc Multiplayer Spawn",
   "author": "Oarcinae",
@@ -9,12 +9,15 @@
   "description": "[[Description is in locale file!]]",
   "dependencies": [
     "base >= 2.0.0",
+    "? space-age",
     "(?) dangOreus" ,
     "(?) Milestones",
     "(?) space-exploration",
     "(?) alien-biomes",
     "(?) sonaxaton-research-queue",
     "(?) helmod",
+    "(?) blueprint-sandboxes",
+    "(?) factorissimo-2-notnotmelon",
     "! rso-mod"
   ]
 }

@@ -562,7 +562,7 @@ function RegrowthOnTick()
     -- Send a broadcast warning before it happens.
     if ((game.tick % interval_ticks) == interval_ticks - (60 * 30 + 1)) then
         if (#storage.rg.removal_list > 100) then
-            SendBroadcastMsg("Map cleanup in 30 seconds... Unused and old map chunks will be deleted!")
+            SendBroadcastMsg({"oarc-cleanup-30sec-warning"})
         end
     end
 
@@ -570,7 +570,7 @@ function RegrowthOnTick()
     if ((game.tick % interval_ticks) == interval_ticks - 1) then
         if (#storage.rg.removal_list > 100) then
             OarcRegrowthRemoveAllChunks()
-            SendBroadcastMsg("Map cleanup done, sorry for your loss.")
+            SendBroadcastMsg({"oarc-cleanup-complete"})
         end
     end
 end
@@ -580,19 +580,19 @@ end
 function RegrowthForceRemovalOnTick()
     -- Catch force remove flag
     if (game.tick == storage.rg.force_removal_flag + 60) then
-        SendBroadcastMsg("Map cleanup (forced) in 30 seconds... Unused and old map chunks will be deleted!")
+        SendBroadcastMsg({"oarc-cleanup-force-30sec-warning"})
     end
 
     if (game.tick == storage.rg.force_removal_flag + (60 * 30 + 60)) then
         OarcRegrowthRemoveAllChunks()
-        SendBroadcastMsg("Map cleanup done, sorry for your loss.")
+        SendBroadcastMsg({"oarc-cleanup-complete"})
     end
 end
 
 function WorldEaterSingleStep()
 
     local next_chunk = GetNextChunkAndUpdateWorldEaterIter()
-    if (not next_chunk) then return end    
+    if (not next_chunk) then return end
     local current_surface = storage.rg.we_current_surface
 
     -- Do we have it in our map?
@@ -689,7 +689,7 @@ end
 ---@return nil
 function RegrowthOnBuiltEntity(event)
     if (event.entity and event.entity.valid and event.entity.type == "spider-vehicle") then
-        
+
         table.insert(storage.rg.spidertrons, event.entity)
         log("Added spidertron to regrowth tracking")
 
