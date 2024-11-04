@@ -198,8 +198,12 @@ script.on_event("oarc-mod-character-surface-changed", function(event)
     log("Custom event oarc-mod-character-surface-changed")
     log(serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
 
-    local player = game.players[event.player_index]
-    SeparateSpawnsPlayerChangedSurface(player, event.old_surface_name, event.new_surface_name)
+    --This is just here so I don't get lua warnings about unused variables.
+    ---@type OarcModCharacterSurfaceChangedEvent
+    local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]
+
+    local player = game.players[custom_event.player_index]
+    SeparateSpawnsPlayerChangedSurface(player, custom_event.old_surface_name, custom_event.new_surface_name)
 end)
 
 -- I raise this event whenever teleporting the player!
