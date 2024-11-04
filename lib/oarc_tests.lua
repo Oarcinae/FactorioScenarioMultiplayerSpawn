@@ -209,7 +209,7 @@ end
 function DudeWheresMyCargoPod(player)
 
     if not player.character then
-        player.print("Your character needs to be valid to use this! Make sure you are not inside a vehicle or dead!")
+        player.print({ "oarc-character-invalid" })
         return
     end
 
@@ -224,11 +224,11 @@ function DudeWheresMyCargoPod(player)
         local new_position = surface.find_non_colliding_position("cargo-pod-container", player.character.position, CHUNK_SIZE, 1)
 
         if new_position == nil then
-            player.print("Could not find a safe place to teleport the cargo pod!")
+            player.print({ "oarc-teleport-fail" })
             return
         end
 
         cargo_pod.teleport(new_position)
-        player.print("Teleported cargo pod to you!")
+        player.print({ "oarc-teleport-success" })
     end
 end

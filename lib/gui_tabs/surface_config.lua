@@ -6,9 +6,9 @@
 ---@return nil
 function CreateSurfaceConfigTab(tab_container, player)
 
-    local note = AddLabel(tab_container, nil, "This lets you configure the surface settings, it is only available to admins. These settings are NOT available in the mod settings page. If you want to automatically set these on the start of a new game using a custom file, please check out the included template scenario in the mod folder. I really question my sanity for bothering to make this GUI interface. Send help.", my_note_style) -- TODO: Localize
+    local note = AddLabel(tab_container, nil, { "oarc-surface-settings-info" }, my_note_style)
     note.style.maximal_width = 600
-    local warn = AddLabel(tab_container, nil, "WARNING: These settings are NOT sanitized, you might crash the game if you pick bad values!", my_warning_style) -- TODO: Localize
+    local warn = AddLabel(tab_container, nil, { "oarc-surface-settings-warning" }, my_warning_style)
     warn.style.maximal_width = 600
 
     -- Drop down to select surface that you want to configure
@@ -38,28 +38,24 @@ function CreateSurfaceConfigContent(container, surface_name)
     }
     scroll_pane.style.top_margin = 10
 
-    -- TODO: Localize EVERTYHING?
-
-    AddLabel(scroll_pane, nil, "Starting And Respawn Items", my_label_header2_style)
+    --  Localized
+    AddLabel(scroll_pane, nil, {"oarc-label-starting-respawn-items"}, my_label_header2_style)
     local starting_items_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
-    CreateItemsSection(starting_items_flow, surface_name, "Starting Items", "player_start_items")
-    CreateItemsSection(starting_items_flow, surface_name, "Respawn Items", "player_respawn_items")
+    CreateItemsSection(starting_items_flow, surface_name, {"oarc-label-starting-items"}, "player_start_items")
+    CreateItemsSection(starting_items_flow, surface_name, {"oarc-label-respawn-items"}, "player_respawn_items")
     AddSpacerLine(scroll_pane)
-
-    AddLabel(scroll_pane, nil, "Crashed Ship Items", my_label_header2_style)
+    AddLabel(scroll_pane, nil, {"oarc-label-crashed-ship-items"}, my_label_header2_style)
     CreateCrashSiteEnable(scroll_pane, surface_name)
     local crash_site_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
-    CreateItemsSection(crash_site_flow, surface_name, "Crashed Ship (Max 5)", "crashed_ship_resources", MAX_CRASHED_SHIP_RESOURCES_ITEMS)
-    CreateItemsSection(crash_site_flow, surface_name, "Ship Wreckage (Max 1)", "crashed_ship_wreakage", MAX_CRASHED_SHIP_WRECKAGE_ITEMS)
+    CreateItemsSection(crash_site_flow, surface_name, {"oarc-label-crashed-ship-max"}, "crashed_ship_resources", MAX_CRASHED_SHIP_RESOURCES_ITEMS)
+    CreateItemsSection(crash_site_flow, surface_name, {"oarc-label-ship-wreckage-max"}, "crashed_ship_wreakage", MAX_CRASHED_SHIP_WRECKAGE_ITEMS)
     AddSpacerLine(scroll_pane)
-
-    AddLabel(scroll_pane, nil, "Spawn Area Resources", my_label_header2_style)
+    AddLabel(scroll_pane, nil, {"oarc-label-spawn-area-resources"}, my_label_header2_style)
     local spawn_config_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
     CreateSolidResourcesConfig(spawn_config_flow, surface_name)
     CreateFluidResourcesConfig(spawn_config_flow, surface_name)
     AddSpacerLine(scroll_pane)
-
-    AddLabel(scroll_pane, nil, "Spawn Area Misc", my_label_header2_style)
+    AddLabel(scroll_pane, nil, {"oarc-label-spawn-area-misc"}, my_label_header2_style)
     local misc_config_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
     CreateMiscConfig(misc_config_flow, surface_name)
     CreateSafeAreaConfig(misc_config_flow, surface_name)
@@ -79,7 +75,7 @@ function CreateCrashSiteEnable(container, surface_name)
     }
     crashed_ship_flow.style.vertical_align = "center"
 
-    AddLabel(crashed_ship_flow, nil, "Enable Crashed Ship: ", "caption_label") -- TODO: Localize
+    AddLabel(crashed_ship_flow, nil, {"oarc-crash-site-enable-label"}, "caption_label")
     local crashed_ship_enabled_checkbox = crashed_ship_flow.add {
         type = "checkbox",
         state = crashed_ship_enabled,
@@ -88,7 +84,7 @@ function CreateCrashSiteEnable(container, surface_name)
             setting = "crashed_ship_enabled",
             surface_name = surface_name
         },
-        tooltip = "Enables the factorio style ship crash with items. If this is disabled, the crashed ship items and wreckage won't do anything." -- TODO: Localize
+        tooltip = {"oarc-crash-site-enable-tooltip"}
     }
 end
 
@@ -109,7 +105,8 @@ function CreateSurfaceDropdown(container)
         direction = "horizontal"
     }
     horizontal_flow.style.vertical_align = "center"
-    AddLabel(horizontal_flow, nil, "Select Surface: ", "caption_label")
+
+    AddLabel(horizontal_flow, nil, {"oarc-select-surface-label"}, "caption_label")
 
     local surface_dropdown = horizontal_flow.add {
         type = "drop-down",
@@ -120,7 +117,7 @@ function CreateSurfaceDropdown(container)
             action = "oarc_surface_config_tab",
             setting = "surface_dropdown"
         },
-        tooltip = "Select the surface you want to configure." -- TODO: Localize
+        tooltip = {"oarc-select-surface-tooltip"}
     }
 
     local dragger = horizontal_flow.add{ type="empty-widget", style="draggable_space_header" }
@@ -129,8 +126,8 @@ function CreateSurfaceDropdown(container)
     -- A button to revert config to default (from OCFG hardcoded.)
     local revert_button = horizontal_flow.add {
         type = "button",
-        caption = "Revert", -- TODO: Localize
-        tooltip = "Revert to default.", -- TODO: Localize
+        caption = {"oarc-revert-button"},
+        tooltip = {"oarc-revert-tooltip"},
         style = "red_button",
         tags = {
             action = "oarc_surface_config_tab",
@@ -141,8 +138,8 @@ function CreateSurfaceDropdown(container)
     -- Add button to copy nauvis config to current selected surface (if not nauvis)
     local copy_button = horizontal_flow.add {
         type = "button",
-        caption = "Copy Nauvis", -- TODO: Localize
-        tooltip = "Copy Nauvis settings to this surface.", -- TODO: Localize
+        caption = {"oarc-copy-nauvis-button"},
+        tooltip = {"oarc-copy-nauvis-tooltip"},
         style = "red_button",
         tags = {
             action = "oarc_surface_config_tab",
@@ -182,7 +179,7 @@ function CreateItemsSection(container, surface_name, header, setting_name, max_c
     vertical_flow.style.padding = 5
     vertical_flow.style.horizontally_stretchable = false
     vertical_flow.style.vertically_stretchable = true
-    
+
     AddLabel(vertical_flow, nil, header, my_label_header2_style)
 
     local table = vertical_flow.add {
@@ -256,13 +253,15 @@ function SurfaceConfigItemListDisplayRow(table, item_name, item_count)
     local remove_button = table.add {
         type = "sprite-button",
         sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Item", -- TODO: Localize
+        tooltip = { "oarc-remove-item" },
         tags = {
             action = "oarc_surface_config_tab",
             remove_row_button = true,
             item_name = item_name or ""
         }
     }
+
+
     remove_button.style.width = 28
     remove_button.style.height = 28
 end
@@ -278,7 +277,7 @@ function SurfaceConfigItemListAddRowButton(table)
         elem_type = "entity",
         -- type = "sprite-button",
         -- sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
+        tooltip = {"oarc-add-item-tooltip"},
         tags = {
             action = "oarc_surface_config_tab",
             add_row_button = true
@@ -306,15 +305,15 @@ function CreateSafeAreaConfig(container, surface_name)
     safe_area_flow.style.horizontally_stretchable = false
     safe_area_flow.style.vertically_stretchable = true
 
-    local header = AddLabel(safe_area_flow, nil, "Safe Area Config", my_label_header2_style) -- TODO: Localize
-    header.tooltip = "This controls how safe the area around the spawns is." -- TODO: Localize
+    local header = AddLabel(safe_area_flow, nil, { "oarc-safe-area-config" }, my_label_header2_style)
+    header.tooltip = { "oarc-safe-area-tooltip" }
 
-     -- TODO: Localize
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Safe Area Radius", "safe_area", "safe_radius", "This is the radius in chunks around the spawn in which no enemies will spawn.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Radius", "safe_area", "warn_radius", "This is the radius in chunks around the spawn in which enemies will be significantly reduced.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Warn Area Reduction", "safe_area", "warn_reduction", "This is the reduction factor to reduce the number of enemies in the warn area. 10 means (1/10)th the number of enemies.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Radius", "safe_area", "danger_radius", "This is the radius in chunks around the spawn in which enemies will be slightly reduced.")
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, "Danger Area Reduction", "safe_area", "danger_reduction", "This is the reduction factor to reduce the number of enemies in the danger area. 10 means (1/10)th the number of enemies.")
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-safe-area-radius" }, "safe_area", "safe_radius", { "oarc-safe-radius-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-warn-area-radius" }, "safe_area", "warn_radius", { "oarc-warn-radius-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-warn-area-reduction" }, "safe_area", "warn_reduction", { "oarc-warn-reduction-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-danger-area-radius" }, "safe_area", "danger_radius", { "oarc-danger-radius-tooltip" })
+    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-danger-area-reduction" }, "safe_area", "danger_reduction", { "oarc-danger-reduction-tooltip" })
+
 end
 
 
@@ -376,8 +375,10 @@ function CreateSolidResourcesConfig(container, surface_name)
     solid_resources_flow.style.horizontally_stretchable = false
     solid_resources_flow.style.vertically_stretchable = true
 
-    local header = AddLabel(solid_resources_flow, nil, "Solid Resources Config", my_label_header2_style) -- TODO: Localize
-    header.tooltip = "This controls the resources that will spawn around the spawn area." -- TODO: Localize
+
+    local header = AddLabel(solid_resources_flow, nil, { "oarc-solid-resources-config" }, my_label_header2_style)
+    header.tooltip = { "oarc-solid-resources-tooltip" }
+
 
     -- Create a table to display the resources
     local table = solid_resources_flow.add {
@@ -418,9 +419,8 @@ function CreateFluidResourcesConfig(container, surface_name)
     fluid_resources_flow.style.padding = 5
     fluid_resources_flow.style.horizontally_stretchable = false
     fluid_resources_flow.style.vertically_stretchable = true
-
-    local header = AddLabel(fluid_resources_flow, nil, "Fluid Resources Config", my_label_header2_style) -- TODO: Localize
-    header.tooltip = "This controls the fluid resources that will spawn around the spawn area." -- TODO: Localize
+    local header = AddLabel(fluid_resources_flow, nil, { "oarc-fluid-resources-config" }, my_label_header2_style)
+    header.tooltip = { "oarc-fluid-resources-tooltip" }
 
     -- Create a table to display the resources
     local fluid_table = fluid_resources_flow.add {
@@ -433,9 +433,9 @@ function CreateFluidResourcesConfig(container, surface_name)
     }
 
     --Add headers
-    AddLabel(fluid_table, nil, "Type", my_label_style)
-    AddLabel(fluid_table, nil, "Count", my_label_style)
-    AddLabel(fluid_table, nil, "Amount", my_label_style)
+    AddLabel(fluid_table, nil, { "oarc-fluid-type" }, my_label_style)
+    AddLabel(fluid_table, nil, { "oarc-fluid-count" }, my_label_style)
+    AddLabel(fluid_table, nil, { "oarc-fluid-amount" }, my_label_style)
     AddLabel(fluid_table, nil, "", my_label_style)
 
     for resource_name, resource_data in pairs(fluid_resources) do
@@ -459,22 +459,23 @@ function CreateMiscConfig(container, surface_name)
     misc_flow.style.padding = 5
     misc_flow.style.horizontally_stretchable = false
 
-    AddLabel(misc_flow, nil, "Misc Config", my_label_header2_style) -- TODO: Localize
+     AddLabel(misc_flow, nil, { "oarc-misc-config" }, my_label_header2_style)
 
-    AddLabel(misc_flow, nil, "Water", my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Water Length", "water", "length", "This is the length in tiles of the water strip around the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Water X Offset", "water", "x_offset", "This is the x_offset in tiles, from the north of the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Water Y Offset", "water", "y_offset", "This is the y_offset in tiles, from the north of the spawn area.")
+    AddLabel(misc_flow, nil, { "oarc-water" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-length" }, "water", "length", { "oarc-water-length-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-x-offset" }, "water", "x_offset", { "oarc-water-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-y-offset" }, "water", "y_offset", { "oarc-water-y-offset-tooltip" })
     AddSpacerLine(misc_flow)
 
-    AddLabel(misc_flow, nil, "Shared Chest", my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Chest X Offset", "shared_chest_position", "x_offset", "This is the x_offset in tiles, from the east of the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Chest Y Offset", "shared_chest_position", "y_offset", "This is the y_offset in tiles, from the east of the spawn area.")
+    AddLabel(misc_flow, nil, { "oarc-shared-chest" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-chest-x-offset" }, "shared_chest_position", "x_offset", { "oarc-chest-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-chest-y-offset" }, "shared_chest_position", "y_offset", { "oarc-chest-y-offset-tooltip" })
     AddSpacerLine(misc_flow)
 
-    AddLabel(misc_flow, nil, "Shared Power Pole", my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Power X Offset", "shared_power_pole_position", "x_offset", "This is the x_offset in tiles, from the east of the spawn area.")
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, "Power Y Offset", "shared_power_pole_position", "y_offset", "This is the y_offset in tiles, from the east of the spawn area.")
+    AddLabel(misc_flow, nil, { "oarc-shared-power-pole" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-power-x-offset" }, "shared_power_pole_position", "x_offset", { "oarc-power-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-power-y-offset" }, "shared_power_pole_position", "y_offset", { "oarc-power-y-offset-tooltip" })
+
 end
 
 ---Adds a row to a table with a resource, amount, and size
@@ -531,13 +532,14 @@ function SolidResourcesConfigDisplayRow(table, resource_name, amount, size)
     local remove_button = table.add {
         type = "sprite-button",
         sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Resource", -- TODO: Localize
+        tooltip = { "oarc-remove-resource" },
         tags = {
             action = "oarc_surface_config_tab",
             resource_remove_row_button = true,
             resource_name = resource_name or ""
         }
     }
+
     remove_button.style.width = 28
     remove_button.style.height = 28
 end
@@ -552,12 +554,13 @@ function SurfaceConfigSolidResourcesAddRowButton(table)
         elem_type = "entity",
         -- type = "sprite-button",
         -- sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
+        tooltip = { "oarc-add-item" },
         tags = {
             action = "oarc_surface_config_tab",
             resource_add_row_button = true
         }
     }
+
     add_row_button.style.width = 28
     add_row_button.style.height = 28
 end
@@ -569,7 +572,7 @@ end
 ---@param amount integer
 ---@return nil
 function FluidResourcesConfigDisplayRow(table, resource_name, count, amount)
-    
+
     -- Create choose elem button
     local button = table.add {
         type = "choose-elem-button",
@@ -618,7 +621,7 @@ function FluidResourcesConfigDisplayRow(table, resource_name, count, amount)
     local remove_button = table.add {
         type = "sprite-button",
         sprite = "utility/deconstruction_mark",
-        tooltip = "Remove Resource",
+        tooltip = { "oarc-remove-resource" },
         tags = {
             action = "oarc_surface_config_tab",
             resource_remove_row_button = true,
@@ -639,7 +642,7 @@ function SurfaceConfigFluidResourcesAddRowButton(table)
         elem_type = "entity",
         -- type = "sprite-button",
         -- sprite = "utility/check_mark_green",
-        tooltip = "Add Item", -- TODO: Localize
+        tooltip = { "oarc-add-item" },
         tags = {
             action = "oarc_surface_config_tab",
             fluid_resource_add_row_button = true
@@ -650,7 +653,7 @@ function SurfaceConfigFluidResourcesAddRowButton(table)
 end
 
 --[[
-  _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___ 
+  _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___
  | __\ \ / / __| \| |_   _| | || | /_\ | \| |   \| |  | __| _ \/ __|
  | _| \ V /| _|| .` | | |   | __ |/ _ \| .` | |) | |__| _||   /\__ \
  |___| \_/ |___|_|\_| |_|   |_||_/_/ \_\_|\_|___/|____|___|_|_\|___/
@@ -862,7 +865,7 @@ function SurfaceConfigTabGuiElemChanged(event)
                 child.tags = tags_copy
             end
         end
-    
+
     elseif (tags.resource_elem_button) then
         local new_resource_name = event.element.elem_value --[[@as string]]
 
@@ -974,7 +977,7 @@ function SurfaceConfigTabGuiClick(event)
     end
 
     if (tags.remove_row_button) then
-        
+
         local parent = event.element.parent
         local surface_name = parent.tags.surface_name --[[@as string]]
         local setting_name = parent.tags.setting --[[@as string]]
