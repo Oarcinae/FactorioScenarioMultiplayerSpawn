@@ -477,7 +477,8 @@ function RegrowthSingleStepArray()
             table.insert(storage.rg.removal_list, removal_entry)
             storage.rg[current_surface].map[next_chunk.x][next_chunk.y] = REGROWTH_FLAG_REMOVAL
         else
-            log("WARN - RegrowthSingleStepArray: Chunk not generated?: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
+            -- Sometimes chunks that are in the iterator aren't fully generated yet, so we can ignore these.
+            -- log("WARN - RegrowthSingleStepArray: Chunk not generated?: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
             storage.rg[current_surface].map[next_chunk.x][next_chunk.y] = nil
         end
     end
