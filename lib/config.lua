@@ -155,6 +155,7 @@ OCFG = {
 
     -- General gameplay related settings that I didn't want to expose in the mod settings since these should
     -- basically always be enabled unless you're making serious changes.
+    ---@type OarcConfigGameplaySettings
     gameplay = {
 
         -- Default setting for enabling spawning on other surfaces other than the default_surface.
@@ -270,6 +271,7 @@ OCFG = {
     },
 
     -- This is a separate feature that is part of the mod that helps keep the map size down. Not required but useful.
+    ---@type OarcConfigRegrowth
     regrowth =  {
         -- Cleans up unused chunks periodically. Helps keep map size down.
         -- See description in regrowth_map.lua for more details.
@@ -289,6 +291,7 @@ OCFG = {
     },
 
     -- General spawn settings (size, shape, etc.)
+    ---@type OarcConfigSpawnGeneral
     spawn_general = {
 
         -- Create a circle of land area for the spawn
@@ -316,6 +319,7 @@ OCFG = {
     },
 
     -- Handle placement of starting resources within the spawn area.
+    ---@type OarcConfigSpawnResourcePlacementSettings
     resource_placement =
     {
         -- Autoplace resources (randomly in circle)

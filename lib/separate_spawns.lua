@@ -271,6 +271,18 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     -- If we are NOT arriving from space, then ignore the rest of this??
     -- if (not arriving_from_space) then return end
 
+    -- Check if there is already a landing pad for their force on the surface
+    local landing_pad = surface.find_entities_filtered{name = "cargo-landing-pad", force = player.force, limit = 1}
+    if (#landing_pad > 0) then
+        -- If the player is on the main force, not everyone can have their own landing pad.
+        if (player.force.name == storage.ocfg.gameplay.main_force_name) then
+            -- Maybe send them to their spawn point?
+            -- TODO
+        end
+        log("Player already has a landing pad on this surface, ignoring.")
+        return
+    end
+
     local player_spawn = FindPlayerSpawnOnSurface(player.name, new_surface_name) -- Either they are host or joiner.
 
     -- If there IS a spawn for them on their new surface, then just send them there.
