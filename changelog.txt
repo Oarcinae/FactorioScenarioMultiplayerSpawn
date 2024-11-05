@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.8
+Date: 2024-11-05
+  Changes:
+    - Adding bonus damage to spawners that scales with evolution factor and distance to spawns. This is to help new players joining late games where spawner health is too high due to evolution. This can be toggled in the in game GUI settings (not mod settings).
+---------------------------------------------------------------------------------------------------
+Version: 2.1.7
+Date: 2024-11-05
+  Bugfixes:
+    - Fix crash when player clicks on team radio select if main team is disabled.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.6
 Date: 2024-11-04
   Bugfixes:

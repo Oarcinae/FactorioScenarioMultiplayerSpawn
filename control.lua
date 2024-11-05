@@ -363,6 +363,13 @@ script.on_event(defines.events.on_post_entity_died, function(event)
 end,
 {{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
 
+script.on_event(defines.events.on_entity_damaged, function(event)
+    if storage.ocfg.gameplay.scale_spawner_damage then
+        ApplySpawnerDamageScaling(event)
+    end
+end,
+{{filter="type", type = "unit-spawner"}})
+
 ----------------------------------------
 -- Gui Events
 ----------------------------------------
