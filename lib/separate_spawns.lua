@@ -274,12 +274,14 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     -- Check if there is already a landing pad for their force on the surface
     local landing_pad = surface.find_entities_filtered{name = "cargo-landing-pad", force = player.force, limit = 1}
     if (#landing_pad > 0) then
-        -- If the player is on the main force, not everyone can have their own landing pad.
-        if (player.force.name == storage.ocfg.gameplay.main_force_name) then
-            -- Maybe send them to their spawn point?
-            -- TODO
+        -- If there's a landing pad for the force, I don't think we should interfere with the native behavior until
+        -- there is an API that lets us do it properly. Otherwise I'm having to track landing pads per spawn...
+        -- TODO: Implement this properly.
+        if (player.force.name ~= storage.ocfg.gameplay.main_force_name) then
+            log("Player has a landing pad on this surface, let them land there?")
+        else
+            log("WARNING - I haven't fully implemented this yet! Player has a landing pad on this surface but is on the main force so it might not be at their own spawn?!")
         end
-        log("Player already has a landing pad on this surface, ignoring.")
         return
     end
 
