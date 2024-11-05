@@ -1,5 +1,14 @@
 ACTIVE ITEMS:
 
+Secondary Spawns:
+ - What if a joiner gets to a planet before host?
+    - Create the spawn with the host's name as the owner.
+ - How do buddies spawn together on a planet?
+    - They get given a single spawn. Leave the buddy spawn as a Nauvis only gimmick for now.
+ - What happens to multiple unique spawn hosts on "main force" when they go to a new planet?
+    - They get unique spawn areas, but they have to coordinate regarding the landing pad, OR they can install a mod to have multiple but it is still up to them to coordinate.
+ 
+
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:
