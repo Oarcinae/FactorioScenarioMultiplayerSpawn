@@ -230,3 +230,46 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
         end
     end
 end
+
+---Applies bonus damage directly to spawner health to compensate for evolution health scaling
+---This is a temporary measure until they release an API to directly change the health scaling of spawners.
+---It does not scale properly with the evolution factor because this is linear and that evo is not, but it's better than nothing.
+---@param event EventData.on_entity_damaged
+---@return nil
+function ApplySpawnerDamageScaling(event)
+
+    -- Check if force is a player force
+    if (event.force == nil) then
+        log("Entity damaged with no force")
+        return
+    end
+
+    local entity = event.entity
+    local surface_name = entity.surface.name
+
+    -- Get the closest player spawn to the entity that was damaged.
+    local spawn = GetClosestUniqueSpawn(surface_name, entity.position)
+    if (spawn == nil) then return end
+
+    -- Get distance to spawn_position
+    local distance = util.distance(spawn.position, entity.position)
+    local max_danger_distance = storage.ocfg.surfaces_config[surface_name].spawn_config.safe_area.danger_radius * CHUNK_SIZE
+
+    -- If distance is greater than the danger radius, ignore.
+    if (distance > max_danger_distance) then return end
+
+    -- Boost the damage based on distance from spawn and current evolution factor.
+    local evo_factor = entity.force.get_evolution_factor(entity.surface)
+    local distance_factor = 1 - (distance / max_danger_distance)
+
+    -- spawner_evolution_factor_health_modifier = 10 -- This is from https://github.com/wube/factorio-data/blob/master/core/prototypes/utility-constants.lua somehow?
+    -- I do 9 because we're assuming 1 (base) + 9 (bonus) = 10.
+    local bonus_damange = (distance_factor * evo_factor * 9) * event.final_damage_amount
+
+    -- Apply the additional damage. We do not call entity.damage because that would trigger this event again.
+    entity.health = entity.health - bonus_damange
+
+    -- If evo is 1, and distance to spawn is 0, then damage_modifier is 10
+    -- If evo is 1, and distance to spawn is 1, then damage_modifier is 1
+    -- If evo is 0, then damage_modifier is 1
+end
