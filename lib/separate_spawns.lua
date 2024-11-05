@@ -252,7 +252,7 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     if (platform ~= nil) then
         SendBroadcastMsg({ "oarc-player-on-platform", player.name, surface.platform.name })
     else
-        SendBroadcastMsg({ "oarc-player-changed-surface", player.name, surface.name })
+        SendBroadcastMsg({ "oarc-player-changed-surface", player.name, surface.localised_name or { "space-location-name." .. surface.name } or surface.name})
     end
 
     -- Check if player has been init'd yet. If not, then ignore it.
@@ -308,7 +308,7 @@ function SeparateSpawnsUpdatePlayerSurface(player, new_surface_name)
         storage.player_surfaces[player.name] = new_surface_name
 
         -- Raise event if previous surface isn't nil (avoids first spawn event)
-        if (previous_surface_name ~= nil) then 
+        if (previous_surface_name ~= nil) then
             script.raise_event("oarc-mod-character-surface-changed", {
                 player_index=player.index,
                 old_surface_name=previous_surface_name,
@@ -639,7 +639,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         -- If the chunk is within the main land area, then clear trees/resources and create the land spawn areas
         -- (guaranteed land with a circle of trees)
         local landArea = GetAreaAroundPos(spawn.position, general_spawn_config.spawn_radius_tiles + CHUNK_SIZE)
-        if not CheckIfInArea(chunkAreaCenter, landArea) then 
+        if not CheckIfInArea(chunkAreaCenter, landArea) then
             goto CONTINUE
         end
 
@@ -655,7 +655,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
         if general_spawn_config.force_grass then
             fill_tile = "grass-1"
         end
-        
+
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then
             CreateCropCircle(
                 surface,
@@ -1400,7 +1400,7 @@ function DelayedSpawnOnTick()
                 delayedSpawn = storage.delayed_spawns[i] --[[@as OarcDelayedSpawn]]
 
                 local surface = game.surfaces[delayedSpawn.surface]
-                
+
                 if ((delayedSpawn.delayedTick < game.tick) or surface.is_chunk_generated(delayedSpawn.final_chunk_generated) ) then
                     if (game.players[delayedSpawn.playerName] ~= nil) then
                         SendPlayerToNewSpawnAndCreateIt(delayedSpawn)
