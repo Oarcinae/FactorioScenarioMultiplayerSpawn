@@ -1064,15 +1064,10 @@ end
 ---@param pos MapPosition
 ---@return OarcUniqueSpawn?
 function GetClosestUniqueSpawn(surface_name, pos)
-
-    local surface_spawns
-    for surface_index, spawns in pairs(storage.unique_spawns) do
-        if (surface_index == surface_name) then
-            if (table_size(spawns) == 0) then return nil end -- EXIT - No spawns on requested surface
-            surface_spawns = spawns
-        end
-    end
-    if (surface_spawns == nil) then return nil end
+    
+    local surface_spawns = storage.unique_spawns[surface_name]
+    if (surface_spawns == nil) then return nil end -- EXIT - No spawns on requested surface
+    if (table_size(surface_spawns) == 0) then return nil end -- EXIT - No spawns on requested surface
 
     local closest_dist = nil
     local closest_spawn = nil
