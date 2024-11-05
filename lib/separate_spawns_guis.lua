@@ -648,7 +648,9 @@ function SpawnOptsRadioSelect(event)
                 event.element.parent.isolated_spawn_new_team_radio.state = false
             end
         elseif (elemName == "isolated_spawn_new_team_radio") then
-            event.element.parent.isolated_spawn_main_team_radio.state = false
+            if (event.element.parent.isolated_spawn_main_team_radio ~= nil) then
+                event.element.parent.isolated_spawn_main_team_radio.state = false
+            end
         end
 
     elseif (tags.setting == "buddy_team_select") then
