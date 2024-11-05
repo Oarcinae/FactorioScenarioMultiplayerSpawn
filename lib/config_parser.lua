@@ -85,8 +85,9 @@ OCFG_KEYS =
     ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-coin-generation-subheader"}},
     ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = {"oarc-coin-generation-caption"}, tooltip = {"oarc-coin-generation-tooltip"}},
     ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = {"oarc-auto-decon-coins-caption"}, tooltip = {"oarc-auto-decon-coins-tooltip"}},
-    ["gameplayer.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
-    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = "Scale Spawner Damage", tooltip = "Scales damage done to spawners with evolution factor and distance to cloest spawn point. This helps compensate for spawner health scaling at a high evolution factor."}
+    ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
+    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = {"oarc-scale-spawner-damage-caption"}, tooltip = {"oarc-scale-spawner-damage-tooltip"}}
+
 }
 
 ---Easy reverse lookup for mod settings keys.
