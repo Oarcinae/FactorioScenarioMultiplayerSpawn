@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.9
+Date: 2024-11-06
+  Bugfixes:
+    - Fix crash when clicking player self reset button again before confirmation dialog is closed.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.8
 Date: 2024-11-05
   Changes:
