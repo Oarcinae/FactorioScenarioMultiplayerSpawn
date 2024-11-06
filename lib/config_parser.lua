@@ -81,12 +81,13 @@ OCFG_KEYS =
     ["resource_placement.linear_spacing"] = {mod_key = "oarc-mod-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
 
     -- These are settings that aren't included in the games mod settings but are still nice to have easy access to.
-    ["non_mod_settings_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = "Additional Settings (Not available in the mod settings menu.)"},
-    ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = "Coin Generation"},
-    ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = "Coin Generation", tooltip = "Enemies drop coins when killed."},
-    ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = "Auto Decon Coins", tooltip = "Automatically marks coins dropped by enemies for deconstruction so robots will pick them up."},
-    ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = "Player Self Reset", tooltip = "Allow players to reset themselves in the spawn controls."},
-    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = "Scale Spawner Damage", tooltip = "Scales damage done to spawners with evolution factor and distance to cloest spawn point. This helps compensate for spawner health scaling at a high evolution factor."}
+    ["non_mod_settings_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-non-mod-settings-header"}},
+    ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-coin-generation-subheader"}},
+    ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = {"oarc-coin-generation-caption"}, tooltip = {"oarc-coin-generation-tooltip"}},
+    ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = {"oarc-auto-decon-coins-caption"}, tooltip = {"oarc-auto-decon-coins-tooltip"}},
+    ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
+    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = {"oarc-scale-spawner-damage-caption"}, tooltip = {"oarc-scale-spawner-damage-tooltip"}}
+
 }
 
 ---Easy reverse lookup for mod settings keys.
@@ -205,7 +206,7 @@ function ValidateSettings()
         log("Both main force and separate teams are disabled! Enabling main force. Please check your mod settings or config!")
         storage.ocfg.gameplay.enable_main_team = true
         settings.global["oarc-mod-enable-main-team"] = { value = true }
-        SendBroadcastMsg("Invalid setting! Both main force and separate teams are disabled! Enabling main force.")
+    SendBroadcastMsg({"oarc-teams-both-disabled-msg"})
     end
 
     -- Validate minimum is less than maximums
@@ -213,7 +214,7 @@ function ValidateSettings()
         log("Near spawn min distance is greater than or equal to near spawn max distance! Please check your mod settings or config!")
         storage.ocfg.gameplay.far_spawn_distance = storage.ocfg.gameplay.near_spawn_distance + 1
         settings.global["oarc-mod-far-spawn-distance"] = { value = storage.ocfg.gameplay.far_spawn_distance }
-        SendBroadcastMsg("Invalid setting! Near spawn min distance is greater than or equal to near spawn max distance!")
+    SendBroadcastMsg({"oarc-spawn-distance-invalid-msg"})
     end
 
     -- Validate that regrowth is enabled if world eater is enabled.
@@ -221,7 +222,7 @@ function ValidateSettings()
         log("World eater is enabled but regrowth is not! Disabling world eater. Please check your mod settings or config!")
         storage.ocfg.regrowth.enable_world_eater = false
         settings.global["oarc-mod-enable-world-eater"] = { value = false }
-        SendBroadcastMsg("Invalid setting! World eater is enabled but regrowth is not! Disabling world eater.")
+    SendBroadcastMsg({"oarc-world-eater-invalid-msg"})
     end
 
     -- Validate that default surface exists.
@@ -229,7 +230,7 @@ function ValidateSettings()
         log("Default surface does not exist! Please check your mod settings or config!")
         storage.ocfg.gameplay.default_surface = "nauvis"
         settings.global["oarc-mod-default-surface"] = { value = "nauvis" }
-        SendBroadcastMsg("Invalid setting! Default surface does not exist! Setting to nauvis.")
+    SendBroadcastMsg({"oarc-default-surface-invalid-msg"})
     end
 
     -- Validate that a "nauvis" surface config exists (nauvis is the default config fallback)
@@ -375,7 +376,7 @@ function GetGlobalOarcConfigUsingKeyTable(key_table)
         return storage.ocfg[key_table[1]][key_table[2]]
     elseif (number_of_keys == 3) then
         if (storage.ocfg[key_table[1]] == nil) or
-            (storage.ocfg[key_table[1]][key_table[2]] == nil) or 
+            (storage.ocfg[key_table[1]][key_table[2]] == nil) or
             (storage.ocfg[key_table[1]][key_table[2]][key_table[3]] == nil) then
             error("Invalid key_table 3: " .. serpent.block(key_table))
         end
