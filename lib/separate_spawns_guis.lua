@@ -1094,7 +1094,7 @@ function DisplayBuddySpawnRequestMenu(player, requesting_buddy_name)
     local distText = { "oarc-buddy-txt-distance", spawn_choices.distance}
 
     ---@type LocalisedString
-    local requestText = { "", requesting_buddy_name, { "oarc-buddy-txt-would-like" }, teamText, { "oarc-buddy-txt-next-to-you" },
+    local requestText = { "", requesting_buddy_name, { "oarc-buddy-txt-would-like" }, " ", teamText, { "oarc-buddy-txt-next-to-you" },
         moatText, surfaceText, distText }
 
     AddLabel(buddy_request_gui_if, nil, requestText, my_label_style)

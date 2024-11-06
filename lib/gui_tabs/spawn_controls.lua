@@ -435,7 +435,7 @@ function SpawnCtrlTabGuiClick(event)
         local position = tags.position --[[@as MapPosition]]
 
         player.set_controller{type = defines.controllers.remote, position = position, surface = surface_name}
-        player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
+        player.print({"", { "oarc-spawn-gps-location" }, " ", GetGPStext(surface_name, position)})
 
     -- Teleports the player to their home base
     elseif (tags.setting == "teleport_home") then
