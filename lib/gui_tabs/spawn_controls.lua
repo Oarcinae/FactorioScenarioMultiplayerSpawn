@@ -311,6 +311,11 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function DisplayPlayerResetConfirmationGUI(player)
+
+    if (player.gui.screen.self_reset_confirm ~= nil) then
+        player.gui.screen.self_reset_confirm.destroy()
+    end
+
     local self_reset_gui = player.gui.screen.add {
         name = "self_reset_confirm",
         type = "frame",
