@@ -16,11 +16,14 @@ function DisplayWelcomeTextGui(player)
     end
 
     --Delete existing guis
-    if (player.gui.screen["welcome_msg"] ~= nil) then
+    if (player.gui.screen.welcome_msg ~= nil) then
         player.gui.screen.welcome_msg.destroy()
     end
-    if (player.gui.screen["spawn_opts"] ~= nil) then
+    if (player.gui.screen.spawn_opts ~= nil) then
         player.gui.screen.spawn_opts.destroy()
+    end
+    if (player.gui.screen.self_reset_confirm ~= nil) then
+        player.gui.screen.self_reset_confirm.destroy()
     end
 
     local welcome_gui = player.gui.screen.add {
@@ -1091,7 +1094,7 @@ function DisplayBuddySpawnRequestMenu(player, requesting_buddy_name)
     local distText = { "oarc-buddy-txt-distance", spawn_choices.distance}
 
     ---@type LocalisedString
-    local requestText = { "", requesting_buddy_name, { "oarc-buddy-txt-would-like" }, teamText, { "oarc-buddy-txt-next-to-you" },
+    local requestText = { "", requesting_buddy_name, { "oarc-buddy-txt-would-like" }, " ", teamText, { "oarc-buddy-txt-next-to-you" },
         moatText, surfaceText, distText }
 
     AddLabel(buddy_request_gui_if, nil, requestText, my_label_style)

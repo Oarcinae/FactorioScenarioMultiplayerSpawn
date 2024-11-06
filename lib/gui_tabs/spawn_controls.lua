@@ -311,6 +311,11 @@ end
 ---@param player LuaPlayer
 ---@return nil
 function DisplayPlayerResetConfirmationGUI(player)
+
+    if (player.gui.screen.self_reset_confirm ~= nil) then
+        player.gui.screen.self_reset_confirm.destroy()
+    end
+
     local self_reset_gui = player.gui.screen.add {
         name = "self_reset_confirm",
         type = "frame",
@@ -430,7 +435,7 @@ function SpawnCtrlTabGuiClick(event)
         local position = tags.position --[[@as MapPosition]]
 
         player.set_controller{type = defines.controllers.remote, position = position, surface = surface_name}
-        player.print({"", { "oarc-spawn-gps-location" }, GetGPStext(surface_name, position)})
+        player.print({"", { "oarc-spawn-gps-location" }, " ", GetGPStext(surface_name, position)})
 
     -- Teleports the player to their home base
     elseif (tags.setting == "teleport_home") then
