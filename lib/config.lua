@@ -20,6 +20,9 @@
 SPAWN_SHAPE_CHOICE_CIRCLE = "circle"
 SPAWN_SHAPE_CHOICE_OCTAGON = "octagon"
 SPAWN_SHAPE_CHOICE_SQUARE = "square"
+SPAWN_SHAPE_CHOICE_STAR = "star"
+SPAWN_SHAPE_CHOICE_HEART = "heart"
+SPAWN_SHAPE_CHOICE_SPIRAL = "spiral"
 
 ---@alias SpawnResourcesShapeChoice "circle" | "square"
 RESOURCES_SHAPE_CHOICE_CIRCLE = "circle"
@@ -416,7 +419,7 @@ OCFG = {
         enable_regrowth = false,
 
         -- This is part of regrowth, and if both are enabled, any chunks which aren't active and have no entities
-        -- will eventually be deleted over time. If this is disabled, any chunk with a player built entity will be 
+        -- will eventually be deleted over time. If this is disabled, any chunk with a player built entity will be
         -- marked permanently safe even if it is removed at a later time.
         -- DO NOT USE THIS WITH MODS! (unless you know what you're doing?)
         enable_world_eater = false,

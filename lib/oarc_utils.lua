@@ -771,7 +771,7 @@ function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
     --- Get a random vector, figure out how many times to multiply it to get the minimum distance
     local direction_vector = GetRandomVector()
     local start_distance_tiles = minimum_distance_chunks * CHUNK_SIZE
-    
+
     local final_position = {x=0,y=0}
     local tries_remaining = max_tries - 1
 
@@ -820,7 +820,7 @@ function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
             final_position.x = (chunk_position.x * CHUNK_SIZE) + (CHUNK_SIZE/2)
             final_position.y = (chunk_position.y * CHUNK_SIZE) + (CHUNK_SIZE/2)
             break
-        
+
         -- The area around the chunk is not clear, keep looking
         else
 
@@ -1358,7 +1358,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
-            
+
             -- This ( X^2 + Y^2 ) is used to calculate if something is inside a circle area.
             -- We avoid using sqrt for performance reasons.
             local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
@@ -1383,7 +1383,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                     -- land connections if the spawn is on or near land.
                 elseif ((distSqr < moat_radius_sqr) and (distSqr > tile_radius_sqr)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
-                    
+
                     --5% chance of fish in water
                     if (math.random(1,20) == 1) then
                         surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
@@ -1394,6 +1394,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     end
 
     surface.set_tiles(dirtTiles)
+    surface.set_tiles(stoneTiles)
 
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1424,6 +1425,8 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
     local tree_distance_inner = tileRadius - tree_width
 
     local dirtTiles = {}
+    local stoneTiles = {}
+    -- 遍历区块区域的每个瓦片
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
 
@@ -1436,6 +1439,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
                 if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                    table.insert(stoneTiles, { name = "refined-concrete", position = { i, j } })
                 end
             end
 
@@ -1451,7 +1455,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
                     -- land connections if the spawn is on or near land.
                 elseif ((distVar > tileRadius) and (distVar <= moat_width_outer)) then
                     table.insert(dirtTiles, { name = "water", position = { i, j } })
-                    
+
                     --5% chance of fish in water
                     if (math.random(1,20) == 1) then
                         surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
@@ -1461,6 +1465,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
         end
     end
     surface.set_tiles(dirtTiles)
+    surface.set_tiles(stoneTiles)
 
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1476,7 +1481,7 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
     end
 end
 
----Square spawn shape (handles land, trees and moat) 
+---Square spawn shape (handles land, trees and moat)
 ---@param surface LuaSurface
 ---@param centerPos MapPosition
 ---@param chunkArea BoundingBox
@@ -1494,6 +1499,7 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
     local tree_distance_inner = tileRadius - tree_width
 
     local dirtTiles = {}
+    local stoneTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
 
@@ -1505,6 +1511,7 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
                 if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                    table.insert(stoneTiles, { name = "refined-concrete", position = { i, j } })
                 end
             end
 
@@ -1531,6 +1538,7 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
     end
 
     surface.set_tiles(dirtTiles)
+    surface.set_tiles(stoneTiles)
 
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1542,6 +1550,316 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
         end
     end
 end
+
+---Star shape spawn (handles land, trees and moat)
+---@param surface LuaSurface
+---@param centerPos MapPosition
+---@param chunkArea BoundingBox
+---@param tileRadius number
+---@param fillTile string
+---@param moat boolean
+---@param bridge boolean
+---@return nil
+function CreateStarShape(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
+    local points = 5 -- 星形的角数
+
+    local inner_radius = tileRadius * 0.4 * 1.6 -- 内径
+    local outer_radius = tileRadius * 1.6-- 外径
+
+    local moat_width = storage.ocfg.spawn_general.moat_width_tiles
+    local moat_outer_radius = outer_radius + moat_width
+
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
+    local tree_radius_inner = outer_radius - tree_width - 1
+    local tree_radius_outer = outer_radius - 1
+
+    local dirtTiles = {}
+    local stoneTiles = {}
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local dx = i - centerPos.x
+            local dy = j - centerPos.y
+            local angle = math.atan2(dy, dx)
+            if angle < 0 then angle = angle + 2 * math.pi end
+
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local segment_angle = math.pi / points
+            local normalized_angle = angle % (2 * segment_angle)
+
+            -- 计算当前角度对应的半径
+            local current_radius = outer_radius * math.cos(segment_angle) +
+                    (inner_radius - outer_radius * math.cos(segment_angle)) *
+                            math.abs(normalized_angle - segment_angle) / segment_angle
+
+            -- 填充星形区域
+            if dist <= current_radius then
+                if (surface.get_tile(i, j).collides_with("water_tile") or
+                        storage.ocfg.spawn_general.force_grass) then
+                    table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                    table.insert(stoneTiles, { name = "refined-concrete", position = { i, j } })
+                end
+            end
+
+            -- 填充护城河
+            if moat then
+                local moat_radius = current_radius + moat_width
+                if bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1)) then
+                    -- 保持桥梁区域不变
+                elseif dist <= moat_radius and dist > current_radius then
+                    table.insert(dirtTiles, { name = "water", position = { i, j } })
+
+                    -- 5%几率生成鱼
+                    if math.random(1,20) == 1 then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
+                end
+            end
+        end
+    end
+
+    surface.set_tiles(dirtTiles)
+    surface.set_tiles(stoneTiles)
+
+    -- 创建树木环（在设置地块后进行）
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local dx = i - centerPos.x
+            local dy = j - centerPos.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local angle = math.atan2(dy, dx)
+            if angle < 0 then angle = angle + 2 * math.pi end
+
+            local segment_angle = math.pi / points
+            local normalized_angle = angle % (2 * segment_angle)
+            local current_radius = outer_radius * math.cos(segment_angle) +
+                    (inner_radius - outer_radius * math.cos(segment_angle)) *
+                            math.abs(normalized_angle - segment_angle) / segment_angle
+
+            if dist <= current_radius - 1 and dist >= current_radius - tree_width - 1 then
+                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+            end
+        end
+    end
+end
+
+---Spiral shape spawn (handles land, trees and moat)
+---@param surface LuaSurface
+---@param centerPos MapPosition
+---@param chunkArea BoundingBox
+---@param tileRadius number
+---@param fillTile string
+---@param moat boolean
+---@param bridge boolean
+---@return nil
+function CreateSpiralShape(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
+    local spiral_density = 0.3 -- 控制螺旋密度
+    local spiral_width = 10 -- 螺旋臂的宽度
+    local max_rotation = 8 * math.pi -- 增加旋转圈数
+
+    local moat_width = storage.ocfg.spawn_general.moat_width_tiles
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
+
+    -- 计算相对于中心点的最大距离
+    local max_distance_sqr = tileRadius * tileRadius
+
+    local dirtTiles = {}
+
+    -- 生成螺旋线的参考点
+    local spiral_points = {}
+    for t = 0, max_rotation, 0.1 do
+        local r = (t / max_rotation) * tileRadius * spiral_density
+        local x = math.floor(r * math.cos(t))
+        local y = math.floor(r * math.sin(t))
+        table.insert(spiral_points, {
+            x = x,
+            y = y,
+            r = r -- 存储当前半径用于后续计算
+        })
+    end
+
+    -- 对每个块内的瓦片进行处理
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local dx = i - centerPos.x
+            local dy = j - centerPos.y
+            local dist_sqr = dx * dx + dy * dy
+
+            -- 只处理最大半径范围内的瓦片
+            if dist_sqr <= max_distance_sqr then
+                local angle = math.atan2(dy, dx)
+                if angle < 0 then angle = angle + 2 * math.pi end
+
+                -- 计算当前点到螺旋线的最小距离
+                local min_dist = tileRadius
+                local nearest_r = 0
+                for _, point in ipairs(spiral_points) do
+                    local point_dist = math.sqrt((dx - point.x)^2 + (dy - point.y)^2)
+                    if point_dist < min_dist then
+                        min_dist = point_dist
+                        nearest_r = point.r
+                    end
+                end
+
+                -- 判断是否在螺旋臂内
+                if min_dist <= spiral_width then
+                    -- 填充陆地
+                    if surface.get_tile(i, j).collides_with("water_tile") or
+                            storage.ocfg.spawn_general.force_grass then
+                        table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                    end
+                    -- 处理护城河
+                elseif moat and min_dist <= spiral_width + moat_width then
+                    -- 检查是否在桥梁位置
+                    if not (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
+                        table.insert(dirtTiles, { name = "water", position = { i, j } })
+
+                        -- 5%几率生成鱼
+                        if math.random(1,20) == 1 then
+                            surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- 设置地块
+    surface.set_tiles(dirtTiles)
+
+    -- 创建树木（在设置地块后进行）
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            local dx = i - centerPos.x
+            local dy = j - centerPos.y
+            local dist_sqr = dx * dx + dy * dy
+
+            if dist_sqr <= max_distance_sqr then
+                -- 计算到螺旋线的最小距离
+                local min_dist = tileRadius
+                for _, point in ipairs(spiral_points) do
+                    local point_dist = math.sqrt((dx - point.x)^2 + (dy - point.y)^2)
+                    min_dist = math.min(min_dist, point_dist)
+                end
+
+                -- 在螺旋臂边缘生成树木
+                if min_dist >= spiral_width - tree_width and min_dist <= spiral_width then
+                    surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+                end
+            end
+        end
+    end
+end
+
+
+---Heart shape spawn (handles land, trees and moat)
+---@param surface LuaSurface
+---@param centerPos MapPosition
+---@param chunkArea BoundingBox
+---@param tileRadius number
+---@param fillTile string
+---@param moat boolean
+---@param bridge boolean
+---@return nil
+function CreateHeartShape(surface, centerPos, chunkArea, tileRadius, fillTile, moat, bridge)
+    local moat_width = storage.ocfg.spawn_general.moat_width_tiles
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
+
+    -- 心形缩放系数
+    local scale = tileRadius
+
+    -- 检查点是否在心形内部的函数
+    local function isInsideHeart(x, y)
+        -- 将坐标转换到以中心为原点的坐标系
+        x = (x - centerPos.x) / scale
+        y = -(y - centerPos.y) / scale  -- y轴翻转以使心形朝上
+
+        -- 心形方程: (x²+y²-1)³ - x²y³ ≤ 0
+        local x2 = x * x
+        local y2 = y * y
+        local result = math.pow(x2 + y2 - 1, 3) - x2 * y2 * y
+        return result <= 0
+    end
+
+    -- 计算点到心形边界的近似距离
+    local function distanceToHeart(x, y)
+        local step = 0.5
+        local min_dist = 1000000
+
+        -- 参数方程生成心形边界点
+        for t = 0, 2 * math.pi, step do
+            -- 心形参数方程
+            local hx = scale * (16 * math.pow(math.sin(t), 3))
+            local hy = scale * (13 * math.cos(t) - 5 * math.cos(2*t) - 2 * math.cos(3*t) - math.cos(4*t))
+
+            -- 计算距离
+            local dx = x - (centerPos.x + hx)
+            local dy = y - (centerPos.y - hy)  -- 注意这里是减号，使心形朝上
+            local dist = math.sqrt(dx * dx + dy * dy)
+            min_dist = math.min(min_dist, dist)
+        end
+
+        return min_dist
+    end
+
+    local dirtTiles = {}
+    -- 第一次遍历：创建陆地和护城河
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            -- 检查是否在心形内部
+            if isInsideHeart(i, j) then
+                if (surface.get_tile(i, j).collides_with("water_tile") or
+                        storage.ocfg.spawn_general.force_grass) then
+                    table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                end
+            end
+
+            -- 处理护城河
+            if moat then
+                local dist = distanceToHeart(i, j)
+                if bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1)) then
+                    -- 保持桥梁区域不变
+                elseif not isInsideHeart(i, j) and dist <= moat_width then
+                    table.insert(dirtTiles, { name = "water", position = { i, j } })
+
+                    -- 5%几率生成鱼
+                    if math.random(1,20) == 1 then
+                        surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
+                    end
+                end
+            end
+        end
+    end
+
+    surface.set_tiles(dirtTiles)
+
+    -- 第二次遍历：创建树木（在设置地块后进行）
+    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
+        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
+            if isInsideHeart(i, j) then
+                local dist = distanceToHeart(i, j)
+                -- 在心形边缘创建树木环
+                if dist >= tree_width and dist <= tree_width + 2 then
+                    surface.create_entity({
+                        name = "tree-02",
+                        amount = 1,
+                        position = { i, j }
+                    })
+                end
+            end
+        end
+    end
+
+end
+
+-- 帮助函数：创建平滑过渡的颜色渐变
+local function getGradientColor(ratio)
+    -- 从粉红色过渡到红色
+    local r = 255
+    local g = math.floor(192 * (1 - ratio))
+    local b = math.floor(203 * (1 - ratio))
+    return {r = r / 255, g = g / 255, b = b / 255}
+end
+
 
 ---Add a circle of water
 ---@param surface LuaSurface

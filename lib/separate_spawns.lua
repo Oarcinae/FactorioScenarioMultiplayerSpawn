@@ -648,6 +648,8 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
+        else
+            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree"}, spawn.position, general_spawn_config.spawn_radius_tiles + 5)
         end
 
         -- Fill in the spawn area with landfill and create a circle of trees around it.
@@ -678,6 +680,39 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             )
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             CreateCropSquare(
+                surface,
+                spawn.position,
+                chunkArea,
+                general_spawn_config.spawn_radius_tiles,
+                fill_tile,
+                spawn.moat,
+                storage.ocfg.gameplay.enable_moat_bridging
+            )
+
+        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_STAR) then
+            CreateStarShape(
+                surface,
+                spawn.position,
+                chunkArea,
+                general_spawn_config.spawn_radius_tiles,
+                fill_tile,
+                spawn.moat,
+                storage.ocfg.gameplay.enable_moat_bridging
+            )
+
+        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_HEART) then
+            CreateHeartShape(
+                surface,
+                spawn.position,
+                chunkArea,
+                general_spawn_config.spawn_radius_tiles,
+                fill_tile,
+                spawn.moat,
+                storage.ocfg.gameplay.enable_moat_bridging
+            )
+
+        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SPIRAL) then
+            CreateSpiralShape(
                 surface,
                 spawn.position,
                 chunkArea,
@@ -1064,7 +1099,7 @@ end
 ---@param pos MapPosition
 ---@return OarcUniqueSpawn?
 function GetClosestUniqueSpawn(surface_name, pos)
-    
+
     local surface_spawns = storage.unique_spawns[surface_name]
     if (surface_spawns == nil) then return nil end -- EXIT - No spawns on requested surface
     if (table_size(surface_spawns) == 0) then return nil end -- EXIT - No spawns on requested surface

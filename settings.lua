@@ -337,7 +337,7 @@ data:extend({
         name = "oarc-mod-spawn-general-shape",
         setting_type = "runtime-global",
         default_value = "circle",
-        allowed_values = {"circle", "octagon", "square"},
+        allowed_values = {"circle", "octagon", "square", "star","heart", "spiral"},
         order = "h6"
     },
 
