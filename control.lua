@@ -161,33 +161,25 @@ end)
 ---@class OarcModOnSpawnCreatedEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
 script.on_event("oarc-mod-on-spawn-created", function(event)
-    log("Custom event oarc-mod-on-spawn-created")
-    log(serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
+    log("EVENT - oarc-mod-on-spawn-created:" .. serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
 end)
 
 ---@class OarcModOnSpawnRemoveRequestEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
 script.on_event("oarc-mod-on-spawn-remove-request", function(event)
-    log("Custom event oarc-mod-on-spawn-remove-request")
-    log(serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
+    log("EVENT - oarc-mod-on-spawn-remove-request:" .. serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
 end)
 
 ---@class OarcModOnPlayerResetEvent: OarcCustomEventBase
 ---@field player_index integer
 script.on_event("oarc-mod-on-player-reset", function(event)
-    log("Custom event oarc-mod-on-player-reset")
-    log(serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
-    if (game.players[event.player_index]) then
-        log("Player is still valid: " .. game.players[event.player_index].name)
-    end
+    log("EVENT - oarc-mod-on-player-reset:" .. serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
 end)
 
 ---@class OarcModOnPlayerSpawnedEvent: OarcCustomEventBase
 ---@field player_index integer
 script.on_event("oarc-mod-on-player-spawned", function(event)
-    log("Custom event oarc-mod-on-player-spawned")
-    log(serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
-    log("Player spawned: " .. game.players[event.player_index].name)
+    log("EVENT - oarc-mod-on-player-spawned:" .. serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
 end)
 
 ---@class OarcModCharacterSurfaceChangedEvent: OarcCustomEventBase
@@ -195,9 +187,8 @@ end)
 ---@field old_surface_name string
 ---@field new_surface_name string
 script.on_event("oarc-mod-character-surface-changed", function(event)
-    log("Custom event oarc-mod-character-surface-changed")
-    log(serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
-
+    log("EVENT - oarc-mod-character-surface-changed:" .. serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
+    
     --This is just here so I don't get lua warnings about unused variables.
     ---@type OarcModCharacterSurfaceChangedEvent
     local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]

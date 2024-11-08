@@ -1,5 +1,17 @@
 ACTIVE ITEMS:
 
+   - Need a way to identify if the spawn a player is assigned to is still in the middle of being generated and to queue them for delayed spawn.
+      - Add a flag to unique spawns to tell if it is generated yet or not? Or a way to search delayed spawns first?
+
+
+   - Rework spawning to use the oarc-mod-on-spawn-created event
+      - Queue the spawn for creation using whatever player host and player choice data we want.
+      - Event should then look through the hosts and joiners to see if any are waiting for the spawn. (How do we tell if they are waiting?)
+         - Need to handle players leaving before it is done (same as before)
+
+
+      - OarcDelayedSpawn table should point directly to the unique spawn? Or deepcopy all of it. It should have host_name instead of playerName
+
 Secondary Spawns:
  - What if a joiner gets to a planet before host?
     - Create the spawn with the host's name as the owner.
@@ -7,8 +19,36 @@ Secondary Spawns:
     - They get given a single spawn. Leave the buddy spawn as a Nauvis only gimmick for now.
  - What happens to multiple unique spawn hosts on "main force" when they go to a new planet?
     - They get unique spawn areas, but they have to coordinate regarding the landing pad, OR they can install a mod to have multiple but it is still up to them to coordinate.
- 
+ - What if a host and joiner land at the same time?
+ - What if buddies try to land at the same time?
 
+- What if someone leaves while they are queued to go to a secondary delayed spawn?
+
+ - Joining a shared spawn should be put the player as a joiner into ALL secondary spawns
+
+
+
+- Methods a player can use to join a game:
+   - Create their own spawn
+   - Join a spawn
+
+
+Flow
+   - Player selects spawn choices (new, shared, buddy)
+   - 
+
+Cleanup storage.delayed_spawns when a player leaves.
+Review UniqueSpawnCleanupRemove now that there are secondary spawns.
+
+Cleanup CreateCropCircle and CreateCropOctagon and CreateCropSquare
+
+Change permissions to be enabled/disabled when entering/leaving the holding pen (use custom surface changed event?)
+
+Player deleting base when delayed spawn is in work is more complicated now because in theory other players could be also be waiting on that spawn?
+
+Get rid of enable secondary spawns setting (redundant.)
+
+Get rid of storage.buddy_pairs ?? Is basically duplicate info inside the spawns right?
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:

@@ -280,13 +280,12 @@ function RerollSpawn(player)
         local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
         RegrowthMarkAreaForRemoval(old_spawn_point.surface_name, old_spawn_point.position, clear_radius)
         TriggerCleanup()
-        -- Trigger event
         script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = old_spawn_point})
     end
 
-    -- Add new spawn point for the new surface
-    SetPlayerRespawn(player.name, surface.name, spawn_position, false) -- Do not reset cooldown
-    QueuePlayerForDelayedSpawn(player.name, surface.name, spawn_position, spawn_choices.moat, old_spawn_point.primary, nil)
+    -- Queue spawn generation and the player.
+    local delayed_spawn = GenerateNewSpawn(player.name, spawn_choices.surface_name, spawn_position, spawn_choices, old_spawn_point.primary)
+    QueuePlayerForSpawn(player.name, delayed_spawn)
 
     -- Send them to the holding pen
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
@@ -294,32 +293,3 @@ function RerollSpawn(player)
     -- Announce
     SendBroadcastMsg({"", { "oarc-player-new-secondary", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
 end
-
-
-
----Test out placing fulgoran stuff
--- fulgurite-small
--- fulgurite
--- fulgoran-ruin-attractor
--- fulgoran-ruin-small
--- fulgoran-ruin-medium
--- fulgoran-ruin-colossal
--- fulgoran-ruin-stonehenge
--- fulgoran-ruin-vault
-
--- if (tree_entity == nil) then return end
--- --Create trees (needs to be done after setting tiles!)
--- for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
---     for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
---         local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
---         if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
-
---             local random_tree_index = math.random(1, #tree_entity)
---             local pos = surface.find_non_colliding_position(tree_entity[random_tree_index], { i, j }, 2, 0.5)
---             if (pos ~= nil) then
---                 surface.create_entity({ name = tree_entity[random_tree_index], amount = 1, position = pos })
---             end
---             -- surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
---         end
---     end
--- end

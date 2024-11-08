@@ -466,6 +466,27 @@ function DeleteAllChunks(surface)
 end
 
 
+---Get position for buddy spawn (for buddy placement)
+---@param position MapPosition
+---@param surface_name string
+---@param moat_enabled boolean
+---@return MapPosition
+function GetBuddySpawnPosition(position, surface_name, moat_enabled)
+
+    local spawn_config = storage.ocfg.surfaces_config[surface_name].spawn_config
+
+    local x_offset = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier * 2
+    x_offset = x_offset + storage.ocfg.spawn_general.moat_width_tiles
+    -- distance = distance + 5 -- EXTRA BUFFER?
+
+    -- Create that spawn in the global vars
+    local buddy_position = table.deepcopy(position)
+    -- The x_offset must be big enough to ensure the spawns DO NOT overlap!
+    buddy_position.x = buddy_position.x + x_offset
+
+    return buddy_position
+end
+
 -- -- Modular armor quick start
 -- function GiveQuickStartModularArmor(player)
 --     player.insert{name="modular-armor", count = 1}
@@ -687,7 +708,6 @@ function GetRandomVector()
     local magnitude = math.sqrt((randVec.x^2) + (randVec.y^2))
     randVec.x = randVec.x / magnitude
     randVec.y = randVec.y / magnitude
-    log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
     return randVec
 end
 
@@ -1367,7 +1387,6 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     local tree_radius_sqr_inner = ((tileRadius - 1 - tree_width) ^ 2) -- 1 less to make sure trees are inside the spawn area
     local tree_radius_sqr_outer = ((tileRadius - 1) ^ 2)
 
-
     local surface_config = storage.ocfg.surfaces_config[surface.name]
     local liquid_tile = surface_config.spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
@@ -1447,6 +1466,8 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
 
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
+
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
@@ -1486,7 +1507,11 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
     end
     surface.set_tiles(dirtTiles)
 
+    
+    --Create trees (needs to be done after setting tiles!)
+    local tree_entity = surface_config.spawn_config.tree_entity
     if (tree_entity == nil) then return end
+    
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
@@ -1517,6 +1542,8 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
+
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
 
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1557,7 +1584,10 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
     surface.set_tiles(dirtTiles)
 
+    --Create trees (needs to be done after setting tiles!)
+    local tree_entity = surface_config.spawn_config.tree_entity
     if (tree_entity == nil) then return end
+
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
