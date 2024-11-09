@@ -1356,6 +1356,8 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     local tree_radius_sqr_outer = ((tileRadius - 1) ^ 2)
 
     local dirtTiles = {}
+    local stoneTiles = {}
+
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
 
@@ -1368,6 +1370,7 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                 if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_grass) then
                     table.insert(dirtTiles, { name = fillTile, position = { i, j } })
+                    table.insert(stoneTiles, { name = "refined-concrete", position = { i, j } })
                 end
             end
 
