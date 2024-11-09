@@ -148,7 +148,8 @@ end)
 
 script.on_event(defines.events.on_research_finished, function(event)
     local research = event.research
-    SendBroadcastMsg("Team " .. research.force.name .. " finished research: " .. research.name)
+    -- TODO: Add a non-mod setting to disable this.
+    SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name})
 end)
 
 ----------------------------------------

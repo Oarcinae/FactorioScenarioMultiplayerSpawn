@@ -114,14 +114,16 @@ function RegrowthDisableSurface(surface_name)
     storage.rg[surface_name].active = false
     TableRemoveOneUsingPairs(storage.rg.active_surfaces, surface_name)
 
-    -- Make sure indices are reset if needed
+    -- Make sure indices are reset and the iterator made invalid too
     if (storage.rg.current_surface == surface_name) then
         storage.rg.current_surface = nil
         storage.rg.current_surface_index = 1
+        storage.rg.chunk_iter = nil
     end
     if (storage.rg.we_current_surface == surface_name) then
         storage.rg.we_current_surface = nil
         storage.rg.we_current_surface_index = 1
+        storage.rg.we_chunk_iter = nil
     end
     if #storage.rg.active_surfaces > 0 then
         storage.rg.current_surface = storage.rg.active_surfaces[1]
@@ -396,6 +398,7 @@ function GetNextChunkAndUpdateIter()
 
     -- Make sure we have a valid iterator!
     if (not storage.rg.chunk_iter or not storage.rg.chunk_iter.valid) then
+        if game.surfaces[storage.rg.current_surface] == nil then return nil end
         storage.rg.chunk_iter = game.surfaces[storage.rg.current_surface].get_chunks()
     end
 
@@ -408,8 +411,12 @@ function GetNextChunkAndUpdateIter()
         local next_surface_info = GetNextActiveSurface(storage.rg.current_surface_index)
         storage.rg.current_surface = next_surface_info.surface
         storage.rg.current_surface_index = next_surface_info.index
-        storage.rg.chunk_iter = game.surfaces[storage.rg.current_surface].get_chunks()
-        next_chunk = storage.rg.chunk_iter()
+
+        -- Surface may not exist
+        if game.surfaces[storage.rg.current_surface] ~= nil then
+            storage.rg.chunk_iter = game.surfaces[storage.rg.current_surface].get_chunks()
+            next_chunk = storage.rg.chunk_iter()
+        end
     end
 
     return next_chunk
@@ -421,6 +428,7 @@ function GetNextChunkAndUpdateWorldEaterIter()
 
     -- Make sure we have a valid iterator!
     if (not storage.rg.we_chunk_iter or not storage.rg.we_chunk_iter.valid) then
+        if game.surfaces[storage.rg.we_current_surface] == nil then return nil end
         storage.rg.we_chunk_iter = game.surfaces[storage.rg.we_current_surface].get_chunks()
     end
 
@@ -433,8 +441,12 @@ function GetNextChunkAndUpdateWorldEaterIter()
         local next_surface_info = GetNextActiveSurface(storage.rg.we_current_surface_index)
         storage.rg.we_current_surface = next_surface_info.surface
         storage.rg.we_current_surface_index = next_surface_info.index
-        storage.rg.we_chunk_iter = game.surfaces[storage.rg.we_current_surface].get_chunks()
-        next_chunk = storage.rg.we_chunk_iter()
+
+        -- Surface may not exist
+        if game.surfaces[storage.rg.we_current_surface] ~= nil then
+            storage.rg.we_chunk_iter = game.surfaces[storage.rg.we_current_surface].get_chunks()
+            next_chunk = storage.rg.we_chunk_iter()
+        end
     end
 
     return next_chunk
