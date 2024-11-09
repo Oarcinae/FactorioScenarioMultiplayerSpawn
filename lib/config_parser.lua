@@ -26,15 +26,12 @@ OCFG_KEYS =
     ["gameplay.enable_shared_spawns"] = {mod_key = "oarc-mod-enable-shared-spawns" , ocfg_keys = {"gameplay", "enable_shared_spawns"}, type = "boolean"},
     ["gameplay.number_of_players_per_shared_spawn"] = {mod_key = "oarc-mod-number-of-players-per-shared-spawn" , ocfg_keys = {"gameplay", "number_of_players_per_shared_spawn"}, type = "integer"},
     ["gameplay.default_surface"] = {mod_key = "oarc-mod-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
-    ["gameplay.enable_secondary_spawns"] = {mod_key = "oarc-mod-enable-secondary-spawns" , ocfg_keys = {"gameplay", "enable_secondary_spawns"}, type = "boolean"},
     -- STARTUP ["gameplay.main_force_name"] = {mod_key = "oarc-mod-main-force-name" , ocfg_keys = {"gameplay", "main_force_name"}, type = "string"},
 
     ["gameplay_difficulty_scaling_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-difficulty-scaling"}},
     ["gameplay.enable_offline_protection"] = {mod_key = "oarc-mod-enable-offline-protection" , ocfg_keys = {"gameplay", "enable_offline_protection"}, type = "boolean"},
     ["gameplay.scale_resources_around_spawns"] = {mod_key = "oarc-mod-scale-resources-around-spawns" , ocfg_keys = {"gameplay", "scale_resources_around_spawns"}, type = "boolean"},
     ["gameplay.modified_enemy_spawning"] = {mod_key = "oarc-mod-modified-enemy-spawning" , ocfg_keys = {"gameplay", "modified_enemy_spawning"}, type = "boolean"},
-    -- ["gameplay.modified_enemy_easy_evo"] = {mod_key = "oarc-mod-modified-enemy-easy-evo" , ocfg_keys = {"gameplay", "modified_enemy_easy_evo"}, type = "double"},
-    -- ["gameplay.modified_enemy_medium_evo"] = {mod_key = "oarc-mod-modified-enemy-medium-evo" , ocfg_keys = {"gameplay", "modified_enemy_medium_evo"}, type = "double"},
 
     ["gameplay_misc_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-gameplay-misc"}},
     ["gameplay.enable_friendly_fire"] = {mod_key = "oarc-mod-enable-friendly-fire" , ocfg_keys = {"gameplay", "enable_friendly_fire"}, type = "boolean"},
@@ -62,7 +59,7 @@ OCFG_KEYS =
     ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-mod-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer"},
     ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-mod-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer"},
     ["spawn_general.resources_shape"] = {mod_key = "oarc-mod-spawn-general-enable-resources-circle-shape" , ocfg_keys = {"spawn_general", "resources_shape"}, type = "string-list"},
-    ["spawn_general.force_grass"] = {mod_key = "oarc-mod-spawn-general-enable-force-grass" , ocfg_keys = {"spawn_general", "force_grass"}, type = "boolean"},
+    ["spawn_general.force_tiles"] = {mod_key = "oarc-mod-spawn-general-enable-force-tiles" , ocfg_keys = {"spawn_general", "force_tiles"}, type = "boolean"},
     ["spawn_general.shape"] = {mod_key = "oarc-mod-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list"},
 
     ["resource_placement_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-resource-placement"}},

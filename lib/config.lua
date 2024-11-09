@@ -224,10 +224,6 @@ OCFG = {
         -- The default starting surface.
         default_surface = "nauvis",
 
-        -- Enable secondary spawns for players.
-        -- This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
-        enable_secondary_spawns = false,
-
         -- This scales resources so that even if you spawn "far away" from the center
         -- of the map, resources near to your spawn point scale so you aren't
         -- surrounded by 100M patches or something. This is useful depending on what
@@ -310,9 +306,9 @@ OCFG = {
         -- Starting resources deposits shape.
         resources_shape = RESOURCES_SHAPE_CHOICE_CIRCLE,
 
-        -- Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain
-        -- or uses landfill.
-        force_grass = false,
+        -- Force the land area circle at the spawn to be a single tile (default grass on Nauvis), otherwise it defaults 
+        -- to the existing terrain and uses landfill to fill gaps.
+        force_tiles = true,
 
         -- Spawn a circle/octagon/square of trees around this base outline.
         shape = SPAWN_SHAPE_CHOICE_CIRCLE,
@@ -474,7 +470,6 @@ OCFG = {
 ---@field number_of_players_per_shared_spawn number Number of players allowed to join a shared spawn.
 ---@field enable_friendly_fire boolean Set to true if you want to shoot your own chests and stuff.
 ---@field default_surface string The starting surface of the main force.
----@field enable_secondary_spawns boolean Enable secondary spawns for players. This automatically creates a new spawn point when they first move to a separate spawns enabled surface.
 ---@field scale_resources_around_spawns boolean Scales resources so that even if you spawn "far away" from the center of the map, resources near to your spawn point scale so you aren't surrounded by 100M patches or something. This is useful depending on what map gen settings you pick.
 ---@field modified_enemy_spawning boolean Adjust enemy spawning based on distance to spawns. All it does it make things more balanced based on your distance and makes the game a little easier. No behemoth worms everywhere just because you spawned far away.
 ---@field scale_spawner_damage boolean Scale damage to spawners based on distance to spawn.
@@ -522,7 +517,7 @@ OCFG = {
 ---@field moat_width_tiles number Width of the moat around the spawn area. If you change the spawn area size, you might have to adjust this as well.
 ---@field tree_width_tiles number Width of the tree ring around the spawn area. If you change the spawn area size, you might have to adjust this as well.
 ---@field resources_shape SpawnResourcesShapeChoice The starting resources deposits shape.
----@field force_grass boolean Force the land area circle at the spawn to be fully grass, otherwise it defaults to the existing terrain.
+---@field force_tiles boolean Force the land area circle at the spawn to be a single tile (default grass on Nauvis), otherwise it defaults to the existing terrain and uses landfill to fill gaps.
 ---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
 
 ---@class OarcConfigSpawnSafeArea

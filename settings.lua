@@ -177,13 +177,6 @@ data:extend({
         default_value = "nauvis",
         order = "e2"
     },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-secondary-spawns",
-        setting_type = "runtime-global",
-        default_value = false,
-        order = "e3"
-    },
 
     {
         type = "bool-setting",
@@ -328,9 +321,9 @@ data:extend({
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-spawn-general-enable-force-grass",
+        name = "oarc-mod-spawn-general-enable-force-tiles",
         setting_type = "runtime-global",
-        default_value = false,
+        default_value = true,
         order = "h5"
     },    {
         type = "string-setting",

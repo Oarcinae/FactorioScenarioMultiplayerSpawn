@@ -794,17 +794,32 @@ end
 
 ---Pick a random direction, go at least the minimum distance, and start looking for ungenerated chunks
 ---We try a few times (hardcoded) and then try a different random direction if we fail (up to max_tries)
----@param surface LuaSurface
+---@param surface_name string Surface name because we might need to force the creation of a new surface
 ---@param minimum_distance_chunks number Distance in chunks to start looking for ungenerated chunks
 ---@param max_tries integer Maximum number of tries to find a spawn point
 ---@return MapPosition
-function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
+function FindUngeneratedCoordinates(surface_name, minimum_distance_chunks, max_tries)
+
+    local final_position = {x=0,y=0}
+
+    -- If surface is nil, it is probably a planet? Check and create if needed.
+    local surface = game.surfaces[surface_name]
+    if (surface == nil) then
+        if (game.planets[surface_name] == nil) then
+            error("ERROR! No surface or planet found for requested player spawn!")
+            return final_position
+        end
+        surface = game.planets[surface_name].create_surface()
+        if (surface == nil) then
+            error("ERROR! Failed to create planet surface for player spawn!")
+            return final_position
+        end
+    end
 
     --- Get a random vector, figure out how many times to multiply it to get the minimum distance
     local direction_vector = GetRandomVector()
     local start_distance_tiles = minimum_distance_chunks * CHUNK_SIZE
     
-    local final_position = {x=0,y=0}
     local tries_remaining = max_tries - 1
 
     -- Starting search position
@@ -826,7 +841,7 @@ function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
         if (jumps_count <= 0) then
 
             if (tries_remaining > 0) then
-                return FindUngeneratedCoordinates(surface, minimum_distance_chunks, tries_remaining)
+                return FindUngeneratedCoordinates(surface_name, minimum_distance_chunks, tries_remaining)
             else
                 log("WARNING - FindUngeneratedCoordinates - Hit max distance!")
                 break

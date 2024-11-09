@@ -891,11 +891,8 @@ function PrimarySpawnRequest(player)
     storage.spawn_choices[player.name].host_name = nil
     storage.spawn_choices[player.name].buddy = nil
 
-    -- Cache some useful variables
-    local surface = game.surfaces[spawn_choices.surface_name]
-
     -- Find coordinates of a good place to spawn
-    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+    local spawn_position = FindUngeneratedCoordinates(spawn_choices.surface_name, spawn_choices.distance, 3)
 
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
@@ -1145,7 +1142,7 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     local buddy_choices = storage.spawn_choices[player.name]
 
     -- Find coordinates of a good place to spawn
-    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+    local spawn_position = FindUngeneratedCoordinates(spawn_choices.surface_name, spawn_choices.distance, 3)
 
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
@@ -1176,8 +1173,8 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
 
 
     -- Queue spawn generation for the requesting buddy FIRST. (left)
-    local delayed_spawn = GenerateNewSpawn(player.name, spawn_choices.surface_name, spawn_position, spawn_choices, true)
-    QueuePlayerForSpawn(player.name, delayed_spawn)
+    local delayed_spawn = GenerateNewSpawn(requesting_buddy_name, spawn_choices.surface_name, spawn_position, spawn_choices, true)
+    QueuePlayerForSpawn(requesting_buddy_name, delayed_spawn)
 
     -- ORDER MATTERS! Otherwise sometimes chunks don't generate properly!
     -- Queue spawn generation for the accepting buddy SECOND. (right)

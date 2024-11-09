@@ -69,6 +69,8 @@ script.on_init(function(event)
     for _,player in pairs(game.players) do
         SeparateSpawnsInitPlayer(player.index)
     end
+
+    game.technology_notifications_enabled = false
 end)
 
 
@@ -82,14 +84,9 @@ end)
 --------------------------------------------------------------------------------
 -- On Configuration Changed - Only runs when the mod configuration changes
 --------------------------------------------------------------------------------
--- oarc_new_spawn_created = script.generate_event_name()
-
 script.on_configuration_changed(function(data)
-    -- Regenerate event ID:
-
-    -- Reset the players GUI
     for _,player in pairs(game.players) do
-        RecreateOarcGui(player)
+        RecreateOarcGui(player) -- Reset the players GUI
     end
 end)
 
@@ -147,6 +144,11 @@ script.on_event(defines.events.on_player_driving_changed_state, function (event)
 
         SeparateSpawnsUpdatePlayerSurface(player, entity.surface.name)
     end
+end)
+
+script.on_event(defines.events.on_research_finished, function(event)
+    local research = event.research
+    SendBroadcastMsg("Team " .. research.force.name .. " finished research: " .. research.name)
 end)
 
 ----------------------------------------
@@ -227,6 +229,7 @@ end)
 script.on_event(defines.events.on_tick, function(event)
     DelayedSpawnOnTick()
     FadeoutRenderOnTick()
+    OnTickNilCharacterTeleportQueue()
 
     if storage.ocfg.regrowth.enable_regrowth then
         RegrowthOnTick()
@@ -243,12 +246,13 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     end
     
     CreateHoldingPenChunks(event)
-    SeparateSpawnsGenerateChunk(event)
 
     if storage.ocfg.gameplay.modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
         DowngradeAndReduceEnemiesOnChunkGenerate(event)
     end
+
+    SeparateSpawnsGenerateChunk(event)
 end)
 
 ----------------------------------------

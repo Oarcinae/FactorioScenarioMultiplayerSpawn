@@ -254,18 +254,19 @@ function RerollSpawn(player)
     end
 
     local surface = player.character.surface
+    local surface_name = surface.name
 
     -- Confirm there is AN existing spawn point for this player on this surface
-    if (storage.unique_spawns[surface.name] == nil or storage.unique_spawns[surface.name][player.name] == nil) then
+    if (storage.unique_spawns[surface_name] == nil or storage.unique_spawns[surface_name][player.name] == nil) then
         log("ERROR - RerollSpawn - Can't reroll? No existing spawn for " .. player.name)
         return
     end
 
     -- Save a copy of the previous spawn point
-    local old_spawn_point = table.deepcopy(storage.unique_spawns[surface.name][player.name])
+    local old_spawn_point = table.deepcopy(storage.unique_spawns[surface_name][player.name])
 
     -- Find a new spawn point
-    local spawn_position = FindUngeneratedCoordinates(surface, spawn_choices.distance, 3)
+    local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
         player.print({ "oarc-no-ungenerated-land-error" })
@@ -274,17 +275,17 @@ function RerollSpawn(player)
 
     -- Remove the old spawn point
     if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
-        log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. old_spawn_point.surface_name)
+        log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. surface_name)
 
         -- Clear an area around the spawn that SHOULD not include any other bases.
         local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
-        RegrowthMarkAreaForRemoval(old_spawn_point.surface_name, old_spawn_point.position, clear_radius)
+        RegrowthMarkAreaForRemoval(surface_name, old_spawn_point.position, clear_radius)
         TriggerCleanup()
         script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = old_spawn_point})
     end
 
     -- Queue spawn generation and the player.
-    local delayed_spawn = GenerateNewSpawn(player.name, spawn_choices.surface_name, spawn_position, spawn_choices, old_spawn_point.primary)
+    local delayed_spawn = GenerateNewSpawn(player.name, surface_name, spawn_position, spawn_choices, old_spawn_point.primary)
     QueuePlayerForSpawn(player.name, delayed_spawn)
 
     -- Send them to the holding pen
