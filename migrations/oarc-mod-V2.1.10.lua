@@ -32,3 +32,12 @@ game.technology_notifications_enabled = false
 if storage.nil_character_teleport_queue == nil then
     storage.nil_character_teleport_queue = {}
 end
+
+-- Make sure all existing spawns have the generated status set.
+for surface_index, spawns in pairs(storage.unique_spawns) do
+    for player_index, spawn in pairs(spawns) do
+        if spawn.generated == nil then
+            spawn.generated = true
+        end
+    end
+end

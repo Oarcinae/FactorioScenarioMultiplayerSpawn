@@ -283,11 +283,6 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
         return
     end
 
-    -- Check if secondary spawns are disabled
-    if (not storage.oarc_surfaces[new_surface_name].secondary) then
-        return
-    end
-
     -- If previous surface was a platform
     -- local arriving_from_space = StringStartsWith(previous_surface_name, "platform-")
 
@@ -329,8 +324,13 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
         end
     end
 
+    -- Check if secondary spawns are disabled
+    if (not storage.oarc_surfaces[new_surface_name].secondary) then
+        return
+    end
+
     -- If there is no spawn for them on their new surface, generate one based on previous choices.
-    log("WARNING - THIS IS NOT FULLY IMPLEMENTED YET!!")
+    log("WARNING - SECONDARY SPAWNS ARE STILL EXPERIMENTAL!!")
     SecondarySpawn(player, new_surface_name)
 end
 
@@ -1672,6 +1672,12 @@ function TeleportPlayerToRespawnPoint(surface_name, player, first_spawn)
     if (spawn == nil) then
         log("ERROR - SendPlayerToSpawn - No spawn point for player: " .. player.name .. " on surface: " .. surface_name .. " first_spawn: " .. tostring(first_spawn))
         return
+    end
+
+    -- As a temporary measure to make sure teleport works in the case that the player is in a moving cargo-pod, we first
+    -- teleport to the holding pen surface since there is no way to force them out of the cargo-pod that I know of.
+    if player.driving then
+        SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
     end
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
 
