@@ -1,7 +1,7 @@
 data:extend({
     {
         type = "bool-setting",
-        name = "oarc-mod-default-allow-spawning-on-other-surfaces",
+        name = "oarc-mod-default-enable-secondary-spawns-on-other-surfaces",
         setting_type = "startup",
         default_value = false,
         order = "a1"

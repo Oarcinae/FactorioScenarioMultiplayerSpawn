@@ -203,7 +203,8 @@ end
 
 
 ---Searchs a 3x3 chunk around the map origin for "cargo-pod-container" entities and if they are on the same force
----as the player it will teleport the cargo pod to the player.
+---as the player it will teleport the cargo pod to the player. This is meant to be a temporary work around since I don't
+---know how to detect the cargo pod that is associated with the player or when it is sent/landed.
 ---@param player LuaPlayer
 ---@return nil
 function DudeWheresMyCargoPod(player)
@@ -219,17 +220,22 @@ function DudeWheresMyCargoPod(player)
 
     local pods = surface.find_entities_filtered{area=search_area, name="cargo-pod-container", force=player.force}
 
+    if #pods == 0 then
+        player.print({ "oarc-no-cargo-pods" })
+        return
+    end
+
     for _,cargo_pod in pairs(pods) do
 
         local new_position = surface.find_non_colliding_position("cargo-pod-container", player.character.position, CHUNK_SIZE, 1)
 
         if new_position == nil then
-            player.print({ "oarc-teleport-fail" })
+            player.print({ "oarc-teleport-cargo-pod-fail" })
             return
         end
 
         cargo_pod.teleport(new_position)
-        player.print({ "oarc-teleport-success" })
+        player.print({ "oarc-teleport-cargo-pod-success" })
     end
 end
 
@@ -250,6 +256,12 @@ function RerollSpawn(player)
     local spawn_choices = storage.spawn_choices[player.name]
     if (spawn_choices == nil) then
         log("ERROR - RerollSpawn - No spawn choices for player: " .. player.name)
+        return
+    end
+
+    -- If it is a buddy spawn, tell them we don't support this:
+    if (spawn_choices.buddy ~= nil) then
+        player.print({ "oarc-no-reroll-buddy-spawn" })
         return
     end
 
@@ -291,6 +303,12 @@ function RerollSpawn(player)
     -- Send them to the holding pen
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
 
+    -- Queue joiners too!
+    for _,joiner in pairs(old_spawn_point.joiners) do
+        QueuePlayerForSpawn(joiner, delayed_spawn)
+        SafeTeleport(game.players[joiner], game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+    end
+
     -- Announce
-    SendBroadcastMsg({"", { "oarc-player-new-secondary", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
+    SendBroadcastMsg({"", { "oarc-spawn-rerolled", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
 end

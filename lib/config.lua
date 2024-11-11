@@ -158,10 +158,10 @@ OCFG = {
     ---@type OarcConfigGameplaySettings
     gameplay = {
 
-        -- Default setting for enabling spawning on other surfaces other than the default_surface.
+        -- Default setting for if secondary spawns are enabled on other surfaces other than the default_surface.
         -- This is a STARTUP setting, so it can't be changed in game!!
         -- This is a STARTUP setting, so it can't be changed in game!!
-        default_allow_spawning_on_other_surfaces = false,
+        default_enable_secondary_spawns_on_other_surfaces = false,
 
         -- The name of the main force.
         -- This is a STARTUP setting, so it can't be changed in game!!
@@ -451,7 +451,7 @@ OCFG = {
 ---@field discord_invite string Discord invite for easy copy paste.
 
 ---@class OarcConfigGameplaySettings
----@field default_allow_spawning_on_other_surfaces boolean Default setting for enabling spawning on other surfaces other than the default_surface. This is a STARTUP setting, so it can't be changed in game.
+---@field default_enable_secondary_spawns_on_other_surfaces boolean Default setting for if secondary spawns are enabled on other surfaces other than the default_surface. This is a STARTUP setting, so it can't be changed in game.
 ---@field main_force_name string The name of the main force. This is a STARTUP setting, so it can't be changed in game.
 ---@field enable_main_team boolean Allows all players to join a primary force(team).
 ---@field enable_separate_teams boolean Allows players to create their own force(team).

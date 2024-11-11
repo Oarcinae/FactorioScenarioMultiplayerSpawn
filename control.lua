@@ -36,6 +36,7 @@ require("lib/sharing")
 -- TODO: Possibly remove this later?
 require("lib/oarc_tests")
 
+require("lib/oarc_commands")
 
 
 --------------------------------------------------------------------------------

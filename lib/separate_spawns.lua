@@ -137,7 +137,7 @@ function SeparateSpawnsInitSurface(surface_name)
 
     if storage.oarc_surfaces[surface_name] == nil then
         -- Default surface is set to primary only, all others are secondary only if
-        -- default_allow_spawning_on_other_surfaces is set to true.
+        -- default_enable_secondary_spawns_on_other_surfaces is set to true.
         if (surface_name == storage.ocfg.gameplay.default_surface) then
             storage.oarc_surfaces[surface_name] = {
                 primary = true,
@@ -146,7 +146,7 @@ function SeparateSpawnsInitSurface(surface_name)
         else
             storage.oarc_surfaces[surface_name] = {
                 primary = false,
-                secondary = storage.ocfg.gameplay.default_allow_spawning_on_other_surfaces
+                secondary = storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces
             }
         end
     end

@@ -16,7 +16,7 @@ OCFG_KEYS =
     ["gameplay_spawn_choices_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-spawn-choices"}},
     ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
     ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
-    -- STARTUP ["gameplay.enable_spawning_on_other_surfaces"] = {mod_key = "oarc-mod-default-allow-spawning-on-other-surfaces" , ocfg_keys = {"gameplay", "enable_spawning_on_other_surfaces"}, type = "boolean"},
+    -- STARTUP ["gameplay.default_enable_secondary_spawns_on_other_surfaces"] = {mod_key = "oarc-mod-default-enable-secondary-spawns-on-other-surfaces" , ocfg_keys = {"gameplay", "default_enable_secondary_spawns_on_other_surfaces"}, type = "boolean"},
     ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-mod-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
     ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-mod-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
     ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-mod-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
@@ -262,7 +262,7 @@ function CacheModSettings()
     end
 
     -- Special case for startup settings
-    storage.ocfg.gameplay.default_allow_spawning_on_other_surfaces = settings.startup["oarc-mod-default-allow-spawning-on-other-surfaces"].value  --[[@as boolean]]
+    storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces = settings.startup["oarc-mod-default-enable-secondary-spawns-on-other-surfaces"].value  --[[@as boolean]]
     storage.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value --[[@as string]]
 end
 
