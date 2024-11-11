@@ -36,6 +36,7 @@ require("lib/sharing")
 -- TODO: Possibly remove this later?
 require("lib/oarc_tests")
 
+require("lib/oarc_commands")
 
 
 --------------------------------------------------------------------------------
@@ -69,6 +70,8 @@ script.on_init(function(event)
     for _,player in pairs(game.players) do
         SeparateSpawnsInitPlayer(player.index)
     end
+
+    game.technology_notifications_enabled = false
 end)
 
 
@@ -82,14 +85,9 @@ end)
 --------------------------------------------------------------------------------
 -- On Configuration Changed - Only runs when the mod configuration changes
 --------------------------------------------------------------------------------
--- oarc_new_spawn_created = script.generate_event_name()
-
 script.on_configuration_changed(function(data)
-    -- Regenerate event ID:
-
-    -- Reset the players GUI
     for _,player in pairs(game.players) do
-        RecreateOarcGui(player)
+        RecreateOarcGui(player) -- Reset the players GUI
     end
 end)
 
@@ -149,6 +147,12 @@ script.on_event(defines.events.on_player_driving_changed_state, function (event)
     end
 end)
 
+script.on_event(defines.events.on_research_finished, function(event)
+    local research = event.research
+    -- TODO: Add a non-mod setting to disable this.
+    SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name})
+end)
+
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
 ----------------------------------------
@@ -161,33 +165,25 @@ end)
 ---@class OarcModOnSpawnCreatedEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
 script.on_event("oarc-mod-on-spawn-created", function(event)
-    log("Custom event oarc-mod-on-spawn-created")
-    log(serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
+    log("EVENT - oarc-mod-on-spawn-created:" .. serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
 end)
 
 ---@class OarcModOnSpawnRemoveRequestEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
 script.on_event("oarc-mod-on-spawn-remove-request", function(event)
-    log("Custom event oarc-mod-on-spawn-remove-request")
-    log(serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
+    log("EVENT - oarc-mod-on-spawn-remove-request:" .. serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
 end)
 
 ---@class OarcModOnPlayerResetEvent: OarcCustomEventBase
 ---@field player_index integer
 script.on_event("oarc-mod-on-player-reset", function(event)
-    log("Custom event oarc-mod-on-player-reset")
-    log(serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
-    if (game.players[event.player_index]) then
-        log("Player is still valid: " .. game.players[event.player_index].name)
-    end
+    log("EVENT - oarc-mod-on-player-reset:" .. serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
 end)
 
 ---@class OarcModOnPlayerSpawnedEvent: OarcCustomEventBase
 ---@field player_index integer
 script.on_event("oarc-mod-on-player-spawned", function(event)
-    log("Custom event oarc-mod-on-player-spawned")
-    log(serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
-    log("Player spawned: " .. game.players[event.player_index].name)
+    log("EVENT - oarc-mod-on-player-spawned:" .. serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
 end)
 
 ---@class OarcModCharacterSurfaceChangedEvent: OarcCustomEventBase
@@ -195,11 +191,14 @@ end)
 ---@field old_surface_name string
 ---@field new_surface_name string
 script.on_event("oarc-mod-character-surface-changed", function(event)
-    log("Custom event oarc-mod-character-surface-changed")
-    log(serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
+    log("EVENT - oarc-mod-character-surface-changed:" .. serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
+    
+    --This is just here so I don't get lua warnings about unused variables.
+    ---@type OarcModCharacterSurfaceChangedEvent
+    local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]
 
-    local player = game.players[event.player_index]
-    SeparateSpawnsPlayerChangedSurface(player, event.old_surface_name, event.new_surface_name)
+    local player = game.players[custom_event.player_index]
+    SeparateSpawnsPlayerChangedSurface(player, custom_event.old_surface_name, custom_event.new_surface_name)
 end)
 
 -- I raise this event whenever teleporting the player!
@@ -232,6 +231,7 @@ end)
 script.on_event(defines.events.on_tick, function(event)
     DelayedSpawnOnTick()
     FadeoutRenderOnTick()
+    OnTickNilCharacterTeleportQueue()
 
     if storage.ocfg.regrowth.enable_regrowth then
         RegrowthOnTick()
@@ -248,12 +248,13 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     end
     
     CreateHoldingPenChunks(event)
-    SeparateSpawnsGenerateChunk(event)
 
     if storage.ocfg.gameplay.modified_enemy_spawning then
         DowngradeWormsDistanceBasedOnChunkGenerate(event)
         DowngradeAndReduceEnemiesOnChunkGenerate(event)
     end
+
+    SeparateSpawnsGenerateChunk(event)
 end)
 
 ----------------------------------------

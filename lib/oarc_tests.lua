@@ -203,7 +203,8 @@ end
 
 
 ---Searchs a 3x3 chunk around the map origin for "cargo-pod-container" entities and if they are on the same force
----as the player it will teleport the cargo pod to the player.
+---as the player it will teleport the cargo pod to the player. This is meant to be a temporary work around since I don't
+---know how to detect the cargo pod that is associated with the player or when it is sent/landed.
 ---@param player LuaPlayer
 ---@return nil
 function DudeWheresMyCargoPod(player)
@@ -219,16 +220,95 @@ function DudeWheresMyCargoPod(player)
 
     local pods = surface.find_entities_filtered{area=search_area, name="cargo-pod-container", force=player.force}
 
+    if #pods == 0 then
+        player.print({ "oarc-no-cargo-pods" })
+        return
+    end
+
     for _,cargo_pod in pairs(pods) do
 
         local new_position = surface.find_non_colliding_position("cargo-pod-container", player.character.position, CHUNK_SIZE, 1)
 
         if new_position == nil then
-            player.print({ "oarc-teleport-fail" })
+            player.print({ "oarc-teleport-cargo-pod-fail" })
             return
         end
 
         cargo_pod.teleport(new_position)
-        player.print({ "oarc-teleport-success" })
+        player.print({ "oarc-teleport-cargo-pod-success" })
     end
+end
+
+
+
+---Allow players to reroll their spawn point, dangerous because this doesn't do a lot of checks.
+---@param player LuaPlayer
+---@return nil
+function RerollSpawn(player)
+
+    -- Make sure character is valid
+    if not player.character then
+        log("ERROR - RerollSpawn - No valid character for player: " .. player.name)
+        return
+    end
+
+    -- Ensure we still have their previous spawn choices
+    local spawn_choices = storage.spawn_choices[player.name]
+    if (spawn_choices == nil) then
+        log("ERROR - RerollSpawn - No spawn choices for player: " .. player.name)
+        return
+    end
+
+    -- If it is a buddy spawn, tell them we don't support this:
+    if (spawn_choices.buddy ~= nil) then
+        player.print({ "oarc-no-reroll-buddy-spawn" })
+        return
+    end
+
+    local surface = player.character.surface
+    local surface_name = surface.name
+
+    -- Confirm there is AN existing spawn point for this player on this surface
+    if (storage.unique_spawns[surface_name] == nil or storage.unique_spawns[surface_name][player.name] == nil) then
+        log("ERROR - RerollSpawn - Can't reroll? No existing spawn for " .. player.name)
+        return
+    end
+
+    -- Save a copy of the previous spawn point
+    local old_spawn_point = table.deepcopy(storage.unique_spawns[surface_name][player.name])
+
+    -- Find a new spawn point
+    local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
+    -- If that fails, just throw a warning and don't spawn them. They can try again.
+    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
+        player.print({ "oarc-no-ungenerated-land-error" })
+        return
+    end
+
+    -- Remove the old spawn point
+    if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
+        log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. surface_name)
+
+        -- Clear an area around the spawn that SHOULD not include any other bases.
+        local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
+        RegrowthMarkAreaForRemoval(surface_name, old_spawn_point.position, clear_radius)
+        TriggerCleanup()
+        script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = old_spawn_point})
+    end
+
+    -- Queue spawn generation and the player.
+    local delayed_spawn = GenerateNewSpawn(player.name, surface_name, spawn_position, spawn_choices, old_spawn_point.primary)
+    QueuePlayerForSpawn(player.name, delayed_spawn)
+
+    -- Send them to the holding pen
+    SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+
+    -- Queue joiners too!
+    for _,joiner in pairs(old_spawn_point.joiners) do
+        QueuePlayerForSpawn(joiner, delayed_spawn)
+        SafeTeleport(game.players[joiner], game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+    end
+
+    -- Announce
+    SendBroadcastMsg({"", { "oarc-spawn-rerolled", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
 end

@@ -1,4 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.10
+Date: 2024-11-11
+  Major Features:
+    - Adding support for secondary spawns on Fulgora. This is still VERY experimental and will likely have some hidden issues. Please report any bugs you find. If you want to use this feature, you must go into the in game GUI and check the enable secondary spawns checkbox for Fulgora specifically.
+    - Major work done under the hood to support secondary spawns. Depending on how Fulgora testing goes, I will add support for other planets soon.
+  Minor Features:
+    - Added some new commands: "oarc-wheres-my-cargo-pod", "oarc-reroll-spawn", "oarc-trigger-cleanup". See the in game help text for info.
+    - I now disable technology_notifications_enabled by default since it seems like this is highly requested. Only finished research is announced. I will expose settings for this later if needed.
+    - If you land on a planet where you have a custom spawn, but there is no landing-pad, you will be automatically teleported to your home spawn.
+  Info:
+    - Removed redundant "enable secondary spawns" setting. You just enable/disable per surface using the in game GUI now.
+    - Renamed "force grass" setting to "force tiles" since it can be used for more than just grass and change it to be default on.
+    - New config options (not shown in GUI) for configuring other planet/surface spawns. See planet_configs folder for examples.
+  Bugfixes:
+    - Fixed a crash if surface only had 1 basic-solid resource to place.
+    - Fix some ordering issues where enemies were removed after a spawn was placed resulting in gaps in the treeline.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.9
 Date: 2024-11-06
   Bugfixes:
