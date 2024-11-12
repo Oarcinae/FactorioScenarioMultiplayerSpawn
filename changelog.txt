@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.11
+Date: 2024-11-12
+  Bugfixes:
+    - Fixes a crash due to a migration issue if spawns were allowed on not-yet-supported planets.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.10
 Date: 2024-11-11
   Major Features:
