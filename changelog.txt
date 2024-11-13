@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.12
+Date: 2024-11-13
+  Bugfixes:
+    - Change technology research notification to use localized name.
+  Info:
+    - Add warnings regarding which surfaces are currently supported for spawning.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.11
 Date: 2024-11-12
   Bugfixes:
