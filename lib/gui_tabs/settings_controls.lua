@@ -15,6 +15,7 @@ function CreateSettingsControlsTab(tab_container, player)
 
     local label = AddLabel(tab_container, nil, { "oarc-settings-tab-description" }, my_label_style)
     label.style.bottom_padding = 5
+    label.style.maximal_width = 600
 
     local flow = tab_container.add { type = "flow", direction = "horizontal", }
     
@@ -78,6 +79,8 @@ end
 ---@return nil
 function CreateSurfaceSettingsSection(container, player)
     AddLabel(container, nil, { "oarc-settings-tab-title-surface" }, my_label_header2_style)
+    local warning = AddLabel(container, nil, { "oarc-settings-tab-surfaces-warning" }, my_warning_style)
+    warning.style.maximal_width = 300
 
     --- Create a table with 3 columns. Surface Name, Spawning Enabled, Regrowth Enabled
     local surface_table = container.add {
