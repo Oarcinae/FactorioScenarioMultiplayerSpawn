@@ -526,17 +526,27 @@ function SpawnCtrlTabGuiClick(event)
                 game.players[join_queue_player_choice].gui.screen.join_shared_spawn_wait_menu.destroy()
             end
 
-            -- Spawn the player
             local joining_player = game.players[join_queue_player_choice]
-            SetPlayerRespawn(joining_player.name, primary_spawn.surface_name, primary_spawn.position, true)
-            SendPlayerToSpawn(primary_spawn.surface_name, joining_player, true)
-            script.raise_event("oarc-mod-on-player-spawned", {player_index = joining_player.index})
-            GivePlayerStarterItems(joining_player)
-            table.insert(storage.unique_spawns[primary_spawn.surface_name][player.name].joiners, joining_player.name)
+            local joining_player_name = joining_player.name
+
+            -- Assign force
             joining_player.force = game.players[player.name].force
 
+            -- Add the player to ALL spawns owned by the host.
+            for surface_name, unique_spawn_entry in pairs(storage.unique_spawns) do
+                for player_name, unique_spawn in pairs(unique_spawn_entry) do
+                    if (player_name == player.name) then
+                        table.insert(unique_spawn.joiners, joining_player_name)
+                        SetPlayerRespawn(joining_player_name, surface_name, unique_spawn.position, true)
+                    end
+                end
+            end
+
+            -- Send player to the host's primary spawn.
+            SendPlayerToNewSpawn(joining_player_name, primary_spawn.surface_name, true)
+
             -- Render some welcoming text...
-            DisplayWelcomeGroundTextAtSpawn(joining_player, primary_spawn.surface_name, primary_spawn.position)
+            DisplayWelcomeGroundTextAtSpawn(primary_spawn.surface_name, primary_spawn.position)
 
             -- Unlock spawn control gui tab
             SetOarcGuiTabEnabled(joining_player, OARC_SPAWN_CTRL_TAB_NAME, true)

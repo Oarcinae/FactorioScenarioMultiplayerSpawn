@@ -295,6 +295,18 @@ function TableRemoveOneUsingPairs(t, val)
     end
 end
 
+---Gets a random point within a circle of a given radius and center point.
+---@param radius number
+---@param center MapPosition
+---@return MapPosition
+function GetRandomPointWithinCircle(radius, center)
+    local angle = math.random() * 2 * math.pi
+    local distance = math.random() * radius
+    local x = center.x + distance * math.cos(angle)
+    local y = center.y + distance * math.sin(angle)
+    return {x=x, y=y}
+end
+
 -- -- Get a random KEY from a table.
 -- function GetRandomKeyFromTable(t)
 --     local keyset = {}
@@ -453,6 +465,27 @@ function DeleteAllChunks(surface)
     end
 end
 
+
+---Get position for buddy spawn (for buddy placement)
+---@param position MapPosition
+---@param surface_name string
+---@param moat_enabled boolean
+---@return MapPosition
+function GetBuddySpawnPosition(position, surface_name, moat_enabled)
+
+    local spawn_config = storage.ocfg.surfaces_config[surface_name].spawn_config
+
+    local x_offset = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier * 2
+    x_offset = x_offset + storage.ocfg.spawn_general.moat_width_tiles
+    -- distance = distance + 5 -- EXTRA BUFFER?
+
+    -- Create that spawn in the global vars
+    local buddy_position = table.deepcopy(position)
+    -- The x_offset must be big enough to ensure the spawns DO NOT overlap!
+    buddy_position.x = buddy_position.x + x_offset
+
+    return buddy_position
+end
 
 -- -- Modular armor quick start
 -- function GiveQuickStartModularArmor(player)
@@ -675,7 +708,6 @@ function GetRandomVector()
     local magnitude = math.sqrt((randVec.x^2) + (randVec.y^2))
     randVec.x = randVec.x / magnitude
     randVec.y = randVec.y / magnitude
-    log("direction: x=" .. randVec.x .. ", y=" .. randVec.y)
     return randVec
 end
 
@@ -762,17 +794,32 @@ end
 
 ---Pick a random direction, go at least the minimum distance, and start looking for ungenerated chunks
 ---We try a few times (hardcoded) and then try a different random direction if we fail (up to max_tries)
----@param surface LuaSurface
+---@param surface_name string Surface name because we might need to force the creation of a new surface
 ---@param minimum_distance_chunks number Distance in chunks to start looking for ungenerated chunks
 ---@param max_tries integer Maximum number of tries to find a spawn point
 ---@return MapPosition
-function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
+function FindUngeneratedCoordinates(surface_name, minimum_distance_chunks, max_tries)
+
+    local final_position = {x=0,y=0}
+
+    -- If surface is nil, it is probably a planet? Check and create if needed.
+    local surface = game.surfaces[surface_name]
+    if (surface == nil) then
+        if (game.planets[surface_name] == nil) then
+            error("ERROR! No surface or planet found for requested player spawn!")
+            return final_position
+        end
+        surface = game.planets[surface_name].create_surface()
+        if (surface == nil) then
+            error("ERROR! Failed to create planet surface for player spawn!")
+            return final_position
+        end
+    end
 
     --- Get a random vector, figure out how many times to multiply it to get the minimum distance
     local direction_vector = GetRandomVector()
     local start_distance_tiles = minimum_distance_chunks * CHUNK_SIZE
     
-    local final_position = {x=0,y=0}
     local tries_remaining = max_tries - 1
 
     -- Starting search position
@@ -794,7 +841,7 @@ function FindUngeneratedCoordinates(surface, minimum_distance_chunks, max_tries)
         if (jumps_count <= 0) then
 
             if (tries_remaining > 0) then
-                return FindUngeneratedCoordinates(surface, minimum_distance_chunks, tries_remaining)
+                return FindUngeneratedCoordinates(surface_name, minimum_distance_chunks, tries_remaining)
             else
                 log("WARNING - FindUngeneratedCoordinates - Hit max distance!")
                 break
@@ -1355,6 +1402,10 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     local tree_radius_sqr_inner = ((tileRadius - 1 - tree_width) ^ 2) -- 1 less to make sure trees are inside the spawn area
     local tree_radius_sqr_outer = ((tileRadius - 1) ^ 2)
 
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
+    local liquid_tile = surface_config.spawn_config.liquid_tile
+    local fish_enabled = (liquid_tile == "water")
+
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
@@ -1382,10 +1433,10 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
                     -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
                     -- land connections if the spawn is on or near land.
                 elseif ((distSqr < moat_radius_sqr) and (distSqr > tile_radius_sqr)) then
-                    table.insert(dirtTiles, { name = "water", position = { i, j } })
+                    table.insert(dirtTiles, { name = liquid_tile, position = { i, j } })
                     
                     --5% chance of fish in water
-                    if (math.random(1,20) == 1) then
+                    if fish_enabled and (math.random(1,20) == 1) then
                         surface.create_entity({name="fish", position={i + 0.5, j + 0.5}})
                     end
                 end
@@ -1396,11 +1447,18 @@ function CreateCropCircle(surface, centerPos, chunkArea, tileRadius, fillTile, m
     surface.set_tiles(dirtTiles)
 
     --Create trees (needs to be done after setting tiles!)
+    local tree_entity = surface_config.spawn_config.tree_entity
+    if (tree_entity == nil) then return end
+
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
             local distSqr = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
             if ((distSqr < tree_radius_sqr_outer) and (distSqr > tree_radius_sqr_inner)) then
-                surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
+                local pos = surface.find_non_colliding_position(tree_entity, { i, j }, 2, 0.5)
+                if (pos ~= nil) then
+                    surface.create_entity({ name = tree_entity, amount = 1, position = pos })
+                end
+                -- surface.create_entity({ name = "tree-02", amount = 1, position = { i, j } })
             end
         end
     end
@@ -1422,6 +1480,8 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
 
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
+
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
 
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1462,6 +1522,11 @@ function CreateCropOctagon(surface, centerPos, chunkArea, tileRadius, fillTile, 
     end
     surface.set_tiles(dirtTiles)
 
+    
+    --Create trees (needs to be done after setting tiles!)
+    local tree_entity = surface_config.spawn_config.tree_entity
+    if (tree_entity == nil) then return end
+    
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
         for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
@@ -1492,6 +1557,8 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
 
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
     local tree_distance_inner = tileRadius - tree_width
+
+    local surface_config = storage.ocfg.surfaces_config[surface.name]
 
     local dirtTiles = {}
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1531,6 +1598,10 @@ function CreateCropSquare(surface, centerPos, chunkArea, tileRadius, fillTile, m
     end
 
     surface.set_tiles(dirtTiles)
+
+    --Create trees (needs to be done after setting tiles!)
+    local tree_entity = surface_config.spawn_config.tree_entity
+    if (tree_entity == nil) then return end
 
     --Create trees (needs to be done after setting tiles!)
     for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
@@ -1578,14 +1649,16 @@ function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge,
     surface.set_tiles(tiles)
 end
 
--- Create a horizontal line of water
+-- Create a horizontal line of tiles (typically used for water)
 ---@param surface LuaSurface
 ---@param leftPos TilePosition
 ---@param length integer
-function CreateWaterStrip(surface, leftPos, length)
+---@param tile_name string
+---@return nil
+function CreateTileStrip(surface, leftPos, length, tile_name)
     local waterTiles = {}
     for i = 0, length-1, 1 do
-        table.insert(waterTiles, { name = "water", position = { leftPos.x + i, leftPos.y } })
+        table.insert(waterTiles, { name = tile_name, position = { leftPos.x + i, leftPos.y } })
     end
     surface.set_tiles(waterTiles)
 end
@@ -1616,6 +1689,65 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
                     position = { position.x + x, position.y + y }
                 })
             end
+        end
+    end
+end
+
+--- Function to generate a resource patch, of a certain size/amount at a pos.
+---@param surface LuaSurface
+---@param position MapPosition
+---@return nil
+function PlaceRandomEntities(surface, position)
+    local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
+    local random_entities = spawn_config.random_entities
+    if (random_entities == nil) then return end
+
+    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
+    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier - tree_width
+
+    --Iterate through the random entities and place them
+    for _, entry in pairs(random_entities) do
+        local entity_name = entry.name
+
+        for i = 1, entry.count do
+
+            local random_pos = GetRandomPointWithinCircle(radius, position)
+            local open_pos = surface.find_non_colliding_position(entity_name, random_pos, tree_width, 0.5)
+
+            if (open_pos ~= nil) then
+                surface.create_entity({
+                    name = entity_name,
+                    position = open_pos
+                })
+            end
+        end
+    end
+end
+
+--- Randomly place lightning attractors specific for Fulgora. This should space them out so they don't overlap too much.
+---@param surface LuaSurface
+---@param position MapPosition
+---@return nil
+function PlaceFulgoranLightningAttractors(surface, position, count)
+    local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
+    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+
+    -- HARDCODED FOR NOW
+    local ATTRACTOR_NAME = "fulgoran-ruin-attractor"
+    local ATTRACTOR_RADIUS = 20
+
+    --Iterate through and place them and use the largest available entity
+    for i = 1, count do
+
+        local random_pos = GetRandomPointWithinCircle(radius, position)
+        local open_pos = surface.find_non_colliding_position("crash-site-spaceship", random_pos, 1, 0.5)
+
+        if (open_pos ~= nil) then
+            surface.create_entity({
+                name = ATTRACTOR_NAME,
+                position = open_pos,
+                force = "player" -- Same as native game
+            })
         end
     end
 end

@@ -461,10 +461,10 @@ function CreateMiscConfig(container, surface_name)
 
      AddLabel(misc_flow, nil, { "oarc-misc-config" }, my_label_header2_style)
 
-    AddLabel(misc_flow, nil, { "oarc-water" }, my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-length" }, "water", "length", { "oarc-water-length-tooltip" })
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-x-offset" }, "water", "x_offset", { "oarc-water-x-offset-tooltip" })
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-water-y-offset" }, "water", "y_offset", { "oarc-water-y-offset-tooltip" })
+    AddLabel(misc_flow, nil, { "oarc-liquid" }, my_player_list_style)
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-liquid-length" }, "water", "length", { "oarc-liquid-length-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-liquid-x-offset" }, "water", "x_offset", { "oarc-liquid-x-offset-tooltip" })
+    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-liquid-y-offset" }, "water", "y_offset", { "oarc-liquid-y-offset-tooltip" })
     AddSpacerLine(misc_flow)
 
     AddLabel(misc_flow, nil, { "oarc-shared-chest" }, my_player_list_style)
