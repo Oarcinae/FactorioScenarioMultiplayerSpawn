@@ -336,6 +336,13 @@ function RuntimeModSettingChanged(event)
         local new_value = storage.ocfg.gameplay.enable_coin_shop
         AddRemoveOarcGuiTabForAllPlayers(OARC_ITEM_SHOP_TAB_NAME, settings.global[event.setting].value --[[@as boolean]], true)
     end
+
+    --Exception for regrowth, refresh the content tab so the checkboxes get updated
+    if (event.setting == "oarc-mod-enable-regrowth") then
+        for _,player in pairs(game.players) do
+            OarcGuiRefreshContent(player)
+        end
+    end
 end
 
 ---A probably quit stupid function to let me lookup and set the storage.ocfg entries using a key table.
