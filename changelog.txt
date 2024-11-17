@@ -3,8 +3,11 @@ Version: 2.1.13
 Date: ????
   Major Features:
     - Adding support for secondary spawns on Gleba and Vulcanus. This is still VERY experimental and will likely have some hidden issues. Please report any bugs you find. If you want to use this feature, you must go into the in game GUI and check the enable secondary spawns checkbox for Gleba and Vulcanus specifically.
+  Changes:
+    - Stop regrowth deleting cargo pods at center of map. (By marking the center chunks as permanent.)
+    - Change surface regrowth checkboxes to be enabled/disabled by the global setting to make it obvious that they are dependent on the global setting.
   Bugfixes:
-    - Fix regrowth deleting cargo pods at center of map.
+    - Fix regrowth surface setting not respecting previous setting state when surface is first created.
     - Fix offline enemy attack error when attacks target a player character.
   Info:
     - Add RU translation (thanks KORESHon!)

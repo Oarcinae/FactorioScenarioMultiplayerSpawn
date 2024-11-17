@@ -104,8 +104,9 @@ function CreateSurfaceSettingsSection(container, player)
         AddSurfaceCheckboxSetting(surface_table, name, "secondary_enabled", allowed.secondary, player.admin,
                                     { "oarc-settings-tab-surface-secondary-checkbox-tooltip" })
         
-        local regrowth_enabled = TableContains(storage.rg.active_surfaces, name)
-        AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", regrowth_enabled, player.admin,
+        local surface_regrowth = IsRegrowthEnabledOnSurface(name)
+        local global_regrowth = storage.ocfg.regrowth.enable_regrowth
+        AddSurfaceCheckboxSetting(surface_table, name, "regrowth_enabled", surface_regrowth, player.admin and global_regrowth,
                                     {"oarc-settings-tab-surface-regrowth-checkbox-tooltip"})
     end
     
