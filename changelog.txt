@@ -6,6 +6,7 @@ Date: ????
   Changes:
     - Stop regrowth deleting cargo pods at center of map. (By marking the center chunks as permanent.)
     - Change surface regrowth checkboxes to be enabled/disabled by the global setting to make it obvious that they are dependent on the global setting.
+    - Change moat selection to enabled by default.
   Bugfixes:
     - Fix regrowth surface setting not respecting previous setting state when surface is first created.
     - Remove offline enemy attack error messages. (Not really a bug, just false error messages.)
