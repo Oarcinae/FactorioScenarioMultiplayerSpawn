@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.13
+Date: ????
+  Major Features:
+    - Adding support for secondary spawns on Gleba and Vulcanus. This is still VERY experimental and will likely have some hidden issues. Please report any bugs you find. If you want to use this feature, you must go into the in game GUI and check the enable secondary spawns checkbox for Gleba and Vulcanus specifically.
+  Bugfixes:
+    - Fix regrowth deleting cargo pods at center of map.
+    - Fix offline enemy attack error when attacks target a player character.
+  Info:
+    - Add RU translation (thanks KORESHon!)
+---------------------------------------------------------------------------------------------------
 Version: 2.1.12
 Date: 2024-11-13
   Bugfixes:
