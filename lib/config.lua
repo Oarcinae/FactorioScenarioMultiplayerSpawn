@@ -19,6 +19,7 @@ require("lib/planet_configs/nauvis")
 require("lib/planet_configs/fulgora")
 require("lib/planet_configs/vulcanus")
 require("lib/planet_configs/gleba")
+require("lib/planet_configs/aquilo")
 
 ---@alias SpawnShapeChoice "circle" | "octagon" | "square"
 SPAWN_SHAPE_CHOICE_CIRCLE = "circle"
@@ -377,10 +378,10 @@ OCFG = {
             starting_items = GLEBA_STARTER_ITEMS,
             spawn_config = GLEBA_SPAWN_CONFIG
         },
-        -- ["aquilo"] = {
-        --     starting_items = AQUILO_STARTER_ITEMS,
-        --     spawn_config = AQUILO_SPAWN_CONFIG
-        -- }
+        ["aquilo"] = {
+            starting_items = AQUILO_STARTER_ITEMS,
+            spawn_config = AQUILO_SPAWN_CONFIG
+        }
     },
 
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
