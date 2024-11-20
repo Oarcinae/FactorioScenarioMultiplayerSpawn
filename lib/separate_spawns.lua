@@ -401,12 +401,14 @@ function GenerateStartingResources(surface, position)
     local size_mod = storage.ocfg.resource_placement.size_multiplier
     local amount_mod = storage.ocfg.resource_placement.amount_multiplier
 
+    local spawn_general = storage.ocfg.spawn_general
+
     -- Generate all resource tile patches
     -- Generate resources in random order around the spawn point.
     if storage.ocfg.resource_placement.enabled then
-        if (storage.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (storage.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
+        if (spawn_general.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (spawn_general.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
             PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
-        elseif (storage.ocfg.spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
+        elseif (spawn_general.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
         end
 
@@ -418,12 +420,15 @@ function GenerateStartingResources(surface, position)
         end
     end
 
+    local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
+    local radius = spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+
     -- Generate special fluid resource patches (oil)
     -- Autoplace using spacing and vertical offset.
     -- Reference position is the bottom of the spawn area.
     if storage.ocfg.resource_placement.enabled then
         local y_offset = storage.ocfg.resource_placement.distance_to_edge
-        local fluid_ref_pos = { x = position.x, y = position.y + storage.ocfg.spawn_general.spawn_radius_tiles - y_offset }
+        local fluid_ref_pos = { x = position.x, y = position.y + radius - y_offset }
 
         for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
 
@@ -445,7 +450,7 @@ function GenerateStartingResources(surface, position)
 
     -- This places using specified offsets if auto placement is disabled.
     else
-        local fluid_ref_pos = { x = position.x, y = position.y + storage.ocfg.spawn_general.spawn_radius_tiles }
+        local fluid_ref_pos = { x = position.x, y = position.y + radius }
         for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
             local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
             local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
@@ -581,9 +586,11 @@ function GenerateFinalSpawnPieces(delayed_spawn)
     -- Create the spawn resources here
     GenerateStartingResources(surface, delayed_spawn.position)
 
+    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+
     -- Reference position is RIGHT (WEST) of the spawn area.
     local sharing_ref_pos = {
-        x = delayed_spawn.position.x + storage.ocfg.spawn_general.spawn_radius_tiles,
+        x = delayed_spawn.position.x + radius,
         y = delayed_spawn.position.y
     }
 
@@ -623,11 +630,6 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
     -- Render some welcoming text...
     DisplayWelcomeGroundTextAtSpawn(delayed_spawn.surface_name, delayed_spawn.position)
-
-    -- -- Chart the area.
-    -- local player = game.players[delayed_spawn.host_name]
-    -- ChartArea(player.force, delayed_spawn.position, math.ceil(storage.ocfg.spawn_general.spawn_radius_tiles / CHUNK_SIZE),
-    --     surface)
 
     -- Trigger the event that the spawn was created.
     script.raise_event("oarc-mod-on-spawn-created", {spawn_data = storage.unique_spawns[delayed_spawn.surface_name][delayed_spawn.host_name]})
@@ -674,7 +676,7 @@ function DisplayWelcomeGroundTextAtSpawn(surface, position)
     -- Render some welcoming text...
     local tcolor = { 0.9, 0.7, 0.3, 0.8 }
     local ttl = 2000
-    local render_object_1 = rendering.draw_text { text = "Welcome",
+    local render_object_1 = rendering.draw_text { text = {"oarc-spawn-ground-text-welcome"},
         surface = surface,
         target = { x = position.x - 21, y = position.y - 15 },
         color = tcolor,
@@ -686,7 +688,7 @@ function DisplayWelcomeGroundTextAtSpawn(surface, position)
         -- alignment=center,
         scale_with_zoom = false,
         only_in_alt_mode = false }
-    local render_object_2 = rendering.draw_text { text = "Home",
+    local render_object_2 = rendering.draw_text { text = {"oarc-spawn-ground-text-home"},
         surface = surface,
         target = { x = position.x - 14, y = position.y - 5 },
         color = tcolor,
@@ -1424,6 +1426,12 @@ end
 ---@return nil
 function QueuePlayerForSpawn(player_name, delayed_spawn)
 
+    -- Send them to the holding pen if they are not already there.
+    local player = game.players[player_name]
+    if (player.surface.name ~= HOLDING_PEN_SURFACE_NAME) then
+        SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+    end
+
     SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true)
 
     game.players[player_name].print({ "oarc-generating-spawn-please-wait" })
@@ -1435,7 +1443,7 @@ function QueuePlayerForSpawn(player_name, delayed_spawn)
     DisplayPleaseWaitForSpawnDialog(game.players[player_name], seconds_remaining, game.surfaces[delayed_spawn.surface_name], delayed_spawn.position)
 
     table.insert(delayed_spawn.waiting_players, player_name)
-    log("QueuePlayerForSpawn - " .. player_name .. " - " .. delayed_spawn.host_name)
+    log("QueuePlayerForSpawn - Player:" .. player_name .. " - Host:" .. delayed_spawn.host_name)
 end
 
 ---Sets the custom spawn point for a player. They can have one per surface.
@@ -1515,10 +1523,11 @@ end
 ---@return OarcDelayedSpawn
 function QueueNewSpawnGeneration(unique_spawn)
 
-    -- Add a 1 chunk buffer to be safe
-    local total_spawn_width = storage.ocfg.spawn_general.spawn_radius_tiles +
-                                storage.ocfg.spawn_general.moat_width_tiles
-    local spawn_chunk_radius = math.ceil(total_spawn_width / CHUNK_SIZE) + 1
+    local spawn_config = storage.ocfg.surfaces_config[unique_spawn.surface_name].spawn_config
+    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+
+    local total_spawn_width = radius + storage.ocfg.spawn_general.moat_width_tiles
+    local spawn_chunk_radius = math.ceil(total_spawn_width / CHUNK_SIZE) + 1 -- Add a 1 chunk buffer to be safe
 
     -- This is just a rough estimate of worst case chunk generation time.
     -- If we hit this timeout, usually it means something has gone wrong.
@@ -1619,11 +1628,11 @@ function SecondarySpawn(player, surface_name)
         end
     end
 
-    -- Send them to the holding pen
-    SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
-
     -- Announce
     SendBroadcastMsg({"", { "oarc-player-new-secondary", player_name, surface_name }, " ", GetGPStext(surface_name, spawn_position)})
+
+    -- Tell the player about the reroll command:
+    player.print({ "oarc-reroll-spawn-command" })
 end
 
 -- Check a table to see if there are any players waiting to spawn
