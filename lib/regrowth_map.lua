@@ -56,8 +56,13 @@ function RegrowthInit()
     ---@type RemovalListEntry[]
     storage.rg.removal_list = {}
 
+    for _,planet in pairs(game.planets) do
+        local surface_name = planet.name
+        RegrowthInitSurface(surface_name, storage.ocfg.regrowth.enable_regrowth)
+    end
+
     for surface_name,_ in pairs(game.surfaces) do
-        InitSurface(surface_name --[[@as string]])
+        RegrowthInitSurface(surface_name --[[@as string]], storage.ocfg.regrowth.enable_regrowth)
     end
 end
 
@@ -65,7 +70,7 @@ end
 ---@param event EventData.on_surface_created
 ---@return nil
 function RegrowthSurfaceCreated(event)
-    InitSurface(game.surfaces[event.surface_index].name)
+    RegrowthInitSurface(game.surfaces[event.surface_index].name, nil) -- Leave activated as default or existing setting.
 end
 
 ---Called when a surface is deleted. This is used to remove surfaces from the regrowth map.
@@ -79,10 +84,13 @@ end
 
 ---Initialize the new surface for regrowth
 ---@param surface_name string - The surface name to act on
+---@param activate boolean? - If set, the surface will be enabled/disabled for regrowth
 ---@return nil
-function InitSurface(surface_name)
+function RegrowthInitSurface(surface_name, activate)
+    if IsSurfaceBlacklisted(surface_name) then return end
 
-    if (not IsSurfaceBlacklisted(surface_name) and not TableContains(storage.rg.active_surfaces, surface_name)) then
+    -- First time setup only? TODO: This code is not very logical (if one time only, why check for nil...)
+    if (not TableContains(storage.rg.active_surfaces, surface_name)) then
         log("Adding surface to regrowth: " .. surface_name)
 
         -- Add a new surface to the regrowth map (Don't overwrite if it already exists)
@@ -101,8 +109,21 @@ function InitSurface(surface_name)
             storage.rg.we_current_surface = surface_name
         end
 
-        storage.rg[surface_name].active = true
         table.insert(storage.rg.active_surfaces, surface_name)
+
+        -- TODO: Hopefully a temporary measure to make sure map center never gets deleted.
+        -- If we can detect and redirect cargo-pods, then this can be removed.
+        for i = -2, 2 do
+            for j = -2, 2 do
+                MarkChunkSafe(surface_name, { x = i, y = j }, true)
+            end
+        end
+    end
+
+    if (activate ~= nil) then
+        storage.rg[surface_name].active = activate
+    elseif (storage.rg[surface_name].active == nil) then
+        storage.rg[surface_name].active = storage.ocfg.regrowth.enable_regrowth
     end
 end
 
@@ -143,7 +164,7 @@ end
 ---@param surface_name string - The surface name to act on
 ---@return nil
 function RegrowthEnableSurface(surface_name)
-    InitSurface(surface_name)
+    RegrowthInitSurface(surface_name, true)
 end
 
 ---Trigger an immediate cleanup of any chunks that are marked for removal.
@@ -412,8 +433,8 @@ function GetNextChunkAndUpdateIter()
         storage.rg.current_surface = next_surface_info.surface
         storage.rg.current_surface_index = next_surface_info.index
 
-        -- Surface may not exist
-        if game.surfaces[storage.rg.current_surface] ~= nil then
+        -- Surface may not exist or may not be active
+        if game.surfaces[storage.rg.current_surface] ~= nil and storage.rg[next_surface_info.surface].active then
             storage.rg.chunk_iter = game.surfaces[storage.rg.current_surface].get_chunks()
             next_chunk = storage.rg.chunk_iter()
         end
@@ -442,8 +463,8 @@ function GetNextChunkAndUpdateWorldEaterIter()
         storage.rg.we_current_surface = next_surface_info.surface
         storage.rg.we_current_surface_index = next_surface_info.index
 
-        -- Surface may not exist
-        if game.surfaces[storage.rg.we_current_surface] ~= nil then
+        -- Surface may not exist or may not be active
+        if game.surfaces[storage.rg.we_current_surface] ~= nil and storage.rg[next_surface_info.surface].active then
             storage.rg.we_chunk_iter = game.surfaces[storage.rg.we_current_surface].get_chunks()
             next_chunk = storage.rg.we_chunk_iter()
         end

@@ -17,6 +17,9 @@
 
 require("lib/planet_configs/nauvis")
 require("lib/planet_configs/fulgora")
+require("lib/planet_configs/vulcanus")
+require("lib/planet_configs/gleba")
+require("lib/planet_configs/aquilo")
 
 ---@alias SpawnShapeChoice "circle" | "octagon" | "square"
 SPAWN_SHAPE_CHOICE_CIRCLE = "circle"
@@ -363,22 +366,22 @@ OCFG = {
             starting_items = NAUVIS_STARTER_ITEMS,
             spawn_config = NAUVIS_SPAWN_CONFIG
         },
-        -- ["vulcanus"] = {
-        --     starting_items = NAUVIS_STARTER_ITEMS,
-        --     spawn_config = NAUVIS_SPAWN_CONFIG
-        -- },
+        ["vulcanus"] = {
+            starting_items = VULCANUS_STARTER_ITEMS,
+            spawn_config = VULCANUS_SPAWN_CONFIG
+        },
         ["fulgora"] = {
             starting_items = FULGORA_STARTER_ITEMS,
             spawn_config = FULGORA_SPAWN_CONFIG
         },
-        -- ["gleba"] = {
-        --     starting_items = NAUVIS_STARTER_ITEMS,
-        --     spawn_config = NAUVIS_SPAWN_CONFIG
-        -- },
-        -- ["aquilo"] = {
-        --     starting_items = NAUVIS_STARTER_ITEMS,
-        --     spawn_config = NAUVIS_SPAWN_CONFIG
-        -- }
+        ["gleba"] = {
+            starting_items = GLEBA_STARTER_ITEMS,
+            spawn_config = GLEBA_SPAWN_CONFIG
+        },
+        ["aquilo"] = {
+            starting_items = AQUILO_STARTER_ITEMS,
+            spawn_config = AQUILO_SPAWN_CONFIG
+        }
     },
 
     -- Surfaces blacklist (Ignore these surfaces completely for spawning and regrowth!)
@@ -511,6 +514,7 @@ OCFG = {
 ---@field shared_chest_position OarcOffsetPosition Location of shared chest relative to spawn center (if enabled)
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
+---@field gleba_resources table<string, OarcConfigGlebaResource> Spawn area config for gleba-style resources (like plants and stromatolites)
 
 ---@class OarcConfigSpawnGeneral
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
@@ -559,6 +563,12 @@ OCFG = {
 ---@field y_offset_start integer
 ---@field x_offset_next integer
 ---@field y_offset_next integer
+
+---@class OarcConfigGlebaResource
+---@field tile string The tile to place
+---@field entities string[] The entities that can be placed on the tile
+---@field size integer The size of the resource patch
+---@field density number How often we attempt to place an entity per tile (so if the entity is bigger, then even a density < 1 might still completely fill the area)
 
 ---@class OarcStoreItem
 ---@field cost integer

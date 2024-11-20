@@ -286,7 +286,7 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
             tags = { action = "oarc_spawn_options", setting = "moat_option" },
             type = "checkbox",
             caption = { "oarc-moat-option" },
-            state = false,
+            state = true, -- Default to true
             tooltip = { "oarc-moat-option-tooltip" }
         }
     end
@@ -609,11 +609,11 @@ function DisplaySpawnOptions(player)
     end
     ---@type OarcSpawnChoices
     local spawn_choices_entry = {
-        surface_name = storage.ocfg.gameplay.default_surface,
+        surface_name = gameplay.default_surface,
         team = default_team,
-        moat = false, --storage.ocfg.gameplay.allow_moats_around_spawns TODO: Change default
+        moat = gameplay.allow_moats_around_spawns,
         buddy = nil,
-        distance = storage.ocfg.gameplay.near_spawn_distance,
+        distance = gameplay.near_spawn_distance,
         host = nil,
         buddy_team = false
     }
