@@ -303,10 +303,13 @@ function RerollSpawn(player)
     -- Send them to the holding pen
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
 
-    -- Queue joiners too!
+    -- Queue joiners too (if they are on this surface?)
     for _,joiner in pairs(old_spawn_point.joiners) do
-        QueuePlayerForSpawn(joiner, delayed_spawn)
-        SafeTeleport(game.players[joiner], game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+        local joiner_player = game.players[joiner]
+        if (joiner_player ~= nil) and joiner_player.surface.name == surface_name then
+            QueuePlayerForSpawn(joiner, delayed_spawn)
+            SafeTeleport(game.players[joiner], game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+        end
     end
 
     -- Announce

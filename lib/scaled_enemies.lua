@@ -8,7 +8,8 @@
 ENEMY_FORCES_NAMES = { "enemy" }
 ENEMY_FORCES_NAMES_INCL_NEUTRAL = { "enemy", "neutral" }
 
-ENEMY_BUILT_TYPES = { "biter-spawner", "spitter-spawner", "small-worm-turret", "medium-worm-turret", "big-worm-turret", "behemoth-worm-turret" }
+ENEMY_BUILT_TYPES = { "biter-spawner", "spitter-spawner", "small-worm-turret", "medium-worm-turret", "big-worm-turret",
+    "behemoth-worm-turret" }
 
 
 ---Downgrades worms based on distance from origin and near/far spawn distances.
@@ -16,18 +17,17 @@ ENEMY_BUILT_TYPES = { "biter-spawner", "spitter-spawner", "small-worm-turret", "
 ---@param event EventData.on_chunk_generated
 ---@return nil
 function DowngradeWormsDistanceBasedOnChunkGenerate(event)
-
     ---@type OarcConfigGameplaySettings
     local gameplay = storage.ocfg.gameplay
 
     if (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.near_spawn_distance * CHUNK_SIZE)) then
         DowngradeWormsInArea(event.surface, event.area, 50, 100, 100) -- 50% small, 50% medium
     elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_distance * CHUNK_SIZE)) then
-        DowngradeWormsInArea(event.surface, event.area, 25, 50, 95) -- 25% small, 25% medium, 45% big, 5% behemoth
+        DowngradeWormsInArea(event.surface, event.area, 25, 50, 95)   -- 25% small, 25% medium, 45% big, 5% behemoth
     elseif (util.distance({ x = 0, y = 0 }, event.area.left_top) < (gameplay.far_spawn_distance * CHUNK_SIZE * 1.5)) then
-        DowngradeWormsInArea(event.surface, event.area, 0, 40, 85) -- 40% medium, 45% big, 15% behemoth
+        DowngradeWormsInArea(event.surface, event.area, 0, 40, 85)    -- 40% medium, 45% big, 15% behemoth
     else
-        DowngradeWormsInArea(event.surface, event.area, 0, 20, 50) -- 20% medium, 30% big, 50% behemoth
+        DowngradeWormsInArea(event.surface, event.area, 0, 20, 50)    -- 20% medium, 30% big, 50% behemoth
     end
 end
 
@@ -35,7 +35,6 @@ end
 ---@param event EventData.on_chunk_generated
 ---@return nil
 function DowngradeAndReduceEnemiesOnChunkGenerate(event)
-
     local surface = event.surface
     local chunk_area = event.area
 
@@ -48,25 +47,33 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
         y = chunk_area.left_top.y + (CHUNK_SIZE / 2)
     }
 
+    -- TODO: Change this lookup to be done once during surface init.
+    local nauvis_enemies = surface.map_gen_settings.autoplace_controls["enemy-base"] ~= nil
+    local gleba_enemies = surface.map_gen_settings.autoplace_controls["gleba_enemy_base"] ~= nil
+    -- local vulcanus_enemies = surface.map_gen_settings.territory_settings ~= nil
+
     -- Make chunks near a spawn safe by removing enemies
     if (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius * CHUNK_SIZE) then
-        RemoveEnemiesInArea(surface, chunk_area)
+        if nauvis_enemies or gleba_enemies then
+            RemoveEnemiesInArea(surface, chunk_area)
+        end
 
         -- Create a warning area with heavily reduced enemies
     elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
-
-        -- TODO: Refactor this to reduce calls to find_entities_filtered!
-        ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.warn_reduction)
-        RemoveWormsInArea(surface, chunk_area, false, true, true, true) -- remove all non-small worms.
+        if nauvis_enemies then
+            -- TODO: Refactor this to reduce calls to find_entities_filtered!
+            ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.warn_reduction)
+            RemoveWormsInArea(surface, chunk_area, false, true, true, true) -- remove all non-small worms.
+        end
 
         -- Create a third area with moderately reduced enemies
     elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
-
-        -- TODO: Refactor this to reduce calls to find_entities_filtered!
-        ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.danger_reduction)
-        RemoveWormsInArea(surface, chunk_area, false, false, true, true) -- remove all huge/behemoth worms.
+        if nauvis_enemies then
+            -- TODO: Refactor this to reduce calls to find_entities_filtered!
+            ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.danger_reduction)
+            RemoveWormsInArea(surface, chunk_area, false, false, true, true) -- remove all huge/behemoth worms.
+        end
     end
-
 end
 
 ---Convenient way to remove aliens, just provide an area
@@ -115,21 +122,21 @@ function DowngradeWormsInArea(surface, area, small_percent, medium_percent, big_
             entity.destroy()
             surface.create_entity { name = "small-worm-turret", position = worm_pos, force = force }
 
-        -- ELSE If number is less than medium percent, change to medium
+            -- ELSE If number is less than medium percent, change to medium
         elseif (rand_percent <= medium_percent) then
             if (not (worm_name == "medium-worm-turret")) then
                 entity.destroy()
                 surface.create_entity { name = "medium-worm-turret", position = worm_pos, force = force }
             end
 
-        -- ELSE If number is less than big percent, change to big
+            -- ELSE If number is less than big percent, change to big
         elseif (rand_percent <= big_percent) then
             if (not (worm_name == "big-worm-turret")) then
                 entity.destroy()
                 surface.create_entity { name = "big-worm-turret", position = worm_pos, force = force }
             end
 
-        -- ELSE ignore it.
+            -- ELSE ignore it.
         end
     end
 end
@@ -198,7 +205,6 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
     elseif (util.distance(enemy_pos, closest_spawn.position) < storage.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
         if ((enemy_name == "biter-spawner") or (enemy_name == "spitter-spawner")) then
             -- Do nothing.
-
         elseif ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
             event.entity.destroy()
             surface.create_entity { name = "small-biter", position = enemy_pos, force = game.forces.enemy }
@@ -237,7 +243,6 @@ end
 ---@param event EventData.on_entity_damaged
 ---@return nil
 function ApplySpawnerDamageScaling(event)
-
     -- Check if force is a player force
     if (event.force == nil) then
         log("Entity damaged with no force")
@@ -253,7 +258,8 @@ function ApplySpawnerDamageScaling(event)
 
     -- Get distance to spawn_position
     local distance = util.distance(spawn.position, entity.position)
-    local max_danger_distance = storage.ocfg.surfaces_config[surface_name].spawn_config.safe_area.danger_radius * CHUNK_SIZE
+    local max_danger_distance = storage.ocfg.surfaces_config[surface_name].spawn_config.safe_area.danger_radius *
+    CHUNK_SIZE
 
     -- If distance is greater than the danger radius, ignore.
     if (distance > max_danger_distance) then return end
@@ -272,4 +278,59 @@ function ApplySpawnerDamageScaling(event)
     -- If evo is 1, and distance to spawn is 0, then damage_modifier is 10
     -- If evo is 1, and distance to spawn is 1, then damage_modifier is 1
     -- If evo is 0, then damage_modifier is 1
+end
+
+---@param event EventData.on_segment_entity_created
+---@return nil
+function TrackDemolishers(event)
+    local entity = event.entity --[[@as LuaEntity]]
+    if (entity.type ~= "segmented-unit") or (not entity.valid) then return end
+    if (entity.name == "big-demolisher") or (entity.name == "medium-demolisher") or (entity.name == "small-demolisher") then
+        if storage.demolisher_tracker == nil then
+            storage.demolisher_tracker = {}
+            storage.demolisher_tracker.demolishers = {}
+        end
+
+        if storage.demolisher_tracker.demolishers[entity.unit_number] == nil then
+            storage.demolisher_tracker.demolishers[entity.unit_number] = entity
+        end
+    else
+        log("Unexpected segmented-unit entity type spawned: " .. entity.name)
+    end
+end
+
+---This function checks where demolishers are every tick and if it is inside the warning zone it gets removed.
+---TODO: This is a TEMPORARY WORK AROUND until there is a better demolisher and territory API.
+-- Shouldn't be too bad since we only check a single one per tick.
+---@param event EventData.on_tick
+---@return nil
+function RemoveDemolishersInWarningZone(event)
+    if storage.demolisher_tracker == nil then return end
+
+    --TODO: Figure out lua type annotation?!
+    local index, next_demolisher = next(storage.demolisher_tracker.demolishers, storage.demolisher_tracker.index)
+
+    if next_demolisher == nil then
+        storage.demolisher_tracker.index = nil
+        return
+    end
+
+    if next_demolisher.valid then
+        local closest_spawn = GetClosestUniqueSpawn(next_demolisher.surface.name, next_demolisher.position)
+        if (closest_spawn == nil) then return end
+
+        local distance = util.distance(next_demolisher.position, closest_spawn.position)
+        local safe_radius_tiles = (storage.ocfg.surfaces_config[next_demolisher.surface.name].spawn_config.safe_area.safe_radius) * CHUNK_SIZE -- TODO: Should probably cache this on first init.
+
+        if (distance < safe_radius_tiles) then
+            next_demolisher.destroy()
+            storage.demolisher_tracker.demolishers[index] = nil
+            storage.demolisher_tracker.index = nil
+        else
+            storage.demolisher_tracker.index = index
+        end
+    else
+        storage.demolisher_tracker.demolishers[index] = nil
+        storage.demolisher_tracker.index = nil
+    end
 end

@@ -84,7 +84,7 @@ NAUVIS_SPAWN_CONFIG =
 
         -- Danger area has slightly reduced aliens
         -- This is the radius in chunks of danger area.
-        danger_radius = 32,
+        danger_radius = 24,
 
         -- 1 : X (spawners alive : spawners destroyed) in this area
         danger_reduction = 5,

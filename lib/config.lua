@@ -17,6 +17,7 @@
 
 require("lib/planet_configs/nauvis")
 require("lib/planet_configs/fulgora")
+require("lib/planet_configs/vulcanus")
 
 ---@alias SpawnShapeChoice "circle" | "octagon" | "square"
 SPAWN_SHAPE_CHOICE_CIRCLE = "circle"
@@ -363,10 +364,10 @@ OCFG = {
             starting_items = NAUVIS_STARTER_ITEMS,
             spawn_config = NAUVIS_SPAWN_CONFIG
         },
-        -- ["vulcanus"] = {
-        --     starting_items = NAUVIS_STARTER_ITEMS,
-        --     spawn_config = NAUVIS_SPAWN_CONFIG
-        -- },
+        ["vulcanus"] = {
+            starting_items = VULCANUS_STARTER_ITEMS,
+            spawn_config = VULCANUS_SPAWN_CONFIG
+        },
         ["fulgora"] = {
             starting_items = FULGORA_STARTER_ITEMS,
             spawn_config = FULGORA_SPAWN_CONFIG

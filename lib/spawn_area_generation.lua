@@ -8,6 +8,8 @@
 ---@param chunk_area BoundingBox
 ---@return nil
 function CreateCropCircle(surface, unique_spawn, chunk_area)
+
+    --- Repeated code... TODO: Extract into a function
     --------------------------------------------
     local spawn_general = storage.ocfg.spawn_general
     local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
@@ -20,11 +22,11 @@ function CreateCropCircle(surface, unique_spawn, chunk_area)
         fill_tile = spawn_config.fill_tile
     end
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging
-
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
+
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -105,11 +107,11 @@ function CreateCropOctagon(surface, unique_spawn, chunk_area)
         fill_tile = spawn_config.fill_tile
     end
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging
-
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
+
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -191,11 +193,11 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
         fill_tile = spawn_config.fill_tile
     end
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging
-
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
+
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -253,41 +255,6 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
             end
         end
     end
-end
-
----Add a circle of water
----@param surface LuaSurface
----@param centerPos MapPosition
----@param chunkArea BoundingBox
----@param tileRadius number
----@param moatTile string
----@param bridge boolean
----@param shape SpawnShapeChoice
----@return nil
-function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge, shape)
-    local tileRadSqr = tileRadius ^ 2
-
-    local tiles = {}
-    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
-        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
-            if (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
-                -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
-                -- land connections if the spawn is on or near land.
-            else
-                -- This ( X^2 + Y^2 ) is used to calculate if something
-                -- is inside a circle area.
-                local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
-
-                -- Create a circle of water
-                if ((distVar < tileRadSqr + (1500 * storage.ocfg.spawn_general.moat_width_tiles)) and
-                        (distVar > tileRadSqr)) then
-                    table.insert(tiles, { name = moatTile, position = { i, j } })
-                end
-            end
-        end
-    end
-
-    surface.set_tiles(tiles)
 end
 
 -- Create a horizontal line of tiles (typically used for water)
