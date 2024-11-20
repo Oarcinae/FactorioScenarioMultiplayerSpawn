@@ -18,6 +18,7 @@
 require("lib/planet_configs/nauvis")
 require("lib/planet_configs/fulgora")
 require("lib/planet_configs/vulcanus")
+require("lib/planet_configs/gleba")
 
 ---@alias SpawnShapeChoice "circle" | "octagon" | "square"
 SPAWN_SHAPE_CHOICE_CIRCLE = "circle"
@@ -372,13 +373,13 @@ OCFG = {
             starting_items = FULGORA_STARTER_ITEMS,
             spawn_config = FULGORA_SPAWN_CONFIG
         },
-        -- ["gleba"] = {
-        --     starting_items = NAUVIS_STARTER_ITEMS,
-        --     spawn_config = NAUVIS_SPAWN_CONFIG
-        -- },
+        ["gleba"] = {
+            starting_items = GLEBA_STARTER_ITEMS,
+            spawn_config = GLEBA_SPAWN_CONFIG
+        },
         -- ["aquilo"] = {
-        --     starting_items = NAUVIS_STARTER_ITEMS,
-        --     spawn_config = NAUVIS_SPAWN_CONFIG
+        --     starting_items = AQUILO_STARTER_ITEMS,
+        --     spawn_config = AQUILO_SPAWN_CONFIG
         -- }
     },
 
@@ -512,6 +513,7 @@ OCFG = {
 ---@field shared_chest_position OarcOffsetPosition Location of shared chest relative to spawn center (if enabled)
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
+---@field growth_resources table<string, OarcConfigGrowthResource> Spawn area config for growth resources (like gleba trees)
 
 ---@class OarcConfigSpawnGeneral
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
@@ -560,6 +562,11 @@ OCFG = {
 ---@field y_offset_start integer
 ---@field x_offset_next integer
 ---@field y_offset_next integer
+
+---@class OarcConfigGrowthResource
+---@field tile string The tile to place
+---@field entity string The entity (tree that grows on this specific tile)
+---@field size integer
 
 ---@class OarcStoreItem
 ---@field cost integer

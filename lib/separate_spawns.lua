@@ -372,7 +372,7 @@ end
 ---@param spawn_config OarcConfigSpawn
 ---@param surface LuaSurface
 ---@return nil
-function GenerateStartingLiquedStrip(delayed_spawn, spawn_config, surface)
+function GenerateStartingLiquidStrip(delayed_spawn, spawn_config, surface)
 
     local water_data = spawn_config.water
     -- Reference position is the top of the spawn area.
@@ -398,6 +398,7 @@ end
 ---@return nil
 function GenerateStartingResources(surface, position)
 
+    --TODO: This should come from map gen settings instead:
     local size_mod = storage.ocfg.resource_placement.size_multiplier
     local amount_mod = storage.ocfg.resource_placement.amount_multiplier
 
@@ -478,19 +479,26 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     -- Create list of resource tiles
     ---@type table<string>
     local r_list = {}
-    for r_name, _ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
+    for r_name, _ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources) do
         if (r_name ~= "") then
             table.insert(r_list, r_name)
         end
     end
+
+    for g_name,_ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.growth_resources) do
+        if (g_name ~= "") then
+            table.insert(r_list, g_name)
+        end
+    end
+
     ---@type table<string>
     local shuffled_list = FYShuffle(r_list)
+    local num_resources = table_size(shuffled_list)
 
     -- This places resources in a semi-circle
     local surface_config = storage.ocfg.surfaces_config[surface.name]
     local angle_offset_radians = math.rad(storage.ocfg.resource_placement.angle_offset)
     local angle_final_radians = math.rad(storage.ocfg.resource_placement.angle_final)
-    local num_resources = table_size(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources)
     local radius = storage.ocfg.spawn_general.spawn_radius_tiles * surface_config.spawn_config.radius_modifier - storage.ocfg.resource_placement.distance_to_edge
 
     -- Special case for only one resource, place it in the middle of the semi-circle.
@@ -504,7 +512,13 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         local pos = { x = math.floor(tx), y = math.floor(ty) }
 
         local resourceConfig = surface_config.spawn_config.solid_resources[r_name]
-        GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
+        if (resourceConfig ~= nil) then
+            GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
+        else
+            local gResourceConfig = surface_config.spawn_config.growth_resources[r_name]
+            GenerateGrowthResourcePatch(surface, gResourceConfig.tile, gResourceConfig.entity, gResourceConfig.size * size_mod, pos)
+        end
+
     else
         local theta = ((angle_final_radians - angle_offset_radians) / (num_resources-1));
         local count = 0
@@ -518,8 +532,13 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
 
             local pos = { x = math.floor(tx), y = math.floor(ty) }
 
-            local resourceConfig = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
-            GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
+            local resourceConfig = surface_config.spawn_config.solid_resources[r_name]
+            if (resourceConfig ~= nil) then
+                GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
+            else
+                local gResourceConfig = surface_config.spawn_config.growth_resources[r_name]
+                GenerateGrowthResourcePatch(surface, gResourceConfig.tile, gResourceConfig.entity, gResourceConfig.size * size_mod, pos)
+            end
             count = count + 1
         end
     end
@@ -580,7 +599,7 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
     -- Generate water strip only if we don't have a moat.
     if (not delayed_spawn.moat or spawn_config.liquid_tile == "lava") then
-        GenerateStartingLiquedStrip(delayed_spawn, spawn_config, surface)
+        GenerateStartingLiquidStrip(delayed_spawn, spawn_config, surface)
     end
 
     -- Create the spawn resources here
@@ -754,9 +773,9 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
 
         -- Remove trees/resources inside the spawn area
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
+            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
+            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
         end
 
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then

@@ -8,9 +8,14 @@
 ENEMY_FORCES_NAMES = { "enemy" }
 ENEMY_FORCES_NAMES_INCL_NEUTRAL = { "enemy", "neutral" }
 
-ENEMY_BUILT_TYPES = { "biter-spawner", "spitter-spawner", "small-worm-turret", "medium-worm-turret", "big-worm-turret",
-    "behemoth-worm-turret" }
 
+-- gleba-spawner-small
+-- gleba-spawner
+
+-- yumako-tree
+-- copper-stromatolite
+-- jellystem
+-- yumako-tree
 
 ---Downgrades worms based on distance from origin and near/far spawn distances.
 ---This helps make sure worms aren't too overwhelming even at these further spawn distances.
@@ -47,12 +52,15 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
         y = chunk_area.left_top.y + (CHUNK_SIZE / 2)
     }
 
+
+    
     -- TODO: Change this lookup to be done once during surface init.
     local nauvis_enemies = surface.map_gen_settings.autoplace_controls["enemy-base"] ~= nil
     local gleba_enemies = surface.map_gen_settings.autoplace_controls["gleba_enemy_base"] ~= nil
     -- local vulcanus_enemies = surface.map_gen_settings.territory_settings ~= nil
 
     -- Make chunks near a spawn safe by removing enemies
+    -- TODO: Refactor this to reduce calls to find_entities_filtered maybe?
     if (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.safe_radius * CHUNK_SIZE) then
         if nauvis_enemies or gleba_enemies then
             RemoveEnemiesInArea(surface, chunk_area)
@@ -60,17 +68,21 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
 
         -- Create a warning area with heavily reduced enemies
     elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
-        if nauvis_enemies then
-            -- TODO: Refactor this to reduce calls to find_entities_filtered!
+        if nauvis_enemies or gleba_enemies then
             ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.warn_reduction)
+        end
+
+        if nauvis_enemies then
             RemoveWormsInArea(surface, chunk_area, false, true, true, true) -- remove all non-small worms.
         end
 
         -- Create a third area with moderately reduced enemies
     elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
-        if nauvis_enemies then
-            -- TODO: Refactor this to reduce calls to find_entities_filtered!
+        if nauvis_enemies or gleba_enemies then
             ReduceEnemiesInArea(surface, chunk_area, spawn_config.safe_area.danger_reduction)
+        end
+
+        if nauvis_enemies then
             RemoveWormsInArea(surface, chunk_area, false, false, true, true) -- remove all huge/behemoth worms.
         end
     end
@@ -203,36 +215,54 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
 
         -- Warn distance is all SMALL only.
     elseif (util.distance(enemy_pos, closest_spawn.position) < storage.ocfg.surfaces_config[surface.name].spawn_config.safe_area.warn_radius * CHUNK_SIZE) then
-        if ((enemy_name == "biter-spawner") or (enemy_name == "spitter-spawner")) then
-            -- Do nothing.
-        elseif ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
+        
+        -- Nauvis enemies
+        if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter") or (enemy_name == "medium-biter")) then
             event.entity.destroy()
             surface.create_entity { name = "small-biter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded biter close to spawn.")
         elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter") or (enemy_name == "medium-spitter")) then
             event.entity.destroy()
             surface.create_entity { name = "small-spitter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded spitter close to spawn.")
         elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret") or (enemy_name == "medium-worm-turret")) then
             event.entity.destroy()
             surface.create_entity { name = "small-worm-turret", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded worm close to spawn.")
+
+        -- Gleba enemies
+        elseif ((enemy_name == "big-wriggler-pentapod") or (enemy_name == "medium-wriggler-pentapod")) then
+            event.entity.destroy()
+            surface.create_entity { name = "small-wriggler-pentapod", position = enemy_pos, force = game.forces.enemy }
+        elseif ((enemy_name == "big-stomper-pentapod")  or (enemy_name == "medium-stomper-pentapod")) then
+            event.entity.destroy()
+            surface.create_entity { name = "small-stomper-pentapod", position = enemy_pos, force = game.forces.enemy }
+        elseif ((enemy_name == "big-strafer-pentapod")  or (enemy_name == "medium-strafer-pentapod")) then
+            event.entity.destroy()
+            surface.create_entity { name = "small-strafer-pentapod", position = enemy_pos, force = game.forces.enemy }
         end
 
         -- Danger distance is MEDIUM max.
     elseif (util.distance(enemy_pos, closest_spawn.position) < storage.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
+        
+        -- Nauvis enemies
         if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
             event.entity.destroy()
             surface.create_entity { name = "medium-biter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded biter further from spawn.")
         elseif ((enemy_name == "big-spitter") or (enemy_name == "behemoth-spitter")) then
             event.entity.destroy()
             surface.create_entity { name = "medium-spitter", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded spitter further from spawn
         elseif ((enemy_name == "big-worm-turret") or (enemy_name == "behemoth-worm-turret")) then
             event.entity.destroy()
             surface.create_entity { name = "medium-worm-turret", position = enemy_pos, force = game.forces.enemy }
-            -- log("Downgraded worm further from spawn.")
+
+        -- Gleba enemies
+        elseif (enemy_name == "big-wriggler-pentapod") then
+            event.entity.destroy()
+            surface.create_entity { name = "medium-wriggler-pentapod", position = enemy_pos, force = game.forces.enemy }
+        elseif (enemy_name == "big-stomper-pentapod") then
+            event.entity.destroy()
+            surface.create_entity { name = "medium-stomper-pentapod", position = enemy_pos, force = game.forces.enemy }
+        elseif (enemy_name == "big-strafer-pentapod") then
+            event.entity.destroy()
+            surface.create_entity { name = "medium-strafer-pentapod", position = enemy_pos, force = game.forces.enemy }
         end
     end
 end
