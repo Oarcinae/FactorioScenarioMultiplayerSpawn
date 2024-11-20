@@ -579,7 +579,7 @@ function GenerateFinalSpawnPieces(delayed_spawn)
         game.surfaces[delayed_spawn.surface_name])
 
     -- Generate water strip only if we don't have a moat.
-    if (not delayed_spawn.moat) then
+    if (not delayed_spawn.moat or spawn_config.liquid_tile == "lava") then
         GenerateStartingLiquedStrip(delayed_spawn, spawn_config, surface)
     end
 

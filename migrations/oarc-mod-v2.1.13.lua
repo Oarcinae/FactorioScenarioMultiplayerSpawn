@@ -15,3 +15,16 @@ for _,surface in pairs(game.surfaces) do
         log("Applying migration for V2.1.13: Marked center of "..surface.name.." safe from regrowth.")
     end
 end
+
+-- Make sure vulcanus config is set up if it is missing.
+if script.active_mods["space-age"] ~= nil then
+    if (storage.ocfg.surfaces_config["vulcanus"] == nil) or
+        (storage.ocfg.surfaces_config["vulcanus"].spawn_config.liquid_tile ~= "lava") then
+        storage.ocfg.surfaces_config["vulcanus"] =
+        {
+            spawn_config = VULCANUS_SPAWN_CONFIG,
+            starting_items = VULCANUS_STARTER_ITEMS
+        }
+        log("Updating vulcanus config with new spawn_config and starting_items.")
+    end
+end

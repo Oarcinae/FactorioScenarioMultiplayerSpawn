@@ -22,7 +22,7 @@ VULCANUS_SPAWN_CONFIG.random_entities = {
 -- VULCANUS_SPAWN_CONFIG.safe_area.danger_reduction = 0
 
 -- Feels like more space might be helpful on Vulcanus?
-VULCANUS_SPAWN_CONFIG.radius_modifier = 1.2
+VULCANUS_SPAWN_CONFIG.radius_modifier = 1
 
 VULCANUS_SPAWN_CONFIG.solid_resources =
 {

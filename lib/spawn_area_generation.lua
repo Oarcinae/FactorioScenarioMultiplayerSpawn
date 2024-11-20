@@ -8,6 +8,8 @@
 ---@param chunk_area BoundingBox
 ---@return nil
 function CreateCropCircle(surface, unique_spawn, chunk_area)
+
+    --- Repeated code... TODO: Extract into a function
     --------------------------------------------
     local spawn_general = storage.ocfg.spawn_general
     local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
@@ -23,8 +25,8 @@ function CreateCropCircle(surface, unique_spawn, chunk_area)
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging or liquid_tile == "lava"
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -108,8 +110,8 @@ function CreateCropOctagon(surface, unique_spawn, chunk_area)
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging or liquid_tile == "lava"
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -194,8 +196,8 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging or liquid_tile == "lava"
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
