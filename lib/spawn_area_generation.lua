@@ -301,14 +301,17 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     end
 end
 
---- Function to generate a growth resource patch, of a certain size at a pos.
+--- Function to generate a gleba style resource patch (plants or stromatolites), of a certain size at a pos.
 ---@param surface LuaSurface
----@param tile_name string
----@param entity_name string
+---@param gleba_resource OarcConfigGlebaResource
 ---@param diameter integer
 ---@param position TilePosition
 ---@return nil
-function GenerateGrowthResourcePatch(surface, tile_name, entity_name, diameter, position)
+function GenerateGlebaStyleResourcePatch(surface, gleba_resource, diameter, position)
+
+    local tile_name = gleba_resource.tile
+    local entity_names = gleba_resource.entities
+
     local midPoint = math.floor(diameter / 2)
     if (diameter == 0) then
         return
@@ -333,8 +336,9 @@ function GenerateGrowthResourcePatch(surface, tile_name, entity_name, diameter, 
             -- Either it's a square, or it's a circle so we check if it's inside the circle.
             if (square_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
 
-                -- Reduce chances to spawn to make it more sparse.
-                if (math.random(1, 20) == 1) then
+                -- Density controls how often we try to place an entity per tile.
+                if (math.random() <= gleba_resource.density) then
+                    local entity_name = entity_names[math.random(1, #entity_names)]
                     local pos = surface.find_non_colliding_position(entity_name, { position.x + x, position.y + y }, 2, 0.5)
                     if (pos ~= nil) then
                         local entity = surface.create_entity({ name = entity_name, position = pos })

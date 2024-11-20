@@ -513,7 +513,7 @@ OCFG = {
 ---@field shared_chest_position OarcOffsetPosition Location of shared chest relative to spawn center (if enabled)
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
----@field growth_resources table<string, OarcConfigGrowthResource> Spawn area config for growth resources (like gleba trees)
+---@field gleba_resources table<string, OarcConfigGlebaResource> Spawn area config for gleba-style resources (like plants and stromatolites)
 
 ---@class OarcConfigSpawnGeneral
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
@@ -563,10 +563,11 @@ OCFG = {
 ---@field x_offset_next integer
 ---@field y_offset_next integer
 
----@class OarcConfigGrowthResource
+---@class OarcConfigGlebaResource
 ---@field tile string The tile to place
----@field entity string The entity (tree that grows on this specific tile)
----@field size integer
+---@field entities string[] The entities that can be placed on the tile
+---@field size integer The size of the resource patch
+---@field density number How often we attempt to place an entity per tile (so if the entity is bigger, then even a density < 1 might still completely fill the area)
 
 ---@class OarcStoreItem
 ---@field cost integer

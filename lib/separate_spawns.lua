@@ -485,7 +485,7 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         end
     end
 
-    for g_name,_ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.growth_resources) do
+    for g_name,_ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources) do
         if (g_name ~= "") then
             table.insert(r_list, g_name)
         end
@@ -515,8 +515,8 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         if (resourceConfig ~= nil) then
             GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
         else
-            local gResourceConfig = surface_config.spawn_config.growth_resources[r_name]
-            GenerateGrowthResourcePatch(surface, gResourceConfig.tile, gResourceConfig.entity, gResourceConfig.size * size_mod, pos)
+            local gResourceConfig = surface_config.spawn_config.gleba_resources[r_name]
+            GenerateGlebaStyleResourcePatch(surface, gResourceConfig, gResourceConfig.size * size_mod, pos)
         end
 
     else
@@ -536,8 +536,8 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
             if (resourceConfig ~= nil) then
                 GenerateResourcePatch(surface, r_name, resourceConfig.size * size_mod, pos, resourceConfig.amount * amount_mod)
             else
-                local gResourceConfig = surface_config.spawn_config.growth_resources[r_name]
-                GenerateGrowthResourcePatch(surface, gResourceConfig.tile, gResourceConfig.entity, gResourceConfig.size * size_mod, pos)
+                local gResourceConfig = surface_config.spawn_config.gleba_resources[r_name]
+                GenerateGlebaStyleResourcePatch(surface, gResourceConfig, gResourceConfig.size * size_mod, pos)
             end
             count = count + 1
         end

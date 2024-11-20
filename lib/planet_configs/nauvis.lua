@@ -171,7 +171,7 @@ NAUVIS_SPAWN_CONFIG =
         }
     },
 
-    growth_resources = {}
+    gleba_resources = {}
 }
 
 ---@type OarcConfigSurface

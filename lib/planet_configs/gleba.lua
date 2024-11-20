@@ -5,9 +5,9 @@ GLEBA_STARTER_ITEMS = table.deepcopy(NO_STARTER_ITEMS)
 
 ---@type OarcConfigSpawn
 GLEBA_SPAWN_CONFIG = table.deepcopy(NAUVIS_SPAWN_CONFIG)
-GLEBA_SPAWN_CONFIG.fill_tile = "highland-dark-rock-2"
+GLEBA_SPAWN_CONFIG.fill_tile = "lowland-olive-blubber"
 GLEBA_SPAWN_CONFIG.liquid_tile = "gleba-deep-lake"
-GLEBA_SPAWN_CONFIG.tree_entity = nil
+GLEBA_SPAWN_CONFIG.tree_entity = "funneltrunk"
 GLEBA_SPAWN_CONFIG.random_entities = {
     {name = "boompuff", count = 10},
     {name = "sunnycomb", count = 10},
@@ -18,6 +18,10 @@ GLEBA_SPAWN_CONFIG.random_entities = {
     {name = "cuttlepop", count = 10},
     {name = "water-cane", count = 10},
 }
+
+-- Make the warning and danger areas a bit bigger for this planet.
+GLEBA_SPAWN_CONFIG.safe_area.warn_radius = 16
+GLEBA_SPAWN_CONFIG.safe_area.danger_radius = 32
 
 GLEBA_SPAWN_CONFIG.solid_resources =
 {
@@ -31,28 +35,26 @@ GLEBA_SPAWN_CONFIG.solid_resources =
     }
 }
 
-GLEBA_SPAWN_CONFIG.growth_resources =
+GLEBA_SPAWN_CONFIG.fluid_resources = { }
+
+GLEBA_SPAWN_CONFIG.gleba_resources =
 {
     ["yumako"] = {
         tile = "natural-yumako-soil",
-        entity = "yumako-tree",
-        size = 20
+        entities = {"yumako-tree"},
+        size = 25,
+        density = 0.05
     },
     ["jellystem"] = {
         tile = "natural-jellynut-soil",
-        entity = "jellystem",
-        size = 20
+        entities = {"jellystem"},
+        size = 25,
+        density = 0.05
     },
     ["iron"] = {
-        tile = "wetland-dead-skin",
-        entity = "iron-stromatolite",
-        size = 20
-    },
-    ["copper"] = {
-        tile = "wetland-dead-skin",
-        entity = "copper-stromatolite",
-        size = 20
+        tile = "wetland-green-slime",
+        entities = {"iron-stromatolite", "copper-stromatolite"},
+        size = 25,
+        density = 0.10
     },
 }
-
-GLEBA_SPAWN_CONFIG.fluid_resources = { }

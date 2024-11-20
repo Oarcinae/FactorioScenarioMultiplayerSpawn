@@ -76,6 +76,10 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
             RemoveWormsInArea(surface, chunk_area, false, true, true, true) -- remove all non-small worms.
         end
 
+        if gleba_enemies then
+            DowngradeGlebaSpawnersInArea(surface, chunk_area)
+        end
+
         -- Create a third area with moderately reduced enemies
     elseif (util.distance(closest_spawn.position, chunkAreaCenter) < spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
         if nauvis_enemies or gleba_enemies then
@@ -85,6 +89,18 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
         if nauvis_enemies then
             RemoveWormsInArea(surface, chunk_area, false, false, true, true) -- remove all huge/behemoth worms.
         end
+    end
+end
+
+---Downgrades gleba spawners in the area
+---@param surface LuaSurface
+---@param area BoundingBox
+---@return nil
+function DowngradeGlebaSpawnersInArea(surface, area)
+    for _, entity in pairs(surface.find_entities_filtered { area = area, name = "gleba-spawner", force = "enemy" }) do
+        local position = entity.position
+        entity.destroy()
+        local spawner = surface.create_entity { name = "gleba-spawner-small", position = position, force = game.forces.enemy }
     end
 end
 
@@ -237,11 +253,17 @@ function ModifyEnemySpawnsNearPlayerStartingAreas(event)
         elseif ((enemy_name == "big-strafer-pentapod")  or (enemy_name == "medium-strafer-pentapod")) then
             event.entity.destroy()
             surface.create_entity { name = "small-strafer-pentapod", position = enemy_pos, force = game.forces.enemy }
+
+        -- Gleba spawners downgrade
+        elseif (enemy_name == "gleba-spawner") then
+            event.entity.destroy()
+            surface.create_entity { name = "gleba-spawner-small", position = enemy_pos, force = game.forces.enemy }
+
         end
 
         -- Danger distance is MEDIUM max.
     elseif (util.distance(enemy_pos, closest_spawn.position) < storage.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * CHUNK_SIZE) then
-        
+
         -- Nauvis enemies
         if ((enemy_name == "big-biter") or (enemy_name == "behemoth-biter")) then
             event.entity.destroy()
