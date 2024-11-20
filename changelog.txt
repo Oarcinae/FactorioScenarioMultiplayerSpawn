@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.13
-Date: ????
+Date: 2024-11-20
   Major Features:
     - Adding support for secondary spawns on Gleba, Vulcanus and Aquilo. This is still experimental and will likely have some issues. Please report any bugs you find. If you want to use this feature, you must go into the in game GUI and check the enable secondary spawns checkbox for the other planets specifically.
   Changes:

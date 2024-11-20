@@ -4,7 +4,12 @@
 -- TODO: Hopefully a temporary measure to make sure map center never gets deleted.
 -- If we can detect and redirect cargo-pods, then this can be removed.
 
--- Loop through each surface
+-- Regrowth make sure all planet surfaces are initialized first
+for _,planet in pairs(game.planets) do
+    RegrowthInitSurface(planet.name, storage.ocfg.regrowth.enable_regrowth)
+end
+
+-- Loop through each surface and ensure the center is marked safe from regrowth.
 for _,surface in pairs(game.surfaces) do
     if (storage.rg[surface.name] ~= nil) then
         for i = -2, 2 do
