@@ -27,46 +27,23 @@ AQUILO_SPAWN_CONFIG.radius_modifier = 0.5
 AQUILO_SPAWN_CONFIG.solid_resources = {}
 
 AQUILO_SPAWN_CONFIG.fluid_resources = {
+    -- I don't like having these in fixed positions, the randomized placement feels more fitting.
     -- ["crude-oil"] =
     -- {
     --     num_patches = 2,
     --     amount = 2000000,
     --     spacing = 6, -- Spacing between each patch, only used for automatic placing.
-
-    --     -- These are only used if not using automatic placing.
-    --     -- Starting position offset (relative to bottom/south of spawn area)
-    --     x_offset_start = -3,
-    --     y_offset_start = -10,
-    --     -- Additional position offsets for each new oil patch (relative to previous oil patch)
-    --     x_offset_next = 6,
-    --     y_offset_next = 0
     -- },
     -- ["lithium-brine"] =
     -- {
     --     num_patches = 2,
     --     amount = 900000,
     --     spacing = 6, -- Spacing between each patch, only used for automatic placing.
-
-    --     -- These are only used if not using automatic placing.
-    --     -- Starting position offset (relative to bottom/south of spawn area)
-    --     x_offset_start = -3,
-    --     y_offset_start = -10,
-    --     -- Additional position offsets for each new oil patch (relative to previous oil patch)
-    --     x_offset_next = 6,
-    --     y_offset_next = 0
     -- },
     -- ["fluorine-vent"] =
     -- {
     --     num_patches = 2,
     --     amount = 100000,
     --     spacing = 6, -- Spacing between each patch, only used for automatic placing.
-
-    --     -- These are only used if not using automatic placing.
-    --     -- Starting position offset (relative to bottom/south of spawn area)
-    --     x_offset_start = -3,
-    --     y_offset_start = -10,
-    --     -- Additional position offsets for each new oil patch (relative to previous oil patch)
-    --     x_offset_next = 6,
-    --     y_offset_next = 0
     -- }
 }
