@@ -277,6 +277,7 @@ end
 ---@param diameter integer
 ---@param position TilePosition
 ---@param amount integer
+---@return nil
 function GenerateResourcePatch(surface, resourceName, diameter, position, amount)
     local midPoint = math.floor(diameter / 2)
     if (diameter == 0) then
@@ -300,7 +301,59 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     end
 end
 
---- Function to generate a resource patch, of a certain size/amount at a pos.
+--- Function to generate a gleba style resource patch (plants or stromatolites), of a certain size at a pos.
+---@param surface LuaSurface
+---@param gleba_resource OarcConfigGlebaResource
+---@param diameter integer
+---@param position TilePosition
+---@return nil
+function GenerateGlebaStyleResourcePatch(surface, gleba_resource, diameter, position)
+
+    local tile_name = gleba_resource.tile
+    local entity_names = gleba_resource.entities
+
+    local midPoint = math.floor(diameter / 2)
+    if (diameter == 0) then
+        return
+    end
+
+    -- Right now only 2 shapes are supported. Circle and Square.
+    local square_shape = (storage.ocfg.spawn_general.resources_shape == RESOURCES_SHAPE_CHOICE_SQUARE)
+
+    local tiles = {}
+    for y = -midPoint, midPoint do
+        for x = -midPoint, midPoint do
+            -- Either it's a square, or it's a circle so we check if it's inside the circle.
+            if (square_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+                table.insert(tiles, { name = tile_name, position = { position.x + x, position.y + y } })
+            end
+        end
+    end
+    surface.set_tiles(tiles)
+
+    for y = -midPoint, midPoint do
+        for x = -midPoint, midPoint do
+            -- Either it's a square, or it's a circle so we check if it's inside the circle.
+            if (square_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+
+                -- Density controls how often we try to place an entity per tile.
+                if (math.random() <= gleba_resource.density) then
+                    local entity_name = entity_names[math.random(1, #entity_names)]
+                    local pos = surface.find_non_colliding_position(entity_name, { position.x + x, position.y + y }, 2, 0.5)
+                    if (pos ~= nil) then
+                        local entity = surface.create_entity({ name = entity_name, position = pos })
+                        if (entity.type == "plant") then
+                            entity.tick_grown = game.tick
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+---Places random entities around the spawn area.
 ---@param surface LuaSurface
 ---@param position MapPosition
 ---@return nil

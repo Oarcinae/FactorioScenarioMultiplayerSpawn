@@ -170,6 +170,8 @@ NAUVIS_SPAWN_CONFIG =
             y_offset_next = 0
         }
     },
+
+    gleba_resources = {}
 }
 
 ---@type OarcConfigSurface
