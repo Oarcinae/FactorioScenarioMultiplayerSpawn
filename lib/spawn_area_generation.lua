@@ -376,7 +376,8 @@ function PlaceRandomEntities(surface, position)
             if (open_pos ~= nil) then
                 surface.create_entity({
                     name = entity_name,
-                    position = open_pos
+                    position = open_pos,
+                    amount = entry.amount
                 })
             end
         end

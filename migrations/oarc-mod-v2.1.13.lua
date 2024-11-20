@@ -16,7 +16,7 @@ for _,surface in pairs(game.surfaces) do
     end
 end
 
--- Make sure vulcanus config is set up if it is missing.
+-- Make sure vulcanus config is set up if it is missing or outdated.
 if script.active_mods["space-age"] ~= nil then
     if (storage.ocfg.surfaces_config["vulcanus"] == nil) or
         (storage.ocfg.surfaces_config["vulcanus"].spawn_config.liquid_tile ~= "lava") then
@@ -29,7 +29,7 @@ if script.active_mods["space-age"] ~= nil then
     end
 end
 
--- Make sure gleba config is set up if it is missing.
+-- Make sure gleba config is set up if it is missing or outdated.
 if script.active_mods["space-age"] ~= nil then
     if (storage.ocfg.surfaces_config["gleba"] == nil) or
         (storage.ocfg.surfaces_config["gleba"].spawn_config.gleba_resources == nil) or
@@ -40,5 +40,18 @@ if script.active_mods["space-age"] ~= nil then
             starting_items = GLEBA_STARTER_ITEMS
         }
         log("Updating gleba config with new spawn_config and starting_items.")
+    end
+end
+
+-- Make sure aquilo config is set up if it is missing or outdated.
+if script.active_mods["space-age"] ~= nil then
+    if (storage.ocfg.surfaces_config["aquilo"] == nil) or
+        (storage.ocfg.surfaces_config["aquilo"].spawn_config.fill_tile ~= "ice-smooth") then
+        storage.ocfg.surfaces_config["aquilo"] =
+        {
+            spawn_config = AQUILO_SPAWN_CONFIG,
+            starting_items = AQUILO_STARTER_ITEMS
+        }
+        log("Updating aquilo config with new spawn_config and starting_items.")
     end
 end

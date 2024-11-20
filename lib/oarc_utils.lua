@@ -1495,37 +1495,6 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     end
 end
 
---- Function to generate a resource patch, of a certain size/amount at a pos.
----@param surface LuaSurface
----@param position MapPosition
----@return nil
-function PlaceRandomEntities(surface, position)
-    local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
-    local random_entities = spawn_config.random_entities
-    if (random_entities == nil) then return end
-
-    local tree_width = storage.ocfg.spawn_general.tree_width_tiles
-    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier - tree_width
-
-    --Iterate through the random entities and place them
-    for _, entry in pairs(random_entities) do
-        local entity_name = entry.name
-
-        for i = 1, entry.count do
-
-            local random_pos = GetRandomPointWithinCircle(radius, position)
-            local open_pos = surface.find_non_colliding_position(entity_name, random_pos, tree_width, 0.5)
-
-            if (open_pos ~= nil) then
-                surface.create_entity({
-                    name = entity_name,
-                    position = open_pos
-                })
-            end
-        end
-    end
-end
-
 --- Randomly place lightning attractors specific for Fulgora. This should space them out so they don't overlap too much.
 ---@param surface LuaSurface
 ---@param position MapPosition
