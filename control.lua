@@ -237,6 +237,10 @@ script.on_event(defines.events.on_tick, function(event)
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
+
+    if storage.ocfg.gameplay.modified_enemy_spawning then
+        RemoveDemolishersInWarningZone(event)
+    end
 end)
 
 ----------------------------------------
@@ -340,6 +344,12 @@ end)
 script.on_event(defines.events.on_biter_base_built, function(event)
     if (storage.ocfg.gameplay.modified_enemy_spawning) then
         ModifyEnemySpawnsNearPlayerStartingAreas(event)
+    end
+end)
+
+script.on_event(defines.events.on_segment_entity_created, function(event)
+    if storage.ocfg.gameplay.modified_enemy_spawning then
+        TrackDemolishers(event)
     end
 end)
 

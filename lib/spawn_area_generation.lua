@@ -8,6 +8,8 @@
 ---@param chunk_area BoundingBox
 ---@return nil
 function CreateCropCircle(surface, unique_spawn, chunk_area)
+
+    --- Repeated code... TODO: Extract into a function
     --------------------------------------------
     local spawn_general = storage.ocfg.spawn_general
     local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
@@ -20,11 +22,11 @@ function CreateCropCircle(surface, unique_spawn, chunk_area)
         fill_tile = spawn_config.fill_tile
     end
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging
-
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
+
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -105,11 +107,11 @@ function CreateCropOctagon(surface, unique_spawn, chunk_area)
         fill_tile = spawn_config.fill_tile
     end
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging
-
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
+
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -191,11 +193,11 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
         fill_tile = spawn_config.fill_tile
     end
 
-    local moat = unique_spawn.moat
-    local bridge = storage.ocfg.gameplay.enable_moat_bridging
-
     local liquid_tile = spawn_config.liquid_tile
     local fish_enabled = (liquid_tile == "water")
+
+    local moat = unique_spawn.moat and liquid_tile ~= "lava"
+    local bridge = storage.ocfg.gameplay.enable_moat_bridging
 
     local moat_width = storage.ocfg.spawn_general.moat_width_tiles
     local tree_width = storage.ocfg.spawn_general.tree_width_tiles
@@ -255,41 +257,6 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
     end
 end
 
----Add a circle of water
----@param surface LuaSurface
----@param centerPos MapPosition
----@param chunkArea BoundingBox
----@param tileRadius number
----@param moatTile string
----@param bridge boolean
----@param shape SpawnShapeChoice
----@return nil
-function CreateMoat(surface, centerPos, chunkArea, tileRadius, moatTile, bridge, shape)
-    local tileRadSqr = tileRadius ^ 2
-
-    local tiles = {}
-    for i = chunkArea.left_top.x, chunkArea.right_bottom.x, 1 do
-        for j = chunkArea.left_top.y, chunkArea.right_bottom.y, 1 do
-            if (bridge and ((j == centerPos.y - 1) or (j == centerPos.y) or (j == centerPos.y + 1))) then
-                -- This will leave the tiles "as is" on the left and right of the spawn which has the effect of creating
-                -- land connections if the spawn is on or near land.
-            else
-                -- This ( X^2 + Y^2 ) is used to calculate if something
-                -- is inside a circle area.
-                local distVar = math.floor((centerPos.x - i) ^ 2 + (centerPos.y - j) ^ 2)
-
-                -- Create a circle of water
-                if ((distVar < tileRadSqr + (1500 * storage.ocfg.spawn_general.moat_width_tiles)) and
-                        (distVar > tileRadSqr)) then
-                    table.insert(tiles, { name = moatTile, position = { i, j } })
-                end
-            end
-        end
-    end
-
-    surface.set_tiles(tiles)
-end
-
 -- Create a horizontal line of tiles (typically used for water)
 ---@param surface LuaSurface
 ---@param leftPos TilePosition
@@ -310,6 +277,7 @@ end
 ---@param diameter integer
 ---@param position TilePosition
 ---@param amount integer
+---@return nil
 function GenerateResourcePatch(surface, resourceName, diameter, position, amount)
     local midPoint = math.floor(diameter / 2)
     if (diameter == 0) then
@@ -333,7 +301,59 @@ function GenerateResourcePatch(surface, resourceName, diameter, position, amount
     end
 end
 
---- Function to generate a resource patch, of a certain size/amount at a pos.
+--- Function to generate a gleba style resource patch (plants or stromatolites), of a certain size at a pos.
+---@param surface LuaSurface
+---@param gleba_resource OarcConfigGlebaResource
+---@param diameter integer
+---@param position TilePosition
+---@return nil
+function GenerateGlebaStyleResourcePatch(surface, gleba_resource, diameter, position)
+
+    local tile_name = gleba_resource.tile
+    local entity_names = gleba_resource.entities
+
+    local midPoint = math.floor(diameter / 2)
+    if (diameter == 0) then
+        return
+    end
+
+    -- Right now only 2 shapes are supported. Circle and Square.
+    local square_shape = (storage.ocfg.spawn_general.resources_shape == RESOURCES_SHAPE_CHOICE_SQUARE)
+
+    local tiles = {}
+    for y = -midPoint, midPoint do
+        for x = -midPoint, midPoint do
+            -- Either it's a square, or it's a circle so we check if it's inside the circle.
+            if (square_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+                table.insert(tiles, { name = tile_name, position = { position.x + x, position.y + y } })
+            end
+        end
+    end
+    surface.set_tiles(tiles)
+
+    for y = -midPoint, midPoint do
+        for x = -midPoint, midPoint do
+            -- Either it's a square, or it's a circle so we check if it's inside the circle.
+            if (square_shape or ((x) ^ 2 + (y) ^ 2 < midPoint ^ 2)) then
+
+                -- Density controls how often we try to place an entity per tile.
+                if (math.random() <= gleba_resource.density) then
+                    local entity_name = entity_names[math.random(1, #entity_names)]
+                    local pos = surface.find_non_colliding_position(entity_name, { position.x + x, position.y + y }, 2, 0.5)
+                    if (pos ~= nil) then
+                        local entity = surface.create_entity({ name = entity_name, position = pos })
+                        if (entity.type == "plant") then
+                            entity.tick_grown = game.tick
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+---Places random entities around the spawn area.
 ---@param surface LuaSurface
 ---@param position MapPosition
 ---@return nil
@@ -356,7 +376,8 @@ function PlaceRandomEntities(surface, position)
             if (open_pos ~= nil) then
                 surface.create_entity({
                     name = entity_name,
-                    position = open_pos
+                    position = open_pos,
+                    amount = entry.amount
                 })
             end
         end

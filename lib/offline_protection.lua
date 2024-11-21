@@ -60,16 +60,14 @@ function OarcModifyEnemyGroup(event)
 
     -- No targets found with a last_user
     if (target_entity == nil) then
+        -- There are 2 Known cases where this can happen:
+        -- Either (group.command.type == defines.command.attack_area) in which case it is likely a player attacking bases with nukes.
+        -- OR
+        -- The enemy group is just expanding / building bases.
 
-        -- This is unexpected, not sure under which conditions this would happen.
-        if (group.command.type == defines.command.attack_area) then
-            -- SendBroadcastMsg("OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!? " .. GetGPStext(group.surface.name, group.position) .. " Target: " .. GetGPStext(group.surface.name, group.command.destination))
-            log("ERROR - OarcModifyEnemyGroup find_nearest_enemy attack_area FAILED!?!?" .. serpent.block(group))
+        -- If we really have an edge case, then so be it, let it go through.
 
-        -- This is fine, as the enemy group is just expanding / building bases
-        else
-            -- log("OarcModifyEnemyGroup find_nearest_enemy did not find anything!")
-        end
+        -- In both cases, we don't want to stop the enemy group.
         return
     end
 

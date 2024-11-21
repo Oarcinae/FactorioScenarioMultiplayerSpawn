@@ -154,7 +154,7 @@ end
 ---Create an items selection section
 ---@param container LuaGuiElement
 ---@param surface_name string
----@param header string
+---@param header LocalisedString
 ---@param setting_name string
 ---@param max_count integer?
 ---@return nil
@@ -320,10 +320,10 @@ end
 ---Create an integer textfield with a label
 ---@param container LuaGuiElement
 ---@param surface_name string
----@param label string
+---@param label LocalisedString
 ---@param setting_name string
 ---@param entry_name string
----@param tooltip string
+---@param tooltip LocalisedString
 ---@return nil
 function CreateSpawnConfigIntegerField(container, surface_name, label, setting_name, entry_name, tooltip)
 
