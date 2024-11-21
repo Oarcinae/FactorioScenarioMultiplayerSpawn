@@ -1,9 +1,9 @@
 -- Sep 2024
---   ____          _____   _____ 
+--   ____          _____   _____
 --  / __ \   /\   |  __ \ / ____|
--- | |  | | /  \  | |__) | |     
--- | |  | |/ /\ \ |  _  /| |     
--- | |__| / ____ \| | \ \| |____ 
+-- | |  | | /  \  | |__) | |
+-- | |  | |/ /\ \ |  _  /| |
+-- | |__| / ____ \| | \ \| |____
 --  \____/_/    \_\_|  \_\\_____|
 
 -- Oarc's Separated Spawn MOD V2
@@ -150,7 +150,7 @@ end)
 script.on_event(defines.events.on_research_finished, function(event)
     local research = event.research
     -- TODO: Add a non-mod setting to disable this.
-    SendBroadcastMsg({"oarc-research-finished", research.force.name, research.localised_name})
+    SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name})
 end)
 
 ----------------------------------------
@@ -192,7 +192,7 @@ end)
 ---@field new_surface_name string
 script.on_event("oarc-mod-character-surface-changed", function(event)
     log("EVENT - oarc-mod-character-surface-changed:" .. serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
-    
+
     --This is just here so I don't get lua warnings about unused variables.
     ---@type OarcModCharacterSurfaceChangedEvent
     local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]
@@ -250,7 +250,7 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     if storage.ocfg.regrowth.enable_regrowth then
         RegrowthChunkGenerate(event)
     end
-    
+
     CreateHoldingPenChunks(event)
 
     if storage.ocfg.gameplay.modified_enemy_spawning then
@@ -264,7 +264,7 @@ end)
 ----------------------------------------
 -- Radar Scanning
 ----------------------------------------
-script.on_event(defines.events.on_sector_scanned, function (event)   
+script.on_event(defines.events.on_sector_scanned, function (event)
     if storage.ocfg.regrowth.enable_regrowth then
         RegrowthSectorScan(event)
     end
