@@ -1702,10 +1702,8 @@ function TeleportPlayerToRespawnPoint(surface_name, player, first_spawn)
         return
     end
 
-    -- As a temporary measure to make sure teleport works in the case that the player is in a moving cargo-pod, we first
-    -- teleport to the holding pen surface since there is no way to force them out of the cargo-pod that I know of.
     if player.driving then
-        SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+        player.set_driving(false, true) -- We need to force player out of the cargo-pod before we teleport.
     end
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
 
