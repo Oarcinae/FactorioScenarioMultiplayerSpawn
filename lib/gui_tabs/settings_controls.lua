@@ -98,7 +98,7 @@ function CreateSurfaceSettingsSection(container, player)
 
     --- Add the rows
     for name, allowed in pairs(storage.oarc_surfaces) do
-        AddLabel(surface_table, nil, name, my_label_style)
+        AddLabel(surface_table, nil, {"", "[planet=", name, "] ", {"space-location-name."..name}}, my_label_style)
         AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed.primary, player.admin,
                                     { "oarc-settings-tab-surface-checkbox-tooltip" })
         AddSurfaceCheckboxSetting(surface_table, name, "secondary_enabled", allowed.secondary, player.admin,

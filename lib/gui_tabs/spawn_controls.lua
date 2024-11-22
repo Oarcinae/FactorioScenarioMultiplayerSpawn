@@ -49,9 +49,9 @@ function CreatePrimarySpawnInfo(player, container)
     local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
     horizontal_flow.style.vertical_align = "center"
     AddLabel(horizontal_flow, nil, { "oarc-primary-spawn-info-surface-label",
-                                    primary_spawn.surface_name,
-                                    primary_spawn.position.x,
-                                    primary_spawn.position.y}, my_label_style)
+        {"", "[planet=", primary_spawn.surface_name, "] ", {"space-location-name."..primary_spawn.surface_name}},
+        primary_spawn.position.x,
+        primary_spawn.position.y}, my_label_style)
 
     --Add empty widget
     local dragger = horizontal_flow.add {
@@ -79,9 +79,9 @@ function CreateSecondarySpawnInfo(player, container)
         local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
         horizontal_flow.style.vertical_align = "center"
         AddLabel(horizontal_flow, nil, { "oarc-secondary-spawn-info-surface-label",
-                                        secondary_spawn.surface_name,
-                                        secondary_spawn.position.x,
-                                        secondary_spawn.position.y}, my_label_style)
+            {"", "[planet=", secondary_spawn.surface_name, "] ", {"space-location-name."..secondary_spawn.surface_name}},
+            secondary_spawn.position.x,
+            secondary_spawn.position.y}, my_label_style)
 
         --Add empty widget
         local dragger = horizontal_flow.add {
@@ -162,9 +162,9 @@ function CreateSetRespawnLocationButton(player, container)
     local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
     horizontal_flow.style.vertical_align = "center"
     AddLabel(horizontal_flow, nil, { "oarc-set-respawn-loc-info-surface-label",
-                                respawn_surface_name,
-                                respawn_position.x,
-                                respawn_position.y }, my_label_style)
+        {"", "[planet=", respawn_surface_name, "] ", {"space-location-name."..respawn_surface_name}},
+        respawn_position.x,
+        respawn_position.y }, my_label_style)
 
     --Add empty widget
     local dragger = horizontal_flow.add {

@@ -67,7 +67,11 @@ function AddPlayerRow(table, player_name, online)
         else
             local spawn = FindPlayerHomeSpawn(player.name)
             if (spawn) then
-                AddLabel(table, nil, spawn.surface_name, my_label_style)
+                if game.planets[spawn.surface_name] ~= nil then
+                    AddLabel(table, nil, {"", "[planet=", spawn.surface_name, "] ", {"space-location-name."..spawn.surface_name}}, my_label_style)
+                else
+                    AddLabel(table, nil, game.surfaces[spawn.surface_name].localised_name, my_label_style)
+                end
             else
                 AddLabel(table, nil, "Unknown?", my_label_style) -- Shouldn't happen
             end
@@ -76,7 +80,7 @@ function AddPlayerRow(table, player_name, online)
         AddLabel(table, nil, FormatTimeHoursSecs(player.online_time), my_label_style)
 
         CreatePlayerGPSButton(table, player.name)
-        
+
         if online then
             local label = AddLabel(table, nil, {"oarc-player-online"}, my_player_list_style)
             label.style.font_color = {r=0.1, g=1, b=0.1}
@@ -92,7 +96,13 @@ end
 ---@param player_name string
 ---@return nil
 function CreatePlayerGPSButton(container, player_name)
-    local gps_button = container.add {
+    local flow = container.add {
+        type = "flow",
+        direction = "horizontal",
+    }
+    flow.style.vertical_align = "center"
+
+    local gps_button = flow.add {
         type = "sprite-button",
         sprite = "utility/gps_map_icon",
         tags = {
@@ -101,10 +111,23 @@ function CreatePlayerGPSButton(container, player_name)
             player_name = player_name,
         },
         style = "slot_button",
-        tooltip = {"", {"oarc-player-list-tab-location-button-tooltip"}, " (", game.players[player_name].surface.name, ")"},
+        tooltip = {"oarc-player-list-tab-location-button-tooltip"},
     }
     gps_button.style.width = 28
     gps_button.style.height = 28
+
+    local surface_name
+    if game.players[player_name].character ~= nil then
+        surface_name = game.players[player_name].character.surface.name
+    else
+        surface_name = game.players[player_name].surface.name
+    end
+
+    if game.planets[surface_name] ~= nil then
+        AddLabel(flow, nil, {"", "[planet=", surface_name, "] ", {"space-location-name."..surface_name}}, my_label_style)
+    else
+        AddLabel(flow, nil, game.surfaces[surface_name].localised_name, my_label_style)
+    end
 end
 
 ---Handle the gui click of the player list tab in the Oarc GUI.

@@ -2,8 +2,9 @@
 Version: 2.1.14
 Date: 2024-11-21
   Info:
-    - Update locale (thanks plexpt!)
-    - Make use of new set_driving() function.
+    - Update CN locale. (thanks plexpt!)
+    - Many non-localized planet names localized and started using the icons where possible too.
+    - Make use of new set_driving() function. Won't affect gameplay, but I no longer have to do an extra teleport as a workaround.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.13
 Date: 2024-11-20

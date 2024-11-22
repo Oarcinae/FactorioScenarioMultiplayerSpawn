@@ -1703,6 +1703,8 @@ function TeleportPlayerToRespawnPoint(surface_name, player, first_spawn)
     end
 
     if player.driving then
+        --Ignore the lua warning, the factorio docs use "bool" instead of "boolean" so its broken. TODO: Remove this when they update the docs.
+        ---@diagnostic disable-next-line: param-type-mismatch
         player.set_driving(false, true) -- We need to force player out of the cargo-pod before we teleport.
     end
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
