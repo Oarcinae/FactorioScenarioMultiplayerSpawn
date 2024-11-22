@@ -329,32 +329,6 @@ data:extend({
     },
     {
         type = "string-setting",
-        name = "oarc-mod-spawn-general-ground-tile",
-        setting_type = "runtime-global",
-        default_value = "concrete",
-        allowed_values = {
-            --"grass-1"                  ,
-            --"dirt-1"                   ,
-            --"sand-1"                   ,
-            "concrete"                 ,
-            "refined-concrete"         ,
-            "red-refined-concrete"     ,
-            "green-refined-concrete"   ,
-            "blue-refined-concrete"    ,
-            "orange-refined-concrete"  ,
-            "yellow-refined-concrete"  ,
-            "pink-refined-concrete"    ,
-            "purple-refined-concrete"  ,
-            "black-refined-concrete"   ,
-            "brown-refined-concrete"   ,
-            "cyan-refined-concrete"    ,
-            "acid-refined-concrete"    ,
-
-        },
-        order = "h5"
-    },
-    {
-        type = "string-setting",
         name = "oarc-mod-spawn-general-shape",
         setting_type = "runtime-global",
         default_value = "circle",
