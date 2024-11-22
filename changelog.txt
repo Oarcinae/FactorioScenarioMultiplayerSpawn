@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.14
+Date: 2024-11-21
+  Info:
+    - Update CN locale. (Thanks plexpt!)
+    - Many non-localized planet names localized and started using the icons where possible too.
+    - Make use of new set_driving() function. Won't affect gameplay, but I no longer have to do an extra teleport as a workaround.
+    - Add mod compatibility for "Better Chatting" mod. (Thanks PennyJim!)
+---------------------------------------------------------------------------------------------------
 Version: 2.1.13
 Date: 2024-11-20
   Major Features:

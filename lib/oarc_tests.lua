@@ -210,7 +210,7 @@ end
 function DudeWheresMyCargoPod(player)
 
     if not player.character then
-        player.print({ "oarc-character-invalid" })
+        CompatSend(player, { "oarc-character-invalid" })
         return
     end
 
@@ -221,7 +221,7 @@ function DudeWheresMyCargoPod(player)
     local pods = surface.find_entities_filtered{area=search_area, name="cargo-pod-container", force=player.force}
 
     if #pods == 0 then
-        player.print({ "oarc-no-cargo-pods" })
+        CompatSend(player, { "oarc-no-cargo-pods" })
         return
     end
 
@@ -230,12 +230,12 @@ function DudeWheresMyCargoPod(player)
         local new_position = surface.find_non_colliding_position("cargo-pod-container", player.character.position, CHUNK_SIZE, 1)
 
         if new_position == nil then
-            player.print({ "oarc-teleport-cargo-pod-fail" })
+            CompatSend(player, { "oarc-teleport-cargo-pod-fail" })
             return
         end
 
         cargo_pod.teleport(new_position)
-        player.print({ "oarc-teleport-cargo-pod-success" })
+        CompatSend(player, { "oarc-teleport-cargo-pod-success" })
     end
 end
 
@@ -261,7 +261,7 @@ function RerollSpawn(player)
 
     -- If it is a buddy spawn, tell them we don't support this:
     if (spawn_choices.buddy ~= nil) then
-        player.print({ "oarc-no-reroll-buddy-spawn" })
+        CompatSend(player, { "oarc-no-reroll-buddy-spawn" })
         return
     end
 
@@ -281,7 +281,7 @@ function RerollSpawn(player)
     local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        player.print({ "oarc-no-ungenerated-land-error" })
+        CompatSend(player, { "oarc-no-ungenerated-land-error" })
         return
     end
 

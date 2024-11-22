@@ -1622,7 +1622,7 @@ function SecondarySpawn(player, surface_name)
     local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        player.print({ "oarc-no-ungenerated-land-error" })
+        CompatSend(player, { "oarc-no-ungenerated-land-error" })
         return
     end
 
@@ -1651,7 +1651,7 @@ function SecondarySpawn(player, surface_name)
     SendBroadcastMsg({"", { "oarc-player-new-secondary", player_name, surface_name }, " ", GetGPStext(surface_name, spawn_position)})
 
     -- Tell the player about the reroll command:
-    player.print({ "oarc-reroll-spawn-command" })
+    CompatSend(player, { "oarc-reroll-spawn-command" })
 end
 
 -- Check a table to see if there are any players waiting to spawn
@@ -1702,10 +1702,10 @@ function TeleportPlayerToRespawnPoint(surface_name, player, first_spawn)
         return
     end
 
-    -- As a temporary measure to make sure teleport works in the case that the player is in a moving cargo-pod, we first
-    -- teleport to the holding pen surface since there is no way to force them out of the cargo-pod that I know of.
     if player.driving then
-        SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
+        --Ignore the lua warning, the factorio docs use "bool" instead of "boolean" so its broken. TODO: Remove this when they update the docs.
+        ---@diagnostic disable-next-line: param-type-mismatch
+        player.set_driving(false, true) -- We need to force player out of the cargo-pod before we teleport.
     end
     SafeTeleport(player, game.surfaces[surface_name], spawn.position)
 
@@ -1787,7 +1787,7 @@ function CreatePlayerCustomForce(player)
     if (newForce.name == player.name) then
         SendBroadcastMsg({ "oarc-player-started-own-team", player.name })
     else
-        player.print({ "oarc-player-no-new-teams-sorry" })
+        CompatSend(player, { "oarc-player-no-new-teams-sorry" })
     end
 
     return newForce

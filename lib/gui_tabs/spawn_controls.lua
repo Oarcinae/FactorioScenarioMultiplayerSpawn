@@ -49,9 +49,9 @@ function CreatePrimarySpawnInfo(player, container)
     local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
     horizontal_flow.style.vertical_align = "center"
     AddLabel(horizontal_flow, nil, { "oarc-primary-spawn-info-surface-label",
-                                    primary_spawn.surface_name,
-                                    primary_spawn.position.x,
-                                    primary_spawn.position.y}, my_label_style)
+        {"", "[planet=", primary_spawn.surface_name, "] ", {"space-location-name."..primary_spawn.surface_name}},
+        primary_spawn.position.x,
+        primary_spawn.position.y}, my_label_style)
 
     --Add empty widget
     local dragger = horizontal_flow.add {
@@ -79,9 +79,9 @@ function CreateSecondarySpawnInfo(player, container)
         local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
         horizontal_flow.style.vertical_align = "center"
         AddLabel(horizontal_flow, nil, { "oarc-secondary-spawn-info-surface-label",
-                                        secondary_spawn.surface_name,
-                                        secondary_spawn.position.x,
-                                        secondary_spawn.position.y}, my_label_style)
+            {"", "[planet=", secondary_spawn.surface_name, "] ", {"space-location-name."..secondary_spawn.surface_name}},
+            secondary_spawn.position.x,
+            secondary_spawn.position.y}, my_label_style)
 
         --Add empty widget
         local dragger = horizontal_flow.add {
@@ -162,9 +162,9 @@ function CreateSetRespawnLocationButton(player, container)
     local horizontal_flow = container.add { type = "flow", direction = "horizontal"}
     horizontal_flow.style.vertical_align = "center"
     AddLabel(horizontal_flow, nil, { "oarc-set-respawn-loc-info-surface-label",
-                                respawn_surface_name,
-                                respawn_position.x,
-                                respawn_position.y }, my_label_style)
+        {"", "[planet=", respawn_surface_name, "] ", {"space-location-name."..respawn_surface_name}},
+        respawn_position.x,
+        respawn_position.y }, my_label_style)
 
     --Add empty widget
     local dragger = horizontal_flow.add {
@@ -408,26 +408,26 @@ function SpawnCtrlTabGuiClick(event)
 
         -- Check if player has a valid character
         if (player.character == nil) then 
-            player.print({ "oarc-no-valid-player-character" })
+            CompatSend(player, { "oarc-no-valid-player-character" })
             return
         end
 
         -- Check if player is in a vehicle
         if player.driving then
-            player.print({ "oarc-player-character-in-vehicle" })
+            CompatSend(player, { "oarc-player-character-in-vehicle" })
             return
         end
 
         -- Check if the surface is blacklisted
         local surface_name = player.character.surface.name
         if IsSurfaceBlacklisted(surface_name) then
-            player.print({"oarc-no-respawn-this-surface"})
+            CompatSend(player, {"oarc-no-respawn-this-surface"})
             return
         end
 
         SetPlayerRespawn(player.name, surface_name, player.character.position, true)
         OarcGuiRefreshContent(player)
-        player.print({ "oarc-spawn-point-updated" })
+        CompatSend(player, { "oarc-spawn-point-updated" })
 
     -- Shows the spawn location on the map
     elseif (tags.setting == "show_location") then
@@ -435,7 +435,7 @@ function SpawnCtrlTabGuiClick(event)
         local position = tags.position --[[@as MapPosition]]
 
         player.set_controller{type = defines.controllers.remote, position = position, surface = surface_name}
-        player.print({"", { "oarc-spawn-gps-location" }, " ", GetGPStext(surface_name, position)})
+        CompatSend(player, {"", { "oarc-spawn-gps-location" }, " ", GetGPStext(surface_name, position)})
 
     -- Teleports the player to their home base
     elseif (tags.setting == "teleport_home") then
@@ -444,13 +444,13 @@ function SpawnCtrlTabGuiClick(event)
 
         -- Check if player has a valid character
         if (player.character == nil) then 
-            player.print({ "oarc-no-valid-player-character" })
+            CompatSend(player, { "oarc-no-valid-player-character" })
             return
         end
 
         -- Check if player is in a vehicle
         if player.driving then
-            player.print({ "oarc-player-character-in-vehicle" })
+            CompatSend(player, { "oarc-player-character-in-vehicle" })
             return
         end
 
@@ -478,7 +478,7 @@ function SpawnCtrlTabGuiClick(event)
 
         if ((event.element.parent.join_queue_dropdown == nil) or
                 (event.element.parent.join_queue_dropdown.selected_index == 0)) then
-            player.print({ "oarc-selected-player-not-valid" })
+            CompatSend(player, { "oarc-selected-player-not-valid" })
             OarcGuiRefreshContent(player)
             return
         end
@@ -488,7 +488,7 @@ function SpawnCtrlTabGuiClick(event)
 
         -- Shouldn't be able to hit this since we force a GUI refresh when they leave?
         if ((game.players[join_queue_player_choice] == nil) or (not game.players[join_queue_player_choice].connected)) then
-            player.print({ "oarc-selected-player-not-wait" })
+            CompatSend(player, { "oarc-selected-player-not-wait" })
             OarcGuiRefreshContent(player)
             return
         end
@@ -500,7 +500,7 @@ function SpawnCtrlTabGuiClick(event)
             RemovePlayerFromJoinQueue(join_queue_player_choice) -- This also refreshes the host gui
 
             -- Inform the host that the player was rejected
-            player.print({ "oarc-reject-joiner", join_queue_player_choice })
+            CompatSend(player, { "oarc-reject-joiner", join_queue_player_choice })
             -- Inform the player that their request was rejected
             SendMsg(join_queue_player_choice, { "oarc-your-request-rejected" })
 
@@ -514,7 +514,7 @@ function SpawnCtrlTabGuiClick(event)
             
             -- Check if there is space first
             if (table_size(primary_spawn.joiners) >= storage.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
-                player.print({ "oarc-shared-spawn-full" })
+                CompatSend(player, { "oarc-shared-spawn-full" })
                 return
             end
 

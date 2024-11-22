@@ -98,7 +98,7 @@ function CreateSurfaceSettingsSection(container, player)
 
     --- Add the rows
     for name, allowed in pairs(storage.oarc_surfaces) do
-        AddLabel(surface_table, nil, name, my_label_style)
+        AddLabel(surface_table, nil, {"", "[planet=", name, "] ", {"space-location-name."..name}}, my_label_style)
         AddSurfaceCheckboxSetting(surface_table, name, "spawn_enabled", allowed.primary, player.admin,
                                     { "oarc-settings-tab-surface-checkbox-tooltip" })
         AddSurfaceCheckboxSetting(surface_table, name, "secondary_enabled", allowed.secondary, player.admin,
@@ -590,13 +590,13 @@ function SettingsSurfaceControlsTabGuiClick(event)
         local ok, copy = serpent.load(import_text)
         if (not ok) or (type(copy) ~= "table") or (next(copy) == nil) then
             log("Error importing settings!")
-            player.print("Error importing settings!")
+            CompatSend(player, "Error importing settings!")
         else
             storage.ocfg = table.deepcopy(copy)
             ValidateSettings() -- Some basic validation, not 100% foolproof
             SyncModSettingsToOCFG() -- Sync the mod settings.
             log("Imported settings!")
-            player.print("Imported settings!")
+            CompatSend(player, "Imported settings!")
             OarcGuiRefreshContent(player)
         end
     end
