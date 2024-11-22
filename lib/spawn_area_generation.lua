@@ -39,6 +39,9 @@ function CreateCropCircle(surface, unique_spawn, chunk_area)
 
 
     local dirtTiles = {}
+    local floorTiles = {}
+    local floor_tile = unique_spawn.tile_select_name or "refined-concrete"
+
     for i = chunk_area.left_top.x, chunk_area.right_bottom.x, 1 do
         for j = chunk_area.left_top.y, chunk_area.right_bottom.y, 1 do
             -- This ( X^2 + Y^2 ) is used to calculate if something is inside a circle area.
@@ -50,6 +53,7 @@ function CreateCropCircle(surface, unique_spawn, chunk_area)
                 if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_tiles) then
                     table.insert(dirtTiles, { name = fill_tile, position = { i, j } })
+                    table.insert(floorTiles, { name = floor_tile, position = { i, j } })
                 end
             end
 
@@ -71,6 +75,7 @@ function CreateCropCircle(surface, unique_spawn, chunk_area)
     end
 
     surface.set_tiles(dirtTiles)
+    surface.set_tiles(floorTiles)
 
     --Create trees (needs to be done after setting tiles!)
     local tree_entity = spawn_config.tree_entity
@@ -121,6 +126,8 @@ function CreateCropOctagon(surface, unique_spawn, chunk_area)
     local tree_distance_inner = tile_radius - tree_width
 
     local dirtTiles = {}
+    local floorTiles = {}
+    local floor_tile = unique_spawn.tile_select_name or "refined-concrete"
     for i = chunk_area.left_top.x, chunk_area.right_bottom.x, 1 do
         for j = chunk_area.left_top.y, chunk_area.right_bottom.y, 1 do
             local distVar1 = math.floor(math.max(math.abs(spawn_pos.x - i), math.abs(spawn_pos.y - j)))
@@ -132,6 +139,7 @@ function CreateCropOctagon(surface, unique_spawn, chunk_area)
                 if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_tiles) then
                     table.insert(dirtTiles, { name = fill_tile, position = { i, j } })
+                    table.insert(floorTiles, { name = floor_tile, position = { i, j } })
                 end
             end
 
@@ -152,6 +160,7 @@ function CreateCropOctagon(surface, unique_spawn, chunk_area)
         end
     end
     surface.set_tiles(dirtTiles)
+    surface.set_tiles(floorTiles)
 
 
     --Create trees (needs to be done after setting tiles!)
@@ -207,6 +216,8 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
     local tree_distance_inner = tile_radius - tree_width
 
     local dirtTiles = {}
+    local floorTiles = {}
+    local floor_tile = unique_spawn.tile_select_name or "refined-concrete"
     for i = chunk_area.left_top.x, chunk_area.right_bottom.x, 1 do
         for j = chunk_area.left_top.y, chunk_area.right_bottom.y, 1 do
             -- Max distance from center (either x or y)
@@ -217,6 +228,7 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
                 if (surface.get_tile(i, j).collides_with("water_tile") or
                         storage.ocfg.spawn_general.force_tiles) then
                     table.insert(dirtTiles, { name = fill_tile, position = { i, j } })
+                    table.insert(floorTiles, { name = floor_tile, position = { i, j } })
                 end
             end
 
@@ -238,6 +250,7 @@ function CreateCropSquare(surface, unique_spawn, chunk_area)
     end
 
     surface.set_tiles(dirtTiles)
+    surface.set_tiles(floorTiles)
 
     --Create trees (needs to be done after setting tiles!)
     local tree_entity = spawn_config.tree_entity

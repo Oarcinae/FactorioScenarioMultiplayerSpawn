@@ -784,7 +784,12 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             CreateCropOctagon(surface, spawn, chunkArea)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
             CreateCropSquare(surface, spawn, chunkArea)
+        else
+            CreateCropCircle(surface, spawn, chunkArea)
         end
+
+        -- Remove decoratives (grass/roots/enemy-decal)
+        surface.destroy_decoratives {area = chunkArea}
 
         :: CONTINUE ::
     end
@@ -1253,7 +1258,7 @@ end
 ---@param pos MapPosition
 ---@return OarcUniqueSpawn?
 function GetClosestUniqueSpawn(surface_name, pos)
-    
+
     local surface_spawns = storage.unique_spawns[surface_name]
     if (surface_spawns == nil) then return nil end -- EXIT - No spawns on requested surface
     if (table_size(surface_spawns) == 0) then return nil end -- EXIT - No spawns on requested surface
@@ -1495,6 +1500,7 @@ function InitPrimarySpawnGlobals(host_name, spawn_position, spawn_choices)
     ---@type OarcUniqueSpawn
     local new_unique_spawn = {
         surface_name = spawn_choices.surface_name,
+        tile_select_name = spawn_choices.tile_select_name,
         position = spawn_position,
         moat = spawn_choices.moat,
         primary = true,
@@ -1563,7 +1569,7 @@ function QueueNewSpawnGeneration(unique_spawn)
     local delayed_spawn =  {
 
         -- I do this explicitly so that I get the LUA warnings if I miss a field!
-        -- I know I could use table.deepcopy, but this is INTENTIONAL! 
+        -- I know I could use table.deepcopy, but this is INTENTIONAL!
         surface_name = unique_spawn.surface_name,
         position = unique_spawn.position,
         moat = unique_spawn.moat,
@@ -1865,4 +1871,4 @@ SPAWN_TEAM_CHOICE = {
 ---@alias OarcSurfaceSpawnSetting { primary: boolean, secondary: boolean}
 
 ---Entry for a nil_character_teleport_queue
----@alias OarcNilCharacterTeleportQueueEntry { surface_name: string, first_spawn: boolean } 
+---@alias OarcNilCharacterTeleportQueueEntry { surface_name: string, first_spawn: boolean }

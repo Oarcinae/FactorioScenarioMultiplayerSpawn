@@ -162,7 +162,7 @@ function CreateSurfaceSelectDropdown(parent_flow)
         end
     end
 
-    AddLabel(surfacesHorizontalFlow, "surfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
+    AddLabel(surfacesHorizontalFlow, "surfacesHorizontalFlowLabel", "[img=utility.surface_editor_icon]", my_label_style)
     surfacesHorizontalFlow.add {
         name = "surface_select_dropdown",
         tags = { action = "oarc_spawn_options", setting = "surface_select" },
@@ -171,6 +171,47 @@ function CreateSurfaceSelectDropdown(parent_flow)
         selected_index = default_surface_index,
         tooltip = { "oarc-surface-select-tooltip" },
         enabled = #surface_list > 1
+    }
+end
+
+---Show the tile select dropdown
+---@param parent_flow LuaGuiElement
+---@return nil
+function CreateTilesSelectDropdown(parent_flow)
+    local flow = parent_flow.add {
+        name = "tile_horizontal_flow",
+        type = "flow",
+        direction = "horizontal"
+    }
+
+    local tiles =
+    {
+        "concrete"                 ,
+        "refined-concrete"         ,
+        "red-refined-concrete"     ,
+        "green-refined-concrete"   ,
+        "blue-refined-concrete"    ,
+        "orange-refined-concrete"  ,
+        "yellow-refined-concrete"  ,
+        "pink-refined-concrete"    ,
+        "purple-refined-concrete"  ,
+        "black-refined-concrete"   ,
+        "brown-refined-concrete"   ,
+        "cyan-refined-concrete"    ,
+        "acid-refined-concrete"    ,
+    }
+    local tilesLocalised = {}
+    for _, name in ipairs(tiles) do
+        table.insert(tilesLocalised,  {"", "[tile="..name.. "]", " ", prototypes.tile[name].localised_name} )
+    end
+
+    AddLabel(flow, "tilesHorizontalFlowLabel", { "oarc-tile-select-cap"}, my_label_style)
+    flow.add {
+        type = "drop-down",
+        name = "tile_select_dropdown",
+        tags = { action = "oarc_spawn_options", setting = "tile_select" },
+        selected_index = 1,
+        items = tilesLocalised
     }
 end
 
@@ -215,7 +256,7 @@ end
 ---@param maximum_distance number
 ---@return nil
 function CreateDistanceSelectSlider(parent_flow, minimum_distance, maximum_distance)
-    
+
     local slider_flow = parent_flow.add {
         type = "flow",
         direction = "horizontal",
@@ -279,6 +320,9 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
     -- Radio buttons to pick your team.
     DisplayTeamSelectRadioButtons(spawn_settings_frame, gameplay.enable_main_team, gameplay.enable_separate_teams)
 
+    CreateTilesSelectDropdown(spawn_settings_frame)
+
+
     -- Allow players to spawn with a moat around their area.
     if (gameplay.allow_moats_around_spawns) then
         spawn_settings_frame.add {
@@ -314,7 +358,7 @@ function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_play
 
     AddLabel(solo_spawn_frame, nil, { "oarc-spawn-menu-solo-header" }, my_label_header_style)
     AddLabel(solo_spawn_frame, nil, { "oarc-starting-area-normal" }, my_label_style)
-    
+
     -- A note about sharing spawns
     if enable_shared_spawns and (max_shared_players > 1) then
         AddLabel(solo_spawn_frame, nil, { "oarc-max-players-shared-spawn", max_shared_players - 1 },  my_label_style)
@@ -367,9 +411,9 @@ function CreateSharedSpawnFrame(parent_flow, enable_shared_spawns)
             local index = dropdown.selected_index
             if index > 0 then
                 prev_selected_host = dropdown.get_item(index) --[[@as string]]
-            end 
+            end
         end
-        
+
 
         for _,child in pairs(shared_spawn_frame.children) do
             child.destroy()
@@ -831,6 +875,29 @@ function SpawnOptsSelectionChanged(event)
         storage.spawn_choices[player.name].surface_name = surface_name
         log("GUI DEBUG Selected surface: " .. surface_name)
 
+    elseif (tags.setting == "tile_select") then
+        local tiles =
+        {
+            "concrete"                 ,
+            "refined-concrete"         ,
+            "red-refined-concrete"     ,
+            "green-refined-concrete"   ,
+            "blue-refined-concrete"    ,
+            "orange-refined-concrete"  ,
+            "yellow-refined-concrete"  ,
+            "pink-refined-concrete"    ,
+            "purple-refined-concrete"  ,
+            "black-refined-concrete"   ,
+            "brown-refined-concrete"   ,
+            "cyan-refined-concrete"    ,
+            "acid-refined-concrete"    ,
+        }
+        local index = event.element.selected_index
+
+        storage.spawn_choices[player.name].tile_select_name =  tiles[index]
+        log("GUI DEBUG Selected tile: " ..  tiles[index])
+
+
     elseif (tags.setting == "shared_spawn_select") then
         SharedSpawnSelect(event.element, player)
 
@@ -857,7 +924,7 @@ function SharedSpawnSelect(gui_element, player)
         local button = gui_element.parent.join_other_spawn
 
         local primary_spawn = FindPrimaryUniqueSpawn(host_name)
-        if (primary_spawn and 
+        if (primary_spawn and
                 IsSharedSpawnOpen(primary_spawn.surface_name, host_name) and
                 not IsSharedSpawnFull(primary_spawn.surface_name, host_name)) then
             storage.spawn_choices[player.name].host_name = host_name
@@ -1072,7 +1139,7 @@ function DisplayBuddySpawnRequestMenu(player, requesting_buddy_name)
     elseif (spawn_choices.team == SPAWN_TEAM_CHOICE.join_own_team) then
         teamText = { "oarc-buddy-txt-new-teams" }
     end
-    
+
 
     ---@type LocalisedString
     local moatText = " "
