@@ -95,12 +95,54 @@ function FadeoutRenderOnTick()
     end
 end
 
+---@type boolean?
+local has_better_chat = nil
+--- Safely attempts to print via the Better Chatting's interface
+---@param recipient LuaGameScript|LuaForce|LuaPlayer
+---@param msg LocalisedString
+---@param print_settings PrintSettings?
+function CompatSend(recipient, msg, print_settings)
+    if has_better_chat == nil then
+        local better_chat = remote.interfaces["better-chat"]
+        has_better_chat = better_chat and better_chat["send"]
+    end
+
+    if not has_better_chat then return recipient.print(msg, print_settings) end
+    print_settings = print_settings or {}
+
+
+    ---@type "global"|"force"|"player", int?
+    local send_level, send_index
+    local recipient_type = recipient.object_name
+
+    if recipient_type == "LuaGameScript" then
+        send_level = "global"
+    else
+        ---@cast recipient -LuaGameScript
+        send_index = recipient.index
+        if recipient_type == "LuaForce" then
+            send_level = "force"
+        elseif recipient_type == "LuaPlayer" then
+            send_level = "player"
+        else
+            error("Invalid Recipient", 2)
+        end
+    end
+
+    remote.call("better-chat", "send", {
+        message = msg,
+        send_level = send_level,
+        color = print_settings.color,
+        recipient = send_index,
+    })
+end
+
 --- Broadcast messages to all connected players
 ---@param msg LocalisedString
 ---@return nil
 function SendBroadcastMsg(msg)
     for name, player in pairs(game.connected_players) do
-        player.print(msg)
+        CompatSend(player, msg)
     end
 end
 
@@ -109,8 +151,9 @@ end
 ---@param msg LocalisedString
 ---@return nil
 function SendMsg(playerName, msg)
-    if ((game.players[playerName] ~= nil) and (game.players[playerName].connected)) then
-        game.players[playerName].print(msg)
+    local player = game.players[playerName]
+    if ((player ~= nil) and (player.connected)) then
+        CompatSend(player, msg)
     end
 end
 
@@ -411,7 +454,7 @@ function ShareChatBetweenForces(player, msg)
                 (force.name ~= "neutral") and
                 (force.name ~= "player") and
                 (force ~= player.force)) then
-                force.print(player.name..": "..msg)
+                CompatSend(force, {"", player.name, ": ", msg})
             end
         end
     end

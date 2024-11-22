@@ -148,7 +148,7 @@ function PlayerListTabGuiClick(event)
         local target_player = game.players[player_name]
 
         if (target_player == nil) then
-            player.print({"oarc-player-not-found", player_name})
+            CompatSend(player, {"oarc-player-not-found", player_name})
             return
         end
 
@@ -161,6 +161,6 @@ function PlayerListTabGuiClick(event)
             surface = target_player.surface
         end
         player.set_controller{type = defines.controllers.remote, position = position, surface = surface}
-        player.print({"", target_player.name, ": ", GetGPStext(surface.name, position)})
+        CompatSend(player, {"", target_player.name, ": ", GetGPStext(surface.name, position)})
     end
 end

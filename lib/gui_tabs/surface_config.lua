@@ -733,7 +733,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Check if an item is selected first.
         if (tags.item_name == "") then
-            player.print("Please select an item first!")
+            CompatSend(player, "Please select an item first!")
             event.element.text = "0"
             return
         end
@@ -754,7 +754,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Check if an item is selected first.
         if (tags.resource_name == "") then
-            player.print("Please select a resource first!")
+            CompatSend(player, "Please select a resource first!")
             event.element.text = "0"
             return
         end
@@ -780,7 +780,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Check if an item is selected first.
         if (tags.resource_name == "") then
-            player.print("Please select a resource first!")
+            CompatSend(player, "Please select a resource first!")
             event.element.text = "0"
             return
         end
@@ -844,7 +844,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         if (storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name]) then
-            player.print("Item already exists in list! " .. new_item_name)
+            CompatSend(player, "Item already exists in list! " .. new_item_name)
             event.element.elem_value = nil
             return
         end
@@ -874,7 +874,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         end
 
         if (prototypes.entity[new_resource_name].resource_category ~= "basic-solid") then
-            player.print("Resource must be a solid resource! " .. new_resource_name)
+            CompatSend(player, "Resource must be a solid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -892,7 +892,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         if (storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
-            player.print("Resource already exists in list! " .. new_resource_name)
+            CompatSend(player, "Resource already exists in list! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -922,7 +922,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         end
 
         if (prototypes.entity[new_resource_name].resource_category ~= "basic-fluid") then
-            player.print("Resource must be a fluid resource! " .. new_resource_name)
+            CompatSend(player, "Resource must be a fluid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -940,7 +940,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         if (storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
-            player.print("Resource already exists in list! " .. new_resource_name)
+            CompatSend(player, "Resource already exists in list! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -1030,7 +1030,7 @@ function SurfaceConfigTabGuiClick(event)
 
         local surface_name = event.element.parent["surface_dropdown"].items[event.element.parent["surface_dropdown"].selected_index] --[[@as string]]
 
-        player.print("Revert to default: " .. surface_name)
+        CompatSend(player, "Revert to default: " .. surface_name)
         storage.ocfg.surfaces_config[surface_name].starting_items = table.deepcopy(NAUVIS_STARTER_ITEMS)
         storage.ocfg.surfaces_config[surface_name].spawn_config = table.deepcopy(NAUVIS_SPAWN_CONFIG)
 
@@ -1047,11 +1047,11 @@ function SurfaceConfigTabGuiClick(event)
         local surface_name = event.element.parent["surface_dropdown"].items[event.element.parent["surface_dropdown"].selected_index] --[[@as string]]
 
         if (surface_name == "nauvis") then
-            player.print("Already on nauvis, select a different surface to copy nauvis settings to!")
+            CompatSend(player, "Already on nauvis, select a different surface to copy nauvis settings to!")
             return
         end
 
-        player.print("Copy nauvis to " .. surface_name)
+        CompatSend(player, "Copy nauvis to " .. surface_name)
         storage.ocfg.surfaces_config[surface_name].starting_items = storage.ocfg.surfaces_config["nauvis"].starting_items
         storage.ocfg.surfaces_config[surface_name].spawn_config = storage.ocfg.surfaces_config["nauvis"].spawn_config
 

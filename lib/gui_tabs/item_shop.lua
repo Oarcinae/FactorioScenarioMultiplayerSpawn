@@ -102,7 +102,7 @@ function OarcItemShopGuiClick(event)
                 button.parent.parent.player_store_wallet_lbl.caption = { "oarc-coins-available", wallet }
             end
         else
-            player.print({ "oarc-broke-message" })
+            CompatSend(player, { "oarc-broke-message" })
         end
     end
 end

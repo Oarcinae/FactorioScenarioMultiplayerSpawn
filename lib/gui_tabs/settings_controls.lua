@@ -590,13 +590,13 @@ function SettingsSurfaceControlsTabGuiClick(event)
         local ok, copy = serpent.load(import_text)
         if (not ok) or (type(copy) ~= "table") or (next(copy) == nil) then
             log("Error importing settings!")
-            player.print("Error importing settings!")
+            CompatSend(player, "Error importing settings!")
         else
             storage.ocfg = table.deepcopy(copy)
             ValidateSettings() -- Some basic validation, not 100% foolproof
             SyncModSettingsToOCFG() -- Sync the mod settings.
             log("Imported settings!")
-            player.print("Imported settings!")
+            CompatSend(player, "Imported settings!")
             OarcGuiRefreshContent(player)
         end
     end
