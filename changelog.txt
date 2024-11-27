@@ -5,6 +5,10 @@ Date: ????
     - Fix crash when player spawns due to missing surface configuration due to a missing migration.
   Changes:
     - Images losslessly compressed to reduce mod size. (Thanks plexpt!)
+  Modding:
+    - Adding first_spawn and is_host flags to oarc-mod-on-player-spawned event.
+    - Add additional remote interfaces: get_unique_spawns, get_player_home_spawn, get_player_primary_spawn.
+    - Adding new custom event: oarc-mod-on-spawn-choices-gui-displayed. Intended to let other modders customize the spawn choices GUI.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.14
 Date: 2024-11-21
