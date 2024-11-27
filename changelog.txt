@@ -1,7 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.15
 Date: ????
+  Bugfixes:
+    - Fix crash when player spawns due to missing surface configuration due to a missing migration.
   Changes:
+    - Images losslessly compressed to reduce mod size. (Thanks plexpt!)
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.14
 Date: 2024-11-21

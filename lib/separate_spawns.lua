@@ -431,38 +431,44 @@ function GenerateStartingResources(surface, position)
         local y_offset = storage.ocfg.resource_placement.distance_to_edge
         local fluid_ref_pos = { x = position.x, y = position.y + radius - y_offset }
 
-        for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
+        local fluid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources
+        if fluid_resources ~= nil then
+            for r_name, r_data in pairs(fluid_resources) do
 
-            local spacing = r_data.spacing
-            local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
-            local oil_patch_y = fluid_ref_pos.y
+                local spacing = r_data.spacing
+                local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
+                local oil_patch_y = fluid_ref_pos.y
 
-            for i = 1, r_data.num_patches do
-                surface.create_entity({
-                    name = r_name,
-                    amount = r_data.amount,
-                    position = { oil_patch_x, oil_patch_y }
-                })
-                oil_patch_x = oil_patch_x + spacing
+                for i = 1, r_data.num_patches do
+                    surface.create_entity({
+                        name = r_name,
+                        amount = r_data.amount,
+                        position = { oil_patch_x, oil_patch_y }
+                    })
+                    oil_patch_x = oil_patch_x + spacing
+                end
+
+                fluid_ref_pos.y = fluid_ref_pos.y - spacing
             end
-
-            fluid_ref_pos.y = fluid_ref_pos.y - spacing
         end
 
     -- This places using specified offsets if auto placement is disabled.
     else
         local fluid_ref_pos = { x = position.x, y = position.y + radius }
-        for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
-            local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
-            local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
-            for i = 1, r_data.num_patches do
-                surface.create_entity({
-                    name = r_name,
-                    amount = r_data.amount,
-                    position = { oil_patch_x, oil_patch_y }
-                })
-                oil_patch_x = oil_patch_x + r_data.x_offset_next
-                oil_patch_y = oil_patch_y + r_data.y_offset_next
+        local fluid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources
+        if fluid_resources ~= nil then
+            for r_name, r_data in pairs(fluid_resources) do
+                local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
+                local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
+                for i = 1, r_data.num_patches do
+                    surface.create_entity({
+                        name = r_name,
+                        amount = r_data.amount,
+                        position = { oil_patch_x, oil_patch_y }
+                    })
+                    oil_patch_x = oil_patch_x + r_data.x_offset_next
+                    oil_patch_y = oil_patch_y + r_data.y_offset_next
+                end
             end
         end
     end
@@ -479,15 +485,22 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     -- Create list of resource tiles
     ---@type table<string>
     local r_list = {}
-    for r_name, _ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources) do
-        if (r_name ~= "") then
-            table.insert(r_list, r_name)
+    local solid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources
+    if solid_resources ~= nil then
+        for r_name, _ in pairs(solid_resources) do
+            if (r_name ~= "") then
+                table.insert(r_list, r_name)
+            end
         end
     end
 
-    for g_name,_ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources) do
-        if (g_name ~= "") then
-            table.insert(r_list, g_name)
+    -- Gleba style resources like plants
+    local gleba_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources
+    if gleba_resources ~= nil then
+        for g_name, _ in pairs(gleba_resources) do
+            if (g_name ~= "") then
+                table.insert(r_list, g_name)
+            end
         end
     end
 
