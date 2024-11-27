@@ -24,19 +24,24 @@ data:extend({
     oarc_linked_chest, oarc_linked_power,  
 })
 
+-- See control.lua for the event type defs to see what each event provides you.
 data:extend({
+    -- A player was presented with the spawn options
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-spawn-choices-gui-displayed",
+    },
+
     -- A spawn area was created (and is finished generating)
     {
         type = "custom-event",
         name = "oarc-mod-on-spawn-created",
-        -- Provides data table called spawn_data
     },
 
     -- A spawn area was REQUESTED to be removed. (Not that it has been removed already.)
     {
         type = "custom-event",
         name = "oarc-mod-on-spawn-remove-request",
-        -- Provides data table called spawn_data
     },
 
     -- A player was reset (also called when a player is removed)
@@ -44,21 +49,18 @@ data:extend({
     {
         type = "custom-event",
         name = "oarc-mod-on-player-reset",
-        -- Provides player_index
     },
 
     -- A player was spawned (sent to a new spawn OR joined a shared spawn)
     {
         type = "custom-event",
         name = "oarc-mod-on-player-spawned",
-        -- Provides player_index
     },
 
     -- A player moved from surface to space platform
     {
         type = "custom-event",
         name = "oarc-mod-character-surface-changed",
-        -- Provides player_index, old_surface_name, new_surface_name
     },
 })
 

@@ -431,38 +431,44 @@ function GenerateStartingResources(surface, position)
         local y_offset = storage.ocfg.resource_placement.distance_to_edge
         local fluid_ref_pos = { x = position.x, y = position.y + radius - y_offset }
 
-        for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
+        local fluid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources
+        if fluid_resources ~= nil then
+            for r_name, r_data in pairs(fluid_resources) do
 
-            local spacing = r_data.spacing
-            local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
-            local oil_patch_y = fluid_ref_pos.y
+                local spacing = r_data.spacing
+                local oil_patch_x = fluid_ref_pos.x - (((r_data.num_patches-1) * spacing) / 2)
+                local oil_patch_y = fluid_ref_pos.y
 
-            for i = 1, r_data.num_patches do
-                surface.create_entity({
-                    name = r_name,
-                    amount = r_data.amount,
-                    position = { oil_patch_x, oil_patch_y }
-                })
-                oil_patch_x = oil_patch_x + spacing
+                for i = 1, r_data.num_patches do
+                    surface.create_entity({
+                        name = r_name,
+                        amount = r_data.amount,
+                        position = { oil_patch_x, oil_patch_y }
+                    })
+                    oil_patch_x = oil_patch_x + spacing
+                end
+
+                fluid_ref_pos.y = fluid_ref_pos.y - spacing
             end
-
-            fluid_ref_pos.y = fluid_ref_pos.y - spacing
         end
 
     -- This places using specified offsets if auto placement is disabled.
     else
         local fluid_ref_pos = { x = position.x, y = position.y + radius }
-        for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources --[[@as table<string, OarcConfigFluidResource>]]) do
-            local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
-            local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
-            for i = 1, r_data.num_patches do
-                surface.create_entity({
-                    name = r_name,
-                    amount = r_data.amount,
-                    position = { oil_patch_x, oil_patch_y }
-                })
-                oil_patch_x = oil_patch_x + r_data.x_offset_next
-                oil_patch_y = oil_patch_y + r_data.y_offset_next
+        local fluid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.fluid_resources
+        if fluid_resources ~= nil then
+            for r_name, r_data in pairs(fluid_resources) do
+                local oil_patch_x = fluid_ref_pos.x + r_data.x_offset_start
+                local oil_patch_y = fluid_ref_pos.y + r_data.y_offset_start
+                for i = 1, r_data.num_patches do
+                    surface.create_entity({
+                        name = r_name,
+                        amount = r_data.amount,
+                        position = { oil_patch_x, oil_patch_y }
+                    })
+                    oil_patch_x = oil_patch_x + r_data.x_offset_next
+                    oil_patch_y = oil_patch_y + r_data.y_offset_next
+                end
             end
         end
     end
@@ -479,15 +485,22 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     -- Create list of resource tiles
     ---@type table<string>
     local r_list = {}
-    for r_name, _ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources) do
-        if (r_name ~= "") then
-            table.insert(r_list, r_name)
+    local solid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources
+    if solid_resources ~= nil then
+        for r_name, _ in pairs(solid_resources) do
+            if (r_name ~= "") then
+                table.insert(r_list, r_name)
+            end
         end
     end
 
-    for g_name,_ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources) do
-        if (g_name ~= "") then
-            table.insert(r_list, g_name)
+    -- Gleba style resources like plants
+    local gleba_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources
+    if gleba_resources ~= nil then
+        for g_name, _ in pairs(gleba_resources) do
+            if (g_name ~= "") then
+                table.insert(r_list, g_name)
+            end
         end
     end
 
@@ -658,15 +671,16 @@ end
 ---@param player_name string
 ---@param surface_name string
 ---@param first_spawn boolean
+---@param is_host boolean
 ---@return nil
-function SendPlayerToNewSpawn(player_name, surface_name, first_spawn)
+function SendPlayerToNewSpawn(player_name, surface_name, first_spawn, is_host)
 
     local player = game.players[player_name]
 
     -- Check if player character is nil
     if (player.character == nil) then
         log("Player character is nil, can't send to spawn point just yet: " .. player_name)
-        QueueNilCharacterForNewSpawnTeleport(player_name, surface_name, first_spawn)
+        QueueNilCharacterForNewSpawnTeleport(player_name, surface_name, first_spawn, is_host)
         return
     end
 
@@ -681,10 +695,10 @@ function SendPlayerToNewSpawn(player_name, surface_name, first_spawn)
     -- Only first time spawns get starter items.
     if first_spawn then
         GivePlayerStarterItems(player)
-
-        -- Trigger the event that player was spawned too.
-        script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index})
     end
+
+    -- Trigger the event that player was spawned too.
+    script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index, first_spawn = first_spawn, is_host = is_host})
 end
 
 ---Displays some welcoming text at the spawn point on the ground. Fades out over time.
@@ -851,51 +865,6 @@ end
   \___||____||___|/_/ \_\|_|\_| \___/ |_|
 
 --]]
-
--- ---Resets the player and destroys their force if they are not on the main one.
--- ---@param player LuaPlayer
--- ---@return nil
--- function ResetPlayerAndDestroyForce(player)
---     local player_old_force = player.force
-
---     player.force = storage.ocfg.gameplay.main_force_name
-
---     if ((#player_old_force.players == 0) and (player_old_force.name ~= storage.ocfg.gameplay.main_force_name)) then
---         SendBroadcastMsg("Team " ..
---             player_old_force.name .. " has been destroyed! All buildings will slowly be destroyed now.") --: localize
---         log("DestroyForce - FORCE DESTROYED: " .. player_old_force.name)
---         game.merge_forces(player_old_force, DESTROYED_FORCE_NAME)
---     end
-
---     RemoveOrResetPlayer(player, false, false, true, true)
---     SeparateSpawnsInitPlayer(player.index)
--- end
-
--- ---Resets the player and merges their force into the abandoned_force.
--- ---@param player LuaPlayer
--- ---@return nil
--- function ResetPlayerAndAbandonForce(player)
---     local player_old_force = player.force
-
---     player.force = storage.ocfg.gameplay.main_force_name
-
---     if ((#player_old_force.players == 0) and (player_old_force.name ~= storage.ocfg.gameplay.main_force_name)) then
---         SendBroadcastMsg("Team " .. player_old_force.name .. " has been abandoned!") --: localize
---         log("AbandonForce - FORCE ABANDONED: " .. player_old_force.name)
---         game.merge_forces(player_old_force, ABANDONED_FORCE_NAME)
---     end
-
---     RemoveOrResetPlayer(player, false, false, false, false)
---     SeparateSpawnsInitPlayer(player.index)
--- end
-
--- ---Reset player and merge their force to neutral
--- ---@param player LuaPlayer
--- ---@return nil
--- function ResetPlayerAndMergeForceToNeutral(player)
---     RemoveOrResetPlayer(player, false, true, true, true)
---     SeparateSpawnsInitPlayer(player.index)
--- end
 
 ---Call this if a player leaves the game early (or a player wants an early game reset)
 ---@param player LuaPlayer
@@ -1197,10 +1166,11 @@ end
 ---@param player_name string
 ---@param surface_name string
 ---@param first_spawn boolean
+---@param is_host boolean
 ---@return nil
-function QueueNilCharacterForNewSpawnTeleport(player_name, surface_name, first_spawn)
+function QueueNilCharacterForNewSpawnTeleport(player_name, surface_name, first_spawn, is_host)
     if (storage.nil_character_teleport_queue[player_name] == nil) then
-        storage.nil_character_teleport_queue[player_name] = { surface_name = surface_name, first_spawn = first_spawn }
+        storage.nil_character_teleport_queue[player_name] = { surface_name = surface_name, first_spawn = first_spawn, is_host = is_host }
     end
 end
 
@@ -1218,7 +1188,7 @@ function OnTickNilCharacterTeleportQueue()
         -- And hope to high heaven this doesn't recurse infinitely.
         elseif (player.character ~= nil) then
             storage.nil_character_teleport_queue[player_name] = nil
-            SendPlayerToNewSpawn(player_name, data.surface_name, data.first_spawn)
+            SendPlayerToNewSpawn(player_name, data.surface_name, data.first_spawn, data.is_host)
         end
     end
 end
@@ -1678,7 +1648,7 @@ function DelayedSpawnOnTick()
                     for _,player_name in pairs(delayed_spawn.waiting_players) do
                         local player = game.players[player_name]
                         if (player ~= nil) then
-                            SendPlayerToNewSpawn(player_name, delayed_spawn.surface_name, delayed_spawn.primary)
+                            SendPlayerToNewSpawn(player_name, delayed_spawn.surface_name, delayed_spawn.primary, delayed_spawn.host_name == player_name)
                         end
                     end
 
@@ -1865,4 +1835,4 @@ SPAWN_TEAM_CHOICE = {
 ---@alias OarcSurfaceSpawnSetting { primary: boolean, secondary: boolean}
 
 ---Entry for a nil_character_teleport_queue
----@alias OarcNilCharacterTeleportQueueEntry { surface_name: string, first_spawn: boolean } 
+---@alias OarcNilCharacterTeleportQueueEntry { surface_name: string, first_spawn: boolean, is_host: boolean } 
