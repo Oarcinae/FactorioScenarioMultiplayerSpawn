@@ -543,7 +543,7 @@ function SpawnCtrlTabGuiClick(event)
             end
 
             -- Send player to the host's primary spawn.
-            SendPlayerToNewSpawn(joining_player_name, primary_spawn.surface_name, true)
+            SendPlayerToNewSpawn(joining_player_name, primary_spawn.surface_name, true, false)
 
             -- Render some welcoming text...
             DisplayWelcomeGroundTextAtSpawn(primary_spawn.surface_name, primary_spawn.position)

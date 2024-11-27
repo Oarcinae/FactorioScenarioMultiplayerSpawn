@@ -162,6 +162,15 @@ end)
 ---@field name integer --For custom events, this is the event ID
 ---@field tick integer
 
+---@class OarcModOnSpawnChoicesGuiDisplayedEvent: OarcCustomEventBase
+---@field player_index integer
+---@field gui_element LuaGuiElement
+script.on_event("oarc-mod-on-spawn-choices-gui-displayed", function(event)
+    log("EVENT - oarc-mod-on-spawn-choices-gui-displayed:" .. serpent.block(event --[[@as OarcModOnSpawnChoicesGuiDisplayedEvent]]))
+    -- The 4 main sub sections are called: spawn_settings_frame, solo_spawn_frame, shared_spawn_frame, and buddy_spawn_frame
+end)
+
+
 ---@class OarcModOnSpawnCreatedEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
 script.on_event("oarc-mod-on-spawn-created", function(event)
@@ -182,6 +191,8 @@ end)
 
 ---@class OarcModOnPlayerSpawnedEvent: OarcCustomEventBase
 ---@field player_index integer
+---@field first_spawn boolean
+---@field is_host boolean
 script.on_event("oarc-mod-on-player-spawned", function(event)
     log("EVENT - oarc-mod-on-player-spawned:" .. serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
 end)
@@ -452,7 +463,19 @@ local oarc_mod_interface =
 {
   get_mod_settings = function()
     return storage.ocfg
-  end
+  end,
+
+  get_unique_spawns = function()
+    return storage.unique_spawns
+  end,
+
+  get_player_home_spawn = function(player_name)
+    return FindPlayerHomeSpawn(player_name)
+  end,
+
+  get_player_primary_spawn = function(player_name)
+    return FindPrimaryUniqueSpawn(player_name)
+  end,
 }
 
 remote.add_interface("oarc_mod", oarc_mod_interface)

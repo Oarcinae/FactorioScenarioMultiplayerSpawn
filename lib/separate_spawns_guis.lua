@@ -127,15 +127,6 @@ function CreateSpawnMenuGuiFrame(player)
     }
     subhead.style.height = 46
     subhead.style.horizontally_stretchable = true
-    -- changelog_subheader_frame =
-    -- {
-    --   type = "frame_style",
-    --   parent = "subheader_frame",
-    --   left_padding = 12,
-    --   right_padding = 12,
-    --   top_padding = 4,
-    --   horizontally_stretchable = "on"
-    -- }
     AddLabel(subhead, "warning_lbl1", { "oarc-click-info-btn-help" }, my_note_style)
 
     return inside_frame
@@ -667,6 +658,8 @@ function DisplaySpawnOptions(player)
     CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn) -- The primary method of spawning
     CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns) -- Spawn options to join another player's base.
     CreateBuddySpawnFrame(sGui, player, gameplay.enable_buddy_spawn, gameplay.enable_separate_teams) -- Awesome buddy spawning system
+
+    script.raise_event("oarc-mod-on-spawn-choices-gui-displayed", { player_index = player.index, gui_element = sGui })
 end
 
 
