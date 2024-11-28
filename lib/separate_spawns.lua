@@ -800,6 +800,7 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
             CreateCropSquare(surface, spawn, chunkArea)
         end
 
+        script.raise_event("oarc-mod-on-chunk-generated-near-spawn", {surface = surface, chunk_area = chunkArea, spawn_data = spawn})
         :: CONTINUE ::
     end
 end

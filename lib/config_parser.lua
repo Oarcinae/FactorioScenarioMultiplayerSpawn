@@ -345,7 +345,7 @@ function RuntimeModSettingChanged(event)
     end
 end
 
----A probably quit stupid function to let me lookup and set the storage.ocfg entries using a key table.
+---A probably quite stupid function to let me lookup and set the storage.ocfg entries using a key table.
 ---@param key_table table<integer, string>
 ---@param value any
 function SetGlobalOarcConfigUsingKeyTable(key_table, value)
@@ -360,6 +360,9 @@ function SetGlobalOarcConfigUsingKeyTable(key_table, value)
     else
         error("Invalid key_table length: " .. number_of_keys .. "\n" .. serpent.block(key_table))
     end
+
+    -- Hopefully I'm not missing any other entry points where storage.ocfg might be changed.
+    script.raise_event("oarc-mod-on-config-changed", {})
 end
 
 ---An equally stupid function to let me lookup the storage.ocfg entries using a key table.

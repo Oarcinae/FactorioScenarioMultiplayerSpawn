@@ -212,11 +212,21 @@ script.on_event("oarc-mod-character-surface-changed", function(event)
     SeparateSpawnsPlayerChangedSurface(player, custom_event.old_surface_name, custom_event.new_surface_name)
 end)
 
+---@class OarcModOnChunkGeneratedNearSpawnEvent: OarcCustomEventBase
+---@field surface LuaSurface
+---@field chunk_area BoundingBox
+---@field spawn_data OarcUniqueSpawn
+script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
+    log("EVENT - oarc-mod-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
+end)
+
+---@class OarcModOnConfigChangedEvent: OarcCustomEventBase
+script.on_event("oarc-mod-on-config-changed", function(event)
+    log("EVENT - oarc-mod-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
+end)
+
 -- I raise this event whenever teleporting the player!
 script.on_event(defines.events.script_raised_teleported, function(event)
-    log("script_raised_teleported")
-    log(serpent.block(event))
-
     local entity = event.entity
     if entity.type == "character" and entity.player then
         SeparateSpawnsUpdatePlayerSurface(entity.player, entity.surface.name)

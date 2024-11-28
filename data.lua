@@ -62,6 +62,18 @@ data:extend({
         type = "custom-event",
         name = "oarc-mod-character-surface-changed",
     },
+
+    -- A chunk was generated near a unique spawn
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-chunk-generated-near-spawn",
+    },
+
+    -- An entry in storage.ocfg was changed
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-config-changed",
+    },
 })
 
 
