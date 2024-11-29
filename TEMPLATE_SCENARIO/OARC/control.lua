@@ -61,7 +61,8 @@ remote.add_interface("oarc_scenario", oarc_scenario_interface)
 
 local util = require("util")
 
--- You can require files to use them if you want like this:
+-- You can require files to use them if you want like this. (Ignore the diagnostic warning.)
+---@diagnostic disable-next-line: different-requires
 require("__oarc-mod__/lib/oarc_gui_utils")
 
 -- This will keep a local copy of the mod's config so you can use it in your custom events.
@@ -98,6 +99,9 @@ script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
     --This is just here so I don't get lua warnings
     ---@type OarcModOnChunkGeneratedNearSpawnEvent
     local custom_event = event
+
+    -- Remove decoratives (grass/roots/enemy-decal)
+    custom_event.surface.destroy_decoratives {area = custom_event.chunk_area}
 
     -- Get the spawn config from our local copy.
     local general_spawn_config = storage.ocfg_copy.spawn_general

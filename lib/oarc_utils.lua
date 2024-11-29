@@ -1,6 +1,8 @@
 -- My general purpose utility functions and constants for factorio
 -- Also contains some constants
 
+-- (Ignore the diagnostic warning.)
+---@diagnostic disable-next-line: different-requires
 require("lib/oarc_gui_utils")
 require("mod-gui")
 
@@ -147,11 +149,11 @@ function SendBroadcastMsg(msg)
 end
 
 ---Send a message to a player, safely checks if they exist and are online.
----@param playerName string
+---@param player_name string
 ---@param msg LocalisedString
 ---@return nil
-function SendMsg(playerName, msg)
-    local player = game.players[playerName]
+function SendMsg(player_name, msg)
+    local player = game.players[player_name]
     if ((player ~= nil) and (player.connected)) then
         CompatSend(player, msg)
     end
@@ -454,10 +456,11 @@ function ShareChatBetweenForces(player, msg)
                 (force.name ~= "neutral") and
                 (force.name ~= "player") and
                 (force ~= player.force)) then
-                CompatSend(force, {"", player.name, ": ", msg})
+                CompatSend(force, {"", player.name, ": ", msg}, { color = player.color, sound_path = nil})
             end
         end
     end
+    game.play_sound { path = "utility/scenario_message", volume_modifier = 1 }
 end
 
 -- -- Merges force2 INTO force1 but keeps all research between both forces.

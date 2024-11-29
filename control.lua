@@ -216,14 +216,16 @@ end)
 ---@field surface LuaSurface
 ---@field chunk_area BoundingBox
 ---@field spawn_data OarcUniqueSpawn
-script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
-    log("EVENT - oarc-mod-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
-end)
+-- script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
+--  I wouldn't recommend any logging inside this event as it is called for every chunk generated near a spawn.
+--     log("EVENT - oarc-mod-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
+-- end)
 
 ---@class OarcModOnConfigChangedEvent: OarcCustomEventBase
-script.on_event("oarc-mod-on-config-changed", function(event)
-    log("EVENT - oarc-mod-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
-end)
+-- script.on_event("oarc-mod-on-config-changed", function(event)
+-- This can get called quite a lot during init or importing of settings.
+--     log("EVENT - oarc-mod-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
+-- end)
 
 -- I raise this event whenever teleporting the player!
 script.on_event(defines.events.script_raised_teleported, function(event)
