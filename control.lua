@@ -148,15 +148,16 @@ script.on_event(defines.events.on_player_driving_changed_state, function (event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-    local research = event.research
-    -- TODO: Add a non-mod setting to disable this.
-    SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name})
+    if (storage.ocfg.gameplay.enable_shared_team_chat) then
+        local research = event.research
+        SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name}, { color = research.force.color, sound = defines.print_sound.never })
+    end
 end)
 
-script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
-    log("Cargo pod finished ascending")
-    log(serpent.block(event))
-end)
+-- script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
+--     log("Cargo pod finished ascending")
+--     log(serpent.block(event))
+-- end)
 
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)

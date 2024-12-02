@@ -152,47 +152,47 @@ function ValidateSettings()
     -- Verify the major sections exist. Not exhaustive but should catch missing sections.
     if (storage.ocfg["server_info"] == nil) then
         log("ERROR - Missing server_info section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing server_info section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing server_info section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.server_info = table.deepcopy(OCFG.server_info)
     end
     if (storage.ocfg["gameplay"] == nil) then
         log("ERROR - Missing gameplay section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing gameplay section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing gameplay section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.gameplay = table.deepcopy(OCFG.gameplay)
     end
     if (storage.ocfg["regrowth"] == nil) then
         log("ERROR - Missing regrowth section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing regrowth section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing regrowth section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.regrowth = table.deepcopy(OCFG.regrowth)
     end
     if (storage.ocfg["spawn_general"] == nil) then
         log("ERROR - Missing spawn_general section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing spawn_general section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing spawn_general section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.spawn_general = table.deepcopy(OCFG.spawn_general)
     end
     if (storage.ocfg["resource_placement"] == nil) then
         log("ERROR - Missing resource_placement section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing resource_placement section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing resource_placement section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.resource_placement = table.deepcopy(OCFG.resource_placement)
     end
     if (storage.ocfg["surfaces_config"] == nil) then
         log("ERROR - Missing surfaces_config section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing surfaces_config section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing surfaces_config section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.surfaces_config = table.deepcopy(OCFG.surfaces_config)
     end
     if (storage.ocfg["surfaces_blacklist"] == nil) then
         log("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing surfaces_blacklist section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.surfaces_blacklist = table.deepcopy(OCFG.surfaces_blacklist)
     end
     if (storage.ocfg["surfaces_blacklist_match"] == nil) then
         log("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
     end
     if (storage.ocfg["shop_items"] == nil) then
         log("ERROR - Missing shop_items section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing shop_items section in config! Loading defaults instead!")
+        SendBroadcastMsg("ERROR - Missing shop_items section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.shop_items = table.deepcopy(OCFG.shop_items)
     end
 
@@ -203,7 +203,7 @@ function ValidateSettings()
         log("Both main force and separate teams are disabled! Enabling main force. Please check your mod settings or config!")
         storage.ocfg.gameplay.enable_main_team = true
         settings.global["oarc-mod-enable-main-team"] = { value = true }
-    SendBroadcastMsg({"oarc-teams-both-disabled-msg"})
+    SendBroadcastMsg({"oarc-teams-both-disabled-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
     -- Validate minimum is less than maximums
@@ -211,7 +211,7 @@ function ValidateSettings()
         log("Near spawn min distance is greater than or equal to near spawn max distance! Please check your mod settings or config!")
         storage.ocfg.gameplay.far_spawn_distance = storage.ocfg.gameplay.near_spawn_distance + 1
         settings.global["oarc-mod-far-spawn-distance"] = { value = storage.ocfg.gameplay.far_spawn_distance }
-    SendBroadcastMsg({"oarc-spawn-distance-invalid-msg"})
+    SendBroadcastMsg({"oarc-spawn-distance-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
     -- Validate that regrowth is enabled if world eater is enabled.
@@ -219,7 +219,7 @@ function ValidateSettings()
         log("World eater is enabled but regrowth is not! Disabling world eater. Please check your mod settings or config!")
         storage.ocfg.regrowth.enable_world_eater = false
         settings.global["oarc-mod-enable-world-eater"] = { value = false }
-    SendBroadcastMsg({"oarc-world-eater-invalid-msg"})
+    SendBroadcastMsg({"oarc-world-eater-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
     -- Validate that default surface exists.
@@ -227,7 +227,7 @@ function ValidateSettings()
         log("Default surface does not exist! Please check your mod settings or config!")
         storage.ocfg.gameplay.default_surface = "nauvis"
         settings.global["oarc-mod-default-surface"] = { value = "nauvis" }
-    SendBroadcastMsg({"oarc-default-surface-invalid-msg"})
+    SendBroadcastMsg({"oarc-default-surface-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
     -- Validate that a "nauvis" surface config exists (nauvis is the default config fallback)

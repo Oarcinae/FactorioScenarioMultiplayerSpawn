@@ -268,9 +268,13 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     local surface = game.surfaces[new_surface_name]
     local platform = surface.platform
     if (platform ~= nil) then
-        SendBroadcastMsg({ "oarc-player-on-platform", player.name, surface.platform.name })
+        SendBroadcastMsg({ "oarc-player-on-platform", player.name, surface.platform.index }, { color = player.color})
     else
-        SendBroadcastMsg({ "oarc-player-changed-surface", player.name, surface.localised_name or { "space-location-name." .. surface.name } or surface.name})
+        if (game.planets[new_surface_name] ~= nil) then
+            SendBroadcastMsg({ "oarc-player-changed-surface", player.name, "[planet=" .. new_surface_name .. "]" }, { color = player.color, sound_path = "utility/new_objective"})
+        else
+            SendBroadcastMsg({ "oarc-player-changed-surface", player.name, surface.localised_name or { "space-location-name." .. surface.name } or surface.name}, { color = player.color})
+        end
     end
 
     -- Check if player has been init'd yet. If not, then ignore it.
@@ -1593,7 +1597,7 @@ function SecondarySpawn(player, surface_name)
     local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        CompatSend(player, { "oarc-no-ungenerated-land-error" })
+        SendErrorMsg(player, { "oarc-no-ungenerated-land-error" })
         return
     end
 
@@ -1758,7 +1762,7 @@ function CreatePlayerCustomForce(player)
     if (newForce.name == player.name) then
         SendBroadcastMsg({ "oarc-player-started-own-team", player.name })
     else
-        CompatSend(player, { "oarc-player-no-new-teams-sorry" })
+        SendErrorMsg(player, { "oarc-player-no-new-teams-sorry" })
     end
 
     return newForce

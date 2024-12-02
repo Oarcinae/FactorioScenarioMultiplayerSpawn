@@ -148,7 +148,7 @@ function PlayerListTabGuiClick(event)
         local target_player = game.players[player_name]
 
         if (target_player == nil) then
-            CompatSend(player, {"oarc-player-not-found", player_name})
+            SendErrorMsg(player, {"oarc-player-not-found", player_name})
             return
         end
 

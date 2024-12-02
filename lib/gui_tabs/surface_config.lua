@@ -733,7 +733,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Check if an item is selected first.
         if (tags.item_name == "") then
-            CompatSend(player, "Please select an item first!")
+            SendErrorMsg(player, "Please select an item first!")
             event.element.text = "0"
             return
         end
@@ -754,7 +754,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Check if an item is selected first.
         if (tags.resource_name == "") then
-            CompatSend(player, "Please select a resource first!")
+            SendErrorMsg(player, "Please select a resource first!")
             event.element.text = "0"
             return
         end
@@ -780,7 +780,7 @@ function SurfaceConfigTabGuiConfirmed(event)
 
         -- Check if an item is selected first.
         if (tags.resource_name == "") then
-            CompatSend(player, "Please select a resource first!")
+            SendErrorMsg(player, "Please select a resource first!")
             event.element.text = "0"
             return
         end
@@ -844,7 +844,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         if (storage.ocfg.surfaces_config[surface_name].starting_items[setting_name][new_item_name]) then
-            CompatSend(player, "Item already exists in list! " .. new_item_name)
+            SendErrorMsg(player, "Item already exists in list! " .. new_item_name)
             event.element.elem_value = nil
             return
         end
@@ -874,7 +874,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         end
 
         if (prototypes.entity[new_resource_name].resource_category ~= "basic-solid") then
-            CompatSend(player, "Resource must be a solid resource! " .. new_resource_name)
+            SendErrorMsg(player, "Resource must be a solid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -892,7 +892,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         if (storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
-            CompatSend(player, "Resource already exists in list! " .. new_resource_name)
+            SendErrorMsg(player, "Resource already exists in list! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -922,7 +922,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         end
 
         if (prototypes.entity[new_resource_name].resource_category ~= "basic-fluid") then
-            CompatSend(player, "Resource must be a fluid resource! " .. new_resource_name)
+            SendErrorMsg(player, "Resource must be a fluid resource! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -940,7 +940,7 @@ function SurfaceConfigTabGuiElemChanged(event)
         local setting_name = parent.tags.setting --[[@as string]]
 
         if (storage.ocfg.surfaces_config[surface_name].spawn_config[setting_name][new_resource_name]) then
-            CompatSend(player, "Resource already exists in list! " .. new_resource_name)
+            SendErrorMsg(player, "Resource already exists in list! " .. new_resource_name)
             event.element.elem_value = nil
             return
         end
@@ -1047,7 +1047,7 @@ function SurfaceConfigTabGuiClick(event)
         local surface_name = event.element.parent["surface_dropdown"].items[event.element.parent["surface_dropdown"].selected_index] --[[@as string]]
 
         if (surface_name == "nauvis") then
-            CompatSend(player, "Already on nauvis, select a different surface to copy nauvis settings to!")
+            SendErrorMsg(player, "Already on nauvis, select a different surface to copy nauvis settings to!")
             return
         end
 
