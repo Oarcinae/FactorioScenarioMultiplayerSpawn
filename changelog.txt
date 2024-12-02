@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.16
+Date: ????
+  Changes:
+    - Add player color when sharing cross-force chat messages. Also changed the sound.
+  Modding:
+    - Add oarc-mod-on-config-changed and oarc-mod-on-chunk-generated-near-spawn events.
+    - Update template scenario to show how to use the new events to modify the spawn area and spawn options GUI.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.15
 Date: 2024-11-27
   Bugfixes:

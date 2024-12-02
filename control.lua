@@ -153,6 +153,11 @@ script.on_event(defines.events.on_research_finished, function(event)
     SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name})
 end)
 
+script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
+    log("Cargo pod finished ascending")
+    log(serpent.block(event))
+end)
+
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
 ----------------------------------------
