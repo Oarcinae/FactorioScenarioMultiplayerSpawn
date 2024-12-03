@@ -126,7 +126,7 @@ function CreatePlayerGPSButton(container, player_name)
     if game.planets[surface_name] ~= nil then
         AddLabel(flow, nil, {"", "[planet=", surface_name, "] ", {"space-location-name."..surface_name}}, my_label_style)
     else
-        AddLabel(flow, nil, game.surfaces[surface_name].localised_name, my_label_style)
+        AddLabel(flow, nil, game.surfaces[surface_name].localised_name or game.surfaces[surface_name].name, my_label_style)
     end
 end
 
