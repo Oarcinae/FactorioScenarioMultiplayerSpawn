@@ -464,7 +464,7 @@ function ShareChatBetweenForces(player, msg)
                 (force.name ~= "player") and
                 (force ~= player.force)) then
                 CompatSend(force, {"", player.name, ": ", msg}, { color = player.color, sound = defines.print_sound.never})
-                force.play_sound{ path = "utility/chat_message", volume_modifier = 1 }
+                force.play_sound{ path = "utility/scenario_message", volume_modifier = 1 }
             end
         end
     end
