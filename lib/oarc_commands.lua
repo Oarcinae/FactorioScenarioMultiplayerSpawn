@@ -46,5 +46,12 @@ commands.add_command("oarc-cleanup-player", {"oarc-command-cleanup-player"}, fun
         return
     end
 
+    if target_player.connected then
+        if command.player_index ~= nil then
+            SendErrorMsg(game.players[command.player_index], {"oarc-command-cleanup-player-online"})
+        end
+        return
+    end
+
     RemoveOrResetPlayer(target_player, true)
 end)
