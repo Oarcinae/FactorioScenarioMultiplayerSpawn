@@ -148,10 +148,16 @@ script.on_event(defines.events.on_player_driving_changed_state, function (event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-    local research = event.research
-    -- TODO: Add a non-mod setting to disable this.
-    SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name})
+    if (storage.ocfg.gameplay.enable_shared_team_chat) then
+        local research = event.research
+        SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name}, { color = research.force.color, sound = defines.print_sound.never })
+    end
 end)
+
+-- script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
+--     log("Cargo pod finished ascending")
+--     log(serpent.block(event))
+-- end)
 
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
@@ -212,11 +218,23 @@ script.on_event("oarc-mod-character-surface-changed", function(event)
     SeparateSpawnsPlayerChangedSurface(player, custom_event.old_surface_name, custom_event.new_surface_name)
 end)
 
+---@class OarcModOnChunkGeneratedNearSpawnEvent: OarcCustomEventBase
+---@field surface LuaSurface
+---@field chunk_area BoundingBox
+---@field spawn_data OarcUniqueSpawn
+-- script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
+--  I wouldn't recommend any logging inside this event as it is called for every chunk generated near a spawn.
+--     log("EVENT - oarc-mod-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
+-- end)
+
+---@class OarcModOnConfigChangedEvent: OarcCustomEventBase
+-- script.on_event("oarc-mod-on-config-changed", function(event)
+-- This can get called quite a lot during init or importing of settings.
+--     log("EVENT - oarc-mod-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
+-- end)
+
 -- I raise this event whenever teleporting the player!
 script.on_event(defines.events.script_raised_teleported, function(event)
-    log("script_raised_teleported")
-    log(serpent.block(event))
-
     local entity = event.entity
     if entity.type == "character" and entity.player then
         SeparateSpawnsUpdatePlayerSurface(entity.player, entity.surface.name)

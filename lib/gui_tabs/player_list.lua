@@ -124,9 +124,12 @@ function CreatePlayerGPSButton(container, player_name)
     end
 
     if game.planets[surface_name] ~= nil then
-        AddLabel(flow, nil, {"", "[planet=", surface_name, "] ", {"space-location-name."..surface_name}}, my_label_style)
+        AddLabel(flow, nil, {"", "[planet=", surface_name, "] ", {"space-location-name."..surface_name}}, my_player_list_surface_max_width_style)
+    
+    elseif game.surfaces[surface_name].platform ~= nil then
+        AddLabel(flow, nil, {"", "[entity=space-platform-hub] ", game.surfaces[surface_name].platform.name}, my_player_list_surface_max_width_style)
     else
-        AddLabel(flow, nil, game.surfaces[surface_name].localised_name, my_label_style)
+        AddLabel(flow, nil, game.surfaces[surface_name].localised_name or game.surfaces[surface_name].name, my_player_list_surface_max_width_style)
     end
 end
 
@@ -148,7 +151,7 @@ function PlayerListTabGuiClick(event)
         local target_player = game.players[player_name]
 
         if (target_player == nil) then
-            CompatSend(player, {"oarc-player-not-found", player_name})
+            SendErrorMsg(player, {"oarc-player-not-found", player_name})
             return
         end
 

@@ -1,6 +1,8 @@
 -- My general purpose utility functions and constants for factorio
 -- Also contains some constants
 
+-- (Ignore the diagnostic warning.)
+---@diagnostic disable-next-line: different-requires
 require("lib/oarc_gui_utils")
 require("mod-gui")
 
@@ -101,6 +103,7 @@ local has_better_chat = nil
 ---@param recipient LuaGameScript|LuaForce|LuaPlayer
 ---@param msg LocalisedString
 ---@param print_settings PrintSettings?
+---@return nil
 function CompatSend(recipient, msg, print_settings)
     if has_better_chat == nil then
         local better_chat = remote.interfaces["better-chat"]
@@ -139,22 +142,28 @@ end
 
 --- Broadcast messages to all connected players
 ---@param msg LocalisedString
+---@param print_settings PrintSettings?
 ---@return nil
-function SendBroadcastMsg(msg)
-    for name, player in pairs(game.connected_players) do
-        CompatSend(player, msg)
+function SendBroadcastMsg(msg, print_settings)
+    CompatSend(game, msg, print_settings)
+end
+
+---Send an error message to a player using their name, but first safely checks if they exist and are online.
+---@param player_name string
+---@param msg LocalisedString
+---@return nil
+function SendErrorMsgUsingName(player_name, msg)
+    local player = game.players[player_name]
+    if ((player ~= nil) and (player.connected)) then
+        SendErrorMsg(player, msg)
     end
 end
 
----Send a message to a player, safely checks if they exist and are online.
----@param playerName string
+---@param player LuaPlayer
 ---@param msg LocalisedString
 ---@return nil
-function SendMsg(playerName, msg)
-    local player = game.players[playerName]
-    if ((player ~= nil) and (player.connected)) then
-        CompatSend(player, msg)
-    end
+function SendErrorMsg(player, msg)
+    CompatSend(player, msg, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
 end
 
 ---Checks if a string starts with another string
@@ -454,7 +463,7 @@ function ShareChatBetweenForces(player, msg)
                 (force.name ~= "neutral") and
                 (force.name ~= "player") and
                 (force ~= player.force)) then
-                CompatSend(force, {"", player.name, ": ", msg})
+                CompatSend(force, {"", player.name, ": ", msg}, { color = player.color })
             end
         end
     end

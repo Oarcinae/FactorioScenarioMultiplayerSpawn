@@ -163,6 +163,11 @@ my_notepad_fixed_width_style = {
     top_margin = 5,
     bottom_margin = 5
 }
+---@type LuaStyle
+---@diagnostic disable-next-line: missing-fields
+my_player_list_surface_max_width_style = {
+    maximal_width = 200
+}
 
 --------------------------------------------------------------------------------
 -- GUI Functions

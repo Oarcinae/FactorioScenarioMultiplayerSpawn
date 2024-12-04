@@ -125,19 +125,19 @@ function ServerInfoTabGuiClick(event)
             local resetPlayer = player_dropdown.get_item(pIndex)
 
             if not game.players[resetPlayer] or not game.players[resetPlayer].connected then
-                SendMsg(player.name, {"oarc-player-not-found", resetPlayer})
+                SendErrorMsgUsingName(player.name, {"oarc-player-not-found", resetPlayer})
                 return
             end
 
             if PlayerHasDelayedSpawn(resetPlayer--[[@as string]]) then
-                SendMsg(player.name, {"oarc-player-about-to-spawn", resetPlayer})
+                SendErrorMsgUsingName(player.name, {"oarc-player-about-to-spawn", resetPlayer})
                 return
             end
 
             log("Resetting " .. resetPlayer)
             RemoveOrResetPlayer(game.players[resetPlayer], false)
         else
-            SendMsg(player.name, {"oarc-player-none-selected"})
+            SendErrorMsgUsingName(player.name, {"oarc-player-none-selected"})
             return
         end
     end

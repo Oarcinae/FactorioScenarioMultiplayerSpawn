@@ -697,11 +697,11 @@ end
 ---@return nil
 function RequestBuddySpawn(player)
     local buddy_choice = storage.spawn_choices[player.name].buddy
-    if (buddy_choice == nil) then CompatSend(player, { "oarc-invalid-buddy" }) return end
+    if (buddy_choice == nil) then SendErrorMsg(player, { "oarc-invalid-buddy" }) return end
     local buddy = game.players[buddy_choice]
-    if (buddy == nil) then CompatSend(player, { "oarc-invalid-buddy" }) return end
+    if (buddy == nil) then SendErrorMsg(player, { "oarc-invalid-buddy" }) return end
     -- Confirm the buddy is still in the spawn menu!
-    if (buddy.gui.screen.spawn_opts == nil) then CompatSend(player, { "oarc-invalid-buddy", buddy.name }) return end
+    if (buddy.gui.screen.spawn_opts == nil) then SendErrorMsg(player, { "oarc-invalid-buddy", buddy.name }) return end
 
     DisplayBuddySpawnWaitMenu(player)
     DisplayBuddySpawnRequestMenu(buddy, player.name)
@@ -742,7 +742,7 @@ function RequestToJoinSharedSpawn(player)
     end
 
     local host_name = storage.spawn_choices[player.name].host_name
-    if (host_name == nil) then CompatSend(player, { "oarc-no-shared-spawn-selected" }) return end
+    if (host_name == nil) then SendErrorMsg(player, { "oarc-no-shared-spawn-selected" }) return end
 
     -- Clear the spawn options gui
     if (player.gui.screen.spawn_opts ~= nil) then
@@ -756,11 +756,11 @@ function RequestToJoinSharedSpawn(player)
         -- Display wait menu with cancel button.
         DisplaySharedSpawnJoinWaitMenu(player)
 
-        -- Tell other player they are requesting a response.
-        game.players[host_name].print({ "oarc-player-requesting-join-you", player.name })
+        -- Tell other player they are requesting a response. Print it with color orange
+        CompatSend(game.players[host_name], { "oarc-player-requesting-join-you", player.name }, { color = { r = 1, g = 0.5, b = 0 }, sound_path = "utility/scenario_message" })
         OarcGuiRefreshContent(game.players[host_name])
     else
-        CompatSend(player, { "oarc-invalid-host-shared-spawn" })
+        SendErrorMsg(player, { "oarc-invalid-host-shared-spawn" })
 
         DisplaySpawnOptions(player)
     end
@@ -774,7 +774,7 @@ function CancelSharedSpawnRequest(player)
 
     local host_name = storage.spawn_choices[player.name].host_name
     if (host_name ~= nil) and (game.players[host_name] ~= nil) then
-        game.players[host_name].print({ "oarc-player-cancel-join-request", player.name })
+        CompatSend(game.players[host_name], { "oarc-player-cancel-join-request", player.name })
     end
 
     --- Destroy the waiting menu and display the spawn options again.
@@ -858,7 +858,7 @@ function SharedSpawnSelect(gui_element, player)
             button.caption = { "oarc-join-shared-button-enable", host_name, primary_spawn.surface_name }
             button.style = "green_button"
         else
-            CompatSend(player, { "oarc-invalid-host-shared-spawn" })
+            SendErrorMsg(player, { "oarc-invalid-host-shared-spawn" })
             storage.spawn_choices[player.name].host_name = nil
             gui_element.selected_index = 0
             button.enabled = false
@@ -889,7 +889,7 @@ function PrimarySpawnRequest(player)
 
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        CompatSend(player, { "oarc-no-ungenerated-land-error" })
+        SendErrorMsg(player, { "oarc-no-ungenerated-land-error" })
         return
     end
 
@@ -902,7 +902,7 @@ function PrimarySpawnRequest(player)
     local delayed_spawn = GenerateNewSpawn(player.name, spawn_choices.surface_name, spawn_position, spawn_choices, true)
     QueuePlayerForSpawn(player.name, delayed_spawn)
 
-    SendBroadcastMsg({"", { "oarc-player-is-joining", player.name, spawn_choices.surface_name }, " ", GetGPStext(spawn_choices.surface_name, spawn_position)})
+    SendBroadcastMsg({"", { "oarc-player-is-joining", player.name, spawn_choices.surface_name }, " ", GetGPStext(spawn_choices.surface_name, spawn_position)}, {color = player.color})
 
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
@@ -1139,7 +1139,7 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
 
     -- If that fails, just throw a warning and don't spawn them. They can try again.
     if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        CompatSend(player, { "oarc-no-ungenerated-land-error" })
+        SendErrorMsg(player, { "oarc-no-ungenerated-land-error" })
         return
     end
 

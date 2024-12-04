@@ -408,20 +408,20 @@ function SpawnCtrlTabGuiClick(event)
 
         -- Check if player has a valid character
         if (player.character == nil) then 
-            CompatSend(player, { "oarc-no-valid-player-character" })
+            SendErrorMsg(player, { "oarc-no-valid-player-character" })
             return
         end
 
         -- Check if player is in a vehicle
         if player.driving then
-            CompatSend(player, { "oarc-player-character-in-vehicle" })
+            SendErrorMsg(player, { "oarc-player-character-in-vehicle" })
             return
         end
 
         -- Check if the surface is blacklisted
         local surface_name = player.character.surface.name
         if IsSurfaceBlacklisted(surface_name) then
-            CompatSend(player, {"oarc-no-respawn-this-surface"})
+            SendErrorMsg(player, {"oarc-no-respawn-this-surface"})
             return
         end
 
@@ -444,13 +444,13 @@ function SpawnCtrlTabGuiClick(event)
 
         -- Check if player has a valid character
         if (player.character == nil) then 
-            CompatSend(player, { "oarc-no-valid-player-character" })
+            SendErrorMsg(player, { "oarc-no-valid-player-character" })
             return
         end
 
         -- Check if player is in a vehicle
         if player.driving then
-            CompatSend(player, { "oarc-player-character-in-vehicle" })
+            SendErrorMsg(player, { "oarc-player-character-in-vehicle" })
             return
         end
 
@@ -478,7 +478,7 @@ function SpawnCtrlTabGuiClick(event)
 
         if ((event.element.parent.join_queue_dropdown == nil) or
                 (event.element.parent.join_queue_dropdown.selected_index == 0)) then
-            CompatSend(player, { "oarc-selected-player-not-valid" })
+            SendErrorMsg(player, { "oarc-selected-player-not-valid" })
             OarcGuiRefreshContent(player)
             return
         end
@@ -488,7 +488,7 @@ function SpawnCtrlTabGuiClick(event)
 
         -- Shouldn't be able to hit this since we force a GUI refresh when they leave?
         if ((game.players[join_queue_player_choice] == nil) or (not game.players[join_queue_player_choice].connected)) then
-            CompatSend(player, { "oarc-selected-player-not-wait" })
+            SendErrorMsg(player, { "oarc-selected-player-not-wait" })
             OarcGuiRefreshContent(player)
             return
         end
@@ -502,7 +502,7 @@ function SpawnCtrlTabGuiClick(event)
             -- Inform the host that the player was rejected
             CompatSend(player, { "oarc-reject-joiner", join_queue_player_choice })
             -- Inform the player that their request was rejected
-            SendMsg(join_queue_player_choice, { "oarc-your-request-rejected" })
+            SendErrorMsgUsingName(join_queue_player_choice, { "oarc-your-request-rejected" })
 
             -- Close the waiting players menu
             if (game.players[join_queue_player_choice].gui.screen.join_shared_spawn_wait_menu) then
@@ -514,12 +514,12 @@ function SpawnCtrlTabGuiClick(event)
             
             -- Check if there is space first
             if (table_size(primary_spawn.joiners) >= storage.ocfg.gameplay.number_of_players_per_shared_spawn - 1) then
-                CompatSend(player, { "oarc-shared-spawn-full" })
+                SendErrorMsg(player, { "oarc-shared-spawn-full" })
                 return
             end
 
             -- Send an announcement
-            SendBroadcastMsg({ "oarc-player-joining-base", join_queue_player_choice, player.name })
+            SendBroadcastMsg({ "oarc-player-joining-base", join_queue_player_choice, player.name }, {color = player.color})
 
             -- Close the waiting players menu
             if (game.players[join_queue_player_choice].gui.screen.join_shared_spawn_wait_menu) then

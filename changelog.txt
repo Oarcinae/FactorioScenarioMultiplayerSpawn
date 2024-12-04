@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.16
+Date: 2024-12-03
+  Minor Features:
+    - Added command to remove an offline player's spawns and character (oarc-cleanup-player).
+  Changes:
+    - Lots of minor changes to the various messages that get printed. Added color and icons where appropriate, and changed some of the sound effects used.
+  Modding:
+    - Add oarc-mod-on-config-changed and oarc-mod-on-chunk-generated-near-spawn events.
+    - Update template scenario to show how to use the new events to modify the spawn area and spawn options GUI.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.15
 Date: 2024-11-27
   Bugfixes:

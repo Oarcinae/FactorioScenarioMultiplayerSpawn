@@ -12,6 +12,46 @@ end)
 
 -- Trigger immediate regrowth cleanups
 commands.add_command("oarc-trigger-cleanup", {"oarc-command-trigger-cleanup"}, function(command)
-    if command.player_index ~= nil and not game.get_player(command.player_index).admin then return end -- Only admins can call this.
+
+    -- Check if calling player is nil (server) OR if the player is an admin
+    if command.player_index ~= nil and not game.get_player(command.player_index).admin then
+        SendErrorMsg(game.players[command.player_index], {"oarc-command-not-admin-warning", command.name})
+        return
+    end
+
     TriggerCleanup()
+end)
+
+-- Cleanup a player base
+commands.add_command("oarc-cleanup-player", {"oarc-command-cleanup-player"}, function(command)
+
+    -- Check if calling player is nil (server) OR if the player is an admin
+    if command.player_index ~= nil and not game.get_player(command.player_index).admin then
+        SendErrorMsg(game.players[command.player_index], {"oarc-command-not-admin-warning", command.name})
+        return
+    end
+
+    if command.parameter == nil then
+        if command.player_index ~= nil then
+            SendErrorMsg(game.players[command.player_index], {"oarc-command-cleanup-player-usage"})
+        end
+        return
+    end
+
+    local target_player = game.get_player(command.parameter)
+    if target_player == nil then
+        if command.player_index ~= nil then
+            SendErrorMsg(game.players[command.player_index], {"oarc-command-cleanup-player-usage"})
+        end
+        return
+    end
+
+    if target_player.connected then
+        if command.player_index ~= nil then
+            SendErrorMsg(game.players[command.player_index], {"oarc-command-cleanup-player-online"})
+        end
+        return
+    end
+
+    RemoveOrResetPlayer(target_player, true)
 end)
