@@ -148,9 +148,22 @@ script.on_event(defines.events.on_player_driving_changed_state, function (event)
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-    if (storage.ocfg.gameplay.enable_shared_team_chat) then
-        local research = event.research
-        SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name}, { color = research.force.color, sound = defines.print_sound.never })
+    local research = event.research
+
+    -- Duplicates the research finished message for all forces if shared team chat is enabled.
+    -- The force that did the research always gets a sound notification even if the technology_notifications_enabled is false.
+    for _,force in pairs(game.forces) do
+        if (force == research.force) or (storage.ocfg.gameplay.enable_shared_team_chat) then
+            if (prototypes.technology[research.name].max_level ~= 4294967295) then
+                CompatSend(force,
+                    {"oarc-research-finished", research.force.name, research.name},
+                    { color = research.force.color, sound = defines.print_sound.never })
+            else
+                CompatSend(force,
+                    {"oarc-research-finished-infinite", research.force.name, research.name, research.localised_name, research.level},
+                    { color = research.force.color, sound = defines.print_sound.never })
+            end
+        end
     end
 end)
 
