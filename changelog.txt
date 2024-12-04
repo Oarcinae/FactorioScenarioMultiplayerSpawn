@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.16
 Date: 2024-12-03
+  Bugfixes:
+    - Fix a migration issue that could cause a crash if you try to reroll your spawn.
   Minor Features:
     - Added command to remove an offline player's spawns and character (oarc-cleanup-player).
   Changes:
