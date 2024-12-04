@@ -1155,7 +1155,7 @@ function TransferOwnershipOfAllSpawns(primary_spawn, new_host_name)
         end
     end
 
-    game.players[new_host_name].print({ "oarc-new-owner-msg" })
+    CompatSend(game.players[new_host_name], { "oarc-new-owner-msg" })
 end
 
 --[[
@@ -1428,7 +1428,7 @@ function QueuePlayerForSpawn(player_name, delayed_spawn)
 
     SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true)
 
-    game.players[player_name].print({ "oarc-generating-spawn-please-wait" })
+    CompatSend(game.players[player_name], { "oarc-generating-spawn-please-wait" }, { volume_modifier = 0})
 
     local ticks_remaining = delayed_spawn.delayed_tick - game.tick
     local seconds_remaining = math.ceil(ticks_remaining / TICKS_PER_SECOND)

@@ -756,8 +756,8 @@ function RequestToJoinSharedSpawn(player)
         -- Display wait menu with cancel button.
         DisplaySharedSpawnJoinWaitMenu(player)
 
-        -- Tell other player they are requesting a response.
-        game.players[host_name].print({ "oarc-player-requesting-join-you", player.name })
+        -- Tell other player they are requesting a response. Print it with color orange
+        CompatSend(game.players[host_name], { "oarc-player-requesting-join-you", player.name }, { color = { r = 1, g = 0.5, b = 0 }, sound_path = "utility/scenario_message" })
         OarcGuiRefreshContent(game.players[host_name])
     else
         SendErrorMsg(player, { "oarc-invalid-host-shared-spawn" })
@@ -774,7 +774,7 @@ function CancelSharedSpawnRequest(player)
 
     local host_name = storage.spawn_choices[player.name].host_name
     if (host_name ~= nil) and (game.players[host_name] ~= nil) then
-        game.players[host_name].print({ "oarc-player-cancel-join-request", player.name })
+        CompatSend(game.players[host_name], { "oarc-player-cancel-join-request", player.name })
     end
 
     --- Destroy the waiting menu and display the spawn options again.
