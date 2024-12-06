@@ -3,6 +3,11 @@ Version: 2.1.17
 Date: ????
   Bugfixes:
     - Fix incorrect names printed for infinite technology research.
+  Info:
+    - Add more info to the template scenario to help with understanding how to override settings.
+    - Disable some of the extra debug logging.
+  Modding:
+    - Add remote interfaces to add custom tabs to the top left GUI. Updated template scenario to show how to use the new features.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.16
 Date: 2024-12-03

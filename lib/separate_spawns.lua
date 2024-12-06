@@ -28,10 +28,9 @@ function InitSpawnGlobalsAndForces()
     end
     SeparateSpawnsInitPlanets()
 
-    -- This contains each player's respawn point. Literally where they will respawn on death
+    -- This contains each player's respawn point for each surface. Literally where they will respawn on death
     -- There is a way in game to change this under one of the little menu features I added. This allows players to
     -- change their respawn point to something other than their home base.
-    -- TODO: Space Age will potentially affect this, as I may need to allow for multiple respawn points on different surfaces.
     --[[@type OarcPlayerRespawnsTable]]
     storage.player_respawns = {}
 
@@ -52,7 +51,7 @@ function InitSpawnGlobalsAndForces()
     storage.delayed_spawns = {}
 
     -- This stores the spawn choices that a player makes from the GUI interactions.
-    -- Intended to be re-used for secondary spawns! (TODO SPACE AGE)
+    -- Intended to be re-used for secondary spawns!
     --[[@type OarcSpawnChoicesTable]]
     storage.spawn_choices = {}
 
