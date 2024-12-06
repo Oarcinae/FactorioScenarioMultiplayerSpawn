@@ -297,7 +297,7 @@ end
 function ApplySpawnerDamageScaling(event)
     -- Check if force is a player force
     if (event.force == nil) then
-        log("Entity damaged with no force")
+        log("ERROR - Entity damaged with no force")
         return
     end
 

@@ -333,7 +333,6 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     end
 
     -- If there is no spawn for them on their new surface, generate one based on previous choices.
-    log("WARNING - SECONDARY SPAWNS ARE STILL EXPERIMENTAL!!")
     SecondarySpawn(player, new_surface_name)
 end
 

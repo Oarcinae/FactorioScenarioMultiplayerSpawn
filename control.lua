@@ -113,12 +113,6 @@ end)
 
 -- This does NOT do what I expected, it triggers anytime the VIEW changes, not the character moving.
 -- script.on_event(defines.events.on_player_changed_surface, function(event)
---     SeparateSpawnsPlayerChangedSurface(event)
--- end)
-
--- script.on_event(defines.events.on_rocket_launched, function(event)
---     log("Rocket launched!")
---     log(serpent.block(event))
 -- end)
 
 script.on_event(defines.events.on_player_driving_changed_state, function (event)
@@ -217,6 +211,7 @@ script.on_event("oarc-mod-character-surface-changed", function(event)
     ---@type OarcModCharacterSurfaceChangedEvent
     local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]
 
+    -- I use my own event to track when a player changes surfaces.
     local player = game.players[custom_event.player_index]
     SeparateSpawnsPlayerChangedSurface(player, custom_event.old_surface_name, custom_event.new_surface_name)
 end)

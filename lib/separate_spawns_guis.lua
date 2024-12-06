@@ -515,7 +515,7 @@ function CreateBuddySpawnFrame(parent_flow, player, enable_buddy_spawn, enable_s
     ---@type string[]
     local avail_buddies = GetOtherPlayersInSpawnMenu(player)
 
-    log("Available buddies: " .. serpent.block(avail_buddies))
+    -- log("Available buddies: " .. serpent.block(avail_buddies))
 
     local previous_index = 0
     if selected_buddy then
