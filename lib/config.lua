@@ -315,6 +315,9 @@ OCFG = {
 
         -- Spawn a circle/octagon/square of trees around this base outline.
         shape = SPAWN_SHAPE_CHOICE_CIRCLE,
+
+        -- Remove decorations for a cleaner look.
+        remove_decoratives = false,
     },
 
     -- Handle placement of starting resources within the spawn area.
@@ -523,6 +526,7 @@ OCFG = {
 ---@field resources_shape SpawnResourcesShapeChoice The starting resources deposits shape.
 ---@field force_tiles boolean Force the land area circle at the spawn to be a single tile (default grass on Nauvis), otherwise it defaults to the existing terrain and uses landfill to fill gaps.
 ---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
+---@field remove_decoratives boolean Remove decorations for a cleaner look.
 
 ---@class OarcConfigSpawnSafeArea
 ---@field safe_radius number Safe area has no aliens This is the radius in chunks of safe area.

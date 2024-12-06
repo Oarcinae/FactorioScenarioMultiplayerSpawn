@@ -37,6 +37,7 @@ GLEBA_SPAWN_CONFIG.solid_resources =
 
 GLEBA_SPAWN_CONFIG.fluid_resources = { }
 
+--TODO: Add support for specific location placement. OR remove it entirely.
 GLEBA_SPAWN_CONFIG.gleba_resources =
 {
     ["yumako"] = {
