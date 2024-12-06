@@ -247,7 +247,6 @@ end)
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
--- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
     if (storage.ocfg.gameplay.enable_shared_team_chat) then
