@@ -83,7 +83,8 @@ OCFG_KEYS =
     ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = {"oarc-coin-generation-caption"}, tooltip = {"oarc-coin-generation-tooltip"}},
     ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = {"oarc-auto-decon-coins-caption"}, tooltip = {"oarc-auto-decon-coins-tooltip"}},
     ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
-    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = {"oarc-scale-spawner-damage-caption"}, tooltip = {"oarc-scale-spawner-damage-tooltip"}}
+    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = {"oarc-scale-spawner-damage-caption"}, tooltip = {"oarc-scale-spawner-damage-tooltip"}},
+    ["spawn_general.remove_decoratives"] = {mod_key = "" , ocfg_keys = {"spawn_general", "remove_decoratives"}, type = "boolean", caption = {"oarc-remove-decoratives-caption"}, tooltip = {"oarc-remove-decoratives-tooltip"}},
 
 }
 

@@ -756,11 +756,11 @@ end
 ---Resources are generated at a delayed time when the player is moved to the spawn point! It only works off of
 ---the closest spawn point!!
 ---@param surface LuaSurface
----@param chunkArea BoundingBox
+---@param chunk_area BoundingBox
 ---@return nil
-function SetupAndClearSpawnAreas(surface, chunkArea)
+function SetupAndClearSpawnAreas(surface, chunk_area)
 
-    local closest_spawn = GetClosestUniqueSpawn(surface.name, chunkArea.left_top)
+    local closest_spawn = GetClosestUniqueSpawn(surface.name, chunk_area.left_top)
     if (closest_spawn == nil) then return end
 
     --[[@type OarcConfigSpawnGeneral]]
@@ -768,9 +768,9 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     local surface_spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
     local radius = general_spawn_config.spawn_radius_tiles * surface_spawn_config.radius_modifier
 
-    local chunkAreaCenter = {
-        x = chunkArea.left_top.x + (CHUNK_SIZE / 2),
-        y = chunkArea.left_top.y + (CHUNK_SIZE / 2)
+    local chunk_area_center = {
+        x = chunk_area.left_top.x + (CHUNK_SIZE / 2),
+        y = chunk_area.left_top.y + (CHUNK_SIZE / 2)
     }
 
     -- If there is a buddy spawn, we need to setup both areas TOGETHER so they overlap.
@@ -783,27 +783,32 @@ function SetupAndClearSpawnAreas(surface, chunkArea)
     for _, spawn in pairs(spawns) do
         -- If the chunk is within the main land area, then clear trees/resources and create the land spawn areas
         -- (guaranteed land with a circle of trees)
-        local landArea = GetAreaAroundPos(spawn.position, radius + CHUNK_SIZE)
-        if not CheckIfInArea(chunkAreaCenter, landArea) then
+        local land_area = GetAreaAroundPos(spawn.position, radius + CHUNK_SIZE)
+        if not CheckIfInArea(chunk_area_center, land_area) then
             goto CONTINUE
+        end
+
+        -- Remove decoratives
+        if (general_spawn_config.remove_decoratives) then
+            surface.destroy_decoratives {area = chunk_area}
         end
 
         -- Remove trees/resources inside the spawn area
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            RemoveInCircle(surface, chunkArea, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
+            RemoveInCircle(surface, chunk_area, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            RemoveInSquare(surface, chunkArea, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
+            RemoveInSquare(surface, chunk_area, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
         end
 
         if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then
-            CreateCropCircle(surface, spawn, chunkArea)
+            CreateCropCircle(surface, spawn, chunk_area)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            CreateCropOctagon(surface, spawn, chunkArea)
+            CreateCropOctagon(surface, spawn, chunk_area)
         elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            CreateCropSquare(surface, spawn, chunkArea)
+            CreateCropSquare(surface, spawn, chunk_area)
         end
 
-        script.raise_event("oarc-mod-on-chunk-generated-near-spawn", {surface = surface, chunk_area = chunkArea, spawn_data = spawn})
+        script.raise_event("oarc-mod-on-chunk-generated-near-spawn", {surface = surface, chunk_area = chunk_area, spawn_data = spawn})
         :: CONTINUE ::
     end
 end
