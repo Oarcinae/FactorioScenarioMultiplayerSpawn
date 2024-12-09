@@ -425,7 +425,7 @@ function SpawnCtrlTabGuiClick(event)
             return
         end
 
-        SetPlayerRespawn(player.name, surface_name, player.character.position, true)
+        SetPlayerRespawn(player.name, surface_name, player.character.position, true, false)
         OarcGuiRefreshContent(player)
         CompatSend(player, { "oarc-spawn-point-updated" })
 
@@ -537,7 +537,7 @@ function SpawnCtrlTabGuiClick(event)
                 for player_name, unique_spawn in pairs(unique_spawn_entry) do
                     if (player_name == player.name) then
                         table.insert(unique_spawn.joiners, joining_player_name)
-                        SetPlayerRespawn(joining_player_name, surface_name, unique_spawn.position, true)
+                        SetPlayerRespawn(joining_player_name, surface_name, unique_spawn.position, true, true)
                     end
                 end
             end
