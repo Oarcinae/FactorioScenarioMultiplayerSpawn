@@ -70,6 +70,10 @@ function InitSpawnGlobalsAndForces()
     --[[@type table<string, OarcNilCharacterTeleportQueueEntry>]]
     storage.nil_character_teleport_queue = {}
 
+    -- Keep track of the landing pads for each surface, for each force so we don't have to keep using find_entities_filtered.
+    --[[@type table<string, table<string, table<LuaEntity>>>]]
+    storage.landing_pads = {}
+
     -- Special forces for when players with their own force want a reset.
     game.create_force(ABANDONED_FORCE_NAME)
     -- game.create_force(DESTROYED_FORCE_NAME)
@@ -333,7 +337,7 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     end
 
     -- If there is no spawn for them on their new surface, generate one based on previous choices.
-    SecondarySpawn(player, new_surface_name)
+    SecondarySpawn(player, new_surface_name, true)
 end
 
 ---Updates the player's surface and raises an event if it changes.
@@ -1231,7 +1235,7 @@ end
 ---@param pos MapPosition
 ---@return OarcUniqueSpawn?
 function GetClosestUniqueSpawn(surface_name, pos)
-    
+
     local surface_spawns = storage.unique_spawns[surface_name]
     if (surface_spawns == nil) then return nil end -- EXIT - No spawns on requested surface
     if (table_size(surface_spawns) == 0) then return nil end -- EXIT - No spawns on requested surface
@@ -1251,6 +1255,67 @@ function GetClosestUniqueSpawn(surface_name, pos)
     end
 
     return closest_spawn
+end
+
+---Get the spawns from a particular force on a specific surface.
+---@param force LuaForce
+---@param surface_name string
+---@return OarcUniqueSpawn[]
+function FindUniqueSpawnByForceForSurface(force, surface_name)
+    local force_spawns = {}
+    
+    if (storage.unique_spawns[surface_name] == nil) then return force_spawns end
+
+    for _,spawn in pairs(storage.unique_spawns[surface_name]) do
+        if (game.players[spawn.host_name].force == force) then
+            table.insert(force_spawns, spawn)
+        end
+    end
+    return force_spawns
+end
+
+---Find the primary spawn for a force (on any surface). Returns the first one found.
+---@param force LuaForce
+---@return OarcUniqueSpawn?
+function FindPrimarySpawnForForce(force)
+    for _,spawns in pairs(storage.unique_spawns) do
+        for _,spawn in pairs(spawns) do
+            if (spawn.primary) and (game.players[spawn.host_name].force == force) then
+                return spawn
+            end
+        end
+    end
+    return nil
+end
+
+---Checks if a force already has at least one landing pad on a surface.
+---@param force LuaForce
+---@param surface LuaSurface
+---@return boolean
+function DoesForceHaveLandingPadOnSurface(force, surface)
+
+    -- Init the landing pad storage if it doesn't exist.
+    if storage.landing_pads == nil then
+        storage.landing_pads = { [surface.name] = { [force.name] = {} } }
+    elseif storage.landing_pads[surface.name] == nil then
+        storage.landing_pads[surface.name] = { [force.name] = {} }
+    elseif storage.landing_pads[surface.name][force.name] == nil then
+        storage.landing_pads[surface.name][force.name] = surface.find_entities_filtered{ name = "cargo-landing-pad", force = force }
+    end
+
+    -- Check if any of the landing pads are still valid.
+    for index, landing_pad in pairs(storage.landing_pads[surface.name][force.name]) do
+        if (landing_pad.valid) then
+            return true
+        else
+            storage.landing_pads[surface.name][force.name][index] = nil
+        end
+    end
+
+    -- If we got here, we need to re-find the landing pads.
+    local landing_pads = surface.find_entities_filtered{ name = "cargo-landing-pad", force = force }
+    storage.landing_pads[surface.name][force.name] = landing_pads
+    return (#landing_pads > 0)
 end
 
 ---Find all players that belong to the same PRIMARY shared spawn as this player, including buddies!
@@ -1574,8 +1639,9 @@ end
 ---Creates and sends a player to a new secondary spawn, temporarily placing them in the holding pen.
 ---@param player LuaPlayer
 ---@param surface_name string
+---@param send_player boolean Queues the player to be sent to the new spawn when it is created.
 ---@return nil
-function SecondarySpawn(player, surface_name)
+function SecondarySpawn(player, surface_name, send_player)
 
     local player_name = player.name
 
@@ -1606,7 +1672,12 @@ function SecondarySpawn(player, surface_name)
 
     -- Add new spawn point for the new surface
     local delayed_spawn = GenerateNewSpawn(host_name, surface_name, spawn_position, spawn_choices, false)
-    QueuePlayerForSpawn(player_name, delayed_spawn)
+    
+    if send_player then 
+        QueuePlayerForSpawn(player_name, delayed_spawn)
+    else
+        SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true)
+    end
 
     -- Handle special buddy spawns:
     if (spawn_choices.buddy) then
@@ -1637,31 +1708,34 @@ end
 -- Spawn the players and remove them from the table.
 ---@return nil
 function DelayedSpawnOnTick()
-    if ((game.tick % (30)) == 1) then
-        if ((storage.delayed_spawns ~= nil) and (#storage.delayed_spawns > 0)) then
+    if ((game.tick % (30)) ~= 1) then return end
 
-            -- I think this loop removes from the back of the table to the front??
-            for i = #storage.delayed_spawns, 1, -1 do
-                delayed_spawn = storage.delayed_spawns[i] --[[@as OarcDelayedSpawn]]
+    if ((storage.delayed_spawns ~= nil) and (#storage.delayed_spawns > 0)) then
 
-                local surface = game.surfaces[delayed_spawn.surface_name]
+        -- I think this loop removes from the back of the table to the front??
+        for i = #storage.delayed_spawns, 1, -1 do
+            delayed_spawn = storage.delayed_spawns[i] --[[@as OarcDelayedSpawn]]
 
-                if ((delayed_spawn.delayed_tick < game.tick) or surface.is_chunk_generated(delayed_spawn.final_chunk_generated) ) then
-                    log("DelayedSpawnOnTick - Generating spawn for: " .. delayed_spawn.host_name)
+            local surface = game.surfaces[delayed_spawn.surface_name]
 
-                    GenerateFinalSpawnPieces(delayed_spawn)
-                    storage.unique_spawns[delayed_spawn.surface_name][delayed_spawn.host_name].generated = true
+            if ((delayed_spawn.delayed_tick < game.tick) or surface.is_chunk_generated(delayed_spawn.final_chunk_generated) ) then
+                log("DelayedSpawnOnTick - Generating spawn for: " .. delayed_spawn.host_name)
 
-                    -- For each player waiting to spawn, send them to their new spawn point.
-                    for _,player_name in pairs(delayed_spawn.waiting_players) do
-                        local player = game.players[player_name]
-                        if (player ~= nil) then
-                            SendPlayerToNewSpawn(player_name, delayed_spawn.surface_name, delayed_spawn.primary, delayed_spawn.host_name == player_name)
-                        end
+                GenerateFinalSpawnPieces(delayed_spawn)
+                storage.unique_spawns[delayed_spawn.surface_name][delayed_spawn.host_name].generated = true
+
+                -- For each player waiting to spawn, send them to their new spawn point.
+                for _,player_name in pairs(delayed_spawn.waiting_players) do
+                    local player = game.players[player_name]
+                    if (player ~= nil) then
+                        SendPlayerToNewSpawn(player_name, delayed_spawn.surface_name, delayed_spawn.primary, delayed_spawn.host_name == player_name)
                     end
-
-                    table.remove(storage.delayed_spawns, i)
                 end
+
+                -- Check if there are any dropped pods waiting to be collected for this force
+                TeleportCargoPodsToLocation(surface, game.players[delayed_spawn.host_name].force, delayed_spawn.position)
+
+                table.remove(storage.delayed_spawns, i)
             end
         end
     end
@@ -1715,6 +1789,107 @@ function GetAllowedSurfaces()
         end
     end
     return surfaceList
+end
+
+---Track the cargo pods coming down onto a planet
+---@param event EventData.on_cargo_pod_finished_ascending
+---@return nil
+function OnCargoPodFinishedAscending(event)
+    if (storage.cargo_pods == nil) then
+        storage.cargo_pods = {}
+    end
+
+    -- Only track pods that are launched from a space platform and do not have a player riding in it!
+    if (event.launched_by_rocket == false) and (event.player_index == nil) then
+        -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
+        -- TODO: Need to check if the planet surface has a landing pad here too if we can.
+        storage.cargo_pods[event.cargo_pod.unit_number] = event.cargo_pod
+    end
+end
+
+---On tick, check if there are any cargo pods that need to be teleported to a spawn point.
+---@return nil
+function CargoPodHandlerOnTick()
+    if (storage.cargo_pods == nil) then return end
+
+    for index, pod in pairs(storage.cargo_pods) do
+
+        -- Make sure the pod is now descending, which means the surface shouldn't have a platform.
+        -- This will likely break in the future if there is a way to send platform to platform.
+        if (pod.surface.platform == nil) then
+            local surface = pod.surface
+            local force = pod.force
+
+            -- Check if the force has a landing pad on this surface
+            local has_landing_pad = DoesForceHaveLandingPadOnSurface(force, surface)
+            if has_landing_pad then
+                storage.cargo_pods[index] = nil
+                return
+            end
+
+            -- Check if the force is main force and warn that you need to manually retrieve your pods via command.
+            -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
+            if (force.name == storage.ocfg.gameplay.main_force_name) then
+                CompatSend(force, {"oarc-cargo-pod-main-force-warning"}, { color = force.color })
+                storage.cargo_pods[index] = nil
+                return
+            end
+
+            -- Check if the force has a unique spawn on this surface
+            local unique_spawn = FindUniqueSpawnByForceForSurface(force, surface.name)
+            local has_unique_spawn = (#unique_spawn > 0)
+
+            -- Pod has a spawn it belongs to, send it there.
+            if has_unique_spawn then
+                log("Pod has a unique spawn, need to send it there.")
+                
+                -- Forcefully finish descending and remove the pod from our list.
+                pod.force_finish_descending()
+                storage.cargo_pods[index] = nil
+
+                -- Search for dropped pods and teleport them to the unique spawn.
+                -- If the spawn is still generating, they will be teleported when it is done.
+                if unique_spawn[1].generated then
+                    TeleportCargoPodsToLocation(surface, force, unique_spawn[1].position)
+                end
+                return
+
+            -- Pod will trigger the creation of a new secondary spawn otherwise
+            else
+                -- Find a primary spawn of the force to get the host:
+                local spawn = FindPrimarySpawnForForce(force)
+                if (spawn == nil) then
+                    -- This should never happen in theory...
+                    log("ERROR! No primary spawn found for force: " .. force.name)
+                    storage.cargo_pods[index] = nil
+                    return
+                end
+
+                log("A landing cargo pod triggered a secondary spawn for force: " .. force.name)
+                SecondarySpawn(game.players[spawn.host_name], surface.name, false)
+
+                -- Any cargo pods will be teleported to the unique spawn when it is finished generating.
+                pod.force_finish_descending()
+                storage.cargo_pods[index] = nil
+                return
+            end
+        end
+    end
+end
+
+local CARGO_SEARCH_RADIUS = CHUNK_SIZE * 3
+local CARGO_SEARCH_AREA = { { -CARGO_SEARCH_RADIUS, -CARGO_SEARCH_RADIUS }, { CARGO_SEARCH_RADIUS, CARGO_SEARCH_RADIUS } }
+
+---Search for cargo pods at the center of this surface and teleport them to the requested location.
+---@param surface LuaSurface
+---@param force LuaForce|string|integer
+---@param position MapPosition
+---@return nil
+function TeleportCargoPodsToLocation(surface, force, position)
+    local cargo_pods = surface.find_entities_filtered { area = CARGO_SEARCH_AREA, name = "cargo-pod-container", force = force }
+    for _, cargo_pod in pairs(cargo_pods) do
+        SafeEntityTeleport(cargo_pod, position)
+    end
 end
 
 --[[

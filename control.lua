@@ -112,6 +112,7 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 -- This does NOT do what I expected, it triggers anytime the VIEW changes, not the character moving.
+-- I'm leaving this here as a cautionary tale.
 -- script.on_event(defines.events.on_player_changed_surface, function(event)
 -- end)
 
@@ -153,10 +154,11 @@ script.on_event(defines.events.on_research_finished, function(event)
     end
 end)
 
--- script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
---     log("Cargo pod finished ascending")
---     log(serpent.block(event))
--- end)
+-- TODO: Possibly only enable this if space-age mod is enabled??
+script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
+    -- I track cargo pods so I can re-direct them to a spawn point if there is no landing pad on the surface.
+    OnCargoPodFinishedAscending(event)
+end)
 
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
@@ -274,6 +276,9 @@ script.on_event(defines.events.on_tick, function(event)
     if storage.ocfg.gameplay.modified_enemy_spawning then
         RemoveDemolishersInWarningZone(event)
     end
+
+    -- TODO: Possibly only enable this if space-age mod is enabled??
+    CargoPodHandlerOnTick()
 end)
 
 ----------------------------------------
