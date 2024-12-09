@@ -411,6 +411,21 @@ function SafeTeleport(player, surface, target_pos)
     end
 end
 
+-- Safer entity teleport (can't teleport entities across surfaces!)
+---@param entity LuaEntity
+---@param target_pos MapPosition
+---@return MapPosition --The final position of the entity
+function SafeEntityTeleport(entity, target_pos)
+    local safe_pos = entity.surface.find_non_colliding_position(entity.name, target_pos, CHUNK_SIZE, 1)
+    if (not safe_pos) then
+        log("WARNING - SafeEntityTeleport - Failed to find safe position to teleport entity! " .. entity.name)
+        entity.teleport(target_pos)
+        return target_pos
+    else
+        entity.teleport(safe_pos)
+        return safe_pos
+    end
+end
 
 ---Check if given position is in area bounding box
 ---@param point MapPosition
