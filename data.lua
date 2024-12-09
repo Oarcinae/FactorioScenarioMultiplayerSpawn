@@ -74,6 +74,12 @@ data:extend({
         type = "custom-event",
         name = "oarc-mod-on-config-changed",
     },
+
+    -- A player's custom GUI panel (top right special button) was created
+    {
+        type = "custom-event",
+        name = "oarc-mod-on-mod-top-left-gui-created",
+    },
 })
 
 

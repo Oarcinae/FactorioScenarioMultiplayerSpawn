@@ -1,4 +1,5 @@
 -- To edit this scenario, you must make a copy of it and place it in your own scenarios folder first!
+-- Alternatively, you can make a dependent mod based on this as well.
 
 -- I provide this empty scenario to avoid the freeplay scenario extra baggage and as a template for how to modify the
 -- settings on init. You can use the freeplay scenario too just fine if you want.
@@ -13,19 +14,14 @@
 -- Alternatively, you can use the in-game "export" button to get a string of all settings that you can then format
 -- and edit however you want to use here.
 
--- ANY CONFIG HERE WILL OVERWRITE MOD SETTINGS! This is the whole point.
-
--- Check if the OARC mod is loaded. Other than that, it's an empty scenario!
-script.on_init(function(event)
-    if not script.active_mods["oarc-mod"] then
-        error("OARC mod not found! This scenario is intended to be run with the OARC mod!")
-    end
-
-    storage.ocfg_copy = remote.call("oarc_mod", "get_mod_settings")
-    log("server info test: ")
-end)
-
-
+----------------------------------------------------------------------------------------------------------------
+-- In order to modify the settings of the OARC mod, you need to implement the following section.
+-- I need to insert any settings overrides before I run my mod's other init functions so this is why I do it
+-- this way! If I let you overwrite config at a later time, it may have no effect or might cause other issues.
+-- You should only be modifying the section as described below. Don't modify the rest of this interface.
+--
+-- You can implement this in a scenario OR a mod (despite the name).
+----------------------------------------------------------------------------------------------------------------
 local oarc_scenario_interface =
 {
     get_scenario_settings = function()
@@ -35,6 +31,7 @@ local oarc_scenario_interface =
 
         -- Overwrite whatever settings you want here:
         -- If you provide an invalid value for a mod setting, it will error and not load the scenario.
+        -- ANY CONFIG HERE WILL OVERWRITE MOD SETTINGS! This is the whole point.
         ----------------------------------------------------------------------------------------------------------------
         modified_settings.server_info.welcome_msg_title = "THIS IS A TEMPLATE SCENARIO"
         modified_settings.server_info.welcome_msg = "This is a template scenario. You can modify the settings in the control.lua file. If you are seeing this message, you did not modify the scenario correctly."
@@ -51,19 +48,34 @@ local oarc_scenario_interface =
 }
 
 remote.add_interface("oarc_scenario", oarc_scenario_interface)
+----------------------------------------------------------------------------------------------------------------
+-- End of settings override section.
+----------------------------------------------------------------------------------------------------------------
 
 
+-- Check if the OARC mod is loaded. Other than that, it's an empty scenario! You can modify it however you want.
+script.on_init(function(event)
+    if not script.active_mods["oarc-mod"] then
+        error("OARC mod not found! This scenario is intended to be run with the OARC mod!")
+    end
+
+    -- Please note: a scenario can NOT call this during on_init because you can't set load order for a scenario!
+    -- You just get nil back. If you are making a mod, you can use this to get the config during on_init.
+    -- storage.ocfg_copy = remote.call("oarc_mod", "get_mod_settings")
+    -- See the oarc-mod-on-config-changed event for how to keep the config up to date.
+end)
 
 
 ----------------------------------------------------------------------------------------------------------------
--- Everything below here is an example of how to use the custom events provided by the OARC mod.
+-- This section shows an example of how to customize the spawn gui options presented to the player, and how to
+-- use that to customize the spawn area generation process.
 ----------------------------------------------------------------------------------------------------------------
 
-local util = require("util")
+local util = require("util") -- Only needed for the distance function in this example.
 
 -- You can require files to use them if you want like this. (Ignore the diagnostic warning.)
 ---@diagnostic disable-next-line: different-requires
-require("__oarc-mod__/lib/oarc_gui_utils")
+require("__oarc-mod__/lib/oarc_gui_utils") -- I have a helper function in here for creating GUI elements.
 
 -- This will keep a local copy of the mod's config so you can use it in your custom events.
 script.on_event("oarc-mod-on-config-changed", function(event)
@@ -132,6 +144,10 @@ script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
 
     custom_event.surface.set_tiles(tiles)
 end)
+
+----------------------------------------------------------------------------------------------------------------
+-- This section just supports the above events.
+----------------------------------------------------------------------------------------------------------------
 
 ---A helper function to create a dropdown for selecting tiles
 ---@param parent_flow LuaGuiElement
@@ -214,4 +230,80 @@ script.on_event(defines.events.on_gui_selection_state_changed, function(event)
     if not event.element.valid then return end
 
     CustomSpawnOptsSelectionChanged(event)
+end)
+
+----------------------------------------------------------------------------------------------------------------
+-- This section shows how to add a custom tab to the Oarc Mod GUI (the top left button).
+----------------------------------------------------------------------------------------------------------------
+
+local CUSTOM_TAB_NAME = "Test Mod"
+
+script.on_event("oarc-mod-on-mod-top-left-gui-created", function(event --[[@as OarcModOnModTopLeftGuiCreatedEvent]])
+
+    -- Create a custom empty tab:
+    remote.call("oarc_mod", "create_custom_gui_tab", game.players[event.player_index], CUSTOM_TAB_NAME)
+
+    -- Get the tab content element
+    local tab_content = remote.call("oarc_mod", "get_custom_gui_tab_content_element", game.players[event.player_index], CUSTOM_TAB_NAME)
+    
+    -- Save a reference to that tab content for later use, if it becomes nil you can ask for it again.
+    -- Or you can just always ask for it when you need it, depends on how often you plan to use it.
+    if storage.custom_tabs_table == nil then
+        storage.custom_tabs_table = {}
+    end
+    storage.custom_tabs_table[event.player_index] = {content = tab_content, example_data = 0}
+
+    -- Use the element to add content directly to it.
+    CreateExampleCustomTabContent(tab_content, tostring(0))
+end)
+
+---Creates the test tab content, just adds a couple of text labels and a button as an example.
+---@param tab_container LuaGuiElement
+---@param example_data string
+---@return nil
+function CreateExampleCustomTabContent(tab_container, example_data)
+    tab_container.clear()
+    tab_container.add {
+        type = "label",
+        caption = "This is a test tab to demonstrate how to add tabs to the Oarc Mod GUI.",
+        style = "caption_label"
+    }
+    tab_container.add {
+        type = "label",
+        caption = "This tab has been clicked " .. example_data .. " times.",
+        style = "caption_label"
+    }
+    tab_container.add {
+        type = "button",
+        caption = "Click Me!",
+        style = "button",
+        name = "test_mod_button",
+        tags = { test_mod_button = true } -- Learn to use tags, this is great for identifying where GUI events came from.
+    }
+end
+
+-- This is the event that is triggered when a player selects a tab (on ANY tabbed pane)
+script.on_event(defines.events.on_gui_selected_tab_changed, function (event)
+    if (event.element.name ~= "oarc_tabs") then return end -- This is what I have named my tabbed pane in my mod.
+
+    -- Check if your custom tab was selected
+    local tab_name = event.element.tabs[event.element.selected_tab_index].tab.name
+    if (tab_name ~= "Test Mod") then return end
+
+    log("Selected Test Mod tab")
+
+    -- Proof of concept that shows you can update/change the content of your custom tab when it is selected.
+    local entry = storage.custom_tabs_table[event.player_index]
+    entry.example_data = entry.example_data + 1
+    CreateExampleCustomTabContent(entry.content, tostring(entry.example_data))
+end)
+
+-- This is the event that is triggered when a player clicks a button in the GUI (on ANY GUI)
+script.on_event(defines.events.on_gui_click, function (event)
+    
+    -- Check if the button clicked was yours, how you can identify it is up to you, but tags are a good way.
+    if event.element.tags and event.element.tags.test_mod_button then
+        log("Test Mod button clicked!")
+        game.players[event.player_index].print("Test Mod button clicked!")
+    end
 end)

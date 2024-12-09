@@ -1,4 +1,20 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.17
+Date: 2024-12-09
+  Major Features:
+    - Cargo pods dropped onto a new planet will now trigger generation of a secondary spawn (separate landing location / home base) if you are not on the main force.
+    - Cargo pods landing on a planet with no landing pad for their force will be teleported to the force's spawn point if they have one. This can't yet be done for the main force because there may be multiple bases created for different players and there is currently no good way to differentiate them. You can still retrieve cargo pods from the center of the map using the /oarc-wheres-my-cargo-pod command once you land.
+  Bugfixes:
+    - Fix incorrect names printed for infinite technology research.
+  Minor Features:
+    - Add a non-mod setting to clear decoratives in the spawn area. (Not enabled by default, not visible in the native mod settings.)
+    - Add a non-mod setting to allow toggling the the random ordering of resource placement within the spawn area.
+  Info:
+    - Add more info to the template scenario to help with understanding how to override settings.
+    - Disable some of the extra debug logging.
+  Modding:
+    - Add remote interfaces to add custom tabs to the top left GUI. Updated template scenario to show how to use the new features.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.16
 Date: 2024-12-03
   Bugfixes:

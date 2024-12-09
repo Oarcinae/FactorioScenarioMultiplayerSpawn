@@ -315,6 +315,9 @@ OCFG = {
 
         -- Spawn a circle/octagon/square of trees around this base outline.
         shape = SPAWN_SHAPE_CHOICE_CIRCLE,
+
+        -- Remove decorations for a cleaner look.
+        remove_decoratives = false,
     },
 
     -- Handle placement of starting resources within the spawn area.
@@ -356,6 +359,8 @@ OCFG = {
         -- Amount multiplier for the starting resource deposits.
         amount_multiplier = 1.0,
 
+        -- Randomize the order of resource placement.
+        random_order = true,
     },
 
     -- Spawn configuration specific to each surface, including starting & respawn items.
@@ -515,6 +520,7 @@ OCFG = {
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
 ---@field gleba_resources table<string, OarcConfigGlebaResource> Spawn area config for gleba-style resources (like plants and stromatolites)
+---@field player_spawn_offset MapPosition The offset from the center of the spawn area where players will spawn. Can be nil.
 
 ---@class OarcConfigSpawnGeneral
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
@@ -523,6 +529,7 @@ OCFG = {
 ---@field resources_shape SpawnResourcesShapeChoice The starting resources deposits shape.
 ---@field force_tiles boolean Force the land area circle at the spawn to be a single tile (default grass on Nauvis), otherwise it defaults to the existing terrain and uses landfill to fill gaps.
 ---@field shape SpawnShapeChoice Spawn a circle/octagon/square of trees around this base outline.
+---@field remove_decoratives boolean Remove decorations for a cleaner look.
 
 ---@class OarcConfigSpawnSafeArea
 ---@field safe_radius number Safe area has no aliens This is the radius in chunks of safe area.
@@ -548,6 +555,7 @@ OCFG = {
 ---@field linear_spacing number Spacing between resource deposits in tiles. Only applicable for square spawns.
 ---@field size_multiplier number Size multiplier for the starting resource deposits.
 ---@field amount_multiplier number Amount multiplier for the starting resource deposits.
+---@field random_order boolean Randomize the order of resource placement.
 
 ---@class OarcConfigSolidResource
 ---@field amount integer

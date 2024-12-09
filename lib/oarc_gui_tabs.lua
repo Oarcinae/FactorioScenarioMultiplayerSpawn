@@ -101,6 +101,9 @@ function InitOarcGuiTabs(player)
         SetOarcGuiTabEnabled(player, OARC_SURFACE_CONFIG_TAB_NAME, true)
     end
 
+    -- Let other mods know the top left GUI was created, this is a good time to add buttons to it.
+    script.raise_event("oarc-mod-on-mod-top-left-gui-created", {player_index = player.index})
+
     HideOarcGui(player)
 end
 
@@ -201,11 +204,29 @@ function OarcGuiCreateContentOfTab(player)
     -- log("OarcGuiCreateContentOfTab: " .. tab_name)
 
     for _,t in ipairs(otabs.tabs) do
-        t.content.clear()
-        if (t.tab.name == tab_name) then
-            OARC_GUI_TAB_CONTENT[tab_name].create_tab_function(t.content, player)
+        if (OARC_GUI_TAB_CONTENT[t.tab.name] ~= nil) then -- Only clear my own tabs.
+            t.content.clear()
+            if (t.tab.name == tab_name) then
+                OARC_GUI_TAB_CONTENT[tab_name].create_tab_function(t.content, player)
+            end
         end
     end
+end
+
+---Gets the content element of the named tab.
+---@param player LuaPlayer
+---@param tab_name string
+---@return LuaGuiElement?
+function OarcGuiGetTabContentElement(player, tab_name)
+    local otabs = GetOarcGuiTabsPane(player)
+    if (otabs == nil) then return nil end
+
+    for _,t in ipairs(otabs.tabs) do
+        if (t.tab.name == tab_name) then
+            return t.content
+        end
+    end
+    return nil
 end
 
 ---Just an alias for OarcGuiCreateContentOfTab
@@ -270,7 +291,8 @@ end
 -- It adds whatever it wants to the provided scroll-pane.
 ---@param player LuaPlayer
 ---@param tab_name string
-function AddOarcGuiTab(player, tab_name)
+---@param localized_name LocalisedString
+function AddOarcGuiTabWrapper(player, tab_name, localized_name)
     if (not DoesOarcGuiExist(player)) then
         CreateOarcGuiTabsPane(player)
     end
@@ -284,7 +306,7 @@ function AddOarcGuiTab(player, tab_name)
     local new_tab = otabs.add{
         type="tab",
         name=tab_name,
-        caption=OARC_GUI_TAB_CONTENT[tab_name].localized_name,}
+        caption=localized_name}
 
     -- Create inside frame for content
     local tab_inside_frame = otabs.add{
@@ -312,6 +334,13 @@ function AddOarcGuiTab(player, tab_name)
     if (otabs.selected_tab_index == nil) then
         otabs.selected_tab_index = 1
     end
+end
+
+-- Uses AddOarcGuiTabWrapper to add my own tabs using OARC_GUI_TAB_CONTENT for the localized name.
+---@param player LuaPlayer
+---@param tab_name string
+function AddOarcGuiTab(player, tab_name)
+    AddOarcGuiTabWrapper(player, tab_name, OARC_GUI_TAB_CONTENT[tab_name].localized_name)
 end
 
 -- https://forums.factorio.com/viewtopic.php?f=7&t=115901
@@ -427,6 +456,16 @@ function AddRemoveOarcGuiTabForAllPlayers(tab_name, add, enable)
         end
     end
 end
+
+
+-- Lets other mods add their own tabs to the OARC GUI.
+---@param player LuaPlayer
+---@param tab_name string
+function AddCustomOarcGuiTab(player, tab_name)
+    AddOarcGuiTabWrapper(player, tab_name, tab_name)
+    SetOarcGuiTabEnabled(player, tab_name, true)
+end
+
 
 --[[
   _____   _____ _  _ _____   _  _   _   _  _ ___  _    ___ ___  ___ 

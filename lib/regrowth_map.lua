@@ -488,7 +488,7 @@ function RegrowthSingleStepArray()
         storage.rg[current_surface].map[next_chunk.x] = {}
     end
     if (storage.rg[current_surface].map[next_chunk.x][next_chunk.y] == nil and game.surfaces[current_surface].is_chunk_generated(next_chunk)) then
-        log("RegrowthSingleStepArray: Chunk not in map: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
+        -- log("RegrowthSingleStepArray: Chunk not in map: " .. next_chunk.x .. "," .. next_chunk.y .. " on surface: " .. current_surface)
         local has_player_entities = CheckIfChunkHasAnyPlayerEntities(current_surface, next_chunk)
         if has_player_entities then
             storage.rg[current_surface].map[next_chunk.x][next_chunk.y] = REGROWTH_FLAG_ACTIVE
@@ -725,7 +725,7 @@ function RegrowthOnBuiltEntity(event)
     if (event.entity and event.entity.valid and event.entity.type == "spider-vehicle") then
 
         table.insert(storage.rg.spidertrons, event.entity)
-        log("Added spidertron to regrowth tracking")
+        -- log("Added spidertron to regrowth tracking")
 
         if storage.rg.spidertron_chunk_radius == nil then
             storage.rg.spidertron_chunk_radius = prototypes.entity["spidertron"].chunk_exploration_radius
@@ -752,7 +752,7 @@ function RefreshSpidertronArea()
             UpdateSpidertronIndex() -- Go to next valid spidertron on the next tick
         else
             table.remove(storage.rg.spidertrons, storage.rg_spidertron_index)
-            log("Removed spidertron from regrowth tracking")
+            -- log("Removed spidertron from regrowth tracking")
         end
     end
 end

@@ -171,7 +171,9 @@ NAUVIS_SPAWN_CONFIG =
         }
     },
 
-    gleba_resources = {}
+    gleba_resources = {},
+
+    player_spawn_offset = nil,
 }
 
 ---@type OarcConfigSurface

@@ -112,14 +112,9 @@ script.on_event(defines.events.on_player_left_game, function(event)
 end)
 
 -- This does NOT do what I expected, it triggers anytime the VIEW changes, not the character moving.
+-- I'm leaving this here as a cautionary tale.
 -- script.on_event(defines.events.on_player_changed_surface, function(event)
---     SeparateSpawnsPlayerChangedSurface(event)
 -- end)
-
-script.on_event(defines.events.on_rocket_launched, function(event)
-    log("Rocket launched!")
-    log(serpent.block(event))
-end)
 
 script.on_event(defines.events.on_player_driving_changed_state, function (event)
     local entity = event.entity
@@ -130,34 +125,40 @@ script.on_event(defines.events.on_player_driving_changed_state, function (event)
         RegrowthMarkAreaSafeGivenTilePos(entity.surface.name, entity.position, 1, false)
     end
 
-    log("Player driving changed state")
-    log(serpent.block(event))
-
     -- Track the surfaces whenever driving state changes for a cargo-pod ONLY.
     -- This triggers events for surface changes when using the standard space travel method.
     if (entity ~= nil) and (entity.name == "cargo-pod") then
         local player = game.players[event.player_index]
-
-        -- Check if driving flag is set
-        if (player.driving) then
-            log("Player is driving a cargo-pod")
-        end
 
         SeparateSpawnsUpdatePlayerSurface(player, entity.surface.name)
     end
 end)
 
 script.on_event(defines.events.on_research_finished, function(event)
-    if (storage.ocfg.gameplay.enable_shared_team_chat) then
-        local research = event.research
-        SendBroadcastMsg({"oarc-research-finished", research.force.name, research.name}, { color = research.force.color, sound = defines.print_sound.never })
+    local research = event.research
+
+    -- Duplicates the research finished message for all forces if shared team chat is enabled.
+    -- The force that did the research always gets a sound notification even if the technology_notifications_enabled is false.
+    for _,force in pairs(game.forces) do
+        if (force == research.force) or (storage.ocfg.gameplay.enable_shared_team_chat) then
+            if (prototypes.technology[research.name].max_level ~= 4294967295) then
+                CompatSend(force,
+                    {"oarc-research-finished", research.force.name, research.name},
+                    { color = research.force.color, sound = defines.print_sound.never })
+            else
+                CompatSend(force,
+                    {"oarc-research-finished-infinite", research.force.name, research.name, research.localised_name, research.level},
+                    { color = research.force.color, sound = defines.print_sound.never })
+            end
+        end
     end
 end)
 
--- script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
---     log("Cargo pod finished ascending")
---     log(serpent.block(event))
--- end)
+-- TODO: Possibly only enable this if space-age mod is enabled??
+script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
+    -- I track cargo pods so I can re-direct them to a spawn point if there is no landing pad on the surface.
+    OnCargoPodFinishedAscending(event)
+end)
 
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
@@ -171,10 +172,10 @@ end)
 ---@class OarcModOnSpawnChoicesGuiDisplayedEvent: OarcCustomEventBase
 ---@field player_index integer
 ---@field gui_element LuaGuiElement
-script.on_event("oarc-mod-on-spawn-choices-gui-displayed", function(event)
-    log("EVENT - oarc-mod-on-spawn-choices-gui-displayed:" .. serpent.block(event --[[@as OarcModOnSpawnChoicesGuiDisplayedEvent]]))
-    -- The 4 main sub sections are called: spawn_settings_frame, solo_spawn_frame, shared_spawn_frame, and buddy_spawn_frame
-end)
+-- script.on_event("oarc-mod-on-spawn-choices-gui-displayed", function(event)
+--     log("EVENT - oarc-mod-on-spawn-choices-gui-displayed:" .. serpent.block(event --[[@as OarcModOnSpawnChoicesGuiDisplayedEvent]]))
+--     -- The 4 main sub sections are called: spawn_settings_frame, solo_spawn_frame, shared_spawn_frame, and buddy_spawn_frame
+-- end)
 
 
 ---@class OarcModOnSpawnCreatedEvent: OarcCustomEventBase
@@ -208,32 +209,37 @@ end)
 ---@field old_surface_name string
 ---@field new_surface_name string
 script.on_event("oarc-mod-character-surface-changed", function(event)
-    log("EVENT - oarc-mod-character-surface-changed:" .. serpent.block(event --[[@as OarcModCharacterSurfaceChangedEvent]]))
-
     --This is just here so I don't get lua warnings about unused variables.
     ---@type OarcModCharacterSurfaceChangedEvent
     local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]
 
+    -- I use my own event to track when a player changes surfaces.
     local player = game.players[custom_event.player_index]
     SeparateSpawnsPlayerChangedSurface(player, custom_event.old_surface_name, custom_event.new_surface_name)
 end)
 
+--  I wouldn't recommend any logging inside this event as it is called for every chunk generated near a spawn.
 ---@class OarcModOnChunkGeneratedNearSpawnEvent: OarcCustomEventBase
 ---@field surface LuaSurface
 ---@field chunk_area BoundingBox
 ---@field spawn_data OarcUniqueSpawn
 -- script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
---  I wouldn't recommend any logging inside this event as it is called for every chunk generated near a spawn.
 --     log("EVENT - oarc-mod-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
 -- end)
 
+-- This can get called quite a lot during init or importing of settings.
 ---@class OarcModOnConfigChangedEvent: OarcCustomEventBase
 -- script.on_event("oarc-mod-on-config-changed", function(event)
--- This can get called quite a lot during init or importing of settings.
 --     log("EVENT - oarc-mod-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
 -- end)
 
--- I raise this event whenever teleporting the player!
+---@class OarcModOnModTopLeftGuiCreatedEvent: OarcCustomEventBase
+---@field player_index integer
+-- script.on_event("oarc-mod-on-mod-top-left-gui-created", function(event)
+--     log("EVENT - oarc-mod-on-mod-top-left-gui-created:" .. serpent.block(event --[[@as OarcModOnModTopLeftGuiCreatedEvent]]))
+-- end)
+
+-- I raise this event whenever teleporting the player, and it is used to update the player's surface.
 script.on_event(defines.events.script_raised_teleported, function(event)
     local entity = event.entity
     if entity.type == "character" and entity.player then
@@ -243,7 +249,6 @@ end)
 
 ----------------------------------------
 -- Shared chat, so you don't have to type /s
--- But you do lose your player colors across forces.
 ----------------------------------------
 script.on_event(defines.events.on_console_chat, function(event)
     if (storage.ocfg.gameplay.enable_shared_team_chat) then
@@ -270,6 +275,9 @@ script.on_event(defines.events.on_tick, function(event)
     if storage.ocfg.gameplay.modified_enemy_spawning then
         RemoveDemolishersInWarningZone(event)
     end
+
+    -- TODO: Possibly only enable this if space-age mod is enabled??
+    CargoPodHandlerOnTick()
 end)
 
 ----------------------------------------
@@ -493,6 +501,14 @@ local oarc_mod_interface =
 
   get_player_primary_spawn = function(player_name)
     return FindPrimaryUniqueSpawn(player_name)
+  end,
+
+  create_custom_gui_tab = function(player, tab_name)
+    AddCustomOarcGuiTab(player, tab_name)
+  end,
+
+  get_custom_gui_tab_content_element = function(player, tab_name)
+    return OarcGuiGetTabContentElement(player, tab_name)
   end,
 }
 
