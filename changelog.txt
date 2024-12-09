@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.17
-Date: ????
+Date: 2024-12-09
   Major Features:
-    - Cargo pods dropped onto a new planet will now trigger generation of a secondary spawn (separate landing location / home base) if you are on your own force.
-    - Cargo pods landing on a planet with no landing pad for their force will be teleported to the force's spawn point if they have one. This can't yet be done for the "Main Force" because there may be multiple bases created for different players and there is currently no good way to differentiate them. You can still retrieve cargo pods from the center of the map using the /oarc-wheres-my-cargo-pod command once you land.
+    - Cargo pods dropped onto a new planet will now trigger generation of a secondary spawn (separate landing location / home base) if you are not on the main force.
+    - Cargo pods landing on a planet with no landing pad for their force will be teleported to the force's spawn point if they have one. This can't yet be done for the main force because there may be multiple bases created for different players and there is currently no good way to differentiate them. You can still retrieve cargo pods from the center of the map using the /oarc-wheres-my-cargo-pod command once you land.
   Bugfixes:
     - Fix incorrect names printed for infinite technology research.
   Minor Features:
