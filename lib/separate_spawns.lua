@@ -480,18 +480,17 @@ function GenerateStartingResources(surface, position)
     end
 end
 
----Places starting resource deposits in a semi-circle around the spawn point.
----@param surface LuaSurface
----@param position TilePosition --The center of the spawn area
----@param size_mod number
----@param amount_mod number
----@return nil
-function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
+---Get a list of resources from solid_resources and gleba_resources, will be randomly shuffled if 
+---resource_placement.random_order is true.
+---@param surface_name string
+---@return table<string>
+function GetResourceList(surface_name)
 
-    -- Create list of resource tiles
-    ---@type table<string>
+    local spawn_config = storage.ocfg.surfaces_config[surface_name].spawn_config
+
+    -- Create list of solid resource tiles
     local r_list = {}
-    local solid_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources
+    local solid_resources = spawn_config.solid_resources
     if solid_resources ~= nil then
         for r_name, _ in pairs(solid_resources) do
             if (r_name ~= "") then
@@ -500,8 +499,8 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         end
     end
 
-    -- Gleba style resources like plants
-    local gleba_resources = storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources
+    -- Gleba style resources like plants that need to be placed on certain tiles
+    local gleba_resources = spawn_config.gleba_resources
     if gleba_resources ~= nil then
         for g_name, _ in pairs(gleba_resources) do
             if (g_name ~= "") then
@@ -511,7 +510,24 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
     end
 
     ---@type table<string>
-    local shuffled_list = FYShuffle(r_list)
+    local shuffled_list = r_list
+    if storage.ocfg.resource_placement.random_order then
+        shuffled_list = FYShuffle(r_list)
+    end
+
+    return shuffled_list
+end
+
+---Places starting resource deposits in a semi-circle around the spawn point.
+---@param surface LuaSurface
+---@param position TilePosition --The center of the spawn area
+---@param size_mod number
+---@param amount_mod number
+---@return nil
+function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
+
+    ---@type table<string>
+    local shuffled_list = GetResourceList(surface.name)
     local num_resources = table_size(shuffled_list)
 
     -- This places resources in a semi-circle
@@ -542,7 +558,6 @@ function PlaceResourcesInSemiCircle(surface, position, size_mod, amount_mod)
         local theta = ((angle_final_radians - angle_offset_radians) / (num_resources-1));
         local count = 0
 
-
         for _, r_name in pairs(shuffled_list) do
             local angle = (theta * count) + angle_offset_radians;
 
@@ -571,16 +586,8 @@ end
 ---@return nil
 function PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
 
-    -- Create list of resource tiles
     ---@type table<string>
-    local r_list = {}
-    for r_name, _ in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
-        if (r_name ~= "") then
-            table.insert(r_list, r_name)
-        end
-    end
-    ---@type table<string>
-    local shuffled_list = FYShuffle(r_list)
+    local shuffled_list = GetResourceList(surface.name)
 
     local spawn_general = storage.ocfg.spawn_general
     local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
@@ -624,7 +631,7 @@ function GenerateFinalSpawnPieces(delayed_spawn)
     -- Create the spawn resources here
     GenerateStartingResources(surface, delayed_spawn.position)
 
-    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+    local radius = ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
 
     -- Reference position is RIGHT (WEST) of the spawn area.
     local sharing_ref_pos = {
