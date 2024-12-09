@@ -359,6 +359,8 @@ OCFG = {
         -- Amount multiplier for the starting resource deposits.
         amount_multiplier = 1.0,
 
+        -- Randomize the order of resource placement.
+        random_order = true,
     },
 
     -- Spawn configuration specific to each surface, including starting & respawn items.
@@ -552,6 +554,7 @@ OCFG = {
 ---@field linear_spacing number Spacing between resource deposits in tiles. Only applicable for square spawns.
 ---@field size_multiplier number Size multiplier for the starting resource deposits.
 ---@field amount_multiplier number Amount multiplier for the starting resource deposits.
+---@field random_order boolean Randomize the order of resource placement.
 
 ---@class OarcConfigSolidResource
 ---@field amount integer

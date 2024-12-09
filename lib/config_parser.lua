@@ -85,6 +85,7 @@ OCFG_KEYS =
     ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
     ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = {"oarc-scale-spawner-damage-caption"}, tooltip = {"oarc-scale-spawner-damage-tooltip"}},
     ["spawn_general.remove_decoratives"] = {mod_key = "" , ocfg_keys = {"spawn_general", "remove_decoratives"}, type = "boolean", caption = {"oarc-remove-decoratives-caption"}, tooltip = {"oarc-remove-decoratives-tooltip"}},
+    ["resource_placement.random_order"] = {mod_key = "" , ocfg_keys = {"resource_placement", "random_order"}, type = "boolean", caption = {"oarc-resource-placement-random-order-caption"}, tooltip = {"oarc-resource-placement-random-order-tooltip"}},
 
 }
 

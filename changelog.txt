@@ -7,7 +7,8 @@ Date: ????
   Bugfixes:
     - Fix incorrect names printed for infinite technology research.
   Minor Features:
-    - Add a setting to clear decoratives in the spawn area. (Not enabled by default, not visible in the native mod settings.)
+    - Add a non-mod setting to clear decoratives in the spawn area. (Not enabled by default, not visible in the native mod settings.)
+    - Add a non-mod setting to allow toggling the the random ordering of resource placement within the spawn area.
   Info:
     - Add more info to the template scenario to help with understanding how to override settings.
     - Disable some of the extra debug logging.
