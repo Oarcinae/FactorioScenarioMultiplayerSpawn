@@ -1501,7 +1501,7 @@ function QueuePlayerForSpawn(player_name, delayed_spawn)
         SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
     end
 
-    SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true)
+    SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true, true)
 
     CompatSend(game.players[player_name], { "oarc-generating-spawn-please-wait" }, { volume_modifier = 0})
 
@@ -1520,12 +1520,19 @@ end
 ---@param surface_name string
 ---@param position MapPosition
 ---@param reset_cooldown boolean
+---@param use_offset boolean
 ---@return nil
-function SetPlayerRespawn(player_name, surface_name, position, reset_cooldown)
+function SetPlayerRespawn(player_name, surface_name, position, reset_cooldown, use_offset)
     ---@type OarcPlayerSpawn
     local updatedPlayerSpawn = {}
     updatedPlayerSpawn.surface = surface_name
     updatedPlayerSpawn.position = position
+
+    -- Allow modders to set a custom offset for the player spawn point.
+    local offset = storage.ocfg.surfaces_config[surface_name].spawn_config.player_spawn_offset
+    if use_offset and (offset ~= nil) then
+        updatedPlayerSpawn.position = { x = position.x + offset.x, y = position.y + offset.y }
+    end
 
     storage.player_respawns[player_name][surface_name] = updatedPlayerSpawn
 
@@ -1683,7 +1690,7 @@ function SecondarySpawn(player, surface_name, send_player)
     if send_player then 
         QueuePlayerForSpawn(player_name, delayed_spawn)
     else
-        SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true)
+        SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true, true)
     end
 
     -- Handle special buddy spawns:
@@ -1692,14 +1699,14 @@ function SecondarySpawn(player, surface_name, send_player)
         local buddy_choices = storage.spawn_choices[spawn_choices.buddy]
 
         GenerateNewSpawn(spawn_choices.buddy, surface_name, buddy_position, buddy_choices, false)
-        SetPlayerRespawn(spawn_choices.buddy, surface_name, buddy_position, false)
+        SetPlayerRespawn(spawn_choices.buddy, surface_name, buddy_position, false, true)
 
     -- Make sure host and joiners all have their new respawn position set for this surface.
     elseif (#storage.unique_spawns[surface_name][host_name].joiners > 0) then
-        SetPlayerRespawn(host_name, surface_name, spawn_position, false)
+        SetPlayerRespawn(host_name, surface_name, spawn_position, false, true)
 
         for _,joiner_name in pairs(storage.unique_spawns[surface_name][host_name].joiners) do
-            SetPlayerRespawn(joiner_name, surface_name, spawn_position, false)
+            SetPlayerRespawn(joiner_name, surface_name, spawn_position, false, true)
         end
     end
 

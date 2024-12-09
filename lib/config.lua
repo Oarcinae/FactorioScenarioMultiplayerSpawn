@@ -520,6 +520,7 @@ OCFG = {
 ---@field solid_resources table<string, OarcConfigSolidResource> Spawn area config for solid resource tiles
 ---@field fluid_resources table<string, OarcConfigFluidResource> Spawn area config for fluid resource patches (like oil)
 ---@field gleba_resources table<string, OarcConfigGlebaResource> Spawn area config for gleba-style resources (like plants and stromatolites)
+---@field player_spawn_offset MapPosition The offset from the center of the spawn area where players will spawn. Can be nil.
 
 ---@class OarcConfigSpawnGeneral
 ---@field spawn_radius_tiles number THIS IS WHAT SETS THE SPAWN CIRCLE SIZE! Create a circle of land area for the spawn If you make this much bigger than a few chunks, good luck.
