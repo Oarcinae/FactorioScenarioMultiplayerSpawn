@@ -421,10 +421,16 @@ function GenerateStartingResources(surface, position)
 
     -- Generate resources using specified offsets if auto placement is disabled.
     else
-        for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources --[[@as table<string, OarcConfigSolidResource>]]) do
+        for r_name, r_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources) do
             local pos = { x = position.x + r_data.x_offset, y = position.y + r_data.y_offset }
             GenerateResourcePatch(surface, r_name, r_data.size * size_mod, pos, r_data.amount * amount_mod)
         end
+
+        --TODO: Add support for specific location placement. OR remove it entirely.
+        -- for g_name, g_data in pairs(storage.ocfg.surfaces_config[surface.name].spawn_config.gleba_resources) do
+        --     local pos = { x = position.x + g_data.x_offset, y = position.y + g_data.y_offset }
+        --     GenerateGlebaStyleResourcePatch(surface, g_data, g_data.size * size_mod, pos)
+        -- end
     end
 
     local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
@@ -603,10 +609,20 @@ function PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
 
     -- Place vertically using linear spacing
     for _, r_name in pairs(shuffled_list) do
-        local resourceConfig = storage.ocfg.surfaces_config[surface.name].spawn_config.solid_resources[r_name]
-        local size = resourceConfig.size * size_mod
-        GenerateResourcePatch(surface, r_name, size, resource_position, resourceConfig.amount * amount_mod)
-        resource_position.y = resource_position.y + size + storage.ocfg.resource_placement.linear_spacing
+
+        if spawn_config.solid_resources[r_name] then
+            local solid_resource = spawn_config.solid_resources[r_name]
+            local size = solid_resource.size * size_mod
+            GenerateResourcePatch(surface, r_name, size, resource_position, solid_resource.amount * amount_mod)
+            resource_position.y = resource_position.y + size + storage.ocfg.resource_placement.linear_spacing
+        elseif spawn_config.gleba_resources[r_name] then
+            local gleba_resource = spawn_config.gleba_resources[r_name]
+            local size = gleba_resource.size * size_mod
+            GenerateGlebaStyleResourcePatch(surface, gleba_resource, size, resource_position)
+            resource_position.y = resource_position.y + size + storage.ocfg.resource_placement.linear_spacing
+        else
+            error("Resource not found in solid_resources or gleba_resources: " .. r_name)
+        end
     end
 end
 
