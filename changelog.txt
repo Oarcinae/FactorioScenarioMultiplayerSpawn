@@ -1,7 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.19
-Date: ????
-  Changes:
+Date: 2024-12-19
+  Bugfixes:
+    - Fix crash due to not clearing buddy names correctly.
+  Info:
+    - Remove warning/experimental message now that things are mostly stable.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.18
 Date: 2024-12-11
