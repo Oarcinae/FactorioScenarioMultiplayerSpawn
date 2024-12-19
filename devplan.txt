@@ -5,8 +5,6 @@ ACTIVE NOTES:
 - They get unique spawn areas, but they have to coordinate regarding the landing pad, OR they can install a mod to have multiple but it is still up to them to coordinate.
 
 - Change permissions to be enabled/disabled when entering/leaving the holding pen (use custom surface changed event?)
-
-- Get rid of storage.buddy_pairs ?? Is basically duplicate info inside the spawns right?
 ------------------------------------------------------------------------------------------------------------------------
 
 BACKLOG:

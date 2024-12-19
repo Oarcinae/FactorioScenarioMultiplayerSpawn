@@ -51,8 +51,6 @@ function DisplayWelcomeTextGui(player)
 
     -- Warnings about the scenario
     AddLabel(welcome_gui_if, nil, { "oarc-scenario-info-warn-msg" }, my_note_style)
-    AddSpacer(welcome_gui_if)
-    AddLabel(welcome_gui_if, nil, { "oarc-experimental-warning" }, my_label_style)
 
     -- Confirm button
     local button_flow = welcome_gui.add {
@@ -1180,9 +1178,6 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     -- Unlock spawn control gui tab
     SetOarcGuiTabEnabled(player, OARC_SPAWN_CTRL_TAB_NAME, true)
     SetOarcGuiTabEnabled(requesting_buddy, OARC_SPAWN_CTRL_TAB_NAME, true)
-
-    storage.buddy_pairs[player.name] = requesting_buddy_name
-    storage.buddy_pairs[requesting_buddy_name] = player.name
 end
 
 ---Rejects a buddy spawn request proposal

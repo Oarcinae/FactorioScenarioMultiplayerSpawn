@@ -55,13 +55,6 @@ function InitSpawnGlobalsAndForces()
     --[[@type OarcSpawnChoicesTable]]
     storage.spawn_choices = {}
 
-    -- Buddy info: The only real use is to check if one of a buddy pair is online to see if we should allow enemy
-    -- attacks on the base.  <br>
-    -- storage.buddy_pairs[player.name] = requesterName  <br>
-    -- storage.buddy_pairs[requesterName] = player.name  <br>
-    --[[@type table<string, string>]]
-    storage.buddy_pairs = {}
-
     --- Table contains all the renders that need to be faded out over time in the on_tick event. They are removed when they expire.
     --[[@type table<integer>]]
     storage.oarc_renders_fadeout = {}
@@ -1095,20 +1088,6 @@ end
 ---@return nil
 function CleanupPlayerGlobals(player_name)
 
-    -- Clear the buddy pair IF one exists
-    if (storage.buddy_pairs[player_name] ~= nil) then
-        local buddy_name = storage.buddy_pairs[player_name]
-        storage.buddy_pairs[player_name] = nil
-        storage.buddy_pairs[buddy_name] = nil
-
-        -- Nil the buddy from any of the unique spawn entries
-        for _,spawns in pairs(storage.unique_spawns) do
-            if (spawns[buddy_name] ~= nil) then
-                spawns[buddy_name].buddy_name = nil
-            end
-        end
-    end
-
     -- Transfer or remove a shared spawn if player is owner
     local unique_spawn = FindPrimaryUniqueSpawn(player_name)
     if (unique_spawn ~= nil and #unique_spawn.joiners > 0) then
@@ -1144,6 +1123,15 @@ function CleanupPlayerGlobals(player_name)
 
     -- Remove them from any join queues they may be in:
     RemovePlayerFromJoinQueue(player_name)
+
+    -- Nil the buddy from all buddy spawns
+    for _,spawns in pairs(storage.unique_spawns) do
+        for _,spawn in pairs(spawns) do
+            if (spawn.buddy_name ~= nil) and (spawn.buddy_name == player_name) then
+                spawn.buddy_name = nil
+            end
+        end
+    end
 
     if (storage.player_cooldowns[player_name] ~= nil) then
         storage.player_cooldowns[player_name] = nil
@@ -1365,7 +1353,7 @@ function GetPlayersFromSameSpawn(player_name, include_offline)
                     end
                 end
 
-                if (spawn.buddy_name ~= nil) then
+                if (spawn.buddy_name ~= nil) and game.players[spawn.buddy_name] ~= nil then
                     if (include_offline or game.players[spawn.buddy_name].connected) then
                         table.insert(shared_players, spawn.buddy_name)
                     end
