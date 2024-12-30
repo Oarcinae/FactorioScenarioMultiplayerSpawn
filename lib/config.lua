@@ -153,6 +153,8 @@ OCFG = {
     server_info = {
         welcome_msg_title = "Insert Server Title Here!",
         welcome_msg = "Insert Server Welcome Message Here!",
+        custom_info_header = nil, -- nil disables this section
+        custom_info_content = nil, -- nil disables this section
         discord_invite = "Insert Discord Invite Here!"
     },
 
@@ -456,6 +458,8 @@ OCFG = {
 ---@class OarcConfigServerInfo
 ---@field welcome_msg_title string  Title of welcome GUI window.
 ---@field welcome_msg string Main welcome message. (Should provide mod info.)
+---@field custom_info_header string Custom header for the server info tab. (NIL by default)
+---@field custom_info_content string Custom content for the server info tab. (NIL by default)
 ---@field discord_invite string Discord invite for easy copy paste.
 
 ---@class OarcConfigGameplaySettings

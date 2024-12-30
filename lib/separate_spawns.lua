@@ -1699,11 +1699,17 @@ function SecondarySpawn(player, surface_name, send_player)
 
     -- Handle special buddy spawns:
     if (spawn_choices.buddy) then
-        local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name, spawn_choices.moat)
-        local buddy_choices = storage.spawn_choices[spawn_choices.buddy]
 
-        GenerateNewSpawn(spawn_choices.buddy, surface_name, buddy_position, buddy_choices, false)
-        SetPlayerRespawn(spawn_choices.buddy, surface_name, buddy_position, false, true)
+        -- If the buddy is still valid, generate a new spawn for them.
+        if (game.players[spawn_choices.buddy] ~= nil) then
+            local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name, spawn_choices.moat)
+            local buddy_choices = storage.spawn_choices[spawn_choices.buddy]
+
+            GenerateNewSpawn(spawn_choices.buddy, surface_name, buddy_position, buddy_choices, false)
+            SetPlayerRespawn(spawn_choices.buddy, surface_name, buddy_position, false, true)
+        else
+            log("Info: Generating a buddy secondary spawn but buddy no longer exists: " .. spawn_choices.buddy)
+        end
 
     -- Make sure host and joiners all have their new respawn position set for this surface.
     elseif (#storage.unique_spawns[surface_name][host_name].joiners > 0) then

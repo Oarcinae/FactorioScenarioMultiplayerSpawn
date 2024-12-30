@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.20
+Date: 2024-12-30
+  Changes:
+    - Change settings import/export to use serpent block instead of a single line. This should make it easier to read and edit the settings.
+    - Add a customizable section to the server info tab (not editable via GUI for now, only via remote interface, custom scenario or importing custom settings).
+  Bugfixes:
+    - Fix crash when buddy no longer exists when generating a secondary spawn.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.19
 Date: 2024-12-19
   Bugfixes:
