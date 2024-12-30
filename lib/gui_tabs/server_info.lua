@@ -13,6 +13,13 @@ function CreateServerInfoTab(tab_container, player)
         AddSpacerLine(tab_container)
     end
 
+    -- Custom Header and Content Section (if not nil)
+    if (storage.ocfg.server_info.custom_info_content ~= nil) and (storage.ocfg.server_info.custom_info_header ~= nil) then
+        AddLabel(tab_container, nil, storage.ocfg.server_info.custom_info_header, "caption_label")
+        AddLabel(tab_container, nil, storage.ocfg.server_info.custom_info_content, my_longer_label_style)
+        AddSpacerLine(tab_container)
+    end
+
     if (storage.ocfg.server_info.discord_invite ~= " ") then
         local horizontal_flow = tab_container.add{
             type="flow", direction="horizontal"
@@ -21,7 +28,8 @@ function CreateServerInfoTab(tab_container, player)
         horizontal_flow.add{
             type="textfield",
             tooltip={"oarc-server-info-tab-discord-invite-tooltip"},
-            text=storage.ocfg.server_info.discord_invite
+            text=storage.ocfg.server_info.discord_invite,
+            tags = { action = "oarc_server_info_tab", setting = "discord_invite_textfield" }
         }
         AddSpacerLine(tab_container)
     end
@@ -113,6 +121,10 @@ function ServerInfoTabGuiClick(event)
                 log("Banning " .. banPlayer)
             end
         end
+    end
+
+    if (tags.setting == "discord_invite_textfield") then
+        event.element.select_all() -- Select all text when clicked for easy copy-pasting
     end
 
     if (tags.setting == "restart_player") then

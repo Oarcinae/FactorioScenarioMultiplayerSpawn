@@ -147,7 +147,7 @@ function CreateSettingsExportSection(container, player)
     }
 
     local export_textfield = container.add {
-        type = "textfield",
+        type = "text-box",
         name = "export_textfield",
         text = " ",
         tags = {
@@ -157,6 +157,7 @@ function CreateSettingsExportSection(container, player)
     }
     export_textfield.style.horizontally_stretchable = true
     export_textfield.style.maximal_width = 500
+    export_textfield.style.minimal_height = 100
 end
 
 ---Handles the click event for the tab used by AddOarcGuiTab
@@ -575,13 +576,13 @@ function SettingsSurfaceControlsTabGuiClick(event)
         end
 
     elseif (setting_name == "oarc_settings_textfield") then
-        gui_elem.select_all() -- Select all text when clicked
+        gui_elem.select_all() -- Select all text when clicked for easy copy-pasting
 
     elseif (setting_name == "oarc_settings_export") then
 
         log("Exported settings!")
         local export_textfield = gui_elem.parent.parent["export_textfield"]
-        export_textfield.text = serpent.line(storage.ocfg, {compact = true, sparse = true})
+        export_textfield.text = serpent.block(storage.ocfg, {compact = true, sparse = true})
     
     elseif (setting_name == "oarc_settings_import") then
         local player = game.players[event.player_index]
