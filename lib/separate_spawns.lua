@@ -1133,6 +1133,13 @@ function CleanupPlayerGlobals(player_name)
         end
     end
 
+    -- Nil the buddy from any spawn choices entries too:
+    for _,choices in pairs(storage.spawn_choices) do
+        if (choices.buddy ~= nil) and (choices.buddy == player_name) then
+            choices.buddy = nil
+        end
+    end
+
     if (storage.player_cooldowns[player_name] ~= nil) then
         storage.player_cooldowns[player_name] = nil
     end
@@ -1698,21 +1705,24 @@ function SecondarySpawn(player, surface_name, send_player)
     end
 
     -- Handle special buddy spawns:
-    if (spawn_choices.buddy) then
+    local buddy_name = primary_spawn.buddy_name
+    if (buddy_name ~= nil) then
+        local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name, spawn_choices.moat)
+        local buddy_choices = storage.spawn_choices[buddy_name]
 
-        -- If the buddy is still valid, generate a new spawn for them.
-        if (game.players[spawn_choices.buddy] ~= nil) then
-            local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name, spawn_choices.moat)
-            local buddy_choices = storage.spawn_choices[spawn_choices.buddy]
+        GenerateNewSpawn(buddy_name, surface_name, buddy_position, buddy_choices, false)
+        SetPlayerRespawn(buddy_name, surface_name, buddy_position, false, true)
 
-            GenerateNewSpawn(spawn_choices.buddy, surface_name, buddy_position, buddy_choices, false)
-            SetPlayerRespawn(spawn_choices.buddy, surface_name, buddy_position, false, true)
-        else
-            log("Info: Generating a buddy secondary spawn but buddy no longer exists: " .. spawn_choices.buddy)
+        -- Make sure joiners have their new respawn position set for this surface.
+        if (#storage.unique_spawns[surface_name][buddy_name].joiners > 0) then
+            for _,joiner_name in pairs(storage.unique_spawns[surface_name][buddy_name].joiners) do
+                SetPlayerRespawn(joiner_name, surface_name, buddy_position, false, true)
+            end
         end
+    end
 
     -- Make sure host and joiners all have their new respawn position set for this surface.
-    elseif (#storage.unique_spawns[surface_name][host_name].joiners > 0) then
+    if (#storage.unique_spawns[surface_name][host_name].joiners > 0) then
         SetPlayerRespawn(host_name, surface_name, spawn_position, false, true)
 
         for _,joiner_name in pairs(storage.unique_spawns[surface_name][host_name].joiners) do
