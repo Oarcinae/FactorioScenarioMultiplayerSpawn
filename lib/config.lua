@@ -201,6 +201,9 @@ OCFG = {
         -- This allows 2 players to spawn next to each other, each with their own starting area.
         enable_buddy_spawn = true,
 
+        -- Additional distance between buddy spawns if you need it.
+        buddy_spawn_distance_offset = 0,
+
         -- This inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
         enable_offline_protection = true,
 
@@ -473,6 +476,7 @@ OCFG = {
 ---@field near_spawn_distance number The closest a player can spawn to the origin. (Not exact, but close).
 ---@field far_spawn_distance number The furthest a player can spawn from the origin. (Not exact, but close).
 ---@field enable_buddy_spawn boolean Allow 2 players to spawn next to each other, each with their own starting area.
+---@field buddy_spawn_distance_offset number Additional distance between buddy spawns if you need it.
 ---@field enable_offline_protection boolean Inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
 ---@field enable_shared_team_vision boolean Enable shared vision between teams
 ---@field enable_shared_team_chat boolean Share local team chat with all teams

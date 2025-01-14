@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.22
+Date: 2025-01-14
+  Bugfixes:
+    - Make sure secondary spawns don't trigger on surfaces where they are disabled!
+    - Add support for surfaces that don't have autoplace_controls in their map gen settings.
+    - Caught a few cases where oarc-mod-on-config-changed event was not being triggered.
+  Modding:
+    - Added buddy_spawn_distance_offset to allow adjusting the distance between buddy spawns. (Hidden config.)
+---------------------------------------------------------------------------------------------------
 Version: 2.1.21
 Date: 2024-12-31
   Bugfixes:

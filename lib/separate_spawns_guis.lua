@@ -1160,7 +1160,7 @@ function AcceptBuddyRequest(player, requesting_buddy_name)
     end
 
     -- Create that spawn in the global vars
-    local buddy_position = GetBuddySpawnPosition(spawn_position, spawn_choices.surface_name, spawn_choices.moat)
+    local buddy_position = GetBuddySpawnPosition(spawn_position, spawn_choices.surface_name)
 
 
     -- Queue spawn generation for the requesting buddy FIRST. (left)
