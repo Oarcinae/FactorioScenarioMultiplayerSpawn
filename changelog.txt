@@ -6,7 +6,8 @@ Date: 2025-01-14
     - Add support for surfaces that don't have autoplace_controls in their map gen settings.
     - Caught a few cases where oarc-mod-on-config-changed event was not being triggered.
   Modding:
-    - Added buddy_spawn_distance_offset to allow adjusting the distance between buddy spawns. (Hidden config.)
+    - Add buddy_spawn_distance_offset to allow adjusting the distance between buddy spawns. (Hidden config.)
+    - Add remove_or_reset_player remote interface.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.21
 Date: 2024-12-31

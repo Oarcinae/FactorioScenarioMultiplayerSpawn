@@ -510,6 +510,10 @@ local oarc_mod_interface =
   get_custom_gui_tab_content_element = function(player, tab_name)
     return OarcGuiGetTabContentElement(player, tab_name)
   end,
+
+  remove_or_reset_player = function(player_name, remove_player)
+    RemoveOrResetPlayer(player_name, remove_player)
+  end,
 }
 
 remote.add_interface("oarc_mod", oarc_mod_interface)
