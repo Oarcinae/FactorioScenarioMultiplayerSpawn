@@ -52,12 +52,14 @@ function DowngradeAndReduceEnemiesOnChunkGenerate(event)
         y = chunk_area.left_top.y + (CHUNK_SIZE / 2)
     }
 
-
-    
     -- TODO: Change this lookup to be done once during surface init.
-    local nauvis_enemies = surface.map_gen_settings.autoplace_controls["enemy-base"] ~= nil
-    local gleba_enemies = surface.map_gen_settings.autoplace_controls["gleba_enemy_base"] ~= nil
-    -- local vulcanus_enemies = surface.map_gen_settings.territory_settings ~= nil
+    local nauvis_enemies = false
+    local gleba_enemies = false
+    if surface.map_gen_settings.autoplace_controls ~=  nil then -- This is nil for some types of surfaces.
+        nauvis_enemies = surface.map_gen_settings.autoplace_controls["enemy-base"] ~= nil
+        gleba_enemies = surface.map_gen_settings.autoplace_controls["gleba_enemy_base"] ~= nil
+        -- local vulcanus_enemies = surface.map_gen_settings.territory_settings ~= nil
+    end
 
     -- Make chunks near a spawn safe by removing enemies
     -- TODO: Refactor this to reduce calls to find_entities_filtered maybe?

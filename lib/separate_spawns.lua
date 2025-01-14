@@ -151,6 +151,7 @@ function SeparateSpawnsInitSurface(surface_name)
     if (storage.ocfg.surfaces_config[surface_name] == nil) then
         log("Surface does NOT have a config entry, defaulting to nauvis entry for new surface: " .. surface_name)
         storage.ocfg.surfaces_config[surface_name] = table.deepcopy(storage.ocfg.surfaces_config["nauvis"])
+        script.raise_event("oarc-mod-on-config-changed", {})
     end
 end
 
@@ -1707,7 +1708,7 @@ function SecondarySpawn(player, surface_name, send_player)
     -- Handle special buddy spawns:
     local buddy_name = primary_spawn.buddy_name
     if (buddy_name ~= nil) then
-        local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name, spawn_choices.moat)
+        local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name)
         local buddy_choices = storage.spawn_choices[buddy_name]
 
         GenerateNewSpawn(buddy_name, surface_name, buddy_position, buddy_choices, false)
@@ -1853,6 +1854,13 @@ function CargoPodHandlerOnTick()
         if (pod.surface.platform == nil) then
             local surface = pod.surface
             local force = pod.force
+
+            -- Remove any pods that are landing on a surface we don't care about:
+            -- Check if secondary spawns are disabled
+            if (not storage.oarc_surfaces[surface.name] or not storage.oarc_surfaces[surface.name].secondary) then
+                storage.cargo_pods[index] = nil
+                return
+            end
 
             -- Check if the force has a landing pad on this surface
             local has_landing_pad = DoesForceHaveLandingPadOnSurface(force, surface)

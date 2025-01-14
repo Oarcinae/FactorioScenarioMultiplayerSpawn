@@ -380,15 +380,17 @@ end
 ---Get position for buddy spawn (for buddy placement)
 ---@param position MapPosition
 ---@param surface_name string
----@param moat_enabled boolean
 ---@return MapPosition
-function GetBuddySpawnPosition(position, surface_name, moat_enabled)
+function GetBuddySpawnPosition(position, surface_name)
 
     local spawn_config = storage.ocfg.surfaces_config[surface_name].spawn_config
 
     local x_offset = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier * 2
     x_offset = x_offset + storage.ocfg.spawn_general.moat_width_tiles
-    -- distance = distance + 5 -- EXTRA BUFFER?
+
+    if (storage.ocfg.gameplay.buddy_spawn_distance_offset ~= nil) then
+        x_offset = x_offset + storage.ocfg.gameplay.buddy_spawn_distance_offset
+    end
 
     -- Create that spawn in the global vars
     local buddy_position = table.deepcopy(position)
