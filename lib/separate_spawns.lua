@@ -1051,8 +1051,6 @@ function UniqueSpawnCleanupRemove(player_name, unique_spawn)
     if (unique_spawn == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. player_name .. " on surface: " .. unique_spawn.surface_name)
 
-    local spawn_config = storage.ocfg.surfaces_config[unique_spawn.surface_name].spawn_config
-
     -- The only bases within this distance should be buddy bases in theory.
     local near_bases_minimum_distance = (storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 1) * CHUNK_SIZE
 
