@@ -54,6 +54,9 @@ for surface_index, spawns in pairs(storage.unique_spawns) do
 end
 
 -- Make sure any existing players current surface is tracked
+if storage.player_surfaces == nil then
+    storage.player_surfaces = {}
+end
 for _, player in pairs(game.players) do
     if player.character then
         storage.player_surfaces[player.name] = player.character.surface.name

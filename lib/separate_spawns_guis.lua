@@ -287,8 +287,9 @@ end
 ---@param parent_flow LuaGuiElement
 ---@param enable_shared_spawns boolean
 ---@param max_shared_players integer
+---@param disable_solo_spawns boolean
 ---@return nil
-function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_players)
+function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_players, disable_solo_spawns)
 
     solo_spawn_frame = parent_flow.add {
         name = "solo_spawn_frame",
@@ -302,6 +303,12 @@ function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_play
     solo_spawn_frame.style.bottom_margin = 0
 
     AddLabel(solo_spawn_frame, nil, { "oarc-spawn-menu-solo-header" }, my_label_header_style)
+
+    if disable_solo_spawns then
+        AddLabel(solo_spawn_frame, nil, { "oarc-solo-spawn-disabled" }, my_warning_style)
+        return
+    end
+
     AddLabel(solo_spawn_frame, nil, { "oarc-starting-area-normal" }, my_label_style)
     
     -- A note about sharing spawns
@@ -609,7 +616,7 @@ function DisplaySpawnOptions(player)
     storage.spawn_choices[player.name] = spawn_choices_entry
 
     CreateSpawnSettingsFrame(sGui, gameplay) -- The settings for configuring a spawn
-    CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn) -- The primary method of spawning
+    CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn, gameplay.disable_solo_spawns) -- The primary method of spawning
     CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns) -- Spawn options to join another player's base.
     CreateBuddySpawnFrame(sGui, player, gameplay.enable_buddy_spawn, gameplay.enable_separate_teams) -- Awesome buddy spawning system
 
