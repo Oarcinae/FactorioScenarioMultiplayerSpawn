@@ -1053,14 +1053,14 @@ function UniqueSpawnCleanupRemove(player_name, unique_spawn)
 
     local spawn_config = storage.ocfg.surfaces_config[unique_spawn.surface_name].spawn_config
 
-    local total_spawn_width = (storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier) +
-                                storage.ocfg.spawn_general.moat_width_tiles
+    -- The only bases within this distance should be buddy bases in theory.
+    local near_bases_minimum_distance = (storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 1) * CHUNK_SIZE
 
-    -- Check if it was near someone else's base. (Really just buddy base is possible I think?)
+    -- Check if it was near someone else's base.
     nearOtherSpawn = false
     for player_index, spawn in pairs(storage.unique_spawns[unique_spawn.surface_name]) do
         if ((player_index ~= player_name) and
-            (util.distance(unique_spawn.position, spawn.position) < (total_spawn_width * 3))) then
+            (util.distance(unique_spawn.position, spawn.position) < near_bases_minimum_distance)) then
             log("Won't remove base as it's close to another spawn: " .. player_index)
             nearOtherSpawn = true
         end

@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.23
+Date: 2025-01-19
+  Bugfixes:
+    - Fix crash on migration when adding mod to an existing game.
+    - Change spawn cleanup nearby bases safety check to use "minimum_distance_to_existing_chunks" distance to avoid wiping a nearby buddy's base.
+  Modding:
+    - Add a hidden setting to allow disabling solo spawns. (Not exposed in the GUI.)
+---------------------------------------------------------------------------------------------------
 Version: 2.1.22
 Date: 2025-01-14
   Bugfixes:
