@@ -18,6 +18,9 @@ function CreateHoldingPenSurface()
     map_settings.peaceful_mode = true
     map_settings.width = 64
     map_settings.height = 64
+    map_settings.autoplace_controls = map_settings.autoplace_controls or {}
+    map_settings.autoplace_settings = map_settings.autoplace_settings or {}
+    map_settings.default_enable_all_autoplace_controls = map_settings.default_enable_all_autoplace_controls or false
 
     -- Create a new surface for the holding pen
 
