@@ -690,8 +690,6 @@ function GenerateFinalSpawnPieces(delayed_spawn)
         end
     end
 
-    
-
     -- Render some welcoming text...
     DisplayWelcomeGroundTextAtSpawn(delayed_spawn.surface_name, delayed_spawn.position)
 
