@@ -680,6 +680,13 @@ function GenerateFinalSpawnPieces(delayed_spawn)
                 { x = delayed_spawn.position.x + 15, y = delayed_spawn.position.y - 25 },
                 ocfg.surfaces_config[delayed_spawn.surface_name].starting_items.crashed_ship_resources,
                 ocfg.surfaces_config[delayed_spawn.surface_name].starting_items.crashed_ship_wreakage)
+
+            -- Need to search for the crash site entities and make them match the player force!
+            local radius = ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+            local wreckage = surface.find_entities_filtered{position = delayed_spawn.position, radius = radius, force = "player"}
+            for _, wreck in pairs(wreckage) do
+                wreck.force = game.players[delayed_spawn.host_name].force
+            end
         end
     end
 
