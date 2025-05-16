@@ -3,6 +3,7 @@ Version: 2.1.24
 Date: 2025-05-16
   Bugfixes:
     - Fix that player's couldn't access their own crash site ship if friendly forces was disabled. The crashed ship is now on the host's force.
+    - Fix compatibility issue with EverythingOnNauvis mod. Thank you to zzzz465 for the fix!
   Info:
     - Added a simple crashed ship was destroyed message (by request) only if the ship dies and friendly forces is disabled.
 ---------------------------------------------------------------------------------------------------
