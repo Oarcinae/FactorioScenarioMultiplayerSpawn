@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.25
+Date: 2026-07-06
+  Changes:
+    - Just bumped the major version support. I don't think there are any required changes to support 2.1. Let me know if you run into issues though.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.24
 Date: 2025-05-16
   Bugfixes:

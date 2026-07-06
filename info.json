@@ -1,14 +1,14 @@
 {
   "name": "oarc-mod",
-  "version": "2.1.24",
-  "factorio_version": "2.0",
+  "version": "2.1.25",
+  "factorio_version": "2.1",
   "title": "Oarc Multiplayer Spawn",
   "author": "Oarcinae",
   "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
   "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn",
   "description": "[[Description is in locale file!]]",
   "dependencies": [
-    "base >= 2.0.17",
+    "base >= 2.1.0",
     "? space-age",
     "(?) dangOreus" ,
     "(?) Milestones",
