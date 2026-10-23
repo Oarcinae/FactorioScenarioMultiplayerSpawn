@@ -1873,6 +1873,8 @@ local function ShouldTrackCargoPod(pod)
         return false
     end
 
+    -- If the destination surface was deleted (e.g. by another mod like Carna), the game sends the pod back to the
+    -- space platform that launched it, so there is nothing for us to do.
     local surface = GetCargoPodDestinationSurface(destination)
     if (surface == nil) then
         log("Not tracking cargo pod: " .. tostring(pod.unit_number) .. " - Destination surface is missing or invalid.")
@@ -1923,6 +1925,7 @@ function CargoPodHandlerOnTick()
             log("ERROR! Cargo pod destination is not a surface?")
 
         -- The destination surface can be deleted while the pod is still valid (e.g. by another mod like Carna).
+        -- The game sends the pod back to the space platform that launched it, so we just stop tracking it.
         elseif (GetCargoPodDestinationSurface(pod.cargo_pod_destination) == nil) then
             storage.cargo_pods[index] = nil
             log("Cargo pod destination surface is missing or invalid, no longer tracking pod: " .. tostring(index))
@@ -1934,8 +1937,9 @@ function CargoPodHandlerOnTick()
             local force = pod.force --[[@as LuaForce]] -- Always a LuaForce when read.
 
             -- Remove any pods that are landing on a surface we don't care about:
-            -- Check if secondary spawns are disabled
-            if (not storage.oarc_surfaces[surface.name] or not storage.oarc_surfaces[surface.name].secondary) then
+            -- Check if both primary and secondary spawns are disabled
+            local oarc_surface = storage.oarc_surfaces[surface.name]
+            if (not oarc_surface or not (oarc_surface.primary or oarc_surface.secondary)) then
                 storage.cargo_pods[index] = nil
                 return
             end
@@ -1948,9 +1952,16 @@ function CargoPodHandlerOnTick()
             end
 
             -- Check if the force is main force and warn that you need to manually retrieve your pods via command.
+            -- This is checked before the secondary spawn check so it also warns on primary-only surfaces (e.g. nauvis).
             -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
             if (force.name == storage.ocfg.gameplay.main_force_name) then
                 CompatSend(force, {"oarc-cargo-pod-main-force-warning"}, { color = force.color })
+                storage.cargo_pods[index] = nil
+                return
+            end
+
+            -- Only surfaces with secondary spawns enabled get pods redirected to a spawn.
+            if (not oarc_surface.secondary) then
                 storage.cargo_pods[index] = nil
                 return
             end
