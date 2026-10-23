@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.26
+Date: 2026-10-23
+  Bugfixes:
+    - Fix crash when sending items from one space platform to another. Cargo pods are now only tracked if they are descending to a planet surface, and invalid pods are cleaned up. Thank you to the oarc-for-bno folks for the report and suggested fix!
+    - Fix crash when a cargo pod's destination surface is deleted by another mod while the pod is in flight (e.g. Carna). The pod is no longer tracked.
+    - Unlock the starting planet for the main force and for new player forces. Surfaces that aren't planets or space locations are skipped instead of causing an error.
+---------------------------------------------------------------------------------------------------
 Version: 2.1.25
 Date: 2026-07-06
   Changes:
