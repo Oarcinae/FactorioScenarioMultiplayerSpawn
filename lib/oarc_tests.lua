@@ -306,7 +306,7 @@ function RerollSpawn(player)
     -- Queue joiners too (if they are on this surface?)
     for _,joiner in pairs(old_spawn_point.joiners) do
         local joiner_player = game.players[joiner]
-        if (joiner_player ~= nil) and joiner_player.surface.name == surface_name then
+        if (joiner_player ~= nil) and (joiner_player.character ~= nil) and joiner_player.character.surface.name == surface_name then
             QueuePlayerForSpawn(joiner, delayed_spawn)
             SafeTeleport(game.players[joiner], game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
         end

@@ -228,6 +228,15 @@ function SeparateSpawnsPlayerRespawned(event)
     -- It's possible if player is dead, and then resets, we don't want to do anything else.
     if (surface_name == HOLDING_PEN_SURFACE_NAME) then return end
 
+    -- If the player was reset while dead, they have no home spawn, so send them to the holding pen instead.
+    if (FindPlayerHomeSpawn(player.name) == nil) then
+        SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], { x = 0, y = 0 })
+        return
+    end
+
+    -- If they picked a new spawn while dead, OnTickNilCharacterTeleportQueue will send them there.
+    if (storage.nil_character_teleport_queue[player.name] ~= nil) then return end
+
     -- If the mod isn't active on this surface, then ignore it.
     local surface_config = storage.oarc_surfaces[surface_name]
     if (surface_config == nil) or
@@ -1515,7 +1524,7 @@ function QueuePlayerForSpawn(player_name, delayed_spawn)
 
     -- Send them to the holding pen if they are not already there.
     local player = game.players[player_name]
-    if (player.surface.name ~= HOLDING_PEN_SURFACE_NAME) then
+    if (player.character == nil) or (player.character.surface.name ~= HOLDING_PEN_SURFACE_NAME) then
         SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
     end
 

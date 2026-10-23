@@ -401,15 +401,32 @@ function GetBuddySpawnPosition(position, surface_name)
 end
 
 -- Safer teleport
+-- Teleports the character if there is one, because player.teleport only moves the remote view if that is active
+-- (e.g. when the player is on a space platform or viewing the map).
 ---@param player LuaPlayer
 ---@param surface LuaSurface
 ---@param target_pos MapPosition
 function SafeTeleport(player, surface, target_pos)
+    -- Dead players waiting to respawn can't be teleported. SeparateSpawnsPlayerRespawned handles them on respawn.
+    if (player.character == nil) and (player.ticks_to_respawn ~= nil) then
+        log("SafeTeleport - Player is waiting to respawn, skipping teleport: " .. player.name)
+        return
+    end
+
     local safe_pos = surface.find_non_colliding_position("character", target_pos, CHUNK_SIZE, 1)
     if (not safe_pos) then
-        player.teleport(target_pos, surface, true)
+        safe_pos = target_pos
+    end
+
+    local success
+    if (player.character ~= nil) then
+        success = player.character.teleport(safe_pos, surface, true)
     else
-        player.teleport(safe_pos, surface, true)
+        success = player.teleport(safe_pos, surface, true)
+    end
+
+    if (not success) then
+        log("WARNING - SafeTeleport - Failed to teleport player: " .. player.name .. " to surface: " .. surface.name)
     end
 end
 
