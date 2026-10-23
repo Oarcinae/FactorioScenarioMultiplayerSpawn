@@ -160,6 +160,11 @@ script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
     OnCargoPodFinishedAscending(event)
 end)
 
+script.on_event(defines.events.on_cargo_pod_started_ascending, function (event)
+    -- I start generating a secondary spawn as soon as a pod leaves a platform hub, so it is ready when the pod lands.
+    OnCargoPodStartedAscending(event)
+end)
+
 ----------------------------------------
 -- CUSTOM OARC Events (shown here for demo and logging purposes)
 ----------------------------------------

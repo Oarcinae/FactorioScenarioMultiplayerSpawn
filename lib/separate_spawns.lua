@@ -1945,6 +1945,45 @@ local function TryRedirectCargoPod(pod, player)
     return true
 end
 
+---When a cargo pod leaves a platform hub for a planet, start generating the secondary spawn it belongs to if there
+---isn't one yet. This gives the spawn the whole flight to generate, so the pod can usually be redirected to it in
+---OnCargoPodFinishedAscending. If it isn't ready in time, CargoPodHandlerOnTick handles the pod, or the player riding
+---in it waits in the holding pen (SeparateSpawnsPlayerChangedSurface).
+---@param event EventData.on_cargo_pod_started_ascending
+---@return nil
+function OnCargoPodStartedAscending(event)
+    local pod = event.cargo_pod
+    local destination = pod.cargo_pod_destination
+    if (destination.type ~= defines.cargo_destination.surface) then return end
+
+    local surface = GetCargoPodDestinationSurface(destination)
+    if (surface == nil) or not ShouldRedirectCargoPodsOnSurface(pod.force --[[@as LuaForce]], surface) then return end
+    if (not storage.oarc_surfaces[surface.name].secondary) then return end
+
+    -- The secondary spawn is created for the player riding in the pod, or otherwise for the force's host.
+    ---@type LuaPlayer?
+    local player = nil
+    ---@type LuaPlayer
+    local spawn_player
+    if (event.player_index ~= nil) then
+        player = game.players[event.player_index]
+        if (storage.player_respawns[player.name] == nil) then return end -- Player hasn't spawned yet.
+        spawn_player = player
+    else
+        local force = pod.force --[[@as LuaForce]]
+        if (force.name == storage.ocfg.gameplay.main_force_name) then return end
+        local primary_spawn = FindPrimarySpawnForForce(force)
+        if (primary_spawn == nil) then return end
+        spawn_player = game.players[primary_spawn.host_name]
+    end
+
+    -- Only one spawn is created, even if several pods are on their way.
+    if (FindCargoPodSpawn(pod, player, surface) ~= nil) then return end
+
+    log("A cargo pod leaving for " .. surface.name .. " triggered a secondary spawn for: " .. spawn_player.name)
+    SecondarySpawn(spawn_player, surface.name, false)
+end
+
 ---Redirect the cargo pods coming down onto a planet to the spawn they belong to. Pods without a player riding in them
 ---that can't be redirected yet are tracked for CargoPodHandlerOnTick.
 ---@param event EventData.on_cargo_pod_finished_ascending
