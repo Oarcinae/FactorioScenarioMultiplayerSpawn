@@ -2,14 +2,15 @@
 Version: 2.1.26
 Date: 2026-10-23
   Features:
-    - Cargo pods dropped from a space platform, and players riding them, now land at your spawn on that planet instead of the map center, if your force has no landing pad there.
+    - Cargo pods dropped from a space platform, and players riding them, now land at your spawn on that planet instead of the map center (only if your force has no landing pad on that planet)..
     - A new secondary spawn now starts generating as soon as a cargo pod leaves the platform for that planet, so you usually land straight at your new spawn instead of waiting in the holding pen.
   Bugfixes:
     - Fix crash when sending items from one space platform to another. Cargo pods are now only tracked if they are descending to a planet surface, and invalid pods are cleaned up. Thank you to the oarc-for-bno folks for the report and suggested fix!
     - Fix crash when a cargo pod's destination surface is deleted by another mod while the pod is in flight (e.g. Carna). The pod is no longer tracked.
-    - Unlock the starting planet for the main force and for new player forces. Surfaces that aren't planets or space locations are skipped instead of causing an error.
-    - Show the main force cargo pod warning on primary spawn surfaces (e.g. nauvis) too, not just on surfaces with secondary spawns enabled.
+    - Unlock the starting planet for the main force and for new player forces. Surfaces that aren't planets or space locations are skipped instead of causing an error. I don't know why or when this changed, but I observed this during my testing.
     - Fix crash when spawning or resetting a player while they are on a space platform or using remote view. The player's character is now teleported instead of only their remote view. Players reset while dead are sent to the holding pen when they respawn.
+  Info:
+    - Show the main force cargo pod warning on primary spawn surfaces (e.g. nauvis) too, not just on surfaces with secondary spawns enabled.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.25
 Date: 2026-07-06
