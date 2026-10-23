@@ -1831,19 +1831,65 @@ function GetAllowedSurfaces()
     return surfaceList
 end
 
+---Get the destination surface of a cargo pod as a valid LuaSurface.
+---CargoDestination.surface is a SurfaceIdentification (index, name or LuaSurface), and the surface may have been
+---deleted (e.g. by another mod) while the pod is in flight, so this can return nil.
+---@param destination CargoDestination
+---@return LuaSurface?
+local function GetCargoPodDestinationSurface(destination)
+    local surface_id = destination.surface
+    if (surface_id == nil) then return nil end
+
+    ---@type LuaSurface?
+    local surface
+    if (type(surface_id) == "number") or (type(surface_id) == "string") then
+        surface = game.get_surface(surface_id)
+    else
+        surface = surface_id --[[@as LuaSurface]]
+    end
+
+    if (surface == nil) or (not surface.valid) then return nil end
+    return surface
+end
+
+---Only pods that are headed for a planet surface (not a specific station) need redirecting to a spawn.
+---Pods going to a station (landing pad or platform hub), orbit, or a platform are destroyed/handled by the game.
+---@param pod LuaEntity
+---@return boolean
+local function ShouldTrackCargoPod(pod)
+    local destination = pod.cargo_pod_destination
+    if (destination.type ~= defines.cargo_destination.surface) then
+        log("Not tracking cargo pod: " .. tostring(pod.unit_number) .. " - Destination type: " .. tostring(destination.type))
+        return false
+    end
+
+    local surface = GetCargoPodDestinationSurface(destination)
+    if (surface == nil) then
+        log("Not tracking cargo pod: " .. tostring(pod.unit_number) .. " - Destination surface is missing or invalid.")
+        return false
+    end
+
+    log("Tracking cargo pod: " .. tostring(pod.unit_number) .. " - Destination surface: " .. surface.name .. " - Position: " .. serpent.line(destination.position))
+    return true
+end
+
 ---Track the cargo pods coming down onto a planet
 ---@param event EventData.on_cargo_pod_finished_ascending
 ---@return nil
 function OnCargoPodFinishedAscending(event)
     if (storage.cargo_pods == nil) then
+        --[[@type table<integer, LuaEntity>]]
         storage.cargo_pods = {}
     end
 
     -- Only track pods that are launched from a space platform and do not have a player riding in it!
     if (event.launched_by_rocket == false) and (event.player_index == nil) then
         -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
-        -- TODO: Need to check if the planet surface has a landing pad here too if we can.
-        storage.cargo_pods[event.cargo_pod.unit_number] = event.cargo_pod
+        -- If a landing pad appears later, the tick handler still checks for it before redirecting.
+        local unit_number = event.cargo_pod.unit_number
+        if (unit_number ~= nil) and ShouldTrackCargoPod(event.cargo_pod) then
+            storage.cargo_pods[unit_number] = event.cargo_pod
+        end
     end
 end
 
@@ -1852,13 +1898,30 @@ end
 function CargoPodHandlerOnTick()
     if (storage.cargo_pods == nil) then return end
 
+    -- TODO: The early returns below mean only one pod is handled per tick. This is a known limitation, any remaining
+    -- pods are handled on the following ticks.
     for index, pod in pairs(storage.cargo_pods) do
 
-        -- Make sure the pod is now descending, which means the surface shouldn't have a platform.
-        -- This will likely break in the future if there is a way to send platform to platform.
-        if (pod.surface.platform == nil) then
-            local surface = pod.surface
-            local force = pod.force
+        -- Pods can be destroyed before we see them descend (e.g. landing on a platform or removed by another mod).
+        -- The stored entity reference is then invalid and any API call on it would crash the game.
+        if (not pod.valid) then
+            storage.cargo_pods[index] = nil
+
+        -- Sanity check, we only store pods headed for a surface.
+        elseif (pod.cargo_pod_destination.type ~= defines.cargo_destination.surface) then
+            storage.cargo_pods[index] = nil
+            log("ERROR! Cargo pod destination is not a surface?")
+
+        -- The destination surface can be deleted while the pod is still valid (e.g. by another mod like Carna).
+        elseif (GetCargoPodDestinationSurface(pod.cargo_pod_destination) == nil) then
+            storage.cargo_pods[index] = nil
+            log("Cargo pod destination surface is missing or invalid, no longer tracking pod: " .. tostring(index))
+
+        -- Wait until the pod has left the platform surface it launched from (it is descending) before handling it.
+        elseif (pod.surface.platform == nil) then
+            -- Use the destination surface, not pod.surface, which may still report the surface it launched from.
+            local surface = GetCargoPodDestinationSurface(pod.cargo_pod_destination) --[[@as LuaSurface]]
+            local force = pod.force --[[@as LuaForce]] -- Always a LuaForce when read.
 
             -- Remove any pods that are landing on a surface we don't care about:
             -- Check if secondary spawns are disabled
@@ -1889,7 +1952,7 @@ function CargoPodHandlerOnTick()
             -- Pod has a spawn it belongs to, send it there.
             if has_unique_spawn then
                 log("Pod has a unique spawn, need to send it there.")
-                
+
                 -- Forcefully finish descending and remove the pod from our list.
                 pod.force_finish_descending()
                 storage.cargo_pods[index] = nil
