@@ -156,7 +156,7 @@ end)
 
 -- TODO: Possibly only enable this if space-age mod is enabled??
 script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
-    -- I track cargo pods so I can re-direct them to a spawn point if there is no landing pad on the surface.
+    -- I re-direct cargo pods to a spawn point if there is no landing pad on the surface.
     OnCargoPodFinishedAscending(event)
 end)
 

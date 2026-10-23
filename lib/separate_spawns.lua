@@ -321,6 +321,18 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
 
         -- Then just send them to their respawn point which they should have.
         if (player_spawn.generated) then
+            -- Unless they are riding a cargo pod already redirected to this spawn (OnCargoPodFinishedAscending), then
+            -- let it land with them inside.
+            local pod = player.cargo_pod
+            if (pod ~= nil) and pod.valid then
+                local destination = pod.cargo_pod_destination
+                if (destination.position ~= nil) and
+                    (destination.position.x == player_spawn.position.x) and
+                    (destination.position.y == player_spawn.position.y) then
+                    return
+                end
+            end
+
             TeleportPlayerToRespawnPoint(new_surface_name, player, false)
             return
 
@@ -1885,7 +1897,56 @@ local function ShouldTrackCargoPod(pod)
     return true
 end
 
----Track the cargo pods coming down onto a planet
+---Pods headed for a surface are only sent to a spawn if spawns are enabled on that surface and the force has no
+---landing pad there. If it has a pad, the pods land on it as normal.
+---@param force LuaForce
+---@param surface LuaSurface
+---@return boolean
+local function ShouldRedirectCargoPodsOnSurface(force, surface)
+    local oarc_surface = storage.oarc_surfaces[surface.name]
+    if (not oarc_surface or not (oarc_surface.primary or oarc_surface.secondary)) then return false end
+    return not DoesForceHaveLandingPadOnSurface(force, surface)
+end
+
+---Find the spawn a cargo pod belongs to on a surface. A pod with a player riding in it belongs to that player's spawn,
+---any other pod belongs to its force's spawn. The main force has no single spawn, so its cargo pods have none.
+---@param pod LuaEntity
+---@param player LuaPlayer? The player riding in the pod, if any.
+---@param surface LuaSurface
+---@return OarcUniqueSpawn?
+local function FindCargoPodSpawn(pod, player, surface)
+    if (player ~= nil) then
+        return FindPlayerSpawnOnSurface(player.name, surface.name)
+    end
+
+    local force = pod.force --[[@as LuaForce]] -- Always a LuaForce when read.
+    if (force.name == storage.ocfg.gameplay.main_force_name) then return nil end
+    return FindUniqueSpawnByForceForSurface(force, surface.name)[1]
+end
+
+---If a cargo pod headed for a planet surface belongs to a generated spawn there, point the pod at that spawn by
+---writing its destination position, so it lands there instead of at the map center.
+---@param pod LuaEntity
+---@param player LuaPlayer? The player riding in the pod, if any.
+---@return boolean redirected
+local function TryRedirectCargoPod(pod, player)
+    local destination = pod.cargo_pod_destination
+    if (destination.type ~= defines.cargo_destination.surface) then return false end
+
+    local surface = GetCargoPodDestinationSurface(destination)
+    if (surface == nil) or not ShouldRedirectCargoPodsOnSurface(pod.force --[[@as LuaForce]], surface) then return false end
+
+    local spawn = FindCargoPodSpawn(pod, player, surface)
+    if (spawn == nil) or (not spawn.generated) then return false end
+
+    destination.position = spawn.position
+    pod.cargo_pod_destination = destination
+    log("Redirected cargo pod " .. tostring(pod.unit_number) .. " to spawn on " .. surface.name .. " at " .. serpent.line(spawn.position))
+    return true
+end
+
+---Redirect the cargo pods coming down onto a planet to the spawn they belong to. Pods without a player riding in them
+---that can't be redirected yet are tracked for CargoPodHandlerOnTick.
 ---@param event EventData.on_cargo_pod_finished_ascending
 ---@return nil
 function OnCargoPodFinishedAscending(event)
@@ -1894,18 +1955,27 @@ function OnCargoPodFinishedAscending(event)
         storage.cargo_pods = {}
     end
 
-    -- Only track pods that are launched from a space platform and do not have a player riding in it!
-    if (event.launched_by_rocket == false) and (event.player_index == nil) then
-        -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
-        -- If a landing pad appears later, the tick handler still checks for it before redirecting.
-        local unit_number = event.cargo_pod.unit_number
-        if (unit_number ~= nil) and ShouldTrackCargoPod(event.cargo_pod) then
-            storage.cargo_pods[unit_number] = event.cargo_pod
-        end
+    local pod = event.cargo_pod
+
+    -- If a pod with a player riding in it can't be redirected, SeparateSpawnsPlayerChangedSurface handles the player.
+    if (event.player_index ~= nil) then
+        TryRedirectCargoPod(pod, game.players[event.player_index])
+        return
+    end
+
+    -- Only handle pods that are launched from a space platform.
+    if (event.launched_by_rocket) then return end
+    if TryRedirectCargoPod(pod, nil) then return end
+
+    -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
+    local unit_number = pod.unit_number
+    if (unit_number ~= nil) and ShouldTrackCargoPod(pod) then
+        storage.cargo_pods[unit_number] = pod
     end
 end
 
----On tick, check if there are any cargo pods that need to be teleported to a spawn point.
+---On tick, handle any tracked cargo pods that couldn't be redirected when they finished ascending (e.g. their spawn
+---was still generating, or they belong to the main force), teleporting them to a spawn point where possible.
 ---@return nil
 function CargoPodHandlerOnTick()
     if (storage.cargo_pods == nil) then return end
