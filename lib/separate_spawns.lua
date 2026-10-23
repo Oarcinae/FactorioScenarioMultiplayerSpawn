@@ -75,6 +75,7 @@ function InitSpawnGlobalsAndForces()
     -- This is what any new player is assigned to when they join, even before they spawn.
     local main_force = CreatePlayerForce(storage.ocfg.gameplay.main_force_name)
     main_force.set_spawn_position({ x = 0, y = 0 }, storage.ocfg.gameplay.default_surface)
+    UnlockSpaceLocationForForce(main_force, storage.ocfg.gameplay.default_surface)
 
     CreateHoldingPenPermissionsGroup()
 end
@@ -2011,6 +2012,21 @@ end
 --]]
 
 
+---Unlock a space location (e.g. a planet) for a force, so it shows as discovered.
+---unlock_space_location throws on a name that isn't a space location (such as a custom or modded non-planet
+---surface), so this checks the prototype exists first.
+---@param force LuaForce
+---@param location_name string
+---@return nil
+function UnlockSpaceLocationForForce(force, location_name)
+    if (prototypes.space_location[location_name] == nil) then
+        log("ERROR - UnlockSpaceLocationForForce - Not a space location: " .. location_name .. " for force: " .. force.name)
+        return
+    end
+
+    force.unlock_space_location(location_name)
+end
+
 ---Create a new player force (sets ceasefire and friendly status for all teams)
 ---@param force_name string
 ---@return LuaForce
@@ -2046,6 +2062,13 @@ end
 function CreatePlayerCustomForce(player)
     local newForce = CreatePlayerForce(player.name)
     player.force = newForce
+
+    local spawn_choices = storage.spawn_choices[player.name]
+    if (spawn_choices ~= nil) then
+        UnlockSpaceLocationForForce(newForce, spawn_choices.surface_name)
+    else
+        log("ERROR - CreatePlayerCustomForce - No spawn choices for player: " .. player.name)
+    end
 
     if (newForce.name == player.name) then
         SendBroadcastMsg({ "oarc-player-started-own-team", player.name })
