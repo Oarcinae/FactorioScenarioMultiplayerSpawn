@@ -1,6 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.26
 Date: 2026-10-23
+  Features:
+    - Cargo pods dropped from a space platform, and players riding them, now land at your spawn on that planet instead of the map center, if your force has no landing pad there.
+    - A new secondary spawn now starts generating as soon as a cargo pod leaves the platform for that planet, so you usually land straight at your new spawn instead of waiting in the holding pen.
   Bugfixes:
     - Fix crash when sending items from one space platform to another. Cargo pods are now only tracked if they are descending to a planet surface, and invalid pods are cleaned up. Thank you to the oarc-for-bno folks for the report and suggested fix!
     - Fix crash when a cargo pod's destination surface is deleted by another mod while the pod is in flight (e.g. Carna). The pod is no longer tracked.
