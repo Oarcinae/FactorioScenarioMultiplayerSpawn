@@ -17,10 +17,6 @@ VULCANUS_SPAWN_CONFIG.random_entities = {
     {name = "ashland-lichen-tree", count = 5},
 }
 
--- These don't matter in the current implementation.
--- VULCANUS_SPAWN_CONFIG.safe_area.warn_reduction = 0
--- VULCANUS_SPAWN_CONFIG.safe_area.danger_reduction = 0
-
 -- Feels like more space might be helpful on Vulcanus?
 VULCANUS_SPAWN_CONFIG.radius_modifier = 1
 

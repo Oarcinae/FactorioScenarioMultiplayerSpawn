@@ -1,76 +1,44 @@
 data:extend({
     {
         type = "bool-setting",
-        name = "oarc-mod-default-enable-secondary-spawns-on-other-surfaces",
+        name = "oarc-classic-default-enable-secondary-spawns-on-other-surfaces",
         setting_type = "startup",
         default_value = false,
         order = "a1"
     },
-    {
-        type = "string-setting",
-        name = "oarc-mod-main-force-name",
-        setting_type = "startup",
-        default_value = "Main Force",
-        order = "a2"
-    },
-    {
-        type = "int-setting",
-        name = "oarc-mod-linked-chest-size",
-        setting_type = "startup",
-        default_value = 100,
-        minimum_value = 1,
-        maximum_value = 1000,
-        order = "a3"
-    },
 
     {
         type = "string-setting",
-        name = "oarc-mod-welcome-msg-title",
+        name = "oarc-classic-welcome-msg-title",
         setting_type = "runtime-global",
         default_value = "Insert Server Title Here!",
         order = "a1"
     },
     {
         type = "string-setting",
-        name = "oarc-mod-welcome-msg",
+        name = "oarc-classic-welcome-msg",
         setting_type = "runtime-global",
         default_value = "Insert Server Welcome Message Here!",
         order = "a2"
     },
     {
         type = "string-setting",
-        name = "oarc-mod-discord-invite",
+        name = "oarc-classic-discord-invite",
         setting_type = "runtime-global",
         default_value = "Insert Discord Invite Here!",
         order = "a4"
     },
 
-
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-main-team",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "b1"
-    },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-separate-teams",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "b2"
-    },
-
-    {
-        type = "bool-setting",
-        name = "oarc-mod-allow-moats-around-spawns",
+        name = "oarc-classic-allow-moats-around-spawns",
         setting_type = "runtime-global",
         default_value = true,
         order = "b4"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-moat-bridging",
+        name = "oarc-classic-enable-moat-bridging",
         setting_type = "runtime-global",
         default_value = false,
         order = "b5"
@@ -78,7 +46,7 @@ data:extend({
 
     {
         type = "int-setting",
-        name = "oarc-mod-minimum-distance-to-existing-chunks",
+        name = "oarc-classic-minimum-distance-to-existing-chunks",
         setting_type = "runtime-global",
         default_value = 20,
         minimum_value = 5,
@@ -87,7 +55,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-near-spawn-distance",
+        name = "oarc-classic-near-spawn-distance",
         setting_type = "runtime-global",
         default_value = 100,
         minimum_value = 50,
@@ -96,7 +64,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-far-spawn-distance",
+        name = "oarc-classic-far-spawn-distance",
         setting_type = "runtime-global",
         default_value = 500,
         minimum_value = 250,
@@ -106,56 +74,49 @@ data:extend({
 
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-buddy-spawn",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "d1"
-    },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-offline-protection",
+        name = "oarc-classic-enable-offline-protection",
         setting_type = "runtime-global",
         default_value = true,
         order = "d2"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-shared-team-vision",
+        name = "oarc-classic-enable-shared-team-vision",
         setting_type = "runtime-global",
         default_value = true,
         order = "d3"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-shared-team-chat",
+        name = "oarc-classic-enable-shared-team-chat",
         setting_type = "runtime-global",
         default_value = true,
         order = "d31"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-friendly-teams",
+        name = "oarc-classic-enable-friendly-teams",
         setting_type = "runtime-global",
         default_value = true,
         order = "d32"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-cease-fire",
+        name = "oarc-classic-enable-cease-fire",
         setting_type = "runtime-global",
         default_value = true,
         order = "d33"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-shared-spawns",
+        name = "oarc-classic-enable-shared-spawns",
         setting_type = "runtime-global",
         default_value = true,
         order = "d5"
     },
     {
         type = "int-setting",
-        name = "oarc-mod-number-of-players-per-shared-spawn",
+        name = "oarc-classic-number-of-players-per-shared-spawn",
         setting_type = "runtime-global",
         default_value = 3,
         minimum_value = 2,
@@ -164,7 +125,7 @@ data:extend({
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-friendly-fire",
+        name = "oarc-classic-enable-friendly-fire",
         setting_type = "runtime-global",
         default_value = false,
         order = "d7"
@@ -172,48 +133,15 @@ data:extend({
 
     {
         type = "string-setting",
-        name = "oarc-mod-default-surface",
+        name = "oarc-classic-default-surface",
         setting_type = "runtime-global",
         default_value = "nauvis",
         order = "e2"
     },
 
     {
-        type = "bool-setting",
-        name = "oarc-mod-scale-resources-around-spawns",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "f1"
-    },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-modified-enemy-spawning",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "f2"
-    },
-    -- {
-    --     type = "double-setting",
-    --     name = "oarc-mod-modified-enemy-easy-evo",
-    --     setting_type = "runtime-global",
-    --     default_value = 0,
-    --     minimum_value = 0,
-    --     maximum_value = 1,
-    --     order = "f21"
-    -- },
-    -- {
-    --     type = "double-setting",
-    --     name = "oarc-mod-modified-enemy-medium-evo",
-    --     setting_type = "runtime-global",
-    --     default_value = 0.3,
-    --     minimum_value = 0,
-    --     maximum_value = 1,
-    --     order = "f22"
-    -- },
-
-    {
         type = "int-setting",
-        name = "oarc-mod-minimum-online-time",
+        name = "oarc-classic-minimum-online-time",
         setting_type = "runtime-global",
         default_value = 15,
         minimum_value = 0,
@@ -222,7 +150,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-respawn-cooldown-min",
+        name = "oarc-classic-respawn-cooldown-min",
         setting_type = "runtime-global",
         default_value = 5,
         minimum_value = 0,
@@ -232,51 +160,28 @@ data:extend({
 
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-shared-power",
-        setting_type = "runtime-global",
-        default_value = false,
-        order = "f10"
-    },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-shared-chest",
-        setting_type = "runtime-global",
-        default_value = false,
-        order = "f11"
-    },
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-coin-shop",
-        setting_type = "runtime-global",
-        default_value = false,
-        order = "f12"
-    },
-
-
-    {
-        type = "bool-setting",
-        name = "oarc-mod-enable-regrowth",
+        name = "oarc-classic-enable-regrowth",
         setting_type = "runtime-global",
         default_value = false,
         order = "g1"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-world-eater",
+        name = "oarc-classic-enable-world-eater",
         setting_type = "runtime-global",
         default_value = false,
         order = "g2"
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-enable-abandoned-base-cleanup",
+        name = "oarc-classic-enable-abandoned-base-cleanup",
         setting_type = "runtime-global",
         default_value = true,
         order = "g3"
     },
     {
         type = "int-setting",
-        name = "oarc-mod-regrowth-cleanup-interval-min",
+        name = "oarc-classic-regrowth-cleanup-interval-min",
         setting_type = "runtime-global",
         default_value = 60,
         minimum_value = 15,
@@ -286,7 +191,7 @@ data:extend({
 
     {
         type = "int-setting",
-        name = "oarc-mod-spawn-general-radius-tiles",
+        name = "oarc-classic-spawn-general-radius-tiles",
         setting_type = "runtime-global",
         default_value = 64,
         minimum_value = 32,
@@ -295,7 +200,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-spawn-general-moat-width-tiles",
+        name = "oarc-classic-spawn-general-moat-width-tiles",
         setting_type = "runtime-global",
         default_value = 8,
         minimum_value = 1,
@@ -304,7 +209,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-spawn-general-tree-width-tiles",
+        name = "oarc-classic-spawn-general-tree-width-tiles",
         setting_type = "runtime-global",
         default_value = 5,
         minimum_value = 1,
@@ -313,7 +218,7 @@ data:extend({
     },
     {
         type = "string-setting",
-        name = "oarc-mod-spawn-general-enable-resources-circle-shape",
+        name = "oarc-classic-spawn-general-enable-resources-circle-shape",
         setting_type = "runtime-global",
         default_value = "circle",
         allowed_values = {"circle", "square"},
@@ -321,30 +226,29 @@ data:extend({
     },
     {
         type = "bool-setting",
-        name = "oarc-mod-spawn-general-enable-force-tiles",
+        name = "oarc-classic-spawn-general-enable-force-tiles",
         setting_type = "runtime-global",
         default_value = true,
         order = "h5"
     },    {
         type = "string-setting",
-        name = "oarc-mod-spawn-general-shape",
+        name = "oarc-classic-spawn-general-shape",
         setting_type = "runtime-global",
         default_value = "circle",
         allowed_values = {"circle", "octagon", "square"},
         order = "h6"
     },
 
-
     {
         type = "bool-setting",
-        name = "oarc-mod-resource-placement-enabled",
+        name = "oarc-classic-resource-placement-enabled",
         setting_type = "runtime-global",
         default_value = true,
         order = "i1"
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-distance-to-edge",
+        name = "oarc-classic-resource-placement-distance-to-edge",
         setting_type = "runtime-global",
         default_value = 20,
         minimum_value = 0,
@@ -353,7 +257,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-degrees-offset",
+        name = "oarc-classic-resource-placement-degrees-offset",
         setting_type = "runtime-global",
         default_value = 120,
         minimum_value = 0,
@@ -362,7 +266,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-degrees-final",
+        name = "oarc-classic-resource-placement-degrees-final",
         setting_type = "runtime-global",
         default_value = 240,
         minimum_value = 0,
@@ -371,7 +275,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-vertical-offset",
+        name = "oarc-classic-resource-placement-vertical-offset",
         setting_type = "runtime-global",
         default_value = 20,
         minimum_value = 0,
@@ -380,7 +284,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-horizontal-offset",
+        name = "oarc-classic-resource-placement-horizontal-offset",
         setting_type = "runtime-global",
         default_value = 20,
         minimum_value = 0,
@@ -389,7 +293,7 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-mod-resource-placement-linear-spacing",
+        name = "oarc-classic-resource-placement-linear-spacing",
         setting_type = "runtime-global",
         default_value = 6,
         minimum_value = 0,
@@ -398,7 +302,7 @@ data:extend({
     },
     {
         type = "double-setting",
-        name = "oarc-mod-resource-placement-size-multiplier",
+        name = "oarc-classic-resource-placement-size-multiplier",
         setting_type = "runtime-global",
         default_value = 1.0,
         minimum_value = 0,
@@ -407,7 +311,7 @@ data:extend({
     },
     {
         type = "double-setting",
-        name = "oarc-mod-resource-placement-amount-multiplier",
+        name = "oarc-classic-resource-placement-amount-multiplier",
         setting_type = "runtime-global",
         default_value = 1.0,
         minimum_value = 0,

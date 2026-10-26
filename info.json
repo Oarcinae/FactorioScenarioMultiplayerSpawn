@@ -1,8 +1,8 @@
 {
-  "name": "oarc-mod",
-  "version": "2.1.26",
+  "name": "oarc-classic",
+  "version": "1.0.0",
   "factorio_version": "2.1",
-  "title": "Oarc Multiplayer Spawn",
+  "title": "Oarc Classic",
   "author": "Oarcinae",
   "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
   "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn",
@@ -19,6 +19,7 @@
     "(?) blueprint-sandboxes",
     "(?) factorissimo-2-notnotmelon",
     "(?) better-chat",
-    "! rso-mod"
+    "! rso-mod",
+    "! oarc-mod"
   ]
 }

@@ -19,10 +19,6 @@ GLEBA_SPAWN_CONFIG.random_entities = {
     {name = "water-cane", count = 10},
 }
 
--- Make the warning and danger areas a bit bigger for this planet.
-GLEBA_SPAWN_CONFIG.safe_area.warn_radius = 16
-GLEBA_SPAWN_CONFIG.safe_area.danger_radius = 32
-
 GLEBA_SPAWN_CONFIG.solid_resources =
 {
     ["stone"] = {

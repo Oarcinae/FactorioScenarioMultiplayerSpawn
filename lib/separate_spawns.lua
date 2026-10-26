@@ -14,6 +14,8 @@ require("lib/spawn_area_generation")
 
 -- Hardcoded force names for special cases.
 ABANDONED_FORCE_NAME = "_ABANDONED_"
+-- Players are put on the vanilla player force until they have a spawn of their own.
+LOBBY_FORCE_NAME = "player"
 -- DESTROYED_FORCE_NAME = "_DESTROYED_"
 
 ---Initializes the globals used to track the special spawn and player status information.
@@ -70,12 +72,6 @@ function InitSpawnGlobalsAndForces()
     -- Special forces for when players with their own force want a reset.
     game.create_force(ABANDONED_FORCE_NAME)
     -- game.create_force(DESTROYED_FORCE_NAME)
-
-    -- Name a new force to be the default force.
-    -- This is what any new player is assigned to when they join, even before they spawn.
-    local main_force = CreatePlayerForce(storage.ocfg.gameplay.main_force_name)
-    main_force.set_spawn_position({ x = 0, y = 0 }, storage.ocfg.gameplay.default_surface)
-    UnlockSpaceLocationForForce(main_force, storage.ocfg.gameplay.default_surface)
 
     CreateHoldingPenPermissionsGroup()
 end
@@ -152,7 +148,7 @@ function SeparateSpawnsInitSurface(surface_name)
     if (storage.ocfg.surfaces_config[surface_name] == nil) then
         log("Surface does NOT have a config entry, defaulting to nauvis entry for new surface: " .. surface_name)
         storage.ocfg.surfaces_config[surface_name] = table.deepcopy(storage.ocfg.surfaces_config["nauvis"])
-        script.raise_event("oarc-mod-on-config-changed", {})
+        script.raise_event("oarc-classic-on-config-changed", {})
     end
 end
 
@@ -188,7 +184,7 @@ end
 --]]
 
 -- When a player is newly created or just reset, present the spawn options to them.
--- If new player, assign them to the main force so they can communicate with the team without shouting (/s).
+-- New players wait on the lobby force until they have a spawn of their own.
 ---@param player_index integer|string
 ---@return nil
 function SeparateSpawnsInitPlayer(player_index)
@@ -196,7 +192,7 @@ function SeparateSpawnsInitPlayer(player_index)
 
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], { x = 0, y = 0 })
 
-    player.force = storage.ocfg.gameplay.main_force_name -- Put them on the main force.
+    player.force = LOBBY_FORCE_NAME
 
     if (not player.admin) then
         player.permission_group = game.permissions.get_group("holding_pen")
@@ -305,12 +301,7 @@ function SeparateSpawnsPlayerChangedSurface(player, previous_surface_name, new_s
     if (#landing_pad > 0) then
         -- If there's a landing pad for the force, I don't think we should interfere with the native behavior until
         -- there is an API that lets us do it properly. Otherwise I'm having to track landing pads per spawn...
-        -- TODO: Implement this properly.
-        if (player.force.name ~= storage.ocfg.gameplay.main_force_name) then
-            log("Player has a landing pad on this surface, let them land there?")
-        else
-            log("WARNING - I haven't fully implemented this yet! Player has a landing pad on this surface but is on the main force so it might not be at their own spawn?!")
-        end
+        log("Player has a landing pad on this surface, let them land there?")
         return
     end
 
@@ -372,7 +363,7 @@ function SeparateSpawnsUpdatePlayerSurface(player, new_surface_name)
 
         -- Raise event if previous surface isn't nil (avoids first spawn event)
         if (previous_surface_name ~= nil) then
-            script.raise_event("oarc-mod-character-surface-changed", {
+            script.raise_event("oarc-classic-character-surface-changed", {
                 player_index=player.index,
                 old_surface_name=previous_surface_name,
                 new_surface_name=new_surface_name
@@ -651,10 +642,6 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
     local surface = game.surfaces[delayed_spawn.surface_name]
 
-    -- DOUBLE CHECK and make sure the area is super safe.
-    ClearNearbyEnemies(delayed_spawn.position, spawn_config.safe_area.safe_radius * CHUNK_SIZE,
-        game.surfaces[delayed_spawn.surface_name])
-
     -- Generate water strip only if we don't have a moat.
     if (not delayed_spawn.moat or spawn_config.liquid_tile == "lava") then
         GenerateStartingLiquidStrip(delayed_spawn, spawn_config, surface)
@@ -662,30 +649,6 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
     -- Create the spawn resources here
     GenerateStartingResources(surface, delayed_spawn.position)
-
-    local radius = ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
-
-    -- Reference position is RIGHT (WEST) of the spawn area.
-    local sharing_ref_pos = {
-        x = delayed_spawn.position.x + radius,
-        y = delayed_spawn.position.y
-    }
-
-    -- Create shared power poles
-    if (ocfg.gameplay.enable_shared_power and delayed_spawn.primary) then
-        local power_pole_position = {
-            x = sharing_ref_pos.x + spawn_config.shared_power_pole_position.x_offset,
-            y = sharing_ref_pos.y + spawn_config.shared_power_pole_position.y_offset }
-        CreateSharedPowerPolePair(surface, power_pole_position)
-    end
-
-    -- Create shared chest
-    if (ocfg.gameplay.enable_shared_chest and delayed_spawn.primary) then
-        local chest_position = {
-            x = sharing_ref_pos.x + spawn_config.shared_chest_position.x_offset,
-            y = sharing_ref_pos.y + spawn_config.shared_chest_position.y_offset }
-        CreateSharedChest(surface, chest_position)
-    end
 
     -- Place randomized entities
     if (delayed_spawn.surface_name == "fulgora") then
@@ -716,7 +679,7 @@ function GenerateFinalSpawnPieces(delayed_spawn)
     DisplayWelcomeGroundTextAtSpawn(delayed_spawn.surface_name, delayed_spawn.position)
 
     -- Trigger the event that the spawn was created.
-    script.raise_event("oarc-mod-on-spawn-created", {spawn_data = storage.unique_spawns[delayed_spawn.surface_name][delayed_spawn.host_name]})
+    script.raise_event("oarc-classic-on-spawn-created", {spawn_data = storage.unique_spawns[delayed_spawn.surface_name][delayed_spawn.host_name]})
 end
 
 ---Sends the player to a NEW spawn point (primary OR secondary)
@@ -750,7 +713,7 @@ function SendPlayerToNewSpawn(player_name, surface_name, first_spawn, is_host)
     end
 
     -- Trigger the event that player was spawned too.
-    script.raise_event("oarc-mod-on-player-spawned", {player_index = player.index, first_spawn = first_spawn, is_host = is_host})
+    script.raise_event("oarc-classic-on-player-spawned", {player_index = player.index, first_spawn = first_spawn, is_host = is_host})
 end
 
 ---Displays some welcoming text at the spawn point on the ground. Fades out over time.
@@ -822,44 +785,32 @@ function SetupAndClearSpawnAreas(surface, chunk_area)
         y = chunk_area.left_top.y + (CHUNK_SIZE / 2)
     }
 
-    -- If there is a buddy spawn, we need to setup both areas TOGETHER so they overlap.
-    local spawns = { closest_spawn }
-    if (closest_spawn.buddy_name ~= nil) then
-        table.insert(spawns, storage.unique_spawns[closest_spawn.surface_name][closest_spawn.buddy_name])
+    -- If the chunk is within the main land area, then clear trees/resources and create the land spawn areas
+    -- (guaranteed land with a circle of trees)
+    local land_area = GetAreaAroundPos(closest_spawn.position, radius + CHUNK_SIZE)
+    if not CheckIfInArea(chunk_area_center, land_area) then return end
+
+    -- Remove decoratives
+    if (general_spawn_config.remove_decoratives) then
+        surface.destroy_decoratives {area = chunk_area}
     end
 
-    -- This will typically just contain the one spawn point, but if there is a buddy spawn, it will contain both.
-    for _, spawn in pairs(spawns) do
-        -- If the chunk is within the main land area, then clear trees/resources and create the land spawn areas
-        -- (guaranteed land with a circle of trees)
-        local land_area = GetAreaAroundPos(spawn.position, radius + CHUNK_SIZE)
-        if not CheckIfInArea(chunk_area_center, land_area) then
-            goto CONTINUE
-        end
-
-        -- Remove decoratives
-        if (general_spawn_config.remove_decoratives) then
-            surface.destroy_decoratives {area = chunk_area}
-        end
-
-        -- Remove trees/resources inside the spawn area
-        if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            RemoveInCircle(surface, chunk_area, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
-        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            RemoveInSquare(surface, chunk_area, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, spawn.position, radius + 5)
-        end
-
-        if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then
-            CreateCropCircle(surface, spawn, chunk_area)
-        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
-            CreateCropOctagon(surface, spawn, chunk_area)
-        elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
-            CreateCropSquare(surface, spawn, chunk_area)
-        end
-
-        script.raise_event("oarc-mod-on-chunk-generated-near-spawn", {surface = surface, chunk_area = chunk_area, spawn_data = spawn})
-        :: CONTINUE ::
+    -- Remove trees/resources inside the spawn area
+    if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) or (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
+        RemoveInCircle(surface, chunk_area, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, closest_spawn.position, radius + 5)
+    elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
+        RemoveInSquare(surface, chunk_area, {"resource", "cliff", "tree", "plant", "lightning-attractor", "simple-entity"}, closest_spawn.position, radius + 5)
     end
+
+    if (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_CIRCLE) then
+        CreateCropCircle(surface, closest_spawn, chunk_area)
+    elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_OCTAGON) then
+        CreateCropOctagon(surface, closest_spawn, chunk_area)
+    elseif (general_spawn_config.shape == SPAWN_SHAPE_CHOICE_SQUARE) then
+        CreateCropSquare(surface, closest_spawn, chunk_area)
+    end
+
+    script.raise_event("oarc-classic-on-chunk-generated-near-spawn", {surface = surface, chunk_area = chunk_area, spawn_data = closest_spawn})
 end
 
 ---This is the main function that creates the spawn area. Provides resources, land and a safe zone.
@@ -872,48 +823,9 @@ function SeparateSpawnsGenerateChunk(event)
     -- Don't block based on spawn enabled.
     -- if (not storage.oarc_surfaces[surface.name]) then return end
 
-    -- Downgrade resources near to spawns
-    -- TODO: Space Age will change this!
-    if storage.ocfg.gameplay.scale_resources_around_spawns then
-        DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
-    end
-
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it provide a guaranteed area of land and water tiles.
     SetupAndClearSpawnAreas(surface, chunkArea)
-end
-
----Based on the danger distance, you get full resources, and it is exponential from the spawn point to that distance.
----@param surface LuaSurface
----@param chunkArea BoundingBox
----@return nil
-function DowngradeResourcesDistanceBasedOnChunkGenerate(surface, chunkArea)
-    local closestSpawn = GetClosestUniqueSpawn(surface.name, chunkArea.left_top)
-
-    if (closestSpawn == nil) then return end
-
-    local distance = util.distance(chunkArea.left_top, closestSpawn.position)
-    -- Adjust multiplier to bring it in or out
-    local modifier = (distance / (storage.ocfg.surfaces_config[surface.name].spawn_config.safe_area.danger_radius * CHUNK_SIZE * 1)) ^ 3
-    if modifier < 0.1 then modifier = 0.1 end
-    if modifier > 1 then return end
-
-    local ore_per_tile_cap = math.floor(100000 * modifier)
-
-    for _, entity in pairs(surface.find_entities_filtered { area = chunkArea, type = "resource" }) do
-        if entity.valid and entity.amount then
-            local new_amount = math.ceil(entity.amount * modifier)
-            if (new_amount < 1) then
-                entity.destroy()
-            else
-                if (entity.prototype.resource_category ~= "basic-fluid") then
-                    entity.amount = math.min(new_amount, ore_per_tile_cap)
-                else
-                    entity.amount = new_amount
-                end
-            end
-        end
-    end
 end
 
 --[[
@@ -942,7 +854,7 @@ function RemoveOrResetPlayer(player, remove_player)
     -- cleared.
     SafeTeleport(player, game.surfaces[HOLDING_PEN_SURFACE_NAME], {x=0,y=0})
     local player_old_force = player.force
-    player.force = storage.ocfg.gameplay.main_force_name
+    player.force = LOBBY_FORCE_NAME
     local player_name = player.name
 
     -- Clear globals and transfers spawn ownership if needed.
@@ -955,13 +867,13 @@ function RemoveOrResetPlayer(player, remove_player)
     end
 
     -- Remove a force if this player created it and they are the only one on it
-    if ((#player_old_force.players == 0) and (player_old_force.name ~= storage.ocfg.gameplay.main_force_name)) then
+    if ((#player_old_force.players == 0) and (player_old_force.name ~= LOBBY_FORCE_NAME)) then
         log("RemoveOrResetPlayer - FORCE REMOVED: " .. player_old_force.name)
         game.merge_forces(player_old_force, "neutral")
     end
 
     -- Trigger the event that the player was reset.
-    script.raise_event("oarc-mod-on-player-reset", {player_index = player.index})
+    script.raise_event("oarc-classic-on-player-reset", {player_index = player.index})
 
     -- Remove the character completely
     if (remove_player and not player.connected) then
@@ -1104,7 +1016,7 @@ function UniqueSpawnCleanupRemove(player_name, unique_spawn)
         RegrowthMarkAreaForRemoval(unique_spawn.surface_name, spawn_position, clear_radius)
         TriggerCleanup()
         -- Trigger event
-        script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = unique_spawn})
+        script.raise_event("oarc-classic-on-spawn-remove-request", {spawn_data = unique_spawn})
     end
 
     -- Remove the spawn point from the global table.
@@ -1152,22 +1064,6 @@ function CleanupPlayerGlobals(player_name)
     -- Remove them from any join queues they may be in:
     RemovePlayerFromJoinQueue(player_name)
 
-    -- Nil the buddy from all buddy spawns
-    for _,spawns in pairs(storage.unique_spawns) do
-        for _,spawn in pairs(spawns) do
-            if (spawn.buddy_name ~= nil) and (spawn.buddy_name == player_name) then
-                spawn.buddy_name = nil
-            end
-        end
-    end
-
-    -- Nil the buddy from any spawn choices entries too:
-    for _,choices in pairs(storage.spawn_choices) do
-        if (choices.buddy ~= nil) and (choices.buddy == player_name) then
-            choices.buddy = nil
-        end
-    end
-
     if (storage.player_cooldowns[player_name] ~= nil) then
         storage.player_cooldowns[player_name] = nil
     end
@@ -1189,11 +1085,6 @@ function TransferOwnershipOfAllSpawns(primary_spawn, new_host_name)
                 -- local new_spawn = table.deepcopy(unique_spawn)
                 storage.unique_spawns[surface_name][new_host_name].host_name = new_host_name
                 storage.unique_spawns[surface_name][new_host_name].joiners = table.deepcopy(primary_spawn.joiners) -- Copy the old joiner list, with the new host already removed.
-
-                -- Update the matching buddy spawn if it exists.
-                if (primary_spawn.buddy_name ~= nil) then
-                    storage.unique_spawns[surface_name][unique_spawn.buddy_name].buddy_name = new_host_name
-                end
 
                 -- Remove the old spawn
                 storage.unique_spawns[surface_name][host_name] = nil
@@ -1375,8 +1266,8 @@ function GetPlayersFromSameSpawn(player_name, include_offline)
         for _,spawn in pairs(spawns) do
             if (not spawn.primary) then goto CONTINUE end
 
-            -- Is the player either the host OR a joiner OR a buddy?
-            if (spawn.host_name == player_name) or (TableContains(spawn.joiners, player_name) or (spawn.buddy_name == player_name)) then
+            -- Is the player either the host OR a joiner?
+            if (spawn.host_name == player_name) or TableContains(spawn.joiners, player_name) then
 
                 if (include_offline or game.players[spawn.host_name].connected) then
                     table.insert(shared_players, spawn.host_name)
@@ -1385,12 +1276,6 @@ function GetPlayersFromSameSpawn(player_name, include_offline)
                 for _,joiner in pairs(spawn.joiners) do
                     if (include_offline or game.players[joiner].connected) then
                         table.insert(shared_players, joiner)
-                    end
-                end
-
-                if (spawn.buddy_name ~= nil) and game.players[spawn.buddy_name] ~= nil then
-                    if (include_offline or game.players[spawn.buddy_name].connected) then
-                        table.insert(shared_players, spawn.buddy_name)
                     end
                 end
 
@@ -1598,7 +1483,6 @@ function InitPrimarySpawnGlobals(host_name, spawn_position, spawn_choices)
         joiners = {},
         join_queue = {},
         open_access = false,
-        buddy_name = spawn_choices.buddy,
         generated = false
     }
 
@@ -1668,7 +1552,6 @@ function QueueNewSpawnGeneration(unique_spawn)
         joiners = unique_spawn.joiners,
         join_queue = unique_spawn.join_queue,
         open_access = unique_spawn.open_access,
-        buddy_name = unique_spawn.buddy_name,
 
         -- This is the extra data I need for the delayed spawn
         delayed_tick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND,
@@ -1730,23 +1613,6 @@ function SecondarySpawn(player, surface_name, send_player)
         QueuePlayerForSpawn(player_name, delayed_spawn)
     else
         SetPlayerRespawn(player_name, delayed_spawn.surface_name, delayed_spawn.position, true, true)
-    end
-
-    -- Handle special buddy spawns:
-    local buddy_name = primary_spawn.buddy_name
-    if (buddy_name ~= nil) then
-        local buddy_position = GetBuddySpawnPosition(spawn_position, surface_name)
-        local buddy_choices = storage.spawn_choices[buddy_name]
-
-        GenerateNewSpawn(buddy_name, surface_name, buddy_position, buddy_choices, false)
-        SetPlayerRespawn(buddy_name, surface_name, buddy_position, false, true)
-
-        -- Make sure joiners have their new respawn position set for this surface.
-        if (#storage.unique_spawns[surface_name][buddy_name].joiners > 0) then
-            for _,joiner_name in pairs(storage.unique_spawns[surface_name][buddy_name].joiners) do
-                SetPlayerRespawn(joiner_name, surface_name, buddy_position, false, true)
-            end
-        end
     end
 
     -- Make sure host and joiners all have their new respawn position set for this surface.
@@ -1909,7 +1775,7 @@ local function ShouldRedirectCargoPodsOnSurface(force, surface)
 end
 
 ---Find the spawn a cargo pod belongs to on a surface. A pod with a player riding in it belongs to that player's spawn,
----any other pod belongs to its force's spawn. The main force has no single spawn, so its cargo pods have none.
+---any other pod belongs to its force's spawn.
 ---@param pod LuaEntity
 ---@param player LuaPlayer? The player riding in the pod, if any.
 ---@param surface LuaSurface
@@ -1920,7 +1786,6 @@ local function FindCargoPodSpawn(pod, player, surface)
     end
 
     local force = pod.force --[[@as LuaForce]] -- Always a LuaForce when read.
-    if (force.name == storage.ocfg.gameplay.main_force_name) then return nil end
     return FindUniqueSpawnByForceForSurface(force, surface.name)[1]
 end
 
@@ -1971,7 +1836,6 @@ function OnCargoPodStartedAscending(event)
         spawn_player = player
     else
         local force = pod.force --[[@as LuaForce]]
-        if (force.name == storage.ocfg.gameplay.main_force_name) then return end
         local primary_spawn = FindPrimarySpawnForForce(force)
         if (primary_spawn == nil) then return end
         spawn_player = game.players[primary_spawn.host_name]
@@ -2014,7 +1878,7 @@ function OnCargoPodFinishedAscending(event)
 end
 
 ---On tick, handle any tracked cargo pods that couldn't be redirected when they finished ascending (e.g. their spawn
----was still generating, or they belong to the main force), teleporting them to a spawn point where possible.
+---was still generating), teleporting them to a spawn point where possible.
 ---@return nil
 function CargoPodHandlerOnTick()
     if (storage.cargo_pods == nil) then return end
@@ -2056,15 +1920,6 @@ function CargoPodHandlerOnTick()
             -- Check if the force has a landing pad on this surface
             local has_landing_pad = DoesForceHaveLandingPadOnSurface(force, surface)
             if has_landing_pad then
-                storage.cargo_pods[index] = nil
-                return
-            end
-
-            -- Check if the force is main force and warn that you need to manually retrieve your pods via command.
-            -- This is checked before the secondary spawn check so it also warns on primary-only surfaces (e.g. nauvis).
-            -- TODO: Check if we can trace the cargo pod to the player who launched it somehow.
-            if (force.name == storage.ocfg.gameplay.main_force_name) then
-                CompatSend(force, {"oarc-cargo-pod-main-force-warning"}, { color = force.color })
                 storage.cargo_pods[index] = nil
                 return
             end
@@ -2179,7 +2034,7 @@ function CreatePlayerForce(force_name)
         -- ConfigureEnemyForceRelationshipsForNewPlayerForce(new_force)
     else
         log("TOO MANY FORCES!!! - CreatePlayerForce()")
-        return game.forces[storage.ocfg.gameplay.main_force_name]
+        return game.forces[LOBBY_FORCE_NAME]
     end
 
     return new_force
@@ -2220,13 +2075,6 @@ end
  You can ignore this unless you're making changes to the mod, in which case it might be helpful.
 ]]
 
----@enum SpawnTeamChoice
-SPAWN_TEAM_CHOICE = {
-    join_main_team = 1,
-    join_own_team = 2,
-    -- join_buddy_team = 3, -- Removed in favor of separate override
-}
-
 ---Contains the respawn point for a player. Usually this is their home base but it can be changed.
 ---@alias OarcPlayerSpawn { surface: string, position: MapPosition }
 ---Table of [OarcSharedSpawn](lua://OarcSharedSpawn) indexed by player name and then by surface name.
@@ -2242,7 +2090,6 @@ SPAWN_TEAM_CHOICE = {
 ---@field host_name string The player name of the host of this spawn.
 ---@field join_queue string[] List of players waiting to join this spawn.
 ---@field joiners string[] List of players who have joined this spawn NOT including the host.
----@field buddy_name string? The other buddy player name if this is a buddy spawn.
 ---@field generated boolean Whether the spawn has finished being generated or not.
 
 ---Table of [OarcUniqueSpawnClass](lua://OarcUniqueSpawnClass) indexed first by surface name and then by player name.
@@ -2266,12 +2113,9 @@ SPAWN_TEAM_CHOICE = {
 ---Class representing the spawn choices for a player in the spawn menu.
 ---@class OarcSpawnChoices
 ---@field surface_name string The surface on which the player wants to spawn.
----@field team SpawnTeamChoice The team choice for the player. Main team or own team.
 ---@field moat boolean Whether the player wants a moat around their spawn.
----@field buddy string? The buddy player name if the player wants to spawn with a buddy.
 ---@field distance integer The distance from the center of the map where the player wants to spawn.
 ---@field host_name string? The host player name if the player wants to join a shared spawn.
----@field buddy_team boolean Whether the player wants to join a buddy's team. This means both players will be on the same team.
 
 ---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.
 ---@alias OarcSpawnChoicesTable table<string, OarcSpawnChoices>

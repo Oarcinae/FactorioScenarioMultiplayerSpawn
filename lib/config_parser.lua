@@ -8,82 +8,68 @@
 OCFG_KEYS =
 {
     ["server_info_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-server-info"}},
-    ["server_info.welcome_msg_title"] = {mod_key = "oarc-mod-welcome-msg-title" , ocfg_keys = {"server_info", "welcome_msg_title"}, type = "string"},
-    ["server_info.welcome_msg"] = {mod_key = "oarc-mod-welcome-msg" , ocfg_keys = {"server_info", "welcome_msg"}, type = "string"},
-    ["server_info.discord_invite"] = {mod_key = "oarc-mod-discord-invite" , ocfg_keys = {"server_info", "discord_invite"}, type = "string"},
+    ["server_info.welcome_msg_title"] = {mod_key = "oarc-classic-welcome-msg-title" , ocfg_keys = {"server_info", "welcome_msg_title"}, type = "string"},
+    ["server_info.welcome_msg"] = {mod_key = "oarc-classic-welcome-msg" , ocfg_keys = {"server_info", "welcome_msg"}, type = "string"},
+    ["server_info.discord_invite"] = {mod_key = "oarc-classic-discord-invite" , ocfg_keys = {"server_info", "discord_invite"}, type = "string"},
 
     ["gameplay_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-gameplay"}},
     ["gameplay_spawn_choices_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-spawn-choices"}},
-    ["gameplay.enable_main_team"] = {mod_key = "oarc-mod-enable-main-team" , ocfg_keys = {"gameplay", "enable_main_team"}, type = "boolean"},
-    ["gameplay.enable_separate_teams"] = {mod_key = "oarc-mod-enable-separate-teams" , ocfg_keys = {"gameplay", "enable_separate_teams"}, type = "boolean"},
-    -- STARTUP ["gameplay.default_enable_secondary_spawns_on_other_surfaces"] = {mod_key = "oarc-mod-default-enable-secondary-spawns-on-other-surfaces" , ocfg_keys = {"gameplay", "default_enable_secondary_spawns_on_other_surfaces"}, type = "boolean"},
-    ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-mod-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
-    ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-mod-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
-    ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-mod-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
-    ["gameplay.near_spawn_distance"] = {mod_key = "oarc-mod-near-spawn-distance" , ocfg_keys = {"gameplay", "near_spawn_distance"}, type = "integer"},
-    ["gameplay.far_spawn_distance"] = {mod_key = "oarc-mod-far-spawn-distance" , ocfg_keys = {"gameplay", "far_spawn_distance"}, type = "integer"},
-    ["gameplay.enable_buddy_spawn"] = {mod_key = "oarc-mod-enable-buddy-spawn" , ocfg_keys = {"gameplay", "enable_buddy_spawn"}, type = "boolean"},
-    ["gameplay.enable_shared_spawns"] = {mod_key = "oarc-mod-enable-shared-spawns" , ocfg_keys = {"gameplay", "enable_shared_spawns"}, type = "boolean"},
-    ["gameplay.number_of_players_per_shared_spawn"] = {mod_key = "oarc-mod-number-of-players-per-shared-spawn" , ocfg_keys = {"gameplay", "number_of_players_per_shared_spawn"}, type = "integer"},
-    ["gameplay.default_surface"] = {mod_key = "oarc-mod-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
-    -- STARTUP ["gameplay.main_force_name"] = {mod_key = "oarc-mod-main-force-name" , ocfg_keys = {"gameplay", "main_force_name"}, type = "string"},
+    -- STARTUP ["gameplay.default_enable_secondary_spawns_on_other_surfaces"] = {mod_key = "oarc-classic-default-enable-secondary-spawns-on-other-surfaces" , ocfg_keys = {"gameplay", "default_enable_secondary_spawns_on_other_surfaces"}, type = "boolean"},
+    ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-classic-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
+    ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-classic-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
+    ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-classic-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
+    ["gameplay.near_spawn_distance"] = {mod_key = "oarc-classic-near-spawn-distance" , ocfg_keys = {"gameplay", "near_spawn_distance"}, type = "integer"},
+    ["gameplay.far_spawn_distance"] = {mod_key = "oarc-classic-far-spawn-distance" , ocfg_keys = {"gameplay", "far_spawn_distance"}, type = "integer"},
+    ["gameplay.enable_shared_spawns"] = {mod_key = "oarc-classic-enable-shared-spawns" , ocfg_keys = {"gameplay", "enable_shared_spawns"}, type = "boolean"},
+    ["gameplay.number_of_players_per_shared_spawn"] = {mod_key = "oarc-classic-number-of-players-per-shared-spawn" , ocfg_keys = {"gameplay", "number_of_players_per_shared_spawn"}, type = "integer"},
+    ["gameplay.default_surface"] = {mod_key = "oarc-classic-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
 
-    ["gameplay_difficulty_scaling_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-difficulty-scaling"}},
-    ["gameplay.enable_offline_protection"] = {mod_key = "oarc-mod-enable-offline-protection" , ocfg_keys = {"gameplay", "enable_offline_protection"}, type = "boolean"},
-    ["gameplay.scale_resources_around_spawns"] = {mod_key = "oarc-mod-scale-resources-around-spawns" , ocfg_keys = {"gameplay", "scale_resources_around_spawns"}, type = "boolean"},
-    ["gameplay.modified_enemy_spawning"] = {mod_key = "oarc-mod-modified-enemy-spawning" , ocfg_keys = {"gameplay", "modified_enemy_spawning"}, type = "boolean"},
+    ["gameplay.enable_offline_protection"] = {mod_key = "oarc-classic-enable-offline-protection" , ocfg_keys = {"gameplay", "enable_offline_protection"}, type = "boolean"},
 
     ["gameplay_misc_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-gameplay-misc"}},
-    ["gameplay.enable_friendly_fire"] = {mod_key = "oarc-mod-enable-friendly-fire" , ocfg_keys = {"gameplay", "enable_friendly_fire"}, type = "boolean"},
-    ["gameplay.minimum_online_time"] = {mod_key = "oarc-mod-minimum-online-time" , ocfg_keys = {"gameplay", "minimum_online_time"}, type = "integer"},
-    ["gameplay.respawn_cooldown_min"] = {mod_key = "oarc-mod-respawn-cooldown-min" , ocfg_keys = {"gameplay", "respawn_cooldown_min"}, type = "integer"},
+    ["gameplay.enable_friendly_fire"] = {mod_key = "oarc-classic-enable-friendly-fire" , ocfg_keys = {"gameplay", "enable_friendly_fire"}, type = "boolean"},
+    ["gameplay.minimum_online_time"] = {mod_key = "oarc-classic-minimum-online-time" , ocfg_keys = {"gameplay", "minimum_online_time"}, type = "integer"},
+    ["gameplay.respawn_cooldown_min"] = {mod_key = "oarc-classic-respawn-cooldown-min" , ocfg_keys = {"gameplay", "respawn_cooldown_min"}, type = "integer"},
 
     ["gameplay_sharing_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-sharing"}},
-    ["gameplay.enable_shared_team_vision"] = {mod_key = "oarc-mod-enable-shared-team-vision" , ocfg_keys = {"gameplay", "enable_shared_team_vision"}, type = "boolean"},
-    ["gameplay.enable_shared_team_chat"] = {mod_key = "oarc-mod-enable-shared-team-chat" , ocfg_keys = {"gameplay", "enable_shared_team_chat"}, type = "boolean"},
-    ["gameplay.enable_friendly_teams"] = {mod_key = "oarc-mod-enable-friendly-teams" , ocfg_keys = {"gameplay", "enable_friendly_teams"}, type = "boolean"},
-    ["gameplay.enable_cease_fire"] = {mod_key = "oarc-mod-enable-cease-fire" , ocfg_keys = {"gameplay", "enable_cease_fire"}, type = "boolean"},
-    ["gameplay.enable_shared_power"] = {mod_key = "oarc-mod-enable-shared-power" , ocfg_keys = {"gameplay", "enable_shared_power"}, type = "boolean"},
-    ["gameplay.enable_shared_chest"] = {mod_key = "oarc-mod-enable-shared-chest" , ocfg_keys = {"gameplay", "enable_shared_chest"}, type = "boolean"},
-    ["gameplay.enable_coin_shop"] = {mod_key = "oarc-mod-enable-coin-shop" , ocfg_keys = {"gameplay", "enable_coin_shop"}, type = "boolean"},
+    ["gameplay.enable_shared_team_vision"] = {mod_key = "oarc-classic-enable-shared-team-vision" , ocfg_keys = {"gameplay", "enable_shared_team_vision"}, type = "boolean"},
+    ["gameplay.enable_shared_team_chat"] = {mod_key = "oarc-classic-enable-shared-team-chat" , ocfg_keys = {"gameplay", "enable_shared_team_chat"}, type = "boolean"},
+    ["gameplay.enable_friendly_teams"] = {mod_key = "oarc-classic-enable-friendly-teams" , ocfg_keys = {"gameplay", "enable_friendly_teams"}, type = "boolean"},
+    ["gameplay.enable_cease_fire"] = {mod_key = "oarc-classic-enable-cease-fire" , ocfg_keys = {"gameplay", "enable_cease_fire"}, type = "boolean"},
 
     ["regrowth_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-regrowth"}},
     ["regrowth_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-regrowth-warning"}},
-    ["regrowth.enable_regrowth"] = {mod_key = "oarc-mod-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
-    ["regrowth.enable_world_eater"] = {mod_key = "oarc-mod-enable-world-eater" , ocfg_keys = {"regrowth", "enable_world_eater"}, type = "boolean"},
-    ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-mod-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
-    ["regrowth.cleanup_interval"] = {mod_key = "oarc-mod-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
+    ["regrowth.enable_regrowth"] = {mod_key = "oarc-classic-enable-regrowth" , ocfg_keys = {"regrowth", "enable_regrowth"}, type = "boolean"},
+    ["regrowth.enable_world_eater"] = {mod_key = "oarc-classic-enable-world-eater" , ocfg_keys = {"regrowth", "enable_world_eater"}, type = "boolean"},
+    ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-classic-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
+    ["regrowth.cleanup_interval"] = {mod_key = "oarc-classic-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
 
     ["general_spawn_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-general-spawn"}},
-    ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-mod-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer"},
-    ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-mod-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer"},
-    ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-mod-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer"},
-    ["spawn_general.resources_shape"] = {mod_key = "oarc-mod-spawn-general-enable-resources-circle-shape" , ocfg_keys = {"spawn_general", "resources_shape"}, type = "string-list"},
-    ["spawn_general.force_tiles"] = {mod_key = "oarc-mod-spawn-general-enable-force-tiles" , ocfg_keys = {"spawn_general", "force_tiles"}, type = "boolean"},
-    ["spawn_general.shape"] = {mod_key = "oarc-mod-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list"},
+    ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-classic-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer"},
+    ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-classic-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer"},
+    ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-classic-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer"},
+    ["spawn_general.resources_shape"] = {mod_key = "oarc-classic-spawn-general-enable-resources-circle-shape" , ocfg_keys = {"spawn_general", "resources_shape"}, type = "string-list"},
+    ["spawn_general.force_tiles"] = {mod_key = "oarc-classic-spawn-general-enable-force-tiles" , ocfg_keys = {"spawn_general", "force_tiles"}, type = "boolean"},
+    ["spawn_general.shape"] = {mod_key = "oarc-classic-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list"},
 
     ["resource_placement_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-resource-placement"}},
-    ["resource_placement.enabled"] = {mod_key = "oarc-mod-resource-placement-enabled" , ocfg_keys = {"resource_placement", "enabled"}, type = "boolean"},
-    ["resource_placement.size_multiplier"] = {mod_key = "oarc-mod-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double"},
-    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-mod-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double"},
+    ["resource_placement.enabled"] = {mod_key = "oarc-classic-resource-placement-enabled" , ocfg_keys = {"resource_placement", "enabled"}, type = "boolean"},
+    ["resource_placement.size_multiplier"] = {mod_key = "oarc-classic-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double"},
+    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-classic-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double"},
 
     ["resource_placement_circle_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-circular"}},
-    ["resource_placement.distance_to_edge"] = {mod_key = "oarc-mod-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer"},
-    ["resource_placement.angle_offset"] = {mod_key = "oarc-mod-resource-placement-degrees-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "integer"},
-    ["resource_placement.angle_final"] = {mod_key = "oarc-mod-resource-placement-degrees-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "integer"},
+    ["resource_placement.distance_to_edge"] = {mod_key = "oarc-classic-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer"},
+    ["resource_placement.angle_offset"] = {mod_key = "oarc-classic-resource-placement-degrees-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "integer"},
+    ["resource_placement.angle_final"] = {mod_key = "oarc-classic-resource-placement-degrees-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "integer"},
 
     ["resource_placement_square_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-square"}},
-    ["resource_placement.vertical_offset"] = {mod_key = "oarc-mod-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},
-    ["resource_placement.horizontal_offset"] = {mod_key = "oarc-mod-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer"},
-    ["resource_placement.linear_spacing"] = {mod_key = "oarc-mod-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
+    ["resource_placement.vertical_offset"] = {mod_key = "oarc-classic-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},
+    ["resource_placement.horizontal_offset"] = {mod_key = "oarc-classic-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer"},
+    ["resource_placement.linear_spacing"] = {mod_key = "oarc-classic-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
 
     -- These are settings that aren't included in the games mod settings but are still nice to have easy access to.
     ["non_mod_settings_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-non-mod-settings-header"}},
-    ["coin_generation_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-coin-generation-subheader"}},
-    ["coin_generation.enabled"] = {mod_key = "" , ocfg_keys = {"coin_generation", "enabled"}, type = "boolean", caption = {"oarc-coin-generation-caption"}, tooltip = {"oarc-coin-generation-tooltip"}},
-    ["coin_generation.auto_decon_coins"] = {mod_key = "" , ocfg_keys = {"coin_generation", "auto_decon_coins"}, type = "boolean", caption = {"oarc-auto-decon-coins-caption"}, tooltip = {"oarc-auto-decon-coins-tooltip"}},
     ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
-    ["gameplay.scale_spawner_damage"] = {mod_key = "" , ocfg_keys = {"gameplay", "scale_spawner_damage"}, type = "boolean", caption = {"oarc-scale-spawner-damage-caption"}, tooltip = {"oarc-scale-spawner-damage-tooltip"}},
     ["spawn_general.remove_decoratives"] = {mod_key = "" , ocfg_keys = {"spawn_general", "remove_decoratives"}, type = "boolean", caption = {"oarc-remove-decoratives-caption"}, tooltip = {"oarc-remove-decoratives-tooltip"}},
     ["resource_placement.random_order"] = {mod_key = "" , ocfg_keys = {"resource_placement", "random_order"}, type = "boolean", caption = {"oarc-resource-placement-random-order-caption"}, tooltip = {"oarc-resource-placement-random-order-tooltip"}},
 
@@ -192,27 +178,13 @@ function ValidateSettings()
         SendBroadcastMsg("ERROR - Missing surfaces_blacklist_match section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
         storage.ocfg.surfaces_blacklist_match = table.deepcopy(OCFG.surfaces_blacklist_match)
     end
-    if (storage.ocfg["shop_items"] == nil) then
-        log("ERROR - Missing shop_items section in config! Loading defaults instead!")
-        SendBroadcastMsg("ERROR - Missing shop_items section in config! Loading defaults instead!", { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
-        storage.ocfg.shop_items = table.deepcopy(OCFG.shop_items)
-    end
 
-
-    -- Validate enable_main_team and enable_separate_teams.
-    -- Force enable_main_team if both are disabled.
-    if (not storage.ocfg.gameplay.enable_main_team and not storage.ocfg.gameplay.enable_separate_teams) then
-        log("Both main force and separate teams are disabled! Enabling main force. Please check your mod settings or config!")
-        storage.ocfg.gameplay.enable_main_team = true
-        settings.global["oarc-mod-enable-main-team"] = { value = true }
-    SendBroadcastMsg({"oarc-teams-both-disabled-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
-    end
 
     -- Validate minimum is less than maximums
     if (storage.ocfg.gameplay.near_spawn_distance >= storage.ocfg.gameplay.far_spawn_distance) then
         log("Near spawn min distance is greater than or equal to near spawn max distance! Please check your mod settings or config!")
         storage.ocfg.gameplay.far_spawn_distance = storage.ocfg.gameplay.near_spawn_distance + 1
-        settings.global["oarc-mod-far-spawn-distance"] = { value = storage.ocfg.gameplay.far_spawn_distance }
+        settings.global["oarc-classic-far-spawn-distance"] = { value = storage.ocfg.gameplay.far_spawn_distance }
     SendBroadcastMsg({"oarc-spawn-distance-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
@@ -220,7 +192,7 @@ function ValidateSettings()
     if (storage.ocfg.regrowth.enable_world_eater and not storage.ocfg.regrowth.enable_regrowth) then
         log("World eater is enabled but regrowth is not! Disabling world eater. Please check your mod settings or config!")
         storage.ocfg.regrowth.enable_world_eater = false
-        settings.global["oarc-mod-enable-world-eater"] = { value = false }
+        settings.global["oarc-classic-enable-world-eater"] = { value = false }
     SendBroadcastMsg({"oarc-world-eater-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
@@ -228,7 +200,7 @@ function ValidateSettings()
     if (game.surfaces[storage.ocfg.gameplay.default_surface] == nil) then
         log("Default surface does not exist! Please check your mod settings or config!")
         storage.ocfg.gameplay.default_surface = "nauvis"
-        settings.global["oarc-mod-default-surface"] = { value = "nauvis" }
+        settings.global["oarc-classic-default-surface"] = { value = "nauvis" }
     SendBroadcastMsg({"oarc-default-surface-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
     end
 
@@ -264,18 +236,17 @@ function CacheModSettings()
     end
 
     -- Special case for startup settings
-    storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces = settings.startup["oarc-mod-default-enable-secondary-spawns-on-other-surfaces"].value  --[[@as boolean]]
-    storage.ocfg.gameplay.main_force_name = settings.startup["oarc-mod-main-force-name"].value --[[@as string]]
+    storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces = settings.startup["oarc-classic-default-enable-secondary-spawns-on-other-surfaces"].value  --[[@as boolean]]
 end
 
 ---Get the scenario settings from the scenario if it exists.
 ---@return nil
 function GetScenarioOverrideSettings()
 
-    if remote.interfaces["oarc_scenario"] then
+    if remote.interfaces["oarc_classic_scenario"] then
 
         log("Getting scenario override settings...")
-        local scenario_settings = remote.call("oarc_scenario", "get_scenario_settings")
+        local scenario_settings = remote.call("oarc_classic_scenario", "get_scenario_settings")
 
         -- Overwrite the non mod settings with the scenario settings.
         storage.ocfg = scenario_settings
@@ -327,20 +298,14 @@ function RuntimeModSettingChanged(event)
     end
 
     if (not found_setting) then
-        error("Unknown oarc-mod setting changed: " .. event.setting)
+        error("Unknown oarc-classic setting changed: " .. event.setting)
     else
         ValidateSettings()
         ApplyRuntimeChanges(OCFG_MOD_KEYS[event.setting])
     end
 
-    --Exception for coin shop, update the GUI if the setting is changed
-    if (event.setting == "oarc-mod-enable-coin-shop") then
-        local new_value = storage.ocfg.gameplay.enable_coin_shop
-        AddRemoveOarcGuiTabForAllPlayers(OARC_ITEM_SHOP_TAB_NAME, settings.global[event.setting].value --[[@as boolean]], true)
-    end
-
     --Exception for regrowth, refresh the content tab so the checkboxes get updated
-    if (event.setting == "oarc-mod-enable-regrowth") then
+    if (event.setting == "oarc-classic-enable-regrowth") then
         for _,player in pairs(game.players) do
             OarcGuiRefreshContent(player)
         end
@@ -364,7 +329,7 @@ function SetGlobalOarcConfigUsingKeyTable(key_table, value)
     end
 
     -- Hopefully I'm not missing any other entry points where storage.ocfg might be changed.
-    script.raise_event("oarc-mod-on-config-changed", {})
+    script.raise_event("oarc-classic-on-config-changed", {})
 end
 
 ---An equally stupid function to let me lookup the storage.ocfg entries using a key table.

@@ -97,11 +97,6 @@ function CreateHoldingPenChunks(event)
             amount = 90000,
             position = { 0, 9 }
         })
-
-        -- Create special power pole if sharing is enabled (it will be created later when first requested otherwise)
-        if (storage.ocfg.gameplay.enable_shared_power) then
-            InitSharingPowerPoles()
-        end
     end
 end
 

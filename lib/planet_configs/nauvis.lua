@@ -67,49 +67,12 @@ NAUVIS_SPAWN_CONFIG =
     -- Used to modify the size of the base.
     radius_modifier = 1,
 
-    -- Safe Spawn Area Options
-    -- The default settings here are balanced for my recommended map gen settings (close to train world).
-    safe_area =
-    {
-        -- Safe area has no aliens
-        -- This is the radius in chunks of safe area.
-        safe_radius = 6,
-
-        -- Warning area has significantly reduced aliens
-        -- This is the radius in chunks of warning area.
-        warn_radius = 12,
-
-        -- 1 : X (spawners alive : spawners destroyed) in this area
-        warn_reduction = 20,
-
-        -- Danger area has slightly reduced aliens
-        -- This is the radius in chunks of danger area.
-        danger_radius = 24,
-
-        -- 1 : X (spawners alive : spawners destroyed) in this area
-        danger_reduction = 5,
-    },
-
     -- Location of water strip within the spawn area (2 horizontal rows)
     -- The offset is from the TOP (NORTH) of the spawn area.
     water = {
         x_offset = -4,
         y_offset = 10,
         length = 8,
-    },
-
-    -- Location of shared power pole within the spawn area (if enabled)
-    -- The offset is from the RIGHT (WEST) of the spawn area.
-    shared_power_pole_position = {
-        x_offset=-10,
-        y_offset=0
-    },
-
-    -- Location of shared chest within the spawn area (if enabled)
-    -- The offset is from the RIGHT (WEST) of the spawn area.
-    shared_chest_position = {
-        x_offset=-10,
-        y_offset=1
     },
 
     -- Solid resource tiles

@@ -6,20 +6,14 @@
 -- | |__| / ____ \| | \ \| |____
 --  \____/_/    \_\_|  \_\\_____|
 
--- Oarc's Separated Spawn MOD V2
--- I decided to rewrite my old scenario due to the coming changes in Factorio V2.0 and its new Space Age Expansion.
-
--- Change Overview:
---      Support the scenario "as a mod" ONLY. Scenario merely provides a way to overwrite settings on_init.
---      Removed a lot of unnecessary feature bloat.
---      Move text to locale files where possible.
+-- Oarc Classic
+-- A stripped down version of Oarc's Separated Spawn MOD that uses fixed starting points on every planet.
 
 -- Major Features:
---      Core feature allows for a safe, separate spawn area for each player.
---      Players can choose to spawn with friends (buddy spawn) or join other bases.
+--      Each player gets their own spawn at one of the starting points.
+--      Players can join other bases.
 --      Offline protection from enemy attacks.
 --      Chunk cleanup to keep save file size down.
---      Sharing of electricity and items between players.
 
 require("lib/oarc_utils")
 require("lib/config")
@@ -30,8 +24,6 @@ require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
 require("lib/oarc_gui_tabs")
 require("lib/offline_protection")
-require("lib/scaled_enemies")
-require("lib/sharing")
 
 -- TODO: Possibly remove this later?
 require("lib/oarc_tests")
@@ -100,7 +92,7 @@ script.on_configuration_changed(function(data)
 end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
-    if (not StringStartsWith(event.setting, "oarc-mod")) then return end
+    if (not StringStartsWith(event.setting, "oarc-classic")) then return end
     RuntimeModSettingChanged(event)
 end)
 
@@ -185,43 +177,43 @@ end)
 ---@class OarcModOnSpawnChoicesGuiDisplayedEvent: OarcCustomEventBase
 ---@field player_index integer
 ---@field gui_element LuaGuiElement
--- script.on_event("oarc-mod-on-spawn-choices-gui-displayed", function(event)
---     log("EVENT - oarc-mod-on-spawn-choices-gui-displayed:" .. serpent.block(event --[[@as OarcModOnSpawnChoicesGuiDisplayedEvent]]))
---     -- The 4 main sub sections are called: spawn_settings_frame, solo_spawn_frame, shared_spawn_frame, and buddy_spawn_frame
+-- script.on_event("oarc-classic-on-spawn-choices-gui-displayed", function(event)
+--     log("EVENT - oarc-classic-on-spawn-choices-gui-displayed:" .. serpent.block(event --[[@as OarcModOnSpawnChoicesGuiDisplayedEvent]]))
+--     -- The 3 main sub sections are called: spawn_settings_frame, solo_spawn_frame and shared_spawn_frame
 -- end)
 
 
 ---@class OarcModOnSpawnCreatedEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
-script.on_event("oarc-mod-on-spawn-created", function(event)
-    log("EVENT - oarc-mod-on-spawn-created:" .. serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
+script.on_event("oarc-classic-on-spawn-created", function(event)
+    log("EVENT - oarc-classic-on-spawn-created:" .. serpent.block(event --[[@as OarcModOnSpawnCreatedEvent]]))
 end)
 
 ---@class OarcModOnSpawnRemoveRequestEvent: OarcCustomEventBase
 ---@field spawn_data OarcUniqueSpawn
-script.on_event("oarc-mod-on-spawn-remove-request", function(event)
-    log("EVENT - oarc-mod-on-spawn-remove-request:" .. serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
+script.on_event("oarc-classic-on-spawn-remove-request", function(event)
+    log("EVENT - oarc-classic-on-spawn-remove-request:" .. serpent.block(event --[[@as OarcModOnSpawnRemoveRequestEvent]]))
 end)
 
 ---@class OarcModOnPlayerResetEvent: OarcCustomEventBase
 ---@field player_index integer
-script.on_event("oarc-mod-on-player-reset", function(event)
-    log("EVENT - oarc-mod-on-player-reset:" .. serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
+script.on_event("oarc-classic-on-player-reset", function(event)
+    log("EVENT - oarc-classic-on-player-reset:" .. serpent.block(event --[[@as OarcModOnPlayerResetEvent]]))
 end)
 
 ---@class OarcModOnPlayerSpawnedEvent: OarcCustomEventBase
 ---@field player_index integer
 ---@field first_spawn boolean
 ---@field is_host boolean
-script.on_event("oarc-mod-on-player-spawned", function(event)
-    log("EVENT - oarc-mod-on-player-spawned:" .. serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
+script.on_event("oarc-classic-on-player-spawned", function(event)
+    log("EVENT - oarc-classic-on-player-spawned:" .. serpent.block(event --[[@as OarcModOnPlayerSpawnedEvent]]))
 end)
 
 ---@class OarcModCharacterSurfaceChangedEvent: OarcCustomEventBase
 ---@field player_index integer
 ---@field old_surface_name string
 ---@field new_surface_name string
-script.on_event("oarc-mod-character-surface-changed", function(event)
+script.on_event("oarc-classic-character-surface-changed", function(event)
     --This is just here so I don't get lua warnings about unused variables.
     ---@type OarcModCharacterSurfaceChangedEvent
     local custom_event = event --[[@as OarcModCharacterSurfaceChangedEvent]]
@@ -236,20 +228,20 @@ end)
 ---@field surface LuaSurface
 ---@field chunk_area BoundingBox
 ---@field spawn_data OarcUniqueSpawn
--- script.on_event("oarc-mod-on-chunk-generated-near-spawn", function(event)
---     log("EVENT - oarc-mod-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
+-- script.on_event("oarc-classic-on-chunk-generated-near-spawn", function(event)
+--     log("EVENT - oarc-classic-on-chunk-generated-near-spawn:" .. serpent.block(event --[[@as OarcModOnChunkGeneratedNearSpawnEvent]]))
 -- end)
 
 -- This can get called quite a lot during init or importing of settings.
 ---@class OarcModOnConfigChangedEvent: OarcCustomEventBase
--- script.on_event("oarc-mod-on-config-changed", function(event)
---     log("EVENT - oarc-mod-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
+-- script.on_event("oarc-classic-on-config-changed", function(event)
+--     log("EVENT - oarc-classic-on-config-changed:" .. serpent.block(event --[[@as OarcModOnConfigChangedEvent]]))
 -- end)
 
 ---@class OarcModOnModTopLeftGuiCreatedEvent: OarcCustomEventBase
 ---@field player_index integer
--- script.on_event("oarc-mod-on-mod-top-left-gui-created", function(event)
---     log("EVENT - oarc-mod-on-mod-top-left-gui-created:" .. serpent.block(event --[[@as OarcModOnModTopLeftGuiCreatedEvent]]))
+-- script.on_event("oarc-classic-on-mod-top-left-gui-created", function(event)
+--     log("EVENT - oarc-classic-on-mod-top-left-gui-created:" .. serpent.block(event --[[@as OarcModOnModTopLeftGuiCreatedEvent]]))
 -- end)
 
 -- I raise this event whenever teleporting the player, and it is used to update the player's surface.
@@ -285,10 +277,6 @@ script.on_event(defines.events.on_tick, function(event)
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
 
-    if storage.ocfg.gameplay.modified_enemy_spawning then
-        RemoveDemolishersInWarningZone(event)
-    end
-
     -- TODO: Possibly only enable this if space-age mod is enabled??
     CargoPodHandlerOnTick()
 end)
@@ -302,11 +290,6 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     end
 
     CreateHoldingPenChunks(event)
-
-    if storage.ocfg.gameplay.modified_enemy_spawning then
-        DowngradeWormsDistanceBasedOnChunkGenerate(event)
-        DowngradeAndReduceEnemiesOnChunkGenerate(event)
-    end
 
     SeparateSpawnsGenerateChunk(event)
 end)
@@ -386,28 +369,6 @@ script.on_event(defines.events.script_raised_built, function(event)
 end)
 
 ----------------------------------------
--- On Entity Spawned and On Biter Base Built
--- This is where I modify biter spawning based on location and other factors.
-----------------------------------------
-script.on_event(defines.events.on_entity_spawned, function(event)
-    if (storage.ocfg.gameplay.modified_enemy_spawning) then
-        ModifyEnemySpawnsNearPlayerStartingAreas(event)
-    end
-end)
-
-script.on_event(defines.events.on_biter_base_built, function(event)
-    if (storage.ocfg.gameplay.modified_enemy_spawning) then
-        ModifyEnemySpawnsNearPlayerStartingAreas(event)
-    end
-end)
-
-script.on_event(defines.events.on_segment_entity_created, function(event)
-    if storage.ocfg.gameplay.modified_enemy_spawning then
-        TrackDemolishers(event)
-    end
-end)
-
-----------------------------------------
 -- On unit group finished gathering
 -- This is where I remove biter waves on offline players
 ----------------------------------------
@@ -416,24 +377,6 @@ script.on_event(defines.events.on_unit_group_finished_gathering, function(event)
         OarcModifyEnemyGroup(event)
     end
 end)
-
-----------------------------------------
--- On enemies killed
--- For coin generation and stuff
-----------------------------------------
-script.on_event(defines.events.on_post_entity_died, function(event)
-    if storage.ocfg.coin_generation.enabled then
-        CoinsFromEnemiesOnPostEntityDied(event)
-    end
-end,
-{{filter="type", type = "unit"}, {filter="type", type = "unit-spawner"}, {filter="type", type = "turret"}})
-
-script.on_event(defines.events.on_entity_damaged, function(event)
-    if storage.ocfg.gameplay.scale_spawner_damage then
-        ApplySpawnerDamageScaling(event)
-    end
-end,
-{{filter="type", type = "unit-spawner"}})
 
 -- Notify player if their crash-site spaceship is dead, only for PVP
 script.on_event(defines.events.on_entity_died, function(event)
@@ -510,7 +453,7 @@ end)
 ----------------------------------------
 -- Remote Interface
 ----------------------------------------
-local oarc_mod_interface =
+local oarc_classic_interface =
 {
   get_mod_settings = function()
     return storage.ocfg
@@ -541,4 +484,4 @@ local oarc_mod_interface =
   end,
 }
 
-remote.add_interface("oarc_mod", oarc_mod_interface)
+remote.add_interface("oarc_classic", oarc_classic_interface)

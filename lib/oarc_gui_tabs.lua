@@ -7,7 +7,6 @@ require("lib/gui_tabs/settings_controls")
 require("lib/gui_tabs/mod_info_faq")
 require("lib/gui_tabs/player_list")
 require("lib/gui_tabs/surface_config")
-require("lib/gui_tabs/item_shop")
 
 --------------------------------------------------------------------------------
 -- GUI Tab Handler
@@ -23,7 +22,6 @@ OARC_CONFIG_CTRL_TAB_NAME = "settings"
 OARC_MOD_INFO_CTRL_TAB_NAME = "mod_info"
 OARC_MOD_PLAYER_LIST_TAB_NAME = "player_list"
 OARC_SURFACE_CONFIG_TAB_NAME = "surface_config"
-OARC_ITEM_SHOP_TAB_NAME = "item_shop"
 
 local OARC_GUI_TAB_CONTENT = {
     [OARC_SERVER_INFO_TAB_NAME] = {
@@ -36,7 +34,7 @@ local OARC_GUI_TAB_CONTENT = {
     },
     [OARC_MOD_INFO_CTRL_TAB_NAME] = {
         create_tab_function = CreateModInfoTab,
-        localized_name = {"oarc-mod-info-tab-title"}
+        localized_name = {"oarc-classic-info-tab-title"}
     },
     [OARC_CONFIG_CTRL_TAB_NAME] = {
         create_tab_function = CreateSettingsControlsTab,
@@ -49,10 +47,6 @@ local OARC_GUI_TAB_CONTENT = {
     [OARC_SURFACE_CONFIG_TAB_NAME] = {
         create_tab_function = CreateSurfaceConfigTab,
         localized_name = {"oarc-surface-config-tab-title"}
-    },
-    [OARC_ITEM_SHOP_TAB_NAME] = {
-        create_tab_function = CreateItemShopTab,
-        localized_name = {"oarc-item-shop-tab-title"}
     }
 }
 
@@ -85,12 +79,6 @@ function InitOarcGuiTabs(player)
     AddOarcGuiTab(player, OARC_MOD_PLAYER_LIST_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_MOD_PLAYER_LIST_TAB_NAME, true)
 
-    -- Item shop tab
-    if (storage.ocfg.gameplay.enable_coin_shop) then
-        AddOarcGuiTab(player, OARC_ITEM_SHOP_TAB_NAME)
-        SetOarcGuiTabEnabled(player, OARC_ITEM_SHOP_TAB_NAME, true)
-    end
-
     -- Settings control tab
     AddOarcGuiTab(player, OARC_CONFIG_CTRL_TAB_NAME)
     SetOarcGuiTabEnabled(player, OARC_CONFIG_CTRL_TAB_NAME, true)
@@ -102,7 +90,7 @@ function InitOarcGuiTabs(player)
     end
 
     -- Let other mods know the top left GUI was created, this is a good time to add buttons to it.
-    script.raise_event("oarc-mod-on-mod-top-left-gui-created", {player_index = player.index})
+    script.raise_event("oarc-classic-on-mod-top-left-gui-created", {player_index = player.index})
 
     HideOarcGui(player)
 end
@@ -114,7 +102,7 @@ function CreateOarcGuiButton(player)
         local b = mod_gui.get_button_flow(player).add{
             name="oarc_mod_gui_button",
             type="sprite-button",
-            sprite = "oarc-mod-sprite-40",
+            sprite = "oarc-classic-sprite-40",
             style="slot_button",
             tooltip={ "oarc-gui-tooltip" }
         }
@@ -503,7 +491,6 @@ function OarcGuiTabsClick(event)
     SettingsSurfaceControlsTabGuiClick(event)
     PlayerListTabGuiClick(event)
     SurfaceConfigTabGuiClick(event)
-    OarcItemShopGuiClick(event)
 end
 
 ---All gui tabs on_gui_checked_state_changed event handler

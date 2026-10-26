@@ -596,7 +596,7 @@ function SettingsSurfaceControlsTabGuiClick(event)
             storage.ocfg = table.deepcopy(copy)
             ValidateSettings() -- Some basic validation, not 100% foolproof
             SyncModSettingsToOCFG() -- Sync the mod settings.
-            script.raise_event("oarc-mod-on-config-changed", {})
+            script.raise_event("oarc-classic-on-config-changed", {})
             log("Imported settings!")
             CompatSend(player, "Imported settings!")
             OarcGuiRefreshContent(player)

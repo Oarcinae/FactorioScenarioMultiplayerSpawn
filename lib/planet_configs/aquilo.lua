@@ -16,10 +16,6 @@ AQUILO_SPAWN_CONFIG.random_entities = {
     {name = "lithium-iceberg-huge", count = 25},
 }
 
--- Ignore warn/danger areas, essentially disable them because the danger radius is used for resource scaling.
-AQUILO_SPAWN_CONFIG.safe_area.warn_radius = AQUILO_SPAWN_CONFIG.safe_area.safe_radius
-AQUILO_SPAWN_CONFIG.safe_area.danger_radius = AQUILO_SPAWN_CONFIG.safe_area.safe_radius
-
 
 -- Aquilo should have a smaller spawn area
 AQUILO_SPAWN_CONFIG.radius_modifier = 0.5

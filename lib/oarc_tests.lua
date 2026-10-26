@@ -259,12 +259,6 @@ function RerollSpawn(player)
         return
     end
 
-    -- If it is a buddy spawn, tell them we don't support this:
-    if (spawn_choices.buddy ~= nil) then
-        SendErrorMsg(player, { "oarc-no-reroll-buddy-spawn" })
-        return
-    end
-
     local surface = player.character.surface
     local surface_name = surface.name
 
@@ -293,7 +287,7 @@ function RerollSpawn(player)
         local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
         RegrowthMarkAreaForRemoval(surface_name, old_spawn_point.position, clear_radius)
         TriggerCleanup()
-        script.raise_event("oarc-mod-on-spawn-remove-request", {spawn_data = old_spawn_point})
+        script.raise_event("oarc-classic-on-spawn-remove-request", {spawn_data = old_spawn_point})
     end
 
     -- Queue spawn generation and the player.

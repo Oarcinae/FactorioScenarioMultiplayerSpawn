@@ -19,6 +19,9 @@ TICKS_PER_HOUR = TICKS_PER_MINUTE * 60
 
 MAX_INT32_POS = 2147483647
 MAX_INT32_NEG = -2147483648
+
+ENEMY_FORCES_NAMES = { "enemy" }
+ENEMY_FORCES_NAMES_INCL_NEUTRAL = { "enemy", "neutral" }
 --------------------------------------------------------------------------------
 
 
@@ -376,29 +379,6 @@ function DeleteAllChunks(surface)
     end
 end
 
-
----Get position for buddy spawn (for buddy placement)
----@param position MapPosition
----@param surface_name string
----@return MapPosition
-function GetBuddySpawnPosition(position, surface_name)
-
-    local spawn_config = storage.ocfg.surfaces_config[surface_name].spawn_config
-
-    local x_offset = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier * 2
-    x_offset = x_offset + storage.ocfg.spawn_general.moat_width_tiles
-
-    if (storage.ocfg.gameplay.buddy_spawn_distance_offset ~= nil) then
-        x_offset = x_offset + storage.ocfg.gameplay.buddy_spawn_distance_offset
-    end
-
-    -- Create that spawn in the global vars
-    local buddy_position = table.deepcopy(position)
-    -- The x_offset must be big enough to ensure the spawns DO NOT overlap!
-    buddy_position.x = buddy_position.x + x_offset
-
-    return buddy_position
-end
 
 -- Safer teleport
 -- Teleports the character if there is one, because player.teleport only moves the remote view if that is active

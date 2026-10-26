@@ -58,7 +58,6 @@ function CreateSurfaceConfigContent(container, surface_name)
     AddLabel(scroll_pane, nil, {"oarc-label-spawn-area-misc"}, my_label_header2_style)
     local misc_config_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
     CreateMiscConfig(misc_config_flow, surface_name)
-    CreateSafeAreaConfig(misc_config_flow, surface_name)
 end
 
 
@@ -290,33 +289,6 @@ end
 
 
 
----Create the safe area config section
----@param container LuaGuiElement
----@param surface_name string
----@return nil
-function CreateSafeAreaConfig(container, surface_name)
-
-    local safe_area_flow = container.add {
-        type = "frame",
-        direction = "vertical",
-        -- style = "inside_shallow_frame"
-    }
-    safe_area_flow.style.padding = 5
-    safe_area_flow.style.horizontally_stretchable = false
-    safe_area_flow.style.vertically_stretchable = true
-
-    local header = AddLabel(safe_area_flow, nil, { "oarc-safe-area-config" }, my_label_header2_style)
-    header.tooltip = { "oarc-safe-area-tooltip" }
-
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-safe-area-radius" }, "safe_area", "safe_radius", { "oarc-safe-radius-tooltip" })
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-warn-area-radius" }, "safe_area", "warn_radius", { "oarc-warn-radius-tooltip" })
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-warn-area-reduction" }, "safe_area", "warn_reduction", { "oarc-warn-reduction-tooltip" })
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-danger-area-radius" }, "safe_area", "danger_radius", { "oarc-danger-radius-tooltip" })
-    CreateSpawnConfigIntegerField(safe_area_flow, surface_name, { "oarc-danger-area-reduction" }, "safe_area", "danger_reduction", { "oarc-danger-reduction-tooltip" })
-
-end
-
-
 ---Create an integer textfield with a label
 ---@param container LuaGuiElement
 ---@param surface_name string
@@ -465,16 +437,6 @@ function CreateMiscConfig(container, surface_name)
     CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-liquid-length" }, "water", "length", { "oarc-liquid-length-tooltip" })
     CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-liquid-x-offset" }, "water", "x_offset", { "oarc-liquid-x-offset-tooltip" })
     CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-liquid-y-offset" }, "water", "y_offset", { "oarc-liquid-y-offset-tooltip" })
-    AddSpacerLine(misc_flow)
-
-    AddLabel(misc_flow, nil, { "oarc-shared-chest" }, my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-chest-x-offset" }, "shared_chest_position", "x_offset", { "oarc-chest-x-offset-tooltip" })
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-chest-y-offset" }, "shared_chest_position", "y_offset", { "oarc-chest-y-offset-tooltip" })
-    AddSpacerLine(misc_flow)
-
-    AddLabel(misc_flow, nil, { "oarc-shared-power-pole" }, my_player_list_style)
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-power-x-offset" }, "shared_power_pole_position", "x_offset", { "oarc-power-x-offset-tooltip" })
-    CreateSpawnConfigIntegerField(misc_flow, surface_name, { "oarc-power-y-offset" }, "shared_power_pole_position", "y_offset", { "oarc-power-y-offset-tooltip" })
 
 end
 

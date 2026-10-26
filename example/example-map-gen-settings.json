@@ -56,7 +56,8 @@
     "control-setting:moisture:bias": "0.00",
     "control-setting:moisture:frequency:multiplier": "1.00"
   },
-  
+
+  "_starting_points_comment": "Oarc Classic overwrites starting_points on every planet when the game starts. Anything set here is replaced, and a warning is logged.",
   "starting_points":
   [
     {"x": 0, "y": 0}
