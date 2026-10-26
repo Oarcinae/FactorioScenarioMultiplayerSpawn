@@ -231,41 +231,36 @@ The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushe
 Tick items off as they land. Each phase is meant to fit in one or two prompts.
 
 ### Pending tests (running list)
-Everything here is written but not yet tested in game. Remove items as they pass. A new Space Age game covers all of them.
+Everything here is written but not yet confirmed in game. Remove items as they pass. A new Space Age game covers all of them. Numbers stay fixed so they can be referred to.
+
+**Passed on the local test server (2026-10-26, RCON, real players driven by script, no visual checks):** 1 (early leaver removed on all three planets, points released), 4 and 11 (removed settings gone), 5 (reroll cleans the old point and frees it), 12 (only the four planets have Secondary on), 13 (vanilla and Oarc style secondary spawns on Vulcanus), 15 and 16 (Fulgora attractors go to the owner, including in chunks generated later), 18 (attractors stay on `player` with no spawn), 19 (Oarc style Fulgora attractors go to the owner), 20, 21, 22 and 24 (evolution reset off and on, only on that planet, all four parts zeroed). The log had no errors.
+
+**Bugs found and fixed while testing (2026-10-26):**
+- Nauvis point 1 was always explored before anyone joined. Writing the grid moves every force's spawn position to point 1, and freeplay charts 200 tiles around the `player` force's spawn on the first join. Fix: `ApplyStartingPoints` puts all spawn positions back at the origin.
+- A cleaned up point came back explored. Charts survive chunk deletion and regenerate the chunks, and shared vision gives the lobby force a chart request around every new spawn that waits while the lobby has nobody in it, then runs (and regenerates the deleted area) as soon as someone joins. Fix: the forced removal in `OarcRegrowthRemoveAllChunks` cancels pending chart requests for forces with nobody online, and uncharts each deleted chunk for every force. Spawn owners who are offline were not affected (their force charts straight away).
+
+**Manual check for the two fixes (do this yourself):** the temporary `DEBUG-CHUNKGEN` log in `control.lua` is still in for this. It logs any chunk generated inside an unclaimed point's 10x10 area. Remove it after this check.
+- a. New game, one player. The first spawn gets point 1, not point 2.
+- b. That player leaves within the minimum online time (the lobby is now empty). Wait 31 seconds for the cleanup, then rejoin and wait a minute in the holding pen. No `DEBUG-CHUNKGEN` lines appear for point 1, and the next spawn gets point 1 again with no `unusable` line in the log.
+- c. Same as b, but with a second player waiting in the holding pen the whole time. Point 1 is reused.
+- d. Two players with spawns, one goes offline (set the minimum online time to 0 first). The other rerolls twice, and after the cleanup the offline player rejoins. No `DEBUG-CHUNKGEN` lines for the cleaned up points.
+- Note: a point released less than 31 seconds before the next claim is still generated, so it is skipped and marked unusable for now. It becomes usable again after its cleanup.
 
 **Phase 3, cleanup** (abandoned base cleanup on, regrowth and World Eater off):
-1. A player spawns and leaves within the minimum online time. The log shows `Removing base` and `Released starting point N`.
-2. The 11x11 chunks around their point are deleted and come back as a vanilla starting area.
-3. The next new player gets that same point, and the log does not mark it unusable.
-4. "Minimum distance to existing chunks" is gone from the mod settings.
-5. Optional: `/oarc-reroll-spawn` clears the old area and frees its point.
+2. The 11x11 chunks around a released point are deleted and come back as a vanilla starting area. Server test: exactly the 121 chunks were deleted with the ring around them kept, and the regenerated area matched the original (same ore, water and no enemies). Still to check by eye.
+3. The next new player gets that same point. Passed on the server after the fixes above; confirm with the manual check.
 
-**Phase 4, Oarc style spawn option:**
+**Phase 4, Oarc style spawn option** (all passed by script on the server; still to check by eye):
 6. Setting off: the spawn menu has no style or moat checkbox, the spawn is vanilla, and the Oarc settings tab hides the moat, spawn area and resource placement settings. The surface config tab shows starting items, crash site and a note, but no resources section.
 7. Setting on, box unticked: the moat checkbox is greyed out and the spawn is vanilla.
-8. Setting on, box ticked: the moat checkbox is enabled, and the prefab is centred on the claimed grid point. Try with and without the moat.
+8. Setting on, box ticked: the moat checkbox is enabled, and the prefab is centred on the claimed grid point. Try with and without the moat. (No water strip with a moat is the intended behaviour.)
 9. Toggling the setting shows and hides the prefab-only parts of the settings tab and surface config tab.
-10. Optional: with a spawn radius of about 250, an Oarc style spawn that is cleaned up is fully deleted, including the parts outside 11x11.
+10. Optional: with a spawn radius of about 250, an Oarc style spawn that is cleaned up is fully deleted, including the parts outside 11x11. Server test: the cleanup radius is 10 chunks for radius 250 (at least 320 tiles each way, against 258 needed). Still to check by eye.
 
-**Phase 5, secondary spawns:**
-11. The "Enable secondary spawns by default" startup setting is gone.
-12. In the Oarc settings tab, Vulcanus, Fulgora, Gleba and Aquilo have Secondary ticked, and Nauvis has Primary only.
-13. `/oarc-test-planet vulcanus` for an Oarc style player gives a prefab on Vulcanus, and for a vanilla player a vanilla spawn.
+**Phase 5:**
 14. Fly to Vulcanus or Fulgora for real (without the test command). The player gets a secondary spawn on the planet's grid, and the cargo pod is redirected to it.
-
-**Phase 5, Fulgora lightning attractors:**
-15. Make a Fulgora spawn (`/oarc-test-planet fulgora`). The ruin attractors around it belong to the player's own force, so hovering one shows their force and they can be deconstructed.
-16. Walk or drive away from the spawn so new chunks generate. Attractors in those chunks also go to that player's force, because theirs is the closest spawn.
 17. With two players on Fulgora, attractors in newly generated chunks go to whichever spawn is closer.
-18. Before anyone has a Fulgora spawn, chart or generate some Fulgora chunks (for example `/c game.surfaces.fulgora.request_to_generate_chunks({0,0}, 3)`). Their attractors stay on the `player` force, with no errors.
-19. With "Allow Oarc Style Spawn Circle" on, an Oarc style Fulgora spawn's scripted attractors also belong to the owner's force.
-
-**Phase 5, evolution reset:**
-20. Setting off (the default): raise evolution with `/c game.forces.enemy.set_evolution_factor(0.5, "nauvis")`, then start a new spawn. Evolution is still 0.5 and no reset message appears.
-21. Setting on: with Nauvis evolution at 0.5, a new player starts a spawn. While they wait in the holding pen, `/c game.print(game.forces.enemy.get_evolution_factor("nauvis"))` reads 0, the chat says evolution on Nauvis was reset, and the log has `ResetEnemyEvolution`.
-22. Setting on: set Vulcanus evolution to 0.5 and Nauvis to 0.5, then run `/oarc-test-planet vulcanus`. Vulcanus reads 0, and Nauvis stays at 0.5.
-23. Setting on: joining someone else's shared spawn does not reset evolution (multiplayer, can wait for the Phase 6 multiplayer test).
-24. The `/evolution` command (or the evolution GUI) shows the time, pollution and spawner kill parts at 0 right after a reset.
+23. Evolution reset on: joining someone else's shared spawn does not reset evolution (multiplayer, can wait for the Phase 6 multiplayer test).
 
 **Every test:** `factorio-current.log` has no errors.
 

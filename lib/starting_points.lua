@@ -133,6 +133,13 @@ function ApplyStartingPoints(surface, allow_clear)
     mgs.starting_points = grid
     surface.map_gen_settings = mgs
 
+    -- Writing the starting points moves every force's spawn position to the first point. Freeplay charts the area
+    -- around the player force's spawn position when the first player joins, which would explore that point before
+    -- anyone claims it. Keep them at the origin.
+    for _, force in pairs(game.forces) do
+        force.set_spawn_position({ x = 0, y = 0 }, surface)
+    end
+
     storage.starting_points[surface.name] = {}
     for _, position in ipairs(grid) do
         table.insert(storage.starting_points[surface.name], { position = position, host_name = nil, unusable = false })

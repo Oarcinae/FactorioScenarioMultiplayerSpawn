@@ -520,6 +520,22 @@ end
 ---Remove all chunks at same time to reduce impact to FPS/UPS
 ---@return nil
 function OarcRegrowthRemoveAllChunks()
+    -- Chart requests for a force with nobody online wait until someone joins it, and would then generate the deleted
+    -- chunks again (shared vision gives the lobby force the chart around every new spawn). Cancel them first.
+    local forced_surfaces = {}
+    for _, c_remove in pairs(storage.rg.removal_list) do
+        if (c_remove.force) then
+            forced_surfaces[c_remove.surface] = true
+        end
+    end
+    for surface_name, _ in pairs(forced_surfaces) do
+        for _, force in pairs(game.forces) do
+            if (#force.connected_players == 0) then
+                force.cancel_charting(surface_name)
+            end
+        end
+    end
+
     for key, c_remove in pairs(storage.rg.removal_list) do
         local c_pos = c_remove.pos
         local surface_name = c_remove.surface
@@ -531,6 +547,12 @@ function OarcRegrowthRemoveAllChunks()
             if (c_remove.force) then
                 game.surfaces[surface_name].delete_chunk(c_pos)
                 storage.rg[surface_name].map[c_pos.x][c_pos.y] = nil
+
+                -- A deleted chunk that is still charted gets generated again, so a cleaned up spawn would come
+                -- straight back and its starting point would look explored.
+                for _, force in pairs(game.forces) do
+                    force.unchart_chunk(c_pos, surface_name)
+                end
 
             elseif (storage.rg[surface_name].map[c_pos.x][c_pos.y] == REGROWTH_FLAG_REMOVAL) then
 
