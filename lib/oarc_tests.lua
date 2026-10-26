@@ -241,14 +241,31 @@ end
 
 
 
----Allow players to reroll their spawn point, dangerous because this doesn't do a lot of checks.
----@param player LuaPlayer
+---Moves a player's spawn on the surface they are standing on to the next free starting point. Admins can reroll
+---anyone as often as they want. Other players can only reroll themselves, once per surface. A reroll is only used up
+---if a free starting point was found.
+---@param caller LuaPlayer The player running the command, for error messages and the admin check.
+---@param player LuaPlayer The player whose spawn is rerolled.
 ---@return nil
-function RerollSpawn(player)
+function RerollSpawn(caller, player)
+
+    if (caller ~= player) and not caller.admin then
+        SendErrorMsg(caller, {"oarc-command-not-admin-warning", "oarc-reroll-spawn " .. player.name})
+        return
+    end
 
     -- Make sure character is valid
     if not player.character then
-        log("ERROR - RerollSpawn - No valid character for player: " .. player.name)
+        SendErrorMsg(caller, { "oarc-reroll-no-character", player.name })
+        return
+    end
+
+    local surface = player.character.surface
+    local surface_name = surface.name
+
+    -- Confirm this player is the host of a spawn on this surface
+    if (storage.unique_spawns[surface_name] == nil or storage.unique_spawns[surface_name][player.name] == nil) then
+        SendErrorMsg(caller, { "oarc-reroll-no-spawn", player.name, surface_name })
         return
     end
 
@@ -259,12 +276,8 @@ function RerollSpawn(player)
         return
     end
 
-    local surface = player.character.surface
-    local surface_name = surface.name
-
-    -- Confirm there is AN existing spawn point for this player on this surface
-    if (storage.unique_spawns[surface_name] == nil or storage.unique_spawns[surface_name][player.name] == nil) then
-        log("ERROR - RerollSpawn - Can't reroll? No existing spawn for " .. player.name)
+    if (not caller.admin) and storage.player_rerolls[player.name] and storage.player_rerolls[player.name][surface_name] then
+        SendErrorMsg(caller, { "oarc-reroll-used-up", surface_name })
         return
     end
 
@@ -274,8 +287,14 @@ function RerollSpawn(player)
     -- Claim the next free starting point
     local spawn_position = ClaimNextStartingPoint(surface_name, player.name)
     if (spawn_position == nil) then
-        SendErrorMsg(player, { "oarc-no-free-starting-points", surface_name })
+        SendErrorMsg(caller, { "oarc-no-free-starting-points", surface_name })
         return
+    end
+
+    -- Admin rerolls don't use up the player's own reroll
+    if not caller.admin then
+        storage.player_rerolls[player.name] = storage.player_rerolls[player.name] or {}
+        storage.player_rerolls[player.name][surface_name] = true
     end
 
     -- Remove the old spawn point
@@ -305,7 +324,7 @@ function RerollSpawn(player)
     end
 
     -- Announce
-    SendBroadcastMsg({"", { "oarc-spawn-rerolled", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
+    SendBroadcastMsg({"", { "oarc-spawn-rerolled", player.name, surface_name }, " ", GetGPStext(surface_name, spawn_position)})
 end
 
 

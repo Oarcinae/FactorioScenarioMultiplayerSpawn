@@ -4,10 +4,22 @@ commands.add_command("oarc-wheres-my-cargo-pod", {"oarc-command-dude-wheres-my-c
     DudeWheresMyCargoPod(game.players[command.player_index])
 end)
 
--- Allow spawn rerolls
+-- Allow spawn rerolls, admins can name another player
 commands.add_command("oarc-reroll-spawn", {"oarc-command-reroll-spawn"}, function(command)
     if command.player_index == nil then return end -- Ignore if it's not a player
-    RerollSpawn(game.players[command.player_index])
+    local caller = game.players[command.player_index]
+
+    local target = caller
+    local player_name = string.match(command.parameter or "", "^%s*(%S+)")
+    if (player_name ~= nil) then
+        target = game.get_player(player_name)
+        if (target == nil) then
+            SendErrorMsg(caller, {"oarc-player-not-found", player_name})
+            return
+        end
+    end
+
+    RerollSpawn(caller, target)
 end)
 
 -- Trigger immediate regrowth cleanups

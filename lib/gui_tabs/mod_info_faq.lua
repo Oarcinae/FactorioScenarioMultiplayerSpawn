@@ -17,9 +17,17 @@ function CreateModInfoTab(tab_container, player)
     AddSpacerLine(scroll_pane)
 
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-what-is-this-mod" }, { "oarc-classic-faq-what-is-this-mod-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-classic-faq-starting-points" }, { "oarc-classic-faq-starting-points-answer" })
+    if IsOarcStyleSpawnAllowed() then
+        CreateFAQEntry(scroll_pane, { "oarc-classic-faq-oarc-style-spawn" }, { "oarc-classic-faq-oarc-style-spawn-answer" })
+    end
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-other-surfaces" }, { "oarc-classic-faq-other-surfaces-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-secondary-spawns" }, { "oarc-classic-faq-secondary-spawns-answer" })
+    CreateFAQEntry(scroll_pane, { "oarc-classic-faq-reroll" }, { "oarc-classic-faq-reroll-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-what-are-teams" }, { "oarc-classic-faq-what-are-teams-answer" })
+    if (storage.ocfg.gameplay.reset_evolution_on_new_spawn) then
+        CreateFAQEntry(scroll_pane, { "oarc-classic-faq-evolution-reset" }, { "oarc-classic-faq-evolution-reset-answer" })
+    end
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-shared-spawn" }, { "oarc-classic-faq-shared-spawn-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-regrowth" }, { "oarc-classic-faq-regrowth-answer" })
     CreateFAQEntry(scroll_pane, { "oarc-classic-faq-cleanup-abandoned" }, { "oarc-classic-faq-cleanup-abandoned-answer" })

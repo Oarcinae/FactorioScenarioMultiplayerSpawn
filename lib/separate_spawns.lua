@@ -46,6 +46,10 @@ function InitSpawnGlobalsAndForces()
     --[[@type OarcPlayerCooldownsTable]]
     storage.player_cooldowns = {}
 
+    -- Surfaces where each player has used their one /oarc-reroll-spawn. Admins have no limit.
+    --[[@type table<string, table<string, boolean>>]]
+    storage.player_rerolls = {}
+
     -- Players who have made a spawn choice get put into this list while waiting.
     -- An on_tick event checks when it expires and then places down the base resources, and teleports the player.
     -- Go look at DelayedSpawnOnTick() for more info.

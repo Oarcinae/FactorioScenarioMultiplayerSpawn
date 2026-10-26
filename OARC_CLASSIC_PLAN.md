@@ -167,10 +167,11 @@ A prefab spawn keeps today's pipeline centred on the claimed point:
 - Simplify the spawn choice GUI to: start a new spawn, join a shared spawn, and cancel a join request.
 - Admins see one line per surface in the admin controls of the server info tab: how many of its starting points are claimed (`GetStartingPointCounts`). Players already get spawn GPS links from the player list tab.
 - Update the FAQ tab, locale and changelog.
-- **Decision for the owner: keep or remove the spawn reroll.**
-  - `/oarc-reroll-spawn` (`RerollSpawn` in `lib/oarc_tests.lua`) moves a player to the next free starting point and releases the old one.
+- **Spawn reroll (decided 2026-10-26: keep, limited):**
+  - `/oarc-reroll-spawn [player]` (`RerollSpawn(caller, player)` in `lib/oarc_tests.lua`) moves a player's spawn on the surface they are standing on to the next free starting point and releases the old one.
+  - Players can only reroll themselves, once per surface (`storage.player_rerolls[player][surface]`). The reroll is only used up if a free point was found.
+  - Admins can reroll themselves or anyone else, with no limit, and that doesn't use up the target's own reroll.
   - Each reroll uses up a point from a fixed grid. If cleanup is off or the old area isn't deleted yet, the old point is skipped until its chunks are gone.
-  - Keep it (maybe admin only, or limited to once per player), or remove the command, the function and its locale entries.
 
 ## Phase 7: Public publish and public playtesting
 The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushed before then.
@@ -262,6 +263,9 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 17. With two players on Fulgora, attractors in newly generated chunks go to whichever spawn is closer.
 23. Evolution reset on: joining someone else's shared spawn does not reset evolution (multiplayer, can wait for the Phase 6 multiplayer test).
 
+**Phase 6, translations:**
+25. Switch the game language to German, Russian and Chinese and look over the spawn menu, the FAQ tab and the mod settings. The text was written without a native speaker, so it is worth a check by one if possible.
+
 **Every test:** `factorio-current.log` has no errors.
 
 **Deferred** (from earlier phases): custom map-gen starting points are replaced with an error message (Phase 2), and the multiplayer shared spawn join and remove player tests (Phase 1, folded into the Phase 6 multiplayer test).
@@ -339,8 +343,8 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] Simplify the spawn choice GUI (new spawn, join, cancel). The spawn settings and solo spawn frames are merged into one "Start a New Spawn" frame (`CreateNewSpawnFrame`), with the surface dropdown, style and moat checkboxes, and the button. The shared spawn frame and the cancel wait menu are unchanged. Removed the unused and outdated spawn menu locale keys from every language. Also fixed: picking Join with no host selected used to close the menu with nothing to replace it, the cancel path always logged an error, and the "Select Surface" label was hardcoded. Server test passed (2026-10-26)
 - [ ] Test by eye: the spawn menu layout with the Oarc style setting off and on
 - [x] Show admins a claimed starting point count per surface in the server info tab
-- [ ] Update the FAQ, locale and changelog
-- [ ] Decide whether to keep the spawn reroll (`/oarc-reroll-spawn`), then keep, limit or remove it
+- [x] Update the FAQ, locale and changelog. New FAQ entries for starting points, Oarc style spawns (only shown when allowed), rerolls and the evolution reset (only shown when on), and rewrote the outdated answers (teams, secondary spawns, cleanup). German, Russian and Chinese are translated in full, including the strings they were missing before, and the broken Russian setting keys are fixed. The 1.0.0 changelog lists everything
+- [x] Spawn reroll: kept, once per surface for players, no limit for admins, who can also name another player. Server test passed (2026-10-26): second reroll refused, admin unlimited, no free point keeps the reroll, a non-admin can't target someone else, and Vulcanus has its own reroll after Nauvis is used up
 - [ ] Multiplayer test: holding pen, join queue, offline protection
 
 ### Phase 7: Public publish and playtesting

@@ -2,6 +2,26 @@
 Version: 1.0.0
 Date: ????
   Info:
-    - First release of Oarc Classic, a stripped down version of Oarc Multiplayer Spawn (oarc-mod).
+    - First release of Oarc Classic, a stripped down version of Oarc Multiplayer Spawn (oarc-mod). It can't be enabled together with oarc-mod.
     - Removed buddy spawns, the main team, the item shop, energy and item sharing, and enemy scaling around spawns.
     - Every new spawn gets its own team. Players waiting to spawn are on the vanilla player force.
+  Features:
+    - Every planet gets a fixed grid of starting points when the game starts. Each new spawn takes the next free point, spiralling out from the center, and gets a vanilla starting area.
+    - New settings for the number of starting points per planet (default 16) and the spacing between them (default 100 chunks). They are only read when a new game starts, and the template scenario can set them per surface.
+    - A starting point is skipped if the area around it has already been explored. If no point is free, players are told to join an existing spawn instead.
+    - Starting points set by the map-gen settings, a preset or another mod are replaced by the grid, with an error in the log and in chat for admins.
+    - New "Allow Oarc Style Spawn Circle" setting (off by default). When on, players can tick "OG Oarc style spawn" in the spawn menu to get the classic spawn circle, tree ring, moat and scripted resources on their starting point.
+    - New "Reset evolution on new spawn" setting (off by default). Every new spawn resets enemy evolution to 0 on that planet, for everyone there.
+    - Secondary spawns are always on for every planet and use that planet's starting point grid. Secondary spawns use the same style as the player's first spawn.
+    - On Fulgora, lightning attractors from map generation go to the team with the closest spawn, so players can deconstruct the ones near their base.
+    - The server info tab shows admins how many starting points are claimed on each surface.
+    - /oarc-reroll-spawn moves a player's spawn to the next free starting point. Players can do this once per surface, and only use it up if a free point is found. Admins can reroll anyone, as often as they want, with /oarc-reroll-spawn [player].
+    - New FAQ entries for starting points, Oarc style spawns, rerolls and the evolution reset.
+  Changes:
+    - Abandoned spawn cleanup deletes a fixed area around the starting point (at least 11x11 chunks, larger for big Oarc style spawns), and the point is reused once the area regenerates. It works with regrowth and world eater disabled.
+    - Simplified the spawn menu to starting a new spawn, joining a shared spawn, and cancelling a join request.
+    - Removed the near/far spawn distance settings and the minimum distance to existing chunks setting.
+    - Removed the "Enable secondary spawns by default" startup setting.
+    - The remote interfaces are now named oarc_classic and oarc_classic_scenario, and the template scenario was cut down to a minimal example.
+  Locale:
+    - Updated the German, Russian and Chinese translations, and filled in strings that were missing.
