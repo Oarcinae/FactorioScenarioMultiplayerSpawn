@@ -165,7 +165,7 @@ A prefab spawn keeps today's pipeline centred on the claimed point:
 
 ## Phase 6: GUI and docs
 - Simplify the spawn choice GUI to: start a new spawn, join a shared spawn, and cancel a join request.
-- The spawn controls tab lists the grid's claimed and free points with `GetGPStext`.
+- Admins see one line per surface in the admin controls of the server info tab: how many of its starting points are claimed (`GetStartingPointCounts`). Players already get spawn GPS links from the player list tab.
 - Update the FAQ tab, locale and changelog.
 - **Decision for the owner: keep or remove the spawn reroll.**
   - `/oarc-reroll-spawn` (`RerollSpawn` in `lib/oarc_tests.lua`) moves a player to the next free starting point and releases the old one.
@@ -336,8 +336,9 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [ ] Test on Vulcanus and Fulgora: cargo pod redirect, attractors, and evolution reads 0 in the holding pen
 
 ### Phase 6: GUI and docs
-- [ ] Simplify the spawn choice GUI (new spawn, join, cancel)
-- [ ] List claimed and free points in the spawn controls tab
+- [x] Simplify the spawn choice GUI (new spawn, join, cancel). The spawn settings and solo spawn frames are merged into one "Start a New Spawn" frame (`CreateNewSpawnFrame`), with the surface dropdown, style and moat checkboxes, and the button. The shared spawn frame and the cancel wait menu are unchanged. Removed the unused and outdated spawn menu locale keys from every language. Also fixed: picking Join with no host selected used to close the menu with nothing to replace it, the cancel path always logged an error, and the "Select Surface" label was hardcoded. Server test passed (2026-10-26)
+- [ ] Test by eye: the spawn menu layout with the Oarc style setting off and on
+- [x] Show admins a claimed starting point count per surface in the server info tab
 - [ ] Update the FAQ, locale and changelog
 - [ ] Decide whether to keep the spawn reroll (`/oarc-reroll-spawn`), then keep, limit or remove it
 - [ ] Multiplayer test: holding pen, join queue, offline protection

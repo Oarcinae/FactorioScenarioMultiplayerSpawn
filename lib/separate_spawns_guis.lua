@@ -149,7 +149,7 @@ function CreateSurfaceSelectDropdown(parent_flow)
         end
     end
 
-    AddLabel(surfacesHorizontalFlow, "surfacesHorizontalFlowLabel", "Select Surface: ", my_label_style)
+    AddLabel(surfacesHorizontalFlow, "surfacesHorizontalFlowLabel", { "oarc-surface-select-label" }, my_label_style)
     surfacesHorizontalFlow.add {
         name = "surface_select_dropdown",
         tags = { action = "oarc_spawn_options", setting = "surface_select" },
@@ -161,85 +161,61 @@ function CreateSurfaceSelectDropdown(parent_flow)
     }
 end
 
----Create the spawn settings frame
+---Create the frame for starting a new spawn: pick a surface (and the spawn style if allowed), then confirm.
 ---@param parent_flow LuaGuiElement
 ---@param gameplay OarcConfigGameplaySettings
 ---@return nil
-function CreateSpawnSettingsFrame(parent_flow, gameplay)
+function CreateNewSpawnFrame(parent_flow, gameplay)
 
-    local spawn_settings_frame = parent_flow.add {
-        name = "spawn_settings_frame",
-        type = "frame",
-        direction = "vertical",
-        style = "bordered_frame",
-    }
-    spawn_settings_frame.style.horizontally_stretchable = true
-    spawn_settings_frame.style.padding = 5
-    spawn_settings_frame.style.margin = 4
-    spawn_settings_frame.style.bottom_margin = 0
-
-    AddLabel(spawn_settings_frame, nil, { "oarc-spawn-menu-settings-header" }, my_label_header_style)
-    AddLabel(spawn_settings_frame, nil, { "oarc-spawn-menu-settings-info" }, my_label_style)
-
-    -- Pick surface
-    CreateSurfaceSelectDropdown(spawn_settings_frame)
-
-    -- Nothing else to pick unless players are allowed the OG Oarc style spawn circle.
-    if (not IsOarcStyleSpawnAllowed()) then return end
-
-    -- Pick the OG Oarc style spawn circle, or the vanilla starting area (unchecked)
-    spawn_settings_frame.add {
-        name = "oarc_style_spawn_option_checkbox",
-        tags = { action = "oarc_spawn_options", setting = "oarc_style_spawn_option" },
-        type = "checkbox",
-        caption = { "oarc-oarc-style-spawn-option" },
-        state = false, -- Default to the vanilla starting area
-        tooltip = { "oarc-oarc-style-spawn-option-tooltip" }
-    }
-
-    -- Allow players to spawn with a moat around their area. Only Oarc style spawns have a moat, so this is only
-    -- enabled while the Oarc style spawn is picked.
-    if (gameplay.allow_moats_around_spawns) then
-        spawn_settings_frame.add {
-            name = "isolated_spawn_moat_option_checkbox",
-            tags = { action = "oarc_spawn_options", setting = "moat_option" },
-            type = "checkbox",
-            caption = { "oarc-moat-option" },
-            state = true, -- Default to true
-            enabled = false,
-            tooltip = { "oarc-moat-option-tooltip" }
-        }
-    end
-end
-
----Create a frame and a confim button for player to request SOLO spawn creation
----@param parent_flow LuaGuiElement
----@param enable_shared_spawns boolean
----@param max_shared_players integer
----@return nil
-function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_players)
-
-    solo_spawn_frame = parent_flow.add {
-        name = "solo_spawn_frame",
+    local new_spawn_frame = parent_flow.add {
+        name = "new_spawn_frame",
         type = "frame",
         direction = "vertical",
         style = "bordered_frame"
     }
-    solo_spawn_frame.style.horizontally_stretchable = true
-    solo_spawn_frame.style.padding = 5
-    solo_spawn_frame.style.margin = 4
-    solo_spawn_frame.style.bottom_margin = 0
+    new_spawn_frame.style.horizontally_stretchable = true
+    new_spawn_frame.style.padding = 5
+    new_spawn_frame.style.margin = 4
+    new_spawn_frame.style.bottom_margin = 0
 
-    AddLabel(solo_spawn_frame, nil, { "oarc-spawn-menu-solo-header" }, my_label_header_style)
+    AddLabel(new_spawn_frame, nil, { "oarc-spawn-menu-new-header" }, my_label_header_style)
+    AddLabel(new_spawn_frame, nil, { "oarc-new-spawn-info" }, my_label_style)
 
-    AddLabel(solo_spawn_frame, nil, { "oarc-starting-area-normal" }, my_label_style)
-    
     -- A note about sharing spawns
-    if enable_shared_spawns and (max_shared_players > 1) then
-        AddLabel(solo_spawn_frame, nil, { "oarc-max-players-shared-spawn", max_shared_players - 1 },  my_label_style)
+    if gameplay.enable_shared_spawns and (gameplay.number_of_players_per_shared_spawn > 1) then
+        AddLabel(new_spawn_frame, nil, { "oarc-max-players-shared-spawn", gameplay.number_of_players_per_shared_spawn - 1 }, my_label_style)
     end
 
-    local button_flow = solo_spawn_frame.add {
+    -- Pick surface
+    CreateSurfaceSelectDropdown(new_spawn_frame)
+
+    -- Pick the OG Oarc style spawn circle, or the vanilla starting area (unchecked). Only if players are allowed it.
+    if IsOarcStyleSpawnAllowed() then
+        new_spawn_frame.add {
+            name = "oarc_style_spawn_option_checkbox",
+            tags = { action = "oarc_spawn_options", setting = "oarc_style_spawn_option" },
+            type = "checkbox",
+            caption = { "oarc-oarc-style-spawn-option" },
+            state = false, -- Default to the vanilla starting area
+            tooltip = { "oarc-oarc-style-spawn-option-tooltip" }
+        }
+
+        -- Allow players to spawn with a moat around their area. Only Oarc style spawns have a moat, so this is only
+        -- enabled while the Oarc style spawn is picked.
+        if (gameplay.allow_moats_around_spawns) then
+            new_spawn_frame.add {
+                name = "isolated_spawn_moat_option_checkbox",
+                tags = { action = "oarc_spawn_options", setting = "moat_option" },
+                type = "checkbox",
+                caption = { "oarc-moat-option" },
+                state = true, -- Default to true
+                enabled = false,
+                tooltip = { "oarc-moat-option-tooltip" }
+            }
+        end
+    end
+
+    local button_flow = new_spawn_frame.add {
         type = "flow",
         direction = "horizontal"
     }
@@ -249,8 +225,8 @@ function CreateSoloSpawnFrame(parent_flow, enable_shared_spawns, max_shared_play
         name = "spawn_request",
         tags = { action = "oarc_spawn_options", setting = "spawn_request" },
         type = "button",
-        caption = { "oarc-solo-spawn" },
-        tooltip = { "oarc-solo-spawn-tooltip" },
+        caption = { "oarc-new-spawn-button" },
+        tooltip = { "oarc-new-spawn-button-tooltip" },
         style = "green_button"
     }
 end
@@ -409,9 +385,8 @@ function DisplaySpawnOptions(player)
     }
     storage.spawn_choices[player.name] = spawn_choices_entry
 
-    CreateSpawnSettingsFrame(sGui, gameplay) -- The settings for configuring a spawn
-    CreateSoloSpawnFrame(sGui, gameplay.enable_shared_spawns, gameplay.number_of_players_per_shared_spawn) -- The primary method of spawning
-    CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns) -- Spawn options to join another player's base.
+    CreateNewSpawnFrame(sGui, gameplay) -- Start a new spawn at the next free starting point.
+    CreateSharedSpawnFrame(sGui, gameplay.enable_shared_spawns) -- Or join another player's base.
 
     script.raise_event("oarc-classic-on-spawn-choices-gui-displayed", { player_index = player.index, gui_element = sGui })
 end
@@ -474,10 +449,6 @@ end
 ---@return nil
 function RequestToJoinSharedSpawn(player)
 
-    if (player.gui.screen.spawn_opts ~= nil) then
-        player.gui.screen.spawn_opts.destroy()
-    end
-
     local host_name = storage.spawn_choices[player.name].host_name
     if (host_name == nil) then SendErrorMsg(player, { "oarc-no-shared-spawn-selected" }) return end
 
@@ -518,9 +489,9 @@ function CancelSharedSpawnRequest(player)
     player.gui.screen.join_shared_spawn_wait_menu.destroy()
     DisplaySpawnOptions(player)
 
-    RemovePlayerFromJoinQueue(player.name)
-
-    log("ERROR! Failed to remove player from joinQueue?!")
+    if not RemovePlayerFromJoinQueue(player.name) then
+        log("ERROR! Failed to remove player from joinQueue?!")
+    end
 end
 
 ---Handle dropdown selection changes
@@ -539,7 +510,6 @@ function SpawnOptsSelectionChanged(event)
         local index = event.element.selected_index
         local surface_name = event.element.get_item(index) --[[@as string]]
         storage.spawn_choices[player.name].surface_name = surface_name
-        log("GUI DEBUG Selected surface: " .. surface_name)
 
     elseif (tags.setting == "shared_spawn_select") then
         SharedSpawnSelect(event.element, player)
@@ -587,7 +557,7 @@ function PrimarySpawnRequest(player)
     local spawn_choices = storage.spawn_choices[player.name]
     if (spawn_choices == nil) then error("ERROR! No spawn choices found for player!") return end
 
-    -- N/A for solo spawns so clear this!
+    -- N/A for new spawns so clear this!
     storage.spawn_choices[player.name].host_name = nil
 
     -- Claim the next free starting point. If there are none left, they can still join someone else's spawn.

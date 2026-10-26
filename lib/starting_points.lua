@@ -303,6 +303,21 @@ function TransferStartingPointClaims(old_host_name, new_host_name)
     end
 end
 
+---Counts the claimed starting points on a surface.
+---@param surface_name string
+---@return integer claimed
+---@return integer total
+function GetStartingPointCounts(surface_name)
+    local points = storage.starting_points[surface_name] or {}
+    local claimed = 0
+    for _, point in ipairs(points) do
+        if (point.host_name ~= nil) then
+            claimed = claimed + 1
+        end
+    end
+    return claimed, #points
+end
+
 ---@class OarcStartingPoint
 ---@field position MapPosition The tile position of the starting point.
 ---@field host_name string? The host of the spawn on this point, nil if it is free.

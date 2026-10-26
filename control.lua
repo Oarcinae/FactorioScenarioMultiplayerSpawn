@@ -180,7 +180,7 @@ end)
 ---@field gui_element LuaGuiElement
 -- script.on_event("oarc-classic-on-spawn-choices-gui-displayed", function(event)
 --     log("EVENT - oarc-classic-on-spawn-choices-gui-displayed:" .. serpent.block(event --[[@as OarcModOnSpawnChoicesGuiDisplayedEvent]]))
---     -- The 3 main sub sections are called: spawn_settings_frame, solo_spawn_frame and shared_spawn_frame
+--     -- The 2 main sub sections are called: new_spawn_frame and shared_spawn_frame
 -- end)
 
 

@@ -55,6 +55,17 @@ function CreateServerInfoTab(tab_container, player)
 
         AddLabel(tab_container, nil, {"oarc-server-info-admin-controls"}, "caption_label")
 
+        -- Starting points used on each surface, sorted by name
+        local surface_names = {}
+        for surface_name, _ in pairs(storage.starting_points) do
+            table.insert(surface_names, surface_name)
+        end
+        table.sort(surface_names)
+        for _, surface_name in ipairs(surface_names) do
+            local claimed, total = GetStartingPointCounts(surface_name)
+            AddLabel(tab_container, nil, {"oarc-server-info-starting-points", surface_name, claimed, total}, my_label_style)
+        end
+
         local horizontal_flow = tab_container.add{
             type="flow", direction="horizontal"
         }
