@@ -55,3 +55,30 @@ commands.add_command("oarc-cleanup-player", {"oarc-command-cleanup-player"}, fun
 
     RemoveOrResetPlayer(target_player, true)
 end)
+
+-- TEMPORARY: Prototype testing of MapGenSettings.starting_points
+commands.add_command("oarc-test-starting-points", "Apply the 4x4 test starting points grid to nauvis and clear it.", function(command)
+    if command.player_index ~= nil and not game.get_player(command.player_index).admin then
+        SendErrorMsg(game.players[command.player_index], {"oarc-command-not-admin-warning", command.name})
+        return
+    end
+
+    local surface = game.surfaces["nauvis"]
+    ApplyTestStartingPoints(surface, true, "command")
+    game.print("Applied " .. #surface.map_gen_settings.starting_points .. " starting points to nauvis and cleared it.")
+end)
+
+commands.add_command("oarc-tp-start", "Teleport to test starting point <1-16> [surface], surface defaults to nauvis.", function(command)
+    if command.player_index == nil then return end
+    local player = game.players[command.player_index]
+    if not player.admin then
+        SendErrorMsg(player, {"oarc-command-not-admin-warning", command.name})
+        return
+    end
+
+    local index, surface_name = string.match(command.parameter or "", "^%s*(%d+)%s*(%S*)")
+    if (surface_name == nil) or (surface_name == "") then
+        surface_name = "nauvis"
+    end
+    TeleportToTestStartingPoint(player, tonumber(index) or 0, surface_name)
+end)

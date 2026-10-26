@@ -315,3 +315,97 @@ function RerollSpawn(player)
     -- Announce
     SendBroadcastMsg({"", { "oarc-spawn-rerolled", player.name, surface.name }, " ", GetGPStext(surface.name, spawn_position)})
 end
+
+
+-- Prototype: let the engine place starting areas via MapGenSettings.starting_points.
+-- 4x4 grid, 2000 tiles apart, centered on origin: -3000, -1000, 1000, 3000
+---@return MapPosition[]
+function GetTestStartingPointsGrid()
+    local points = {}
+    for i = 0, 3 do
+        for j = 0, 3 do
+            table.insert(points, {x = -3000 + i * 2000, y = -3000 + j * 2000})
+        end
+    end
+    return points
+end
+
+---Writes the test starting points grid to the surface's map gen settings.
+---@param surface LuaSurface
+---@param force_clear boolean Clear the surface so all chunks regenerate with the new settings.
+---@param source string Where this was called from, for the log.
+---@return nil
+function ApplyTestStartingPoints(surface, force_clear, source)
+    if storage.test_starting_points_applied == nil then
+        storage.test_starting_points_applied = {}
+    end
+
+    -- Check BEFORE writing the settings, this is what tells us if a clear is needed.
+    local already_generated = surface.is_chunk_generated({0, 0})
+    log("ApplyTestStartingPoints [" .. source .. "]: " .. surface.name ..
+        " origin chunk already generated = " .. tostring(already_generated))
+
+    local mgs = surface.map_gen_settings -- Must modify a copy and write the whole table back
+    mgs.starting_points = GetTestStartingPointsGrid()
+    surface.map_gen_settings = mgs
+    storage.test_starting_points_applied[surface.name] = true
+
+    if force_clear or already_generated then
+        log("ApplyTestStartingPoints [" .. source .. "]: clearing surface " .. surface.name)
+        surface.clear(true)
+    end
+end
+
+---Creates every planet surface that doesn't exist yet and applies the test grid to all of them.
+---@return nil
+function ApplyTestStartingPointsToAllPlanets()
+    for _, planet in pairs(game.planets) do
+        local surface = planet.surface
+        if (surface == nil) then
+            log("ApplyTestStartingPointsToAllPlanets: creating surface for planet " .. planet.name)
+            surface = planet.create_surface()
+        end
+
+        -- on_surface_created may have already applied it if the event fired during create_surface.
+        if (storage.test_starting_points_applied == nil) or (not storage.test_starting_points_applied[surface.name]) then
+            ApplyTestStartingPoints(surface, false, "on_init")
+        end
+    end
+end
+
+---Fallback for planet surfaces created later by the engine (platform arrival, other mods).
+---@param surface LuaSurface
+---@return nil
+function ApplyTestStartingPointsOnSurfaceCreated(surface)
+    if (surface.planet == nil) then return end
+    if (storage.test_starting_points_applied ~= nil) and storage.test_starting_points_applied[surface.name] then return end
+    ApplyTestStartingPoints(surface, false, "on_surface_created")
+end
+
+---Teleport a player to one of the test starting points and chart the area around it.
+---@param player LuaPlayer
+---@param index integer 1 to 16
+---@param surface_name string
+---@return nil
+function TeleportToTestStartingPoint(player, index, surface_name)
+    local points = GetTestStartingPointsGrid()
+    local point = points[index]
+    if point == nil then
+        player.print("Usage: /oarc-tp-start <1-" .. #points .. "> [surface]")
+        return
+    end
+
+    local surface = game.surfaces[surface_name]
+    if (surface == nil) then
+        player.print("No surface named " .. surface_name)
+        return
+    end
+    local radius = 256
+    player.force.chart(surface, {{point.x - radius, point.y - radius}, {point.x + radius, point.y + radius}})
+    surface.request_to_generate_chunks(point, 2)
+    surface.force_generate_chunk_requests()
+
+    local safe_pos = surface.find_non_colliding_position("character", point, 64, 1) or point
+    player.teleport(safe_pos, surface)
+    player.print("Teleported to starting point " .. index .. " " .. GetGPStext(surface.name, point))
+end

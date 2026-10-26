@@ -38,6 +38,9 @@ require("lib/oarc_tests")
 
 require("lib/oarc_commands")
 
+-- TEMPORARY: Prototype testing of MapGenSettings.starting_points on nauvis.
+local TEST_STARTING_POINTS = true
+
 
 --------------------------------------------------------------------------------
 -- On Init - Only runs once the first time the game starts
@@ -56,6 +59,11 @@ script.on_init(function(event)
 
     InitSpawnGlobalsAndForces()
     CreateHoldingPenSurface() -- Must be after init spawn globals?
+
+    -- After spawn globals so the surface created handler is safe if creating planet surfaces triggers it.
+    if TEST_STARTING_POINTS then
+        ApplyTestStartingPointsToAllPlanets()
+    end
 
     -- Useful for debugging and if players choose not to use the provided empty scenario.
     if remote.interfaces["freeplay"] then
@@ -321,6 +329,10 @@ script.on_event(defines.events.on_surface_created, function(event)
 
     log("Surface created: " .. surface.name)
     if IsSurfaceBlacklisted(surface.name) then return end
+
+    if TEST_STARTING_POINTS then
+        ApplyTestStartingPointsOnSurfaceCreated(surface)
+    end
 
     SeparateSpawnsSurfaceCreated(event)
     RegrowthSurfaceCreated(event)
