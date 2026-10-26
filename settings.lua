@@ -55,20 +55,20 @@ data:extend({
     },
     {
         type = "int-setting",
-        name = "oarc-classic-near-spawn-distance",
+        name = "oarc-classic-starting-points-count",
         setting_type = "runtime-global",
-        default_value = 100,
-        minimum_value = 50,
-        maximum_value = 250,
+        default_value = 16,
+        minimum_value = 1,
+        maximum_value = 128,
         order = "c2"
     },
     {
         type = "int-setting",
-        name = "oarc-classic-far-spawn-distance",
+        name = "oarc-classic-starting-points-spacing-chunks",
         setting_type = "runtime-global",
-        default_value = 500,
-        minimum_value = 250,
-        maximum_value = 5000,
+        default_value = 100,
+        minimum_value = 20,
+        maximum_value = 1000,
         order = "c3"
     },
 

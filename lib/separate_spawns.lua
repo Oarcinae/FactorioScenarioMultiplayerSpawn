@@ -633,6 +633,14 @@ function PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
     end
 end
 
+---Prefab spawns (crop shape, moat, scripted resources) are built on top of the starting point. Natural spawns use
+---the vanilla starting area as is.
+---TODO: Replace with the spawn style mod setting.
+---@return boolean
+function IsPrefabSpawnStyle()
+    return false
+end
+
 ---Places the final spawn elements after chunk generation is complete.
 ---@param delayed_spawn OarcDelayedSpawn
 ---@return nil
@@ -642,20 +650,22 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
     local surface = game.surfaces[delayed_spawn.surface_name]
 
-    -- Generate water strip only if we don't have a moat.
-    if (not delayed_spawn.moat or spawn_config.liquid_tile == "lava") then
-        GenerateStartingLiquidStrip(delayed_spawn, spawn_config, surface)
+    if IsPrefabSpawnStyle() then
+        -- Generate water strip only if we don't have a moat.
+        if (not delayed_spawn.moat or spawn_config.liquid_tile == "lava") then
+            GenerateStartingLiquidStrip(delayed_spawn, spawn_config, surface)
+        end
+
+        -- Create the spawn resources here
+        GenerateStartingResources(surface, delayed_spawn.position)
+
+        -- Place randomized entities
+        if (delayed_spawn.surface_name == "fulgora") then
+            PlaceFulgoranLightningAttractors(surface, delayed_spawn.position, 10)
+        end
+
+        PlaceRandomEntities(surface, delayed_spawn.position)
     end
-
-    -- Create the spawn resources here
-    GenerateStartingResources(surface, delayed_spawn.position)
-
-    -- Place randomized entities
-    if (delayed_spawn.surface_name == "fulgora") then
-        PlaceFulgoranLightningAttractors(surface, delayed_spawn.position, 10)
-    end
-
-    PlaceRandomEntities(surface, delayed_spawn.position)
 
     -- Only primary spawns get a crashed ship.
     if delayed_spawn.primary then
@@ -674,6 +684,8 @@ function GenerateFinalSpawnPieces(delayed_spawn)
             end
         end
     end
+
+    game.players[delayed_spawn.host_name].force.set_spawn_position(delayed_spawn.position, surface)
 
     -- Render some welcoming text...
     DisplayWelcomeGroundTextAtSpawn(delayed_spawn.surface_name, delayed_spawn.position)
@@ -820,8 +832,8 @@ function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
     local chunkArea = event.area
 
-    -- Don't block based on spawn enabled.
-    -- if (not storage.oarc_surfaces[surface.name]) then return end
+    -- Natural spawns leave the vanilla starting area alone.
+    if (not IsPrefabSpawnStyle()) then return end
 
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it provide a guaranteed area of land and water tiles.
@@ -1021,6 +1033,8 @@ function UniqueSpawnCleanupRemove(player_name, unique_spawn)
 
     -- Remove the spawn point from the global table.
     storage.unique_spawns[unique_spawn.surface_name][player_name] = nil
+
+    ReleaseStartingPoint(unique_spawn.surface_name, spawn_position)
 end
 
 ---Cleans up all references to a player in the global tables.
@@ -1074,6 +1088,8 @@ end
 ---@param new_host_name string
 ---@return nil
 function TransferOwnershipOfAllSpawns(primary_spawn, new_host_name)
+
+    TransferStartingPointClaims(primary_spawn.host_name, new_host_name)
 
     -- Transfer every primary AND secondary spawn.
     for surface_name, unique_spawns in pairs(storage.unique_spawns) do
@@ -1394,11 +1410,6 @@ end
 ---@return OarcDelayedSpawn
 function GenerateNewSpawn(host_name, surface_name, spawn_position, spawn_choices, primary)
 
-    -- Double check...
-    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        error("Invalid spawn position for GenerateNewSpawn: " .. host_name .. " on surface: " .. spawn_choices.surface_name)
-    end
-
     local unique_spawn = nil
     if primary then
         unique_spawn = InitPrimarySpawnGlobals(host_name, spawn_position, spawn_choices)
@@ -1598,11 +1609,10 @@ function SecondarySpawn(player, surface_name, send_player)
         return
     end
 
-    -- Find a new spawn point
-    local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
-    -- If that fails, just throw a warning and don't spawn them. They can try again.
-    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        SendErrorMsg(player, { "oarc-no-ungenerated-land-error" })
+    -- Claim the next free starting point on the new surface
+    local spawn_position = ClaimNextStartingPoint(surface_name, host_name)
+    if (spawn_position == nil) then
+        SendErrorMsg(player, { "oarc-no-free-starting-points", surface_name })
         return
     end
 
@@ -2114,7 +2124,6 @@ end
 ---@class OarcSpawnChoices
 ---@field surface_name string The surface on which the player wants to spawn.
 ---@field moat boolean Whether the player wants a moat around their spawn.
----@field distance integer The distance from the center of the map where the player wants to spawn.
 ---@field host_name string? The host player name if the player wants to join a shared spawn.
 
 ---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.

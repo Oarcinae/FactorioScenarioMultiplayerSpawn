@@ -22,6 +22,7 @@ require("lib/regrowth_map")
 require("lib/holding_pen")
 require("lib/separate_spawns")
 require("lib/separate_spawns_guis")
+require("lib/starting_points")
 require("lib/oarc_gui_tabs")
 require("lib/offline_protection")
 
@@ -29,9 +30,6 @@ require("lib/offline_protection")
 require("lib/oarc_tests")
 
 require("lib/oarc_commands")
-
--- TEMPORARY: Prototype testing of MapGenSettings.starting_points on nauvis.
-local TEST_STARTING_POINTS = true
 
 
 --------------------------------------------------------------------------------
@@ -52,10 +50,9 @@ script.on_init(function(event)
     InitSpawnGlobalsAndForces()
     CreateHoldingPenSurface() -- Must be after init spawn globals?
 
-    -- After spawn globals so the surface created handler is safe if creating planet surfaces triggers it.
-    if TEST_STARTING_POINTS then
-        ApplyTestStartingPointsToAllPlanets()
-    end
+    -- Pre-creates every planet surface and gives it a starting point grid. After spawn globals so the surface
+    -- created handler is safe if creating planet surfaces triggers it.
+    InitStartingPoints()
 
     -- Useful for debugging and if players choose not to use the provided empty scenario.
     if remote.interfaces["freeplay"] then
@@ -101,6 +98,10 @@ end)
 ----------------------------------------
 script.on_event(defines.events.on_player_created, function(event)
     SeparateSpawnsInitPlayer(event.player_index)
+end)
+
+script.on_event(defines.events.on_player_joined_game, function(event)
+    ShowStartingPointWarnings(game.players[event.player_index])
 end)
 
 script.on_event(defines.events.on_player_respawned, function(event)
@@ -313,9 +314,7 @@ script.on_event(defines.events.on_surface_created, function(event)
     log("Surface created: " .. surface.name)
     if IsSurfaceBlacklisted(surface.name) then return end
 
-    if TEST_STARTING_POINTS then
-        ApplyTestStartingPointsOnSurfaceCreated(surface)
-    end
+    StartingPointsSurfaceCreated(surface)
 
     SeparateSpawnsSurfaceCreated(event)
     RegrowthSurfaceCreated(event)
@@ -420,7 +419,6 @@ end)
 script.on_event(defines.events.on_gui_value_changed, function(event)
     if not event.element.valid then return end
 
-    SeparateSpawnsGuiValueChanged(event)
     OarcGuiTabsValueChanged(event)
 end)
 

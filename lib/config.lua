@@ -69,9 +69,11 @@ OCFG = {
         -- generated map area (even if it is not visible on the map!).
         minimum_distance_to_existing_chunks = 20,
 
-        -- The range in which a player can select how close to the center of the map they want to spawn.
-        near_spawn_distance = 100,
-        far_spawn_distance = 500,
+        -- Number of starting points on each planet, and the spacing between them in chunks.
+        -- These are only read when the game starts. Override them per surface with
+        -- surfaces_config[surface_name].starting_points = { count = 8, spacing_chunks = 120 }
+        starting_points_count = 16,
+        starting_points_spacing_chunks = 100,
 
         -- This inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
         enable_offline_protection = true,
@@ -293,8 +295,8 @@ OCFG = {
 ---@field allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
 ---@field enable_moat_bridging boolean If there is a moat, this makes a small path to land to avoid "turtling", but if the spawn is in the middle of water, it won't do anything.
 ---@field minimum_distance_to_existing_chunks number The radius, in chunks, that a spawn area is from any other generated chunks. It ensures the spawn area isn't too near generated/explored/existing area.
----@field near_spawn_distance number The closest a player can spawn to the origin. (Not exact, but close).
----@field far_spawn_distance number The furthest a player can spawn from the origin. (Not exact, but close).
+---@field starting_points_count integer Number of starting points on each planet. Only read when the game starts.
+---@field starting_points_spacing_chunks integer Spacing between starting points in chunks. Only read when the game starts.
 ---@field enable_offline_protection boolean Inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
 ---@field enable_shared_team_vision boolean Enable shared vision between teams
 ---@field enable_shared_team_chat boolean Share local team chat with all teams
@@ -317,6 +319,11 @@ OCFG = {
 ---@class OarcConfigSurface
 ---@field starting_items OarcConfigStartingItems Starting items for players on this surface (including crashed ship items)
 ---@field spawn_config OarcConfigSpawn Spawn area config for this surface
+---@field starting_points OarcConfigStartingPoints? Overrides the global starting point settings for this surface. Only read when the game starts.
+
+---@class OarcConfigStartingPoints
+---@field count integer? Number of starting points on this surface.
+---@field spacing_chunks integer? Spacing between starting points in chunks.
 
 ---@class OarcConfigStartingItems
 ---@field crashed_ship boolean Add a crashed ship like a vanilla game (create_crash_site) Resources go in the ship itself. (5 slots max!) Wreakage is distributed in small pieces. (I recommend only 1 item type.)

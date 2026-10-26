@@ -18,8 +18,6 @@ OCFG_KEYS =
     ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-classic-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
     ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-classic-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
     ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-classic-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
-    ["gameplay.near_spawn_distance"] = {mod_key = "oarc-classic-near-spawn-distance" , ocfg_keys = {"gameplay", "near_spawn_distance"}, type = "integer"},
-    ["gameplay.far_spawn_distance"] = {mod_key = "oarc-classic-far-spawn-distance" , ocfg_keys = {"gameplay", "far_spawn_distance"}, type = "integer"},
     ["gameplay.enable_shared_spawns"] = {mod_key = "oarc-classic-enable-shared-spawns" , ocfg_keys = {"gameplay", "enable_shared_spawns"}, type = "boolean"},
     ["gameplay.number_of_players_per_shared_spawn"] = {mod_key = "oarc-classic-number-of-players-per-shared-spawn" , ocfg_keys = {"gameplay", "number_of_players_per_shared_spawn"}, type = "integer"},
     ["gameplay.default_surface"] = {mod_key = "oarc-classic-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
@@ -180,14 +178,6 @@ function ValidateSettings()
     end
 
 
-    -- Validate minimum is less than maximums
-    if (storage.ocfg.gameplay.near_spawn_distance >= storage.ocfg.gameplay.far_spawn_distance) then
-        log("Near spawn min distance is greater than or equal to near spawn max distance! Please check your mod settings or config!")
-        storage.ocfg.gameplay.far_spawn_distance = storage.ocfg.gameplay.near_spawn_distance + 1
-        settings.global["oarc-classic-far-spawn-distance"] = { value = storage.ocfg.gameplay.far_spawn_distance }
-    SendBroadcastMsg({"oarc-spawn-distance-invalid-msg"}, { color = { r = 1, g = 0.2, b = 0.2 }, sound_path = "utility/cannot_build" })
-    end
-
     -- Validate that regrowth is enabled if world eater is enabled.
     if (storage.ocfg.regrowth.enable_world_eater and not storage.ocfg.regrowth.enable_regrowth) then
         log("World eater is enabled but regrowth is not! Disabling world eater. Please check your mod settings or config!")
@@ -237,6 +227,10 @@ function CacheModSettings()
 
     -- Special case for startup settings
     storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces = settings.startup["oarc-classic-default-enable-secondary-spawns-on-other-surfaces"].value  --[[@as boolean]]
+
+    -- Special case for settings only read when the game starts, so they are left out of OCFG_KEYS.
+    storage.ocfg.gameplay.starting_points_count = settings.global["oarc-classic-starting-points-count"].value --[[@as integer]]
+    storage.ocfg.gameplay.starting_points_spacing_chunks = settings.global["oarc-classic-starting-points-spacing-chunks"].value --[[@as integer]]
 end
 
 ---Get the scenario settings from the scenario if it exists.
@@ -286,6 +280,15 @@ function RuntimeModSettingChanged(event)
     end
 
     log("on_runtime_mod_setting_changed: " .. event.setting .. " = " .. tostring(settings.global[event.setting].value))
+
+    -- The starting point grid is built when the game starts, changing these later has no effect.
+    if (event.setting == "oarc-classic-starting-points-count") or
+            (event.setting == "oarc-classic-starting-points-spacing-chunks") then
+        if (event.player_index ~= nil) then
+            SendErrorMsg(game.players[event.player_index], {"oarc-starting-points-setting-game-start-only"})
+        end
+        return
+    end
 
     -- Find the matching OARC setting and update it.
     local found_setting = false

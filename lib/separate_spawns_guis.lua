@@ -161,50 +161,6 @@ function CreateSurfaceSelectDropdown(parent_flow)
     }
 end
 
----Create a distance select slider
----@param parent_flow LuaGuiElement
----@param minimum_distance number
----@param maximum_distance number
----@return nil
-function CreateDistanceSelectSlider(parent_flow, minimum_distance, maximum_distance)
-    
-    local slider_flow = parent_flow.add {
-        type = "flow",
-        direction = "horizontal",
-        style = "player_input_horizontal_flow"
-    }
-    slider_flow.style.horizontally_stretchable = true
-
-    local label = slider_flow.add {
-        type = "label",
-        caption = { "oarc-spawn-distance-slider-label" },
-        tooltip = { "oarc-spawn-distance-slider-tooltip" }
-    }
-    label.style.horizontal_align = "left"
-    local slider = slider_flow.add {
-        name = "spawn_distance_slider",
-        type = "slider",
-        tags = { action = "oarc_spawn_options", setting = "distance_select" },
-        minimum_value = minimum_distance,
-        maximum_value = maximum_distance,
-        value = minimum_distance,
-        discrete_slider = true,
-        value_step = 1,
-        tooltip = { "oarc-spawn-distance-slider-tooltip" }
-    }
-    slider.style.horizontally_stretchable = true
-    local text_value = slider_flow.add {
-        name = "spawn_distance_slider_value",
-        type = "textfield",
-        ignored_by_interaction = true,
-        caption = minimum_distance,
-        style = "slider_value_textfield",
-        text = tostring(minimum_distance)
-    }
-    text_value.style.horizontal_align = "right"
-    text_value.style.width = 50
-end
-
 ---Create the spawn settings frame
 ---@param parent_flow LuaGuiElement
 ---@param gameplay OarcConfigGameplaySettings
@@ -228,8 +184,8 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
     -- Pick surface
     CreateSurfaceSelectDropdown(spawn_settings_frame)
 
-    -- Allow players to spawn with a moat around their area.
-    if (gameplay.allow_moats_around_spawns) then
+    -- Allow players to spawn with a moat around their area. Only prefab spawns have a moat.
+    if (gameplay.allow_moats_around_spawns and IsPrefabSpawnStyle()) then
         spawn_settings_frame.add {
             name = "isolated_spawn_moat_option_checkbox",
             tags = { action = "oarc_spawn_options", setting = "moat_option" },
@@ -239,8 +195,6 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
             tooltip = { "oarc-moat-option-tooltip" }
         }
     end
-
-    CreateDistanceSelectSlider(spawn_settings_frame, gameplay.near_spawn_distance, gameplay.far_spawn_distance)
 end
 
 ---Create a frame and a confim button for player to request SOLO spawn creation
@@ -434,8 +388,7 @@ function DisplaySpawnOptions(player)
     ---@type OarcSpawnChoices
     local spawn_choices_entry = {
         surface_name = gameplay.default_surface,
-        moat = gameplay.allow_moats_around_spawns,
-        distance = gameplay.near_spawn_distance,
+        moat = gameplay.allow_moats_around_spawns and IsPrefabSpawnStyle(),
         host_name = nil,
     }
     storage.spawn_choices[player.name] = spawn_choices_entry
@@ -547,26 +500,6 @@ function CancelSharedSpawnRequest(player)
     log("ERROR! Failed to remove player from joinQueue?!")
 end
 
----Handle slider value changes
----@param event EventData.on_gui_value_changed
----@return nil
-function SpawnOptsValueChanged(event)
-    if not event.element.valid then return end
-    local player = game.players[event.player_index]
-    local tags = event.element.tags
-
-    if (tags.action ~= "oarc_spawn_options") then
-        return
-    end
-
-    if (tags.setting == "distance_select") then
-        local distance = event.element.slider_value
-        storage.spawn_choices[player.name].distance = distance
-        event.element.parent.spawn_distance_slider_value.text = tostring(distance)
-        -- log("GUI DEBUG Selected distance: " .. distance)
-    end
-end
-
 ---Handle dropdown selection changes
 ---@param event EventData.on_gui_selection_state_changed
 ---@return nil
@@ -634,12 +567,10 @@ function PrimarySpawnRequest(player)
     -- N/A for solo spawns so clear this!
     storage.spawn_choices[player.name].host_name = nil
 
-    -- Find coordinates of a good place to spawn
-    local spawn_position = FindUngeneratedCoordinates(spawn_choices.surface_name, spawn_choices.distance, 3)
-
-    -- If that fails, just throw a warning and don't spawn them. They can try again.
-    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        SendErrorMsg(player, { "oarc-no-ungenerated-land-error" })
+    -- Claim the next free starting point. If there are none left, they can still join someone else's spawn.
+    local spawn_position = ClaimNextStartingPoint(spawn_choices.surface_name, player.name)
+    if (spawn_position == nil) then
+        SendErrorMsg(player, { "oarc-no-free-starting-points", spawn_choices.surface_name })
         return
     end
 
@@ -762,13 +693,6 @@ end
 ---@return nil
 function SeparateSpawnsGuiCheckedStateChanged(event)
     SpawnOptsRadioSelect(event)
-end
-
----Gui value changed event handlers
----@param event EventData.on_gui_value_changed
----@return nil
-function SeparateSpawnsGuiValueChanged(event)
-    SpawnOptsValueChanged(event)
 end
 
 ---Gui selection state changed event handlers

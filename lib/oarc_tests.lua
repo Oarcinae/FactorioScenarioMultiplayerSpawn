@@ -271,17 +271,16 @@ function RerollSpawn(player)
     -- Save a copy of the previous spawn point
     local old_spawn_point = table.deepcopy(storage.unique_spawns[surface_name][player.name])
 
-    -- Find a new spawn point
-    local spawn_position = FindUngeneratedCoordinates(surface_name, spawn_choices.distance, 3)
-    -- If that fails, just throw a warning and don't spawn them. They can try again.
-    if ((spawn_position.x == 0) and (spawn_position.y == 0)) then
-        SendErrorMsg(player, { "oarc-no-ungenerated-land-error" })
+    -- Claim the next free starting point
+    local spawn_position = ClaimNextStartingPoint(surface_name, player.name)
+    if (spawn_position == nil) then
+        SendErrorMsg(player, { "oarc-no-free-starting-points", surface_name })
         return
     end
 
     -- Remove the old spawn point
     if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
-        log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. surface_name)
+        log("Removing base: " .. old_spawn_point.position.x .. "," .. old_spawn_point.position.y .. " on surface: " .. surface_name)
 
         -- Clear an area around the spawn that SHOULD not include any other bases.
         local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
@@ -289,6 +288,7 @@ function RerollSpawn(player)
         TriggerCleanup()
         script.raise_event("oarc-classic-on-spawn-remove-request", {spawn_data = old_spawn_point})
     end
+    ReleaseStartingPoint(surface_name, old_spawn_point.position)
 
     -- Queue spawn generation and the player.
     local delayed_spawn = GenerateNewSpawn(player.name, surface_name, spawn_position, spawn_choices, old_spawn_point.primary)
@@ -311,87 +311,57 @@ function RerollSpawn(player)
 end
 
 
--- Prototype: let the engine place starting areas via MapGenSettings.starting_points.
--- 4x4 grid, 2000 tiles apart, centered on origin: -3000, -1000, 1000, 3000
----@return MapPosition[]
-function GetTestStartingPointsGrid()
-    local points = {}
-    for i = 0, 3 do
-        for j = 0, 3 do
-            table.insert(points, {x = -3000 + i * 2000, y = -3000 + j * 2000})
-        end
-    end
-    return points
-end
-
----Writes the test starting points grid to the surface's map gen settings.
----@param surface LuaSurface
----@param force_clear boolean Clear the surface so all chunks regenerate with the new settings.
----@param source string Where this was called from, for the log.
----@return nil
-function ApplyTestStartingPoints(surface, force_clear, source)
-    if storage.test_starting_points_applied == nil then
-        storage.test_starting_points_applied = {}
-    end
-
-    -- Check BEFORE writing the settings, this is what tells us if a clear is needed.
-    local already_generated = surface.is_chunk_generated({0, 0})
-    log("ApplyTestStartingPoints [" .. source .. "]: " .. surface.name ..
-        " origin chunk already generated = " .. tostring(already_generated))
-
-    local mgs = surface.map_gen_settings -- Must modify a copy and write the whole table back
-    mgs.starting_points = GetTestStartingPointsGrid()
-    surface.map_gen_settings = mgs
-    storage.test_starting_points_applied[surface.name] = true
-
-    if force_clear or already_generated then
-        log("ApplyTestStartingPoints [" .. source .. "]: clearing surface " .. surface.name)
-        surface.clear(true)
-    end
-end
-
----Creates every planet surface that doesn't exist yet and applies the test grid to all of them.
----@return nil
-function ApplyTestStartingPointsToAllPlanets()
-    for _, planet in pairs(game.planets) do
-        local surface = planet.surface
-        if (surface == nil) then
-            log("ApplyTestStartingPointsToAllPlanets: creating surface for planet " .. planet.name)
-            surface = planet.create_surface()
-        end
-
-        -- on_surface_created may have already applied it if the event fired during create_surface.
-        if (storage.test_starting_points_applied == nil) or (not storage.test_starting_points_applied[surface.name]) then
-            ApplyTestStartingPoints(surface, false, "on_init")
-        end
-    end
-end
-
----Fallback for planet surfaces created later by the engine (platform arrival, other mods).
----@param surface LuaSurface
----@return nil
-function ApplyTestStartingPointsOnSurfaceCreated(surface)
-    if (surface.planet == nil) then return end
-    if (storage.test_starting_points_applied ~= nil) and storage.test_starting_points_applied[surface.name] then return end
-    ApplyTestStartingPoints(surface, false, "on_surface_created")
-end
-
----Teleport a player to one of the test starting points and chart the area around it.
+---Sends a player to a planet the same way landing there from space would. If their spawn has no base on that planet
+---yet, this creates a secondary spawn on the planet's next free starting point, even if secondary spawns are disabled
+---on that surface. Otherwise they are sent to their respawn point there.
+---@param admin LuaPlayer The player running the command, for error messages.
 ---@param player LuaPlayer
----@param index integer 1 to 16
----@param surface_name string
+---@param planet_name string
 ---@return nil
-function TeleportToTestStartingPoint(player, index, surface_name)
-    local points = GetTestStartingPointsGrid()
-    local point = points[index]
-    if point == nil then
-        player.print("Usage: /oarc-tp-start <1-" .. #points .. "> [surface]")
+function TestSendPlayerToPlanet(admin, player, planet_name)
+    if (game.planets[planet_name] == nil) then
+        admin.print("No planet named " .. planet_name)
+        return
+    end
+    if (player.character == nil) then
+        admin.print(player.name .. " has no character right now.")
+        return
+    end
+    if (FindPlayerHomeSpawn(player.name) == nil) then
+        admin.print(player.name .. " has no home spawn yet. They need to spawn on their primary surface first.")
         return
     end
 
+    local player_spawn = FindPlayerSpawnOnSurface(player.name, planet_name)
+    if (player_spawn == nil) then
+        log("TestSendPlayerToPlanet - Creating a secondary spawn for " .. player.name .. " on " .. planet_name)
+        SecondarySpawn(player, planet_name, true)
+    elseif (not player_spawn.generated) then
+        local delayed_spawn = FindDelayedSpawn(player.name, planet_name)
+        if (delayed_spawn ~= nil) then
+            QueuePlayerForSpawn(player.name, delayed_spawn)
+        end
+    else
+        TeleportPlayerToRespawnPoint(planet_name, player, false)
+    end
+end
+
+---Teleport a player to one of the starting points and chart the area around it.
+---@param player LuaPlayer
+---@param index integer
+---@param surface_name string
+---@return nil
+function TeleportToStartingPoint(player, index, surface_name)
     local surface = game.surfaces[surface_name]
-    if (surface == nil) then
-        player.print("No surface named " .. surface_name)
+    local points = storage.starting_points[surface_name]
+    if (surface == nil) or (points == nil) then
+        player.print("No starting points on a surface named " .. surface_name)
+        return
+    end
+
+    local point = points[index] and points[index].position
+    if point == nil then
+        player.print("Usage: /oarc-tp-start <1-" .. #points .. "> [surface]")
         return
     end
     local radius = 256

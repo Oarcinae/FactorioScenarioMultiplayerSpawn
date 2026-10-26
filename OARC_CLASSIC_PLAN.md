@@ -88,6 +88,7 @@ Exit criteria: the mod loads and the old spawn flow still works.
 - `BuildStartingPointGrid(count, spacing_chunks)`:
   - Integer grid indices (i, j) map to tile position `(i, j) * spacing_chunks * 32`, so (0,0) is at the origin.
   - It takes the `count` indices closest to (0,0), sorted by distance and then by angle. The list order is the spiral order.
+  - The origin is left out of the grid and the map gen `starting_points`. The engine always generates the chunks around (0,0) on nauvis, so it would always fail the explored check. The origin gets no starting area, so it can have biters.
 - `ApplyStartingPoints(surface)`: read `map_gen_settings`, set `starting_points`, write it back, and clear only if chunks were already generated (only nauvis in practice). Called in `on_init` for every planet, pre-creating missing surfaces as Phase 0 proved.
   - **Check for existing changes first.** The engine default is a single starting point at (0,0). If the existing `starting_points` is anything else (a different count, or a point not at (0,0)), log a clear error. The error names the surface, lists the existing points, and says they came from the map-gen settings, a preset or another mod and are being replaced. Then overwrite them anyway. Also print it to admins in game, so a host sees it without reading the log.
 - `storage.starting_points[surface_name]`: an ordered list of `{position=, host_name=nil|string, unusable=false}`.
@@ -95,7 +96,8 @@ Exit criteria: the mod loads and the old spawn flow still works.
   - Walks the list in order and skips entries that are claimed or unusable.
   - **Explored check:** for each candidate, checks `surface.is_chunk_generated` on every chunk in a 10x10 chunk area centred on the point. If any is generated, someone else has explored there. The entry is marked `unusable` and logged, and the walk continues.
   - Returns the first clean point and marks it claimed with the host name.
-- `ReleaseStartingPoint(surface_name, host_name)`: called by cleanup. The point goes back to the pool.
+  - Unusable points are checked again on later claims, so a point whose chunks were still waiting for cleanup is not lost for good.
+- `ReleaseStartingPoint(surface_name, position)`: called by cleanup and by `/oarc-reroll-spawn`. The point goes back to the pool. It matches by position, because a reroll briefly holds two points under the same host name.
   - Cleanup deletes its chunks, so the explored check passes again.
   - The starting point is still in the map gen settings, so the area regenerates as a fresh starting area.
 
@@ -156,6 +158,10 @@ Add a mod setting, spawn style `natural` (default) or `prefab`. With `prefab`, k
 - Simplify the spawn choice GUI to: start a new spawn, join a shared spawn, and cancel a join request.
 - The spawn controls tab lists the grid's claimed and free points with `GetGPStext`.
 - Update the FAQ tab, locale and changelog.
+- **Decision for the owner: keep or remove the spawn reroll.**
+  - `/oarc-reroll-spawn` (`RerollSpawn` in `lib/oarc_tests.lua`) moves a player to the next free starting point and releases the old one.
+  - Each reroll uses up a point from a fixed grid. If cleanup is off or the old area isn't deleted yet, the old point is skipped until its chunks are gone.
+  - Keep it (maybe admin only, or limited to once per player), or remove the command, the function and its locale entries.
 
 ## Phase 7: Public publish and public playtesting
 The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushed before then.
@@ -241,20 +247,24 @@ Tick items off as they land. Each phase is meant to fit in one or two prompts.
 - [x] Test (single player): the mod loads with and without Space Age, spawning works on a new own force, reset and respawn work, the GUI tabs and mod settings show no removed features, and the log is clean (verified 2026-10-26)
 - [ ] Test (multiplayer, deferred to the Phase 6 multiplayer test): shared spawn join, and remove player
 
-### Phase 2: Grid and assignment
-- [ ] Create `lib/starting_points.lua`: `BuildStartingPointGrid`, `ApplyStartingPoints`, `ClaimNextStartingPoint`, `ReleaseStartingPoint`
-- [ ] Add the explored check (10x10 chunks around the point) that marks a point `unusable`
-- [ ] Add settings: starting point count (16, from 1 to 128) and spacing in chunks (100), plus the per-surface config override
-- [ ] Apply grids at game start, using the route chosen in Phase 0
-- [ ] In `ApplyStartingPoints`, detect existing `starting_points` other than a single (0,0) point, log a clear error (and print it to admins), then overwrite anyway
-- [ ] Test: set custom starting points in the new-game map-gen settings, confirm the error appears and the grid still replaces them
-- [ ] Replace the `FindUngeneratedCoordinates` calls with `ClaimNextStartingPoint`, and remove the function and the distance settings
-- [ ] Add a "no free starting points" error message
-- [ ] Natural spawn: slim down `GenerateFinalSpawnPieces`, and use a safe teleport in `SendPlayerToNewSpawn`
-- [ ] Test: spiral order, and an explored point gets skipped
+### Phase 2: Grid and assignment (complete, 2026-10-26)
+- [x] Create `lib/starting_points.lua`: `BuildStartingPointGrid`, `ApplyStartingPoints`, `ClaimNextStartingPoint`, `ReleaseStartingPoint`
+- [x] Add the explored check (10x10 chunks around the point) that marks a point `unusable`
+- [x] Add settings: starting point count (16, from 1 to 128) and spacing in chunks (100, from 20 to 1000), plus the per-surface config override. They are left out of the in-game settings tab, and changing them after game start only shows a message
+- [x] Apply grids at game start, using the route chosen in Phase 0
+- [x] In `ApplyStartingPoints`, detect existing `starting_points` other than a single (0,0) point, log a clear error (and print it to admins), then overwrite anyway. Admins who join later see it once
+- [ ] Test (deferred): set custom starting points in the new-game map-gen settings, confirm the error appears and the grid still replaces them
+- [x] Replace the `FindUngeneratedCoordinates` calls with `ClaimNextStartingPoint` (spawn GUI, `SecondarySpawn`, `/oarc-reroll-spawn`), and remove the function and the near/far distance settings. `minimum_distance_to_existing_chunks` stays until Phase 3, because cleanup still uses it
+- [x] Add a "no free starting points" error message
+- [x] Natural spawn: slim down `GenerateFinalSpawnPieces`, and use a safe teleport in `SendPlayerToNewSpawn`. Prefab pieces sit behind `IsPrefabSpawnStyle()`, which returns false until Phase 4 adds the setting. The crash site is kept in natural mode
+- [x] Leave (0,0) out of the grid and the map gen starting points (the engine always generates it on nauvis)
+- [x] Add `/oarc-test-planet <planet> [player]` to make a secondary spawn on another planet without flying there
+- [x] Test: spiral order, and an explored point gets skipped (verified 2026-10-26: the origin was blocked, which led to the change above; explored points 4 and 5 were skipped, and a reset player's point was reused after cleanup)
+- [x] Test (after the origin change): the grid points are correct, and (0,0) is not a starting point on any surface (verified 2026-10-26)
+- [x] Test: `/oarc-test-planet vulcanus` makes a spawn on Vulcanus point 1, and running it again returns to the same spawn (verified 2026-10-26)
 
 ### Phase 3: Cleanup
-- [ ] `UniqueSpawnCleanupRemove`: fixed `chunk_radius = 5`, drop the near-spawn check, call `ReleaseStartingPoint`
+- [ ] `UniqueSpawnCleanupRemove`: fixed `chunk_radius = 5`, drop the near-spawn check (the `ReleaseStartingPoint` call already landed in Phase 2)
 - [ ] Test: join and leave quickly, the area regenerates, and the point is reused
 
 ### Phase 4: Prefab option
@@ -273,6 +283,7 @@ Tick items off as they land. Each phase is meant to fit in one or two prompts.
 - [ ] Simplify the spawn choice GUI (new spawn, join, cancel)
 - [ ] List claimed and free points in the spawn controls tab
 - [ ] Update the FAQ, locale and changelog
+- [ ] Decide whether to keep the spawn reroll (`/oarc-reroll-spawn`), then keep, limit or remove it
 - [ ] Multiplayer test: holding pen, join queue, offline protection
 
 ### Phase 7: Public publish and playtesting
