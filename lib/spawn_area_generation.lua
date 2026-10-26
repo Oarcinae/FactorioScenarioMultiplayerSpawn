@@ -387,8 +387,10 @@ end
 --- Randomly place lightning attractors specific for Fulgora. This should space them out so they don't overlap too much.
 ---@param surface LuaSurface
 ---@param position MapPosition
+---@param count integer
+---@param force LuaForce The spawn owner's force, so they can deconstruct them.
 ---@return nil
-function PlaceFulgoranLightningAttractors(surface, position, count)
+function PlaceFulgoranLightningAttractors(surface, position, count, force)
     local spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
     local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
 
@@ -405,7 +407,7 @@ function PlaceFulgoranLightningAttractors(surface, position, count)
             surface.create_entity({
                 name = ATTRACTOR_NAME,
                 position = open_pos,
-                force = "player" -- Same as native game
+                force = force
             })
         end
     end

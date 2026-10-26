@@ -51,23 +51,17 @@ OCFG = {
     ---@type OarcConfigGameplaySettings
     gameplay = {
 
-        -- Default setting for if secondary spawns are enabled on other surfaces other than the default_surface.
-        -- This is a STARTUP setting, so it can't be changed in game!!
-        -- This is a STARTUP setting, so it can't be changed in game!!
-        default_enable_secondary_spawns_on_other_surfaces = false,
+        -- Lets players pick the OG Oarc style spawn (crop circle, optional moat, scripted resources) in the
+        -- spawn menu, instead of the vanilla starting area at their starting point. The moat, spawn_general
+        -- and resource_placement settings only apply to these spawns.
+        allow_oarc_style_spawn = false,
 
-        -- Allow players to choose to spawn with a moat
+        -- Allow players to choose to spawn with a moat (only for Oarc style spawns)
         allow_moats_around_spawns = true,
 
         -- If there is a moat, this makes a small path to land to avoid "turtling", but if the spawn
         -- is in the middle of water, it won't do anything.
         enable_moat_bridging = false,
-
-        -- This is the radius, in chunks, that a spawn area is from any other generated
-        -- chunks. It ensures the spawn area isn't too near generated/explored/existing
-        -- area. The larger you make this, the further away players will spawn from
-        -- generated map area (even if it is not visible on the map!).
-        minimum_distance_to_existing_chunks = 20,
 
         -- Number of starting points on each planet, and the spacing between them in chunks.
         -- These are only read when the game starts. Override them per surface with
@@ -77,6 +71,10 @@ OCFG = {
 
         -- This inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
         enable_offline_protection = true,
+
+        -- Resets enemy evolution to 0 on a planet whenever a new spawn (primary or secondary) is made there.
+        -- This affects everyone on that planet! Joining someone else's spawn doesn't trigger it.
+        reset_evolution_on_new_spawn = false,
 
         -- Enable shared vision between teams (all teams are COOP regardless)
         enable_shared_team_vision = true,
@@ -291,13 +289,13 @@ OCFG = {
 ---@field discord_invite string Discord invite for easy copy paste.
 
 ---@class OarcConfigGameplaySettings
----@field default_enable_secondary_spawns_on_other_surfaces boolean Default setting for if secondary spawns are enabled on other surfaces other than the default_surface. This is a STARTUP setting, so it can't be changed in game.
+---@field allow_oarc_style_spawn boolean Lets players pick the OG Oarc style spawn circle instead of the vanilla starting area.
 ---@field allow_moats_around_spawns boolean Allow players to choose to spawn with a moat
 ---@field enable_moat_bridging boolean If there is a moat, this makes a small path to land to avoid "turtling", but if the spawn is in the middle of water, it won't do anything.
----@field minimum_distance_to_existing_chunks number The radius, in chunks, that a spawn area is from any other generated chunks. It ensures the spawn area isn't too near generated/explored/existing area.
 ---@field starting_points_count integer Number of starting points on each planet. Only read when the game starts.
 ---@field starting_points_spacing_chunks integer Spacing between starting points in chunks. Only read when the game starts.
 ---@field enable_offline_protection boolean Inhibits enemy attacks on bases where all players are offline. Not 100% guaranteed!
+---@field reset_evolution_on_new_spawn boolean Resets enemy evolution to 0 on a planet whenever a new spawn is made there. Affects everyone on that planet.
 ---@field enable_shared_team_vision boolean Enable shared vision between teams
 ---@field enable_shared_team_chat boolean Share local team chat with all teams
 ---@field enable_friendly_teams boolean Friendly teams can modify each other's buildings.

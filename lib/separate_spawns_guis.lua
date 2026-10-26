@@ -184,14 +184,29 @@ function CreateSpawnSettingsFrame(parent_flow, gameplay)
     -- Pick surface
     CreateSurfaceSelectDropdown(spawn_settings_frame)
 
-    -- Allow players to spawn with a moat around their area. Only prefab spawns have a moat.
-    if (gameplay.allow_moats_around_spawns and IsPrefabSpawnStyle()) then
+    -- Nothing else to pick unless players are allowed the OG Oarc style spawn circle.
+    if (not IsOarcStyleSpawnAllowed()) then return end
+
+    -- Pick the OG Oarc style spawn circle, or the vanilla starting area (unchecked)
+    spawn_settings_frame.add {
+        name = "oarc_style_spawn_option_checkbox",
+        tags = { action = "oarc_spawn_options", setting = "oarc_style_spawn_option" },
+        type = "checkbox",
+        caption = { "oarc-oarc-style-spawn-option" },
+        state = false, -- Default to the vanilla starting area
+        tooltip = { "oarc-oarc-style-spawn-option-tooltip" }
+    }
+
+    -- Allow players to spawn with a moat around their area. Only Oarc style spawns have a moat, so this is only
+    -- enabled while the Oarc style spawn is picked.
+    if (gameplay.allow_moats_around_spawns) then
         spawn_settings_frame.add {
             name = "isolated_spawn_moat_option_checkbox",
             tags = { action = "oarc_spawn_options", setting = "moat_option" },
             type = "checkbox",
             caption = { "oarc-moat-option" },
             state = true, -- Default to true
+            enabled = false,
             tooltip = { "oarc-moat-option-tooltip" }
         }
     end
@@ -388,7 +403,8 @@ function DisplaySpawnOptions(player)
     ---@type OarcSpawnChoices
     local spawn_choices_entry = {
         surface_name = gameplay.default_surface,
-        moat = gameplay.allow_moats_around_spawns and IsPrefabSpawnStyle(),
+        prefab = false,
+        moat = gameplay.allow_moats_around_spawns,
         host_name = nil,
     }
     storage.spawn_choices[player.name] = spawn_choices_entry
@@ -413,7 +429,14 @@ function SpawnOptsRadioSelect(event)
         return
     end
 
-    if (tags.setting == "moat_option") then
+    if (tags.setting == "oarc_style_spawn_option") then
+        storage.spawn_choices[player.name].prefab = event.element.state
+
+        local moat_checkbox = event.element.parent["isolated_spawn_moat_option_checkbox"]
+        if (moat_checkbox ~= nil) then
+            moat_checkbox.enabled = event.element.state
+        end
+    elseif (tags.setting == "moat_option") then
         storage.spawn_choices[player.name].moat = event.element.state
     end
 end

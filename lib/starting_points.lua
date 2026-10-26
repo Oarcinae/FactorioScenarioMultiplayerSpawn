@@ -5,6 +5,10 @@
 -- Side length, in chunks, of the square area around a point that must be ungenerated for the point to be claimed.
 STARTING_POINT_EXPLORED_AREA_CHUNKS = 10
 
+-- Radius, in chunks, deleted around a point when its spawn is cleaned up. This covers 11x11 chunks, which contains the
+-- whole explored area above, so the point passes the explored check again once the chunks are gone.
+STARTING_POINT_CLEANUP_CHUNK_RADIUS = 5
+
 -- Limits for the starting point config, matching the mod settings. Scenario overrides are clamped to these.
 STARTING_POINTS_COUNT_MIN = 1
 STARTING_POINTS_COUNT_MAX = 128

@@ -282,9 +282,7 @@ function RerollSpawn(player)
     if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
         log("Removing base: " .. old_spawn_point.position.x .. "," .. old_spawn_point.position.y .. " on surface: " .. surface_name)
 
-        -- Clear an area around the spawn that SHOULD not include any other bases.
-        local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
-        RegrowthMarkAreaForRemoval(surface_name, old_spawn_point.position, clear_radius)
+        RegrowthMarkAreaForRemoval(surface_name, old_spawn_point.position, GetSpawnCleanupChunkRadius(old_spawn_point))
         TriggerCleanup()
         script.raise_event("oarc-classic-on-spawn-remove-request", {spawn_data = old_spawn_point})
     end

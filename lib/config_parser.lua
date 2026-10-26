@@ -2,7 +2,8 @@
 -- DON'T JUDGE ME! I wanted to try and make a nice in game setting GUI since the native mod settings GUI is so limited.
 
 ---Provides a way to look up the config settings key from the mod settings key.
----@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string, text: LocalisedString?, caption: LocalisedString?, tooltip: LocalisedString?  }
+---prefab_only entries only apply to Oarc style spawns, so the settings tab hides them when those are not allowed.
+---@alias OarcSettingsLookup { mod_key: string, ocfg_keys: table<integer, string>, type: string, text: LocalisedString?, caption: LocalisedString?, tooltip: LocalisedString?, prefab_only: boolean? }
 
 ---@type table<string, OarcSettingsLookup>
 OCFG_KEYS =
@@ -14,15 +15,15 @@ OCFG_KEYS =
 
     ["gameplay_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-gameplay"}},
     ["gameplay_spawn_choices_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-spawn-choices"}},
-    -- STARTUP ["gameplay.default_enable_secondary_spawns_on_other_surfaces"] = {mod_key = "oarc-classic-default-enable-secondary-spawns-on-other-surfaces" , ocfg_keys = {"gameplay", "default_enable_secondary_spawns_on_other_surfaces"}, type = "boolean"},
-    ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-classic-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean"},
-    ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-classic-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean"},
-    ["gameplay.minimum_distance_to_existing_chunks"] = {mod_key = "oarc-classic-minimum-distance-to-existing-chunks" , ocfg_keys = {"gameplay", "minimum_distance_to_existing_chunks"}, type = "integer"},
+    ["gameplay.allow_oarc_style_spawn"] = {mod_key = "oarc-classic-allow-oarc-style-spawn" , ocfg_keys = {"gameplay", "allow_oarc_style_spawn"}, type = "boolean"},
+    ["gameplay.allow_moats_around_spawns"] = {mod_key = "oarc-classic-allow-moats-around-spawns" , ocfg_keys = {"gameplay", "allow_moats_around_spawns"}, type = "boolean", prefab_only = true},
+    ["gameplay.enable_moat_bridging"] = {mod_key = "oarc-classic-enable-moat-bridging" , ocfg_keys = {"gameplay", "enable_moat_bridging"}, type = "boolean", prefab_only = true},
     ["gameplay.enable_shared_spawns"] = {mod_key = "oarc-classic-enable-shared-spawns" , ocfg_keys = {"gameplay", "enable_shared_spawns"}, type = "boolean"},
     ["gameplay.number_of_players_per_shared_spawn"] = {mod_key = "oarc-classic-number-of-players-per-shared-spawn" , ocfg_keys = {"gameplay", "number_of_players_per_shared_spawn"}, type = "integer"},
     ["gameplay.default_surface"] = {mod_key = "oarc-classic-default-surface" , ocfg_keys = {"gameplay", "default_surface"}, type = "string"},
 
     ["gameplay.enable_offline_protection"] = {mod_key = "oarc-classic-enable-offline-protection" , ocfg_keys = {"gameplay", "enable_offline_protection"}, type = "boolean"},
+    ["gameplay.reset_evolution_on_new_spawn"] = {mod_key = "oarc-classic-reset-evolution-on-new-spawn" , ocfg_keys = {"gameplay", "reset_evolution_on_new_spawn"}, type = "boolean"},
 
     ["gameplay_misc_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-gameplay-misc"}},
     ["gameplay.enable_friendly_fire"] = {mod_key = "oarc-classic-enable-friendly-fire" , ocfg_keys = {"gameplay", "enable_friendly_fire"}, type = "boolean"},
@@ -43,33 +44,33 @@ OCFG_KEYS =
     ["regrowth.cleanup_interval"] = {mod_key = "oarc-classic-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
 
     ["general_spawn_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-general-spawn"}},
-    ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-classic-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer"},
-    ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-classic-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer"},
-    ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-classic-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer"},
-    ["spawn_general.resources_shape"] = {mod_key = "oarc-classic-spawn-general-enable-resources-circle-shape" , ocfg_keys = {"spawn_general", "resources_shape"}, type = "string-list"},
-    ["spawn_general.force_tiles"] = {mod_key = "oarc-classic-spawn-general-enable-force-tiles" , ocfg_keys = {"spawn_general", "force_tiles"}, type = "boolean"},
-    ["spawn_general.shape"] = {mod_key = "oarc-classic-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list"},
+    ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-classic-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer", prefab_only = true},
+    ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-classic-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer", prefab_only = true},
+    ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-classic-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer", prefab_only = true},
+    ["spawn_general.resources_shape"] = {mod_key = "oarc-classic-spawn-general-enable-resources-circle-shape" , ocfg_keys = {"spawn_general", "resources_shape"}, type = "string-list", prefab_only = true},
+    ["spawn_general.force_tiles"] = {mod_key = "oarc-classic-spawn-general-enable-force-tiles" , ocfg_keys = {"spawn_general", "force_tiles"}, type = "boolean", prefab_only = true},
+    ["spawn_general.shape"] = {mod_key = "oarc-classic-spawn-general-shape" , ocfg_keys = {"spawn_general", "shape"}, type = "string-list", prefab_only = true},
 
-    ["resource_placement_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-resource-placement"}},
-    ["resource_placement.enabled"] = {mod_key = "oarc-classic-resource-placement-enabled" , ocfg_keys = {"resource_placement", "enabled"}, type = "boolean"},
-    ["resource_placement.size_multiplier"] = {mod_key = "oarc-classic-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double"},
-    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-classic-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double"},
+    ["resource_placement_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-resource-placement"}, prefab_only = true},
+    ["resource_placement.enabled"] = {mod_key = "oarc-classic-resource-placement-enabled" , ocfg_keys = {"resource_placement", "enabled"}, type = "boolean", prefab_only = true},
+    ["resource_placement.size_multiplier"] = {mod_key = "oarc-classic-resource-placement-size-multiplier" , ocfg_keys = {"resource_placement", "size_multiplier"}, type = "double", prefab_only = true},
+    ["resource_placement.amount_multiplier"] = {mod_key = "oarc-classic-resource-placement-amount-multiplier" , ocfg_keys = {"resource_placement", "amount_multiplier"}, type = "double", prefab_only = true},
 
-    ["resource_placement_circle_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-circular"}},
-    ["resource_placement.distance_to_edge"] = {mod_key = "oarc-classic-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer"},
-    ["resource_placement.angle_offset"] = {mod_key = "oarc-classic-resource-placement-degrees-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "integer"},
-    ["resource_placement.angle_final"] = {mod_key = "oarc-classic-resource-placement-degrees-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "integer"},
+    ["resource_placement_circle_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-circular"}, prefab_only = true},
+    ["resource_placement.distance_to_edge"] = {mod_key = "oarc-classic-resource-placement-distance-to-edge" , ocfg_keys = {"resource_placement", "distance_to_edge"}, type = "integer", prefab_only = true},
+    ["resource_placement.angle_offset"] = {mod_key = "oarc-classic-resource-placement-degrees-offset" , ocfg_keys = {"resource_placement", "angle_offset"}, type = "integer", prefab_only = true},
+    ["resource_placement.angle_final"] = {mod_key = "oarc-classic-resource-placement-degrees-final" , ocfg_keys = {"resource_placement", "angle_final"}, type = "integer", prefab_only = true},
 
-    ["resource_placement_square_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-square"}},
-    ["resource_placement.vertical_offset"] = {mod_key = "oarc-classic-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer"},
-    ["resource_placement.horizontal_offset"] = {mod_key = "oarc-classic-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer"},
-    ["resource_placement.linear_spacing"] = {mod_key = "oarc-classic-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer"},
+    ["resource_placement_square_SUBHEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "subheader", text = {"oarc-settings-section-subheader-resource-placement-square"}, prefab_only = true},
+    ["resource_placement.vertical_offset"] = {mod_key = "oarc-classic-resource-placement-vertical-offset" , ocfg_keys = {"resource_placement", "vertical_offset"}, type = "integer", prefab_only = true},
+    ["resource_placement.horizontal_offset"] = {mod_key = "oarc-classic-resource-placement-horizontal-offset" , ocfg_keys = {"resource_placement", "horizontal_offset"}, type = "integer", prefab_only = true},
+    ["resource_placement.linear_spacing"] = {mod_key = "oarc-classic-resource-placement-linear-spacing" , ocfg_keys = {"resource_placement", "linear_spacing"}, type = "integer", prefab_only = true},
 
     -- These are settings that aren't included in the games mod settings but are still nice to have easy access to.
     ["non_mod_settings_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-non-mod-settings-header"}},
     ["gameplay.enable_player_self_reset"] = {mod_key = "" , ocfg_keys = {"gameplay", "enable_player_self_reset"}, type = "boolean", caption = {"oarc-player-self-reset-caption"}, tooltip = {"oarc-player-self-reset-tooltip"}},
-    ["spawn_general.remove_decoratives"] = {mod_key = "" , ocfg_keys = {"spawn_general", "remove_decoratives"}, type = "boolean", caption = {"oarc-remove-decoratives-caption"}, tooltip = {"oarc-remove-decoratives-tooltip"}},
-    ["resource_placement.random_order"] = {mod_key = "" , ocfg_keys = {"resource_placement", "random_order"}, type = "boolean", caption = {"oarc-resource-placement-random-order-caption"}, tooltip = {"oarc-resource-placement-random-order-tooltip"}},
+    ["spawn_general.remove_decoratives"] = {mod_key = "" , ocfg_keys = {"spawn_general", "remove_decoratives"}, type = "boolean", caption = {"oarc-remove-decoratives-caption"}, tooltip = {"oarc-remove-decoratives-tooltip"}, prefab_only = true},
+    ["resource_placement.random_order"] = {mod_key = "" , ocfg_keys = {"resource_placement", "random_order"}, type = "boolean", caption = {"oarc-resource-placement-random-order-caption"}, tooltip = {"oarc-resource-placement-random-order-tooltip"}, prefab_only = true},
 
 }
 
@@ -225,9 +226,6 @@ function CacheModSettings()
         end
     end
 
-    -- Special case for startup settings
-    storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces = settings.startup["oarc-classic-default-enable-secondary-spawns-on-other-surfaces"].value  --[[@as boolean]]
-
     -- Special case for settings only read when the game starts, so they are left out of OCFG_KEYS.
     storage.ocfg.gameplay.starting_points_count = settings.global["oarc-classic-starting-points-count"].value --[[@as integer]]
     storage.ocfg.gameplay.starting_points_spacing_chunks = settings.global["oarc-classic-starting-points-spacing-chunks"].value --[[@as integer]]
@@ -308,7 +306,8 @@ function RuntimeModSettingChanged(event)
     end
 
     --Exception for regrowth, refresh the content tab so the checkboxes get updated
-    if (event.setting == "oarc-classic-enable-regrowth") then
+    --Same for allowing Oarc style spawns, which shows or hides the prefab only settings
+    if (event.setting == "oarc-classic-enable-regrowth") or (event.setting == "oarc-classic-allow-oarc-style-spawn") then
         for _,player in pairs(game.players) do
             OarcGuiRefreshContent(player)
         end

@@ -117,7 +117,7 @@ function SeparateSpawnsSurfaceCreated(event)
     SeparateSpawnsInitSurface(surface_name)
 end
 
----Init globals for a new surface and set the default allow spawn value based on settings.
+---Init globals for a new surface and set the default allow spawn values.
 ---@param surface_name string
 ---@return nil
 function SeparateSpawnsInitSurface(surface_name)
@@ -129,8 +129,8 @@ function SeparateSpawnsInitSurface(surface_name)
     if IsSurfaceBlacklisted(surface_name) then return end
 
     if storage.oarc_surfaces[surface_name] == nil then
-        -- Default surface is set to primary only, all others are secondary only if
-        -- default_enable_secondary_spawns_on_other_surfaces is set to true.
+        -- Default surface is set to primary only. Every other planet allows secondary spawns, because each planet
+        -- has its own starting point grid. Other surfaces (from other mods) have no grid, so they get neither.
         if (surface_name == storage.ocfg.gameplay.default_surface) then
             storage.oarc_surfaces[surface_name] = {
                 primary = true,
@@ -139,7 +139,7 @@ function SeparateSpawnsInitSurface(surface_name)
         else
             storage.oarc_surfaces[surface_name] = {
                 primary = false,
-                secondary = storage.ocfg.gameplay.default_enable_secondary_spawns_on_other_surfaces
+                secondary = (game.planets[surface_name] ~= nil)
             }
         end
     end
@@ -633,12 +633,11 @@ function PlaceResourcesInSquare(surface, position, size_mod, amount_mod)
     end
 end
 
----Prefab spawns (crop shape, moat, scripted resources) are built on top of the starting point. Natural spawns use
----the vanilla starting area as is.
----TODO: Replace with the spawn style mod setting.
+---Players can pick a prefab spawn, the OG Oarc style spawn circle (crop shape, moat, scripted resources) built on top
+---of the starting point, if this is enabled. Otherwise every spawn uses the vanilla starting area as is.
 ---@return boolean
-function IsPrefabSpawnStyle()
-    return false
+function IsOarcStyleSpawnAllowed()
+    return storage.ocfg.gameplay.allow_oarc_style_spawn
 end
 
 ---Places the final spawn elements after chunk generation is complete.
@@ -650,7 +649,7 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
     local surface = game.surfaces[delayed_spawn.surface_name]
 
-    if IsPrefabSpawnStyle() then
+    if delayed_spawn.prefab then
         -- Generate water strip only if we don't have a moat.
         if (not delayed_spawn.moat or spawn_config.liquid_tile == "lava") then
             GenerateStartingLiquidStrip(delayed_spawn, spawn_config, surface)
@@ -661,7 +660,7 @@ function GenerateFinalSpawnPieces(delayed_spawn)
 
         -- Place randomized entities
         if (delayed_spawn.surface_name == "fulgora") then
-            PlaceFulgoranLightningAttractors(surface, delayed_spawn.position, 10)
+            PlaceFulgoranLightningAttractors(surface, delayed_spawn.position, 10, game.players[delayed_spawn.host_name].force)
         end
 
         PlaceRandomEntities(surface, delayed_spawn.position)
@@ -787,6 +786,9 @@ function SetupAndClearSpawnAreas(surface, chunk_area)
     local closest_spawn = GetClosestUniqueSpawn(surface.name, chunk_area.left_top)
     if (closest_spawn == nil) then return end
 
+    -- Natural spawns leave the vanilla starting area alone.
+    if (not closest_spawn.prefab) then return end
+
     --[[@type OarcConfigSpawnGeneral]]
     local general_spawn_config = storage.ocfg.spawn_general
     local surface_spawn_config = storage.ocfg.surfaces_config[surface.name].spawn_config
@@ -832,12 +834,35 @@ function SeparateSpawnsGenerateChunk(event)
     local surface = event.surface
     local chunkArea = event.area
 
-    -- Natural spawns leave the vanilla starting area alone.
-    if (not IsPrefabSpawnStyle()) then return end
-
     -- This handles chunk generation near player spawns
     -- If it is near a player spawn, it provide a guaranteed area of land and water tiles.
     SetupAndClearSpawnAreas(surface, chunkArea)
+
+    AssignLightningAttractorsToClosestSpawn(surface, chunkArea)
+end
+
+---Map gen places lightning attractors (Fulgora ruins) on the player force, so nobody can deconstruct them. This gives
+---them to the force of the closest spawn instead. They stay on the player force while no spawn exists on the surface.
+---@param surface LuaSurface
+---@param chunk_area BoundingBox
+---@return nil
+function AssignLightningAttractorsToClosestSpawn(surface, chunk_area)
+    local attractors = surface.find_entities_filtered { area = chunk_area, type = "lightning-attractor", force = "player" }
+    if (#attractors == 0) then return end
+
+    local chunk_area_center = {
+        x = chunk_area.left_top.x + (CHUNK_SIZE / 2),
+        y = chunk_area.left_top.y + (CHUNK_SIZE / 2)
+    }
+    local closest_spawn = GetClosestUniqueSpawn(surface.name, chunk_area_center)
+    if (closest_spawn == nil) then return end
+
+    local host = game.players[closest_spawn.host_name]
+    if (host == nil) then return end
+
+    for _, attractor in pairs(attractors) do
+        attractor.force = host.force
+    end
 end
 
 --[[
@@ -1004,28 +1029,12 @@ function UniqueSpawnCleanupRemove(player_name, unique_spawn)
     if (unique_spawn == nil) then return end -- Safety
     log("UniqueSpawnCleanupRemove - " .. player_name .. " on surface: " .. unique_spawn.surface_name)
 
-    -- The only bases within this distance should be buddy bases in theory.
-    local near_bases_minimum_distance = (storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 1) * CHUNK_SIZE
-
-    -- Check if it was near someone else's base.
-    nearOtherSpawn = false
-    for player_index, spawn in pairs(storage.unique_spawns[unique_spawn.surface_name]) do
-        if ((player_index ~= player_name) and
-            (util.distance(unique_spawn.position, spawn.position) < near_bases_minimum_distance)) then
-            log("Won't remove base as it's close to another spawn: " .. player_index)
-            nearOtherSpawn = true
-        end
-    end
-
-    -- TODO: Possibly limit this based on playtime? If player is on for a long time then don't remove it?
-    -- Use regrowth mod to cleanup the area.
+    -- Use regrowth mod to cleanup the area. Grid spacing keeps every other spawn well outside the cleared area.
     local spawn_position = unique_spawn.position
-    if (storage.ocfg.regrowth.enable_abandoned_base_cleanup and (not nearOtherSpawn)) then
+    if (storage.ocfg.regrowth.enable_abandoned_base_cleanup) then
         log("Removing base: " .. spawn_position.x .. "," .. spawn_position.y .. " on surface: " .. unique_spawn.surface_name)
 
-        -- Clear an area around the spawn that SHOULD not include any other bases.
-        local clear_radius = storage.ocfg.gameplay.minimum_distance_to_existing_chunks - 2 -- Bring in a bit for safety.
-        RegrowthMarkAreaForRemoval(unique_spawn.surface_name, spawn_position, clear_radius)
+        RegrowthMarkAreaForRemoval(unique_spawn.surface_name, spawn_position, GetSpawnCleanupChunkRadius(unique_spawn))
         TriggerCleanup()
         -- Trigger event
         script.raise_event("oarc-classic-on-spawn-remove-request", {spawn_data = unique_spawn})
@@ -1488,7 +1497,9 @@ function InitPrimarySpawnGlobals(host_name, spawn_position, spawn_choices)
     local new_unique_spawn = {
         surface_name = spawn_choices.surface_name,
         position = spawn_position,
-        moat = spawn_choices.moat,
+        -- Re-check the setting, in case it was disabled while the spawn menu was open. Only prefab spawns have a moat.
+        prefab = spawn_choices.prefab and IsOarcStyleSpawnAllowed(),
+        moat = spawn_choices.moat and spawn_choices.prefab and IsOarcStyleSpawnAllowed(),
         primary = true,
         host_name = host_name,
         joiners = {},
@@ -1519,6 +1530,10 @@ function InitSecondarySpawnGlobals(unique_spawn, surface_name, spawn_position)
     new_unique_spawn.primary = false
     new_unique_spawn.generated = false
 
+    -- Same style as the primary spawn, unless Oarc style spawns were disabled since then.
+    new_unique_spawn.prefab = unique_spawn.prefab and IsOarcStyleSpawnAllowed()
+    new_unique_spawn.moat = unique_spawn.moat and new_unique_spawn.prefab
+
     if storage.unique_spawns[surface_name] == nil then
         storage.unique_spawns[surface_name] = {}
     end
@@ -1528,16 +1543,54 @@ function InitSecondarySpawnGlobals(unique_spawn, surface_name, spawn_position)
     return new_unique_spawn
 end
 
+---Gets the radius in chunks that a spawn area covers, including the moat and a 1 chunk buffer.
+---@param surface_name string
+---@return integer
+function GetSpawnChunkRadius(surface_name)
+    local spawn_config = storage.ocfg.surfaces_config[surface_name].spawn_config
+    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+
+    local total_spawn_width = radius + storage.ocfg.spawn_general.moat_width_tiles
+    return math.ceil(total_spawn_width / CHUNK_SIZE) + 1 -- Add a 1 chunk buffer to be safe
+end
+
+---Gets the radius in chunks that is deleted when a spawn is cleaned up. It always covers the starting point's explored
+---area, and also the whole prefab spawn when it is bigger than that.
+---@param unique_spawn OarcUniqueSpawn
+---@return integer
+function GetSpawnCleanupChunkRadius(unique_spawn)
+    if unique_spawn.prefab then
+        return math.max(STARTING_POINT_CLEANUP_CHUNK_RADIUS, GetSpawnChunkRadius(unique_spawn.surface_name))
+    end
+    return STARTING_POINT_CLEANUP_CHUNK_RADIUS
+end
+
+---Resets the enemy evolution on a surface to 0, including the pollution, time and spawner kill parts of it.
+---This affects everyone on that surface.
+---@param surface_name string
+---@return nil
+function ResetEnemyEvolution(surface_name)
+    local enemy = game.forces["enemy"]
+    enemy.set_evolution_factor(0, surface_name)
+    enemy.set_evolution_factor_by_pollution(0, surface_name)
+    enemy.set_evolution_factor_by_time(0, surface_name)
+    enemy.set_evolution_factor_by_killing_spawners(0, surface_name)
+
+    log("ResetEnemyEvolution - Reset enemy evolution on surface: " .. surface_name)
+    SendBroadcastMsg({ "oarc-evolution-reset-new-spawn", surface_name })
+end
+
 ---Starts the generation of a new unique spawn. This will generate an event when done.
 ---@param unique_spawn OarcUniqueSpawn
 ---@return OarcDelayedSpawn
 function QueueNewSpawnGeneration(unique_spawn)
 
-    local spawn_config = storage.ocfg.surfaces_config[unique_spawn.surface_name].spawn_config
-    local radius = storage.ocfg.spawn_general.spawn_radius_tiles * spawn_config.radius_modifier
+    -- Every new spawn passes through here right after its point is claimed, before any chunks are generated.
+    if (storage.ocfg.gameplay.reset_evolution_on_new_spawn) then
+        ResetEnemyEvolution(unique_spawn.surface_name)
+    end
 
-    local total_spawn_width = radius + storage.ocfg.spawn_general.moat_width_tiles
-    local spawn_chunk_radius = math.ceil(total_spawn_width / CHUNK_SIZE) + 1 -- Add a 1 chunk buffer to be safe
+    local spawn_chunk_radius = GetSpawnChunkRadius(unique_spawn.surface_name)
 
     -- This is just a rough estimate of worst case chunk generation time.
     -- If we hit this timeout, usually it means something has gone wrong.
@@ -1557,6 +1610,7 @@ function QueueNewSpawnGeneration(unique_spawn)
         -- I know I could use table.deepcopy, but this is INTENTIONAL! 
         surface_name = unique_spawn.surface_name,
         position = unique_spawn.position,
+        prefab = unique_spawn.prefab,
         moat = unique_spawn.moat,
         primary = unique_spawn.primary,
         host_name = unique_spawn.host_name,
@@ -2095,6 +2149,7 @@ end
 ---@field surface_name string The surface on which the spawn is located.
 ---@field position MapPosition The position of the spawn on that surface.
 ---@field primary boolean Whether this is the primary spawn point for a player, this is the first surface they spawn on. All other spawns are secondary.
+---@field prefab boolean Whether this is an OG Oarc style spawn circle (prefab) or the vanilla starting area. Secondary spawns copy it from the primary spawn.
 ---@field moat boolean Whether the spawn has a moat or not.
 ---@field open_access boolean Whether the spawn is open for other players to join.
 ---@field host_name string The player name of the host of this spawn.
@@ -2123,7 +2178,8 @@ end
 ---Class representing the spawn choices for a player in the spawn menu.
 ---@class OarcSpawnChoices
 ---@field surface_name string The surface on which the player wants to spawn.
----@field moat boolean Whether the player wants a moat around their spawn.
+---@field prefab boolean Whether the player wants the OG Oarc style spawn circle instead of the vanilla starting area.
+---@field moat boolean Whether the player wants a moat around their spawn. Only used for prefab spawns.
 ---@field host_name string? The host player name if the player wants to join a shared spawn.
 
 ---Table of [OarcSpawnChoices](lua://OarcSpawnChoices) indexed by player name.

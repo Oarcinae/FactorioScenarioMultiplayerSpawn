@@ -16,7 +16,7 @@ There is no join limit. Enemy evolution naturally discourages late joiners, and 
 
 | Keep | Optional (mod setting) | Remove |
 |---|---|---|
-| Holding pen | Prefab spawn shape at the point (crop circle, moat, scripted resources) | Item shop (`lib/gui_tabs/item_shop.lua`, coin unhide in `data.lua`) |
+| Holding pen | OG Oarc style spawn circle at the point (crop circle, moat, scripted resources), picked per player in the spawn menu when "Allow Oarc Style Spawn Circle" is on | Item shop (`lib/gui_tabs/item_shop.lua`, coin unhide in `data.lua`) |
 | Offline protection | Reset surface evolution on each new spawn | Buddy spawns |
 | Shared chat and vision | Regrowth and World Eater (already off by default in `settings.lua`, left as is) | Main team |
 | Cleanup of abandoned spawns (fixed 10x10 chunk area) | | Energy and item sharing (`lib/sharing.lua`, linked chest and pole in `data.lua`, chest size startup setting) |
@@ -130,8 +130,13 @@ Changes:
 - After queuing the removal, call `ReleaseStartingPoint`.
 - Keep the existing minimum-online-time rule and the spawn-removed custom event.
 
-## Phase 4: Optional prefab spawn
-Add a mod setting, spawn style `natural` (default) or `prefab`. With `prefab`, keep today's pipeline centred on the claimed point:
+## Phase 4: Optional prefab spawn (OG Oarc style spawn circle)
+Add a runtime-global bool mod setting, "Allow Oarc Style Spawn Circle" (`oarc-classic-allow-oarc-style-spawn`, `gameplay.allow_oarc_style_spawn`, default off).
+- **Off:** the spawn menu shows no style checkbox, and every new spawn uses the vanilla starting area.
+- **On:** the spawn menu shows an "OG Oarc style spawn" checkbox (unchecked means the vanilla spawn). The moat checkbox is only enabled while it is ticked.
+- The choice is stored per spawn as `prefab` on `OarcSpawnChoices`, `OarcUniqueSpawn` and `OarcDelayedSpawn`. Secondary spawns copy it from the primary spawn. Primary and secondary spawns check the setting again when they are created, so turning it off stops new prefab spawns.
+
+A prefab spawn keeps today's pipeline centred on the claimed point:
 - `SetupAndClearSpawnAreas` and `SeparateSpawnsGenerateChunk` (`lib/separate_spawns.lua:810`, `:868`)
 - `CreateCropCircle`, `CreateCropOctagon` and `CreateCropSquare` (`lib/spawn_area_generation.lua`)
 - `GenerateStartingResources` (`:421`)
@@ -146,13 +151,17 @@ Add a mod setting, spawn style `natural` (default) or `prefab`. With `prefab`, k
   - The cargo pod redirect code (`lib/separate_spawns.lua:1861` onward) is unchanged.
 - **Fulgora lightning attractors:**
   - The problem: map gen creates them on the `player` force, so spawn owners can't deconstruct them.
-  - In `GenerateFinalSpawnPieces`, after the spawn's chunks exist, find `lightning-attractor` entities on the `player` force within the 10x10 chunk area. Set their force to the spawn owner's force.
+  - In `on_chunk_generated` (`AssignLightningAttractorsToClosestSpawn`, called from `SeparateSpawnsGenerateChunk`), find `lightning-attractor` entities on the `player` force in the new chunk. Set their force to the force of the host of the closest spawn on that surface (`GetClosestUniqueSpawn`). If no spawn has been claimed on the surface yet, they stay on the `player` force.
+  - A spawn is registered before its chunks are requested, so the spawn's own area always goes to its owner. Attractors generated later anywhere on the planet go to whichever spawn is closest at that time.
+  - Oarc style spawns place extra scripted attractors after generation (`PlaceFulgoranLightningAttractors`). These are created on the owner's force directly.
 - **Evolution reset option:**
   - A runtime-global bool setting, "Reset evolution on new spawn", default off.
   - When a new primary or secondary spawn is queued, call `game.forces.enemy.set_evolution_factor(0, surface)` for that spawn's surface before generation starts.
   - The call goes at the top of `QueueNewSpawnGeneration` (`lib/separate_spawns.lua:1639`), before `request_to_generate_chunks`. Every new spawn passes through there, and it runs right after the point is claimed.
   - Joining someone else's spawn doesn't trigger it.
   - The reset affects everyone on that surface. Say so in the setting description.
+  - Implemented as `ResetEnemyEvolution(surface_name)`. It also zeroes the pollution, time and spawner kill parts of evolution, so the evolution GUI adds up. It logs the reset and broadcasts a chat message naming the planet.
+  - Setting: `oarc-classic-reset-evolution-on-new-spawn` (`gameplay.reset_evolution_on_new_spawn`). A reroll also counts as a new spawn.
 
 ## Phase 6: GUI and docs
 - Simplify the spawn choice GUI to: start a new spawn, join a shared spawn, and cancel a join request.
@@ -207,7 +216,7 @@ The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushe
    - With regrowth and World Eater off, have a player join and leave within the minimum online time.
    - The 11x11 chunks around their point are deleted and regenerate as a starting area.
    - The point is free again, and the next new player gets it.
-5. **Phase 4:** in prefab mode, the crop circle and resources are centred on the claimed point.
+5. **Phase 4:** with "Allow Oarc Style Spawn Circle" on, a player who ticks the OG Oarc style checkbox gets the crop circle and resources centred on the claimed point, and a player who leaves it unticked gets the vanilla starting area. With it off, the checkbox is gone.
 6. **Phase 5:**
    - With Space Age, travel to Vulcanus and Fulgora. A secondary spawn lands on that planet's grid point, and the cargo pod is redirected to it.
    - On Fulgora, the attractors near the spawn belong to the player's force and can be deconstructed.
@@ -220,6 +229,47 @@ The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushe
 
 ## Checklist
 Tick items off as they land. Each phase is meant to fit in one or two prompts.
+
+### Pending tests (running list)
+Everything here is written but not yet tested in game. Remove items as they pass. A new Space Age game covers all of them.
+
+**Phase 3, cleanup** (abandoned base cleanup on, regrowth and World Eater off):
+1. A player spawns and leaves within the minimum online time. The log shows `Removing base` and `Released starting point N`.
+2. The 11x11 chunks around their point are deleted and come back as a vanilla starting area.
+3. The next new player gets that same point, and the log does not mark it unusable.
+4. "Minimum distance to existing chunks" is gone from the mod settings.
+5. Optional: `/oarc-reroll-spawn` clears the old area and frees its point.
+
+**Phase 4, Oarc style spawn option:**
+6. Setting off: the spawn menu has no style or moat checkbox, the spawn is vanilla, and the Oarc settings tab hides the moat, spawn area and resource placement settings. The surface config tab shows starting items, crash site and a note, but no resources section.
+7. Setting on, box unticked: the moat checkbox is greyed out and the spawn is vanilla.
+8. Setting on, box ticked: the moat checkbox is enabled, and the prefab is centred on the claimed grid point. Try with and without the moat.
+9. Toggling the setting shows and hides the prefab-only parts of the settings tab and surface config tab.
+10. Optional: with a spawn radius of about 250, an Oarc style spawn that is cleaned up is fully deleted, including the parts outside 11x11.
+
+**Phase 5, secondary spawns:**
+11. The "Enable secondary spawns by default" startup setting is gone.
+12. In the Oarc settings tab, Vulcanus, Fulgora, Gleba and Aquilo have Secondary ticked, and Nauvis has Primary only.
+13. `/oarc-test-planet vulcanus` for an Oarc style player gives a prefab on Vulcanus, and for a vanilla player a vanilla spawn.
+14. Fly to Vulcanus or Fulgora for real (without the test command). The player gets a secondary spawn on the planet's grid, and the cargo pod is redirected to it.
+
+**Phase 5, Fulgora lightning attractors:**
+15. Make a Fulgora spawn (`/oarc-test-planet fulgora`). The ruin attractors around it belong to the player's own force, so hovering one shows their force and they can be deconstructed.
+16. Walk or drive away from the spawn so new chunks generate. Attractors in those chunks also go to that player's force, because theirs is the closest spawn.
+17. With two players on Fulgora, attractors in newly generated chunks go to whichever spawn is closer.
+18. Before anyone has a Fulgora spawn, chart or generate some Fulgora chunks (for example `/c game.surfaces.fulgora.request_to_generate_chunks({0,0}, 3)`). Their attractors stay on the `player` force, with no errors.
+19. With "Allow Oarc Style Spawn Circle" on, an Oarc style Fulgora spawn's scripted attractors also belong to the owner's force.
+
+**Phase 5, evolution reset:**
+20. Setting off (the default): raise evolution with `/c game.forces.enemy.set_evolution_factor(0.5, "nauvis")`, then start a new spawn. Evolution is still 0.5 and no reset message appears.
+21. Setting on: with Nauvis evolution at 0.5, a new player starts a spawn. While they wait in the holding pen, `/c game.print(game.forces.enemy.get_evolution_factor("nauvis"))` reads 0, the chat says evolution on Nauvis was reset, and the log has `ResetEnemyEvolution`.
+22. Setting on: set Vulcanus evolution to 0.5 and Nauvis to 0.5, then run `/oarc-test-planet vulcanus`. Vulcanus reads 0, and Nauvis stays at 0.5.
+23. Setting on: joining someone else's shared spawn does not reset evolution (multiplayer, can wait for the Phase 6 multiplayer test).
+24. The `/evolution` command (or the evolution GUI) shows the time, pollution and spawner kill parts at 0 right after a reset.
+
+**Every test:** `factorio-current.log` has no errors.
+
+**Deferred** (from earlier phases): custom map-gen starting points are replaced with an error message (Phase 2), and the multiplayer shared spawn join and remove player tests (Phase 1, folded into the Phase 6 multiplayer test).
 
 ### Phase 0: Starting points on every surface (in this repo)
 - [x] Extend the prototype so `on_init` loops over `game.planets` and creates any missing planet surfaces
@@ -264,19 +314,30 @@ Tick items off as they land. Each phase is meant to fit in one or two prompts.
 - [x] Test: `/oarc-test-planet vulcanus` makes a spawn on Vulcanus point 1, and running it again returns to the same spawn (verified 2026-10-26)
 
 ### Phase 3: Cleanup
-- [ ] `UniqueSpawnCleanupRemove`: fixed `chunk_radius = 5`, drop the near-spawn check (the `ReleaseStartingPoint` call already landed in Phase 2)
+- [x] `UniqueSpawnCleanupRemove`: fixed `chunk_radius = 5` (`STARTING_POINT_CLEANUP_CHUNK_RADIUS`, also used by `/oarc-reroll-spawn`), drop the near-spawn check (the `ReleaseStartingPoint` call already landed in Phase 2)
+- [x] Remove the `minimum_distance_to_existing_chunks` setting, config key and locale entries (cleanup was the last user)
 - [ ] Test: join and leave quickly, the area regenerates, and the point is reused
 
 ### Phase 4: Prefab option
-- [ ] Add the spawn style setting (`natural` or `prefab`)
-- [ ] Gate the crop shape, moat, resources and the surface config tab behind `prefab`
-- [ ] Test: the prefab is centred on the claimed point
+- [x] Add the "Allow Oarc Style Spawn Circle" setting (`gameplay.allow_oarc_style_spawn`, runtime-global, default off), read by `IsOarcStyleSpawnAllowed()`. It replaced an earlier global spawn style setting
+- [x] Spawn menu: when the setting is on, show the "OG Oarc style spawn" checkbox (default unchecked, meaning vanilla). The moat checkbox only shows when the setting is on, and is only enabled while the Oarc style is ticked
+- [x] Store the choice per spawn (`prefab` on spawn choices, unique spawns and delayed spawns). Secondary spawns copy it from the primary spawn, and the setting is checked again whenever a spawn is created
+- [x] Gate the crop shape, moat, liquid strip, resources and random entities on the spawn's `prefab` flag (`GenerateFinalSpawnPieces`, `SetupAndClearSpawnAreas` via the closest spawn)
+- [x] When the setting is off, hide the `prefab_only` settings (moat, spawn area, resource placement) in the settings tab, and the resources and liquid strip sections in the surface config tab. Its starting items and crash site sections stay, because they apply to both styles. Toggling the setting refreshes the GUI
+- [x] Cleanup radius for a prefab spawn is the larger of 5 chunks and the prefab's own chunk radius (`GetSpawnCleanupChunkRadius(unique_spawn)`), so a large spawn radius is still fully removed
+- [x] Add an `allow_oarc_style_spawn = true` example to the template scenario
+- [ ] Test: with the setting off, the spawn menu has no style or moat checkbox, and spawns are vanilla
+- [ ] Test: with it on, a ticked spawn gets the prefab centred on the claimed point (with and without moat), and an unticked spawn is vanilla
+- [ ] Test: a prefab player's secondary spawn on another planet is also a prefab, and a vanilla player's is vanilla
+- [ ] Test: the settings tab and surface config tab hide or show the prefab-only parts when the setting is toggled
 
 ### Phase 5: Planets, Fulgora, evolution
-- [ ] Secondary spawns always on, and remove the setting
-- [ ] `SecondarySpawn` claims a point from the planet's grid
-- [ ] Fulgora: reassign `player` force lightning attractors in the spawn area to the owner's force
-- [ ] Add the evolution reset setting (default off), with the reset at the top of `QueueNewSpawnGeneration`
+- [x] Secondary spawns always on, and remove the `default_enable_secondary_spawns_on_other_surfaces` startup setting. Every planet except the default surface gets `secondary = true` in `SeparateSpawnsInitSurface`. Non-planet surfaces from other mods have no grid, so they get neither. Admins can still toggle each surface in the settings tab
+- [x] `SecondarySpawn` claims a point from the planet's grid (landed in Phase 2)
+- [ ] Test: in a new Space Age game, the settings tab shows Secondary ticked for Vulcanus, Fulgora, Gleba and Aquilo, and not for Nauvis. The "Enable secondary spawns by default" startup setting is gone
+- [x] Fulgora: in `on_chunk_generated`, give `player` force lightning attractors to the force of the closest spawn's host (left on `player` if no spawn exists on the surface). Oarc style spawns create their scripted attractors on the owner's force
+- [ ] Test: Fulgora attractors around a new spawn belong to the owner's force and can be deconstructed
+- [x] Add the evolution reset setting (default off), with the reset at the top of `QueueNewSpawnGeneration`
 - [ ] Test on Vulcanus and Fulgora: cargo pod redirect, attractors, and evolution reads 0 in the holding pen
 
 ### Phase 6: GUI and docs

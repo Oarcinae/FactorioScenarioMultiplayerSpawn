@@ -18,6 +18,9 @@ local oarc_classic_scenario_interface =
         modified_settings.server_info.welcome_msg_title = "THIS IS A TEMPLATE SCENARIO"
         modified_settings.server_info.welcome_msg = "This is a template scenario. You can modify the settings in the control.lua file. If you are seeing this message, you did not modify the scenario correctly."
 
+        -- Let players pick the OG Oarc style spawn circle (crop circle, moat, scripted resources) in the spawn menu:
+        -- modified_settings.gameplay.allow_oarc_style_spawn = true
+
         -- Surface config is not available in the mod settings, for example starting items:
         -- modified_settings.surfaces_config["nauvis"].starting_items.player_start_items = {
         --     ["coal"] = 1, -- You're on the naughty list!

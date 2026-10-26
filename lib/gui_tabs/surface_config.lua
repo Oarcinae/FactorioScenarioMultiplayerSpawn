@@ -50,6 +50,14 @@ function CreateSurfaceConfigContent(container, surface_name)
     CreateItemsSection(crash_site_flow, surface_name, {"oarc-label-crashed-ship-max"}, "crashed_ship_resources", MAX_CRASHED_SHIP_RESOURCES_ITEMS)
     CreateItemsSection(crash_site_flow, surface_name, {"oarc-label-ship-wreckage-max"}, "crashed_ship_wreakage", MAX_CRASHED_SHIP_WRECKAGE_ITEMS)
     AddSpacerLine(scroll_pane)
+
+    -- The spawn area resources and liquid strip are only placed in Oarc style spawns.
+    if (not IsOarcStyleSpawnAllowed()) then
+        local note = AddLabel(scroll_pane, nil, {"oarc-surface-settings-prefab-only-note"}, my_note_style)
+        note.style.maximal_width = 600
+        return
+    end
+
     AddLabel(scroll_pane, nil, {"oarc-label-spawn-area-resources"}, my_label_header2_style)
     local spawn_config_flow = scroll_pane.add { type = "flow", direction = "horizontal" }
     CreateSolidResourcesConfig(spawn_config_flow, surface_name)

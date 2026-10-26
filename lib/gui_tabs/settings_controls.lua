@@ -53,8 +53,12 @@ end
 function CreateModSettingsSection(container, player)
     AddLabel(container, nil, { "oarc-settings-tab-title-mod-settings" }, my_label_header2_style)
 
+    local prefab_allowed = IsOarcStyleSpawnAllowed()
+
     for index,entry in pairs(OCFG_KEYS) do
-        if (entry.type == "header") then
+        if (entry.prefab_only and not prefab_allowed) then
+            -- Hidden, these only apply to Oarc style spawns.
+        elseif (entry.type == "header") then
             AddSpacerLine(container)
             AddLabel(container, nil, entry.text, "caption_label")
         elseif (entry.type == "subheader") then

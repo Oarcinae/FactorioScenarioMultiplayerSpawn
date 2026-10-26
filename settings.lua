@@ -1,13 +1,5 @@
 data:extend({
     {
-        type = "bool-setting",
-        name = "oarc-classic-default-enable-secondary-spawns-on-other-surfaces",
-        setting_type = "startup",
-        default_value = false,
-        order = "a1"
-    },
-
-    {
         type = "string-setting",
         name = "oarc-classic-welcome-msg-title",
         setting_type = "runtime-global",
@@ -31,6 +23,13 @@ data:extend({
 
     {
         type = "bool-setting",
+        name = "oarc-classic-allow-oarc-style-spawn",
+        setting_type = "runtime-global",
+        default_value = false,
+        order = "b3"
+    },
+    {
+        type = "bool-setting",
         name = "oarc-classic-allow-moats-around-spawns",
         setting_type = "runtime-global",
         default_value = true,
@@ -44,15 +43,6 @@ data:extend({
         order = "b5"
     },
 
-    {
-        type = "int-setting",
-        name = "oarc-classic-minimum-distance-to-existing-chunks",
-        setting_type = "runtime-global",
-        default_value = 20,
-        minimum_value = 5,
-        maximum_value = 50,
-        order = "c1"
-    },
     {
         type = "int-setting",
         name = "oarc-classic-starting-points-count",
@@ -78,6 +68,13 @@ data:extend({
         setting_type = "runtime-global",
         default_value = true,
         order = "d2"
+    },
+    {
+        type = "bool-setting",
+        name = "oarc-classic-reset-evolution-on-new-spawn",
+        setting_type = "runtime-global",
+        default_value = false,
+        order = "d21"
     },
     {
         type = "bool-setting",
