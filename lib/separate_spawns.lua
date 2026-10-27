@@ -50,6 +50,11 @@ function InitSpawnGlobalsAndForces()
     --[[@type table<string, table<string, boolean>>]]
     storage.player_rerolls = {}
 
+    -- Pending /oarc-reroll-spawn confirmations, indexed by the name of the player who ran the command.
+    -- Set when a reroll was refused with a warning, so running it again soon after goes through.
+    --[[@type table<string, OarcRerollConfirmation>]]
+    storage.reroll_confirmations = {}
+
     -- Players who have made a spawn choice get put into this list while waiting.
     -- An on_tick event checks when it expires and then places down the base resources, and teleports the player.
     -- Go look at DelayedSpawnOnTick() for more info.
@@ -1805,6 +1810,25 @@ local function GetCargoPodDestinationSurface(destination)
     return surface
 end
 
+---Checks if any cargo pod of a force is on its way to a surface, landing pad or not.
+---@param force LuaForce
+---@param surface LuaSurface
+---@return boolean
+function IsCargoPodHeadingToSurface(force, surface)
+    for _, search_surface in pairs(game.surfaces) do
+        for _, pod in pairs(search_surface.find_entities_filtered { type = "cargo-pod", force = force }) do
+            local destination = pod.cargo_pod_destination
+            if (destination.type == defines.cargo_destination.surface) then
+                if (GetCargoPodDestinationSurface(destination) == surface) then return true end
+            elseif (destination.type == defines.cargo_destination.station) then
+                local station = destination.station
+                if (station ~= nil) and station.valid and (station.surface == surface) then return true end
+            end
+        end
+    end
+    return false
+end
+
 ---Pods headed for a surface only start a spawn there if spawns are enabled on that surface and the force has no
 ---landing pad there. If it has a pad, the pods land on it as normal.
 ---@param force LuaForce
@@ -1983,6 +2007,12 @@ end
 ---@alias OarcPlayerCooldown { setRespawn: number }
 ---Table of [OarcPlayerCooldown](lua://OarcPlayerCooldown) indexed by player name.
 ---@alias OarcPlayerCooldownsTable table<string, OarcPlayerCooldown>
+
+---A reroll that was refused with a warning, waiting for the same command to be run again.
+---@class OarcRerollConfirmation
+---@field target_name string The player whose spawn would be rerolled.
+---@field surface_name string
+---@field tick integer When the warning was shown.
 
 ---Temporary data used when spawning a player. Player needs to wait while the area is prepared.
 ---Temporary data used when spawning a player. Player needs to wait while the area is prepared.

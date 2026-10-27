@@ -239,7 +239,72 @@ function DudeWheresMyCargoPod(player)
     end
 end
 
+-- Radius around a spawn that is checked before a reroll.
+REROLL_CHECK_RADIUS_TILES = 3 * CHUNK_SIZE
+-- How long a reroll warning waits for the command to be run again.
+REROLL_CONFIRM_TICKS = 60 * TICKS_PER_SECOND
 
+-- Entities on the force that come with every new spawn, so they don't count as the player's stuff.
+local REROLL_IGNORED_TYPES = { "character", "cargo-pod", "entity-ghost", "tile-ghost" }
+local REROLL_IGNORED_NAMES = { "fulgoran-ruin-attractor" }
+local REROLL_IGNORED_NAME_PREFIX = "crash-site-"
+
+---Finds a player character from another force near a spawn. Offline players' characters count too.
+---@param surface LuaSurface
+---@param position MapPosition
+---@param force LuaForce
+---@return string? player_name Name of the character's player, or nil if there is none.
+function FindOtherForceCharacterNearSpawn(surface, position, force)
+    local characters = surface.find_entities_filtered { type = "character", position = position, radius = REROLL_CHECK_RADIUS_TILES }
+    for _, character in pairs(characters) do
+        if (character.force ~= force) then
+            local owner = character.player or character.associated_player
+            if (owner ~= nil) then
+                return owner.name
+            end
+        end
+    end
+    return nil
+end
+
+---Counts the buildings and landed cargo pods with items that a force has near a spawn. Empty cargo pods and the
+---entities every new spawn gets (crash site, Fulgora ruin attractors) are left out.
+---@param surface LuaSurface
+---@param position MapPosition
+---@param force LuaForce
+---@return integer buildings
+---@return integer pods
+function CountForceStuffNearSpawn(surface, position, force)
+    local buildings = 0
+    local pods = 0
+    local entities = surface.find_entities_filtered { position = position, radius = REROLL_CHECK_RADIUS_TILES, force = force }
+    for _, entity in pairs(entities) do
+        if (entity.name == "cargo-pod-container") then
+            local inventory = entity.get_inventory(defines.inventory.chest)
+            if (inventory ~= nil) and (not inventory.is_empty()) then
+                pods = pods + 1
+            end
+        elseif (not TableContains(REROLL_IGNORED_TYPES, entity.type)) and
+            (not TableContains(REROLL_IGNORED_NAMES, entity.name)) and
+            (not StringStartsWith(entity.name, REROLL_IGNORED_NAME_PREFIX)) then
+            buildings = buildings + 1
+        end
+    end
+    return buildings, pods
+end
+
+---Checks if the caller was warned about this reroll recently, which means they want to go ahead with it.
+---@param caller LuaPlayer
+---@param player LuaPlayer
+---@param surface_name string
+---@return boolean
+local function IsRerollConfirmed(caller, player, surface_name)
+    local confirmation = storage.reroll_confirmations[caller.name]
+    return (confirmation ~= nil) and
+        (confirmation.target_name == player.name) and
+        (confirmation.surface_name == surface_name) and
+        (game.tick - confirmation.tick <= REROLL_CONFIRM_TICKS)
+end
 
 ---Moves a player's spawn on the surface they are standing on to the next free starting point. Admins can reroll
 ---anyone as often as they want. Other players can only reroll themselves, once per surface. A reroll is only used up
@@ -283,6 +348,29 @@ function RerollSpawn(caller, player)
 
     -- Save a copy of the previous spawn point
     local old_spawn_point = table.deepcopy(storage.unique_spawns[surface_name][player.name])
+    local force = player.force --[[@as LuaForce]]
+
+    -- Another team's player at the spawn would lose whatever they are doing there.
+    local other_player_name = FindOtherForceCharacterNearSpawn(surface, old_spawn_point.position, force)
+    if (other_player_name ~= nil) then
+        SendErrorMsg(caller, { "oarc-reroll-blocked-player", other_player_name, surface_name })
+        return
+    end
+
+    -- Pods on their way would land at the old spawn and be lost.
+    if IsCargoPodHeadingToSurface(force, surface) then
+        SendErrorMsg(caller, { "oarc-reroll-blocked-cargo-pod", surface_name })
+        return
+    end
+
+    -- Warn about anything that would be lost. Running the command again soon after goes ahead anyway.
+    local buildings, pods = CountForceStuffNearSpawn(surface, old_spawn_point.position, force)
+    if ((buildings + pods) > 0) and not IsRerollConfirmed(caller, player, surface_name) then
+        storage.reroll_confirmations[caller.name] = { target_name = player.name, surface_name = surface_name, tick = game.tick }
+        SendErrorMsg(caller, { "oarc-reroll-confirm-warning", buildings, pods, player.name, surface_name })
+        return
+    end
+    storage.reroll_confirmations[caller.name] = nil
 
     -- Claim the next free starting point
     local spawn_position = ClaimNextStartingPoint(surface_name, player.name)
