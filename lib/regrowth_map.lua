@@ -111,8 +111,8 @@ function RegrowthInitSurface(surface_name, activate)
 
         table.insert(storage.rg.active_surfaces, surface_name)
 
-        -- TODO: Hopefully a temporary measure to make sure map center never gets deleted.
-        -- If we can detect and redirect cargo-pods, then this can be removed.
+        -- Make sure the map center never gets deleted. Force spawn positions sit at the origin until a spawn is
+        -- generated (and again after a reroll), so any cargo pod with nowhere else to go lands here.
         for i = -2, 2 do
             for j = -2, 2 do
                 MarkChunkSafe(surface_name, { x = i, y = j }, true)

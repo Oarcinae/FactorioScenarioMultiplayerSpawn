@@ -298,9 +298,33 @@ function ReleaseStartingPoint(surface_name, position)
         if (point.position.x == position.x) and (point.position.y == position.y) then
             log("ReleaseStartingPoint - Released starting point " .. index .. " on " .. surface_name ..
                 " (was claimed by " .. tostring(point.host_name) .. ")")
+            ResetForceSpawnPositionOffPoint(point.host_name, surface_name, position)
             point.host_name = nil
             return
         end
+    end
+end
+
+---Cargo pods without a landing pad land at the force's spawn position. If the host's force still points at a released
+---point, pods would land there, generate chunks on the point and be deleted by its cleanup. Move it back to the origin
+---until the force's next spawn on the surface is generated (GenerateFinalSpawnPieces). Only rerolls need this. When a
+---player's spawns are cleaned up, RemoveOrResetPlayer has already moved them to the lobby force, so this does nothing.
+---@param host_name string?
+---@param surface_name string
+---@param position MapPosition
+---@return nil
+function ResetForceSpawnPositionOffPoint(host_name, surface_name, position)
+    if (host_name == nil) then return end
+    local player = game.players[host_name]
+    local surface = game.surfaces[surface_name]
+    if (player == nil) or (surface == nil) then return end
+
+    local force = player.force --[[@as LuaForce]]
+    local spawn_position = force.get_spawn_position(surface)
+    if (spawn_position.x == position.x) and (spawn_position.y == position.y) then
+        force.set_spawn_position({ x = 0, y = 0 }, surface)
+        log("ResetForceSpawnPositionOffPoint - Moved the spawn position of force " .. force.name .. " on " ..
+            surface_name .. " back to the origin")
     end
 end
 

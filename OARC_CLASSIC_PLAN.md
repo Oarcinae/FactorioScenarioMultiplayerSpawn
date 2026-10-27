@@ -21,7 +21,7 @@ There is no join limit. Enemy evolution naturally discourages late joiners, and 
 | Shared chat and vision | Regrowth and World Eater (already off by default in `settings.lua`, left as is) | Main team |
 | Cleanup of abandoned spawns (fixed 10x10 chunk area) | | Energy and item sharing (`lib/sharing.lua`, linked chest and pole in `data.lua`, chest size startup setting) |
 | Joining someone else's spawn (shared spawns, join queue) | | Enemy scaling and spawn safe areas (`lib/scaled_enemies.lua`) |
-| Secondary spawns on all planets, cargo pod redirect | | `FindUngeneratedCoordinates`, near/far distance settings, minimum distance to existing chunks |
+| Secondary spawns on all planets, started by the first cargo pod | | `FindUngeneratedCoordinates`, near/far distance settings, minimum distance to existing chunks, cargo pod redirect (the engine already lands pods at the force's spawn position) |
 | Player list and server info tabs | | |
 | Respawn handling, cooldown, reset and remove player | | |
 
@@ -148,7 +148,11 @@ A prefab spawn keeps today's pipeline centred on the claimed point:
 - **Secondary spawns are always on:**
   - Drop the `default_enable_secondary_spawns_on_other_surfaces` setting. Planets get `storage.oarc_surfaces[x].secondary = true`.
   - `SecondarySpawn` claims a point on the target planet's grid.
-  - The cargo pod redirect code (`lib/separate_spawns.lua:1861` onward) is unchanged.
+  - **Cargo pods (redirect removed 2026-10-27):** with no landing pad, the engine lands a pod at the force's spawn position on that planet, and it reads that position while the pod is descending. `GenerateFinalSpawnPieces` moves the force's spawn position to the spawn once it is generated, so pods land there without any redirect.
+    - `OnCargoPodStartedAscending` is kept. It starts the secondary spawn when a pod leaves the platform, for the player riding in it or for the force's host. A spawn finishes generating well before the pod finishes ascending, even an Oarc style spawn.
+    - Removed: the redirect in `on_cargo_pod_finished_ascending`, the pod tracking and `CargoPodHandlerOnTick`, and the `TeleportCargoPodsToLocation` sweep of the map center.
+    - `SeparateSpawnsPlayerChangedSurface` leaves a riding player in the pod when the force's spawn position is their spawn, instead of checking for a redirected destination.
+    - `ReleaseStartingPoint` moves the host force's spawn position back to the origin (`ResetForceSpawnPositionOffPoint`). Otherwise, after a reroll, pods would land on the released point, generate chunks there and be deleted by its cleanup. A cleanup after a player leaves doesn't need it, because the force has either been handed to a joiner (nothing is released) or merged into `neutral`.
 - **Fulgora lightning attractors:**
   - The problem: map gen creates them on the `player` force, so spawn owners can't deconstruct them.
   - In `on_chunk_generated` (`AssignLightningAttractorsToClosestSpawn`, called from `SeparateSpawnsGenerateChunk`), find `lightning-attractor` entities on the `player` force in the new chunk. Set their force to the force of the host of the closest spawn on that surface (`GetClosestUniqueSpawn`). If no spawn has been claimed on the surface yet, they stay on the `player` force.
@@ -172,6 +176,7 @@ A prefab spawn keeps today's pipeline centred on the claimed point:
   - Players can only reroll themselves, once per surface (`storage.player_rerolls[player][surface]`). The reroll is only used up if a free point was found.
   - Admins can reroll themselves or anyone else, with no limit, and that doesn't use up the target's own reroll.
   - Each reroll uses up a point from a fixed grid. If cleanup is off or the old area isn't deleted yet, the old point is skipped until its chunks are gone.
+  - The command description, the FAQ answer and the tip after a secondary spawn warn that everything built or landed at the current spawn is lost, and so are any cargo pods still on their way.
 
 ## Phase 7: Public publish and public playtesting
 The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushed before then.
@@ -194,10 +199,10 @@ The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushe
   - `lib/gui_tabs/spawn_controls.lua`
   - `lib/gui_tabs/settings_controls.lua`
   - `lib/oarc_utils.lua`
+  - `lib/regrowth_map.lua`
 - **Unchanged:**
   - `lib/holding_pen.lua`
   - `lib/offline_protection.lua`
-  - `lib/regrowth_map.lua`
   - `lib/spawn_area_generation.lua`
   - `lib/gui_tabs/player_list.lua`
   - `lib/gui_tabs/server_info.lua`
@@ -219,7 +224,7 @@ The branch stays local until Phases 1 to 6 are done and tested. Nothing is pushe
    - The point is free again, and the next new player gets it.
 5. **Phase 4:** with "Allow Oarc Style Spawn Circle" on, a player who ticks the OG Oarc style checkbox gets the crop circle and resources centred on the claimed point, and a player who leaves it unticked gets the vanilla starting area. With it off, the checkbox is gone.
 6. **Phase 5:**
-   - With Space Age, travel to Vulcanus and Fulgora. A secondary spawn lands on that planet's grid point, and the cargo pod is redirected to it.
+   - With Space Age, travel to Vulcanus and Fulgora. A secondary spawn lands on that planet's grid point, and the game lands the cargo pod at it with no redirect.
    - On Fulgora, the attractors near the spawn belong to the player's force and can be deconstructed.
    - With the evolution reset on, `/c game.print(game.forces.enemy.get_evolution_factor("vulcanus"))` reads 0 while the player is still waiting in the holding pen for a new Vulcanus spawn. Nauvis evolution is unchanged.
 7. **Multiplayer:** a host plus a second client. Check the holding pen wait, the shared spawn join queue, and offline protection.
@@ -253,6 +258,24 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 **Passed in the multiplayer test (2026-10-27, dedicated server, three real clients):** 14 (real flights to Fulgora, Vulcanus, Gleba and Aquilo: secondary spawns on each planet's grid, cargo pods redirected, item-only pods sent to the force's spawn) and 17 (two spawns on Fulgora, attractors go to the closer spawn). Also the holding pen wait, shared spawn joins (secondary spawns copy the joiners and open access), an early leaver reset, and the admin reset from the server info tab, which released the point. The log had no errors.
 
 **Skipped:** 23 (joining a shared spawn does not reset evolution, low risk), offline protection (for now), and a prefab player's secondary spawn being a prefab (tested earlier by hand).
+
+**Cargo pod redirect test (2026-10-27, redirect turned off by a temporary flag, now removed):**
+- **Passed:**
+  - A riding player flew to a planet with no spawn yet (Gleba). The spawn was generated about 300 ticks before the pod finished ascending, and the pod landed at (3200,0).
+  - A riding player flew to an existing spawn (Fulgora) and landed at the spawn.
+  - An unmanned pod went to a planet with no spawn (Fulgora). It started a spawn for the force's host, nothing was stranded at the origin, and the pod landed at the spawn.
+  - An Oarc style spawn (slower to generate) was ready in time.
+  - An unmanned pod dropped while the player stood away from the spawn landed at the spawn, not next to the player.
+  - The redirect-on baseline on Vulcanus landed in the same place.
+- **Not tested:** a reroll, then a pod dropped straight away. This is an accepted edge case: the reroll warning covers it, and `ResetForceSpawnPositionOffPoint` keeps such pods off the released point.
+
+**Cargo pods, after the redirect removal:**
+- **Passed (2026-10-27):**
+  - 26: riding a pod to Fulgora and Vulcanus, the player stays in the pod and lands at the new spawn.
+  - 27: unmanned pods land at the spawn.
+  - 28: two rerolls on Vulcanus each log `ResetForceSpawnPositionOffPoint` when the old point is released, and the new spawn is generated about 100 ticks later. On the second reroll, point 1 was skipped as explored, because it had been released about 5 seconds earlier (the known case of a release less than 31 seconds before the claim).
+  - 30: the reroll warning shows in the `/help oarc-reroll-spawn` text, the FAQ tab and the tip shown after a secondary spawn.
+- **Dropped:** 29 (the force spawn position after a cleanup). It can't happen: `RemoveOrResetPlayer` moves the player to the lobby force before cleanup. Then either a joiner takes over the spawns (so nothing is released) or the empty force is merged into `neutral`. The reset only applies to rerolls.
 
 **Phase 6, translations:**
 25. Switch the game language to German, Russian and Chinese and look over the spawn menu, the FAQ tab and the mod settings. The text was written without a native speaker, so it is worth a check by one if possible.
@@ -330,6 +353,9 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] Test: Fulgora attractors around a new spawn belong to the owner's force and can be deconstructed (verified 2026-10-26 and 2026-10-27, tests 15 to 19)
 - [x] Add the evolution reset setting (default off), with the reset at the top of `QueueNewSpawnGeneration`
 - [x] Test on Vulcanus and Fulgora: cargo pod redirect, attractors, and evolution reads 0 in the holding pen (verified 2026-10-27, tests 14, 17 and 20 to 24; 23 skipped)
+- [x] Test whether the engine lands pods at the spawn on its own (passed 2026-10-27, see the cargo pod redirect test above)
+- [x] Remove the cargo pod redirect, the pod tracking and the origin sweep. Keep the trigger that starts a spawn when a pod leaves the platform. Leave a riding player in the pod when the force's spawn position is their spawn, and move the force's spawn position back to the origin when a point is released
+- [x] Test the removal (26 to 28 passed 2026-10-27, 29 dropped)
 
 ### Phase 6: GUI and docs
 - [x] Simplify the spawn choice GUI (new spawn, join, cancel). The spawn settings and solo spawn frames are merged into one "Start a New Spawn" frame (`CreateNewSpawnFrame`), with the surface dropdown, style and moat checkboxes, and the button. The shared spawn frame and the cancel wait menu are unchanged. Removed the unused and outdated spawn menu locale keys from every language. Also fixed: picking Join with no host selected used to close the menu with nothing to replace it, the cancel path always logged an error, and the "Select Surface" label was hardcoded. Server test passed (2026-10-26)
@@ -338,6 +364,9 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] Update the FAQ, locale and changelog. New FAQ entries for starting points, Oarc style spawns (only shown when allowed), rerolls and the evolution reset (only shown when on), and rewrote the outdated answers (teams, secondary spawns, cleanup). German, Russian and Chinese are translated in full, including the strings they were missing before, and the broken Russian setting keys are fixed. The 1.0.0 changelog lists everything
 - [x] Spawn reroll: kept, once per surface for players, no limit for admins, who can also name another player. Server test passed (2026-10-26): second reroll refused, admin unlimited, no free point keeps the reroll, a non-admin can't target someone else, and Vulcanus has its own reroll after Nauvis is used up
 - [x] Multiplayer test: holding pen and join queue (verified 2026-10-27). Offline protection skipped for now
+- [x] Reroll warning: the command description, the FAQ answer and the tip after a secondary spawn say everything built or landed at the current spawn is lost, and so are any cargo pods still on their way. Added in all four languages
+- [ ] Test the reroll warning text (test 30)
+- [ ] TODO (you): before a reroll, check for uncollected cargo pods (`cargo-pod-container` on the player's force) within 3 chunks of the current spawn, and pods still in flight to that planet. If any are found, show the player an error and block the reroll
 
 ### Phase 7: Public publish and playtesting
 - [ ] Push the branch (only after Phases 1 to 6 are done and tested)

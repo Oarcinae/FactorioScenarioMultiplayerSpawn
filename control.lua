@@ -155,12 +155,6 @@ script.on_event(defines.events.on_research_finished, function(event)
     end
 end)
 
--- TODO: Possibly only enable this if space-age mod is enabled??
-script.on_event(defines.events.on_cargo_pod_finished_ascending, function (event)
-    -- I re-direct cargo pods to a spawn point if there is no landing pad on the surface.
-    OnCargoPodFinishedAscending(event)
-end)
-
 script.on_event(defines.events.on_cargo_pod_started_ascending, function (event)
     -- I start generating a secondary spawn as soon as a pod leaves a platform hub, so it is ready when the pod lands.
     OnCargoPodStartedAscending(event)
@@ -277,9 +271,6 @@ script.on_event(defines.events.on_tick, function(event)
         RegrowthOnTick()
     end
     RegrowthForceRemovalOnTick() -- Allows for abandoned base cleanup without regrowth enabled.
-
-    -- TODO: Possibly only enable this if space-age mod is enabled??
-    CargoPodHandlerOnTick()
 end)
 
 ----------------------------------------
