@@ -240,23 +240,15 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - Nauvis point 1 was always explored before anyone joined. Writing the grid moves every force's spawn position to point 1, and freeplay charts 200 tiles around the `player` force's spawn on the first join. Fix: `ApplyStartingPoints` puts all spawn positions back at the origin.
 - A cleaned up point came back explored. Charts survive chunk deletion and regenerate the chunks, and shared vision gives the lobby force a chart request around every new spawn that waits while the lobby has nobody in it, then runs (and regenerates the deleted area) as soon as someone joins. Fix: the forced removal in `OarcRegrowthRemoveAllChunks` cancels pending chart requests for forces with nobody online, and uncharts each deleted chunk for every force. Spawn owners who are offline were not affected (their force charts straight away).
 
-**Manual check for the two fixes (do this yourself):** the temporary `DEBUG-CHUNKGEN` log in `control.lua` is still in for this. It logs any chunk generated inside an unclaimed point's 10x10 area. Remove it after this check.
-- a. New game, one player. The first spawn gets point 1, not point 2.
-- b. That player leaves within the minimum online time (the lobby is now empty). Wait 31 seconds for the cleanup, then rejoin and wait a minute in the holding pen. No `DEBUG-CHUNKGEN` lines appear for point 1, and the next spawn gets point 1 again with no `unusable` line in the log.
-- c. Same as b, but with a second player waiting in the holding pen the whole time. Point 1 is reused.
-- d. Two players with spawns, one goes offline (set the minimum online time to 0 first). The other rerolls twice, and after the cleanup the offline player rejoins. No `DEBUG-CHUNKGEN` lines for the cleaned up points.
+**Manual check for the two fixes: passed (2026-10-27)**, on a dedicated server with real clients and a temporary `DEBUG-CHUNKGEN` log (now removed):
+- The first spawn gets point 1.
+- A player leaves early while nobody else is online, the cleanup runs with the lobby empty, and on rejoin point 1 is reused.
+- A player waits in the holding pen for about 7 minutes while cleanups run, with no chunks regenerated inside unclaimed points.
+- Rerolls with an offline spawn owner leave no regenerated chunks, and the released points are claimed again after their cleanup with no `unusable` line.
+- Test servers need `"auto_pause": false`, or no cleanup runs while nobody is online.
 - Note: a point released less than 31 seconds before the next claim is still generated, so it is skipped and marked unusable for now. It becomes usable again after its cleanup.
 
-**Phase 3, cleanup** (abandoned base cleanup on, regrowth and World Eater off):
-2. The 11x11 chunks around a released point are deleted and come back as a vanilla starting area. Server test: exactly the 121 chunks were deleted with the ring around them kept, and the regenerated area matched the original (same ore, water and no enemies). Still to check by eye.
-3. The next new player gets that same point. Passed on the server after the fixes above; confirm with the manual check.
-
-**Phase 4, Oarc style spawn option** (all passed by script on the server; still to check by eye):
-6. Setting off: the spawn menu has no style or moat checkbox, the spawn is vanilla, and the Oarc settings tab hides the moat, spawn area and resource placement settings. The surface config tab shows starting items, crash site and a note, but no resources section.
-7. Setting on, box unticked: the moat checkbox is greyed out and the spawn is vanilla.
-8. Setting on, box ticked: the moat checkbox is enabled, and the prefab is centred on the claimed grid point. Try with and without the moat. (No water strip with a moat is the intended behaviour.)
-9. Toggling the setting shows and hides the prefab-only parts of the settings tab and surface config tab.
-10. Optional: with a spawn radius of about 250, an Oarc style spawn that is cleaned up is fully deleted, including the parts outside 11x11. Server test: the cleanup radius is 10 chunks for radius 250 (at least 320 tiles each way, against 258 needed). Still to check by eye.
+**Passed by eye (2026-10-27):** 2 (a cleaned up area comes back as a vanilla starting area), 3 (the next new player gets the freed point), 6 to 10 (Oarc style spawn option: menu checkboxes, vanilla and prefab spawns with and without a moat, the prefab-only settings shown and hidden, and a large prefab spawn fully cleaned up), and the spawn menu layout with the setting off and on.
 
 **Phase 5:**
 14. Fly to Vulcanus or Fulgora for real (without the test command). The player gets a secondary spawn on the planet's grid, and the cargo pod is redirected to it.
@@ -315,7 +307,8 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 ### Phase 3: Cleanup
 - [x] `UniqueSpawnCleanupRemove`: fixed `chunk_radius = 5` (`STARTING_POINT_CLEANUP_CHUNK_RADIUS`, also used by `/oarc-reroll-spawn`), drop the near-spawn check (the `ReleaseStartingPoint` call already landed in Phase 2)
 - [x] Remove the `minimum_distance_to_existing_chunks` setting, config key and locale entries (cleanup was the last user)
-- [ ] Test: join and leave quickly, the area regenerates, and the point is reused
+- [x] Test: join and leave quickly, and the point is reused (verified 2026-10-27, manual check above)
+- [x] Test by eye: the cleaned up area regenerates as a vanilla starting area (verified 2026-10-27)
 
 ### Phase 4: Prefab option
 - [x] Add the "Allow Oarc Style Spawn Circle" setting (`gameplay.allow_oarc_style_spawn`, runtime-global, default off), read by `IsOarcStyleSpawnAllowed()`. It replaced an earlier global spawn style setting
@@ -325,10 +318,10 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] When the setting is off, hide the `prefab_only` settings (moat, spawn area, resource placement) in the settings tab, and the resources and liquid strip sections in the surface config tab. Its starting items and crash site sections stay, because they apply to both styles. Toggling the setting refreshes the GUI
 - [x] Cleanup radius for a prefab spawn is the larger of 5 chunks and the prefab's own chunk radius (`GetSpawnCleanupChunkRadius(unique_spawn)`), so a large spawn radius is still fully removed
 - [x] Add an `allow_oarc_style_spawn = true` example to the template scenario
-- [ ] Test: with the setting off, the spawn menu has no style or moat checkbox, and spawns are vanilla
-- [ ] Test: with it on, a ticked spawn gets the prefab centred on the claimed point (with and without moat), and an unticked spawn is vanilla
+- [x] Test: with the setting off, the spawn menu has no style or moat checkbox, and spawns are vanilla (verified 2026-10-27)
+- [x] Test: with it on, a ticked spawn gets the prefab centred on the claimed point (with and without moat), and an unticked spawn is vanilla (verified 2026-10-27)
 - [ ] Test: a prefab player's secondary spawn on another planet is also a prefab, and a vanilla player's is vanilla
-- [ ] Test: the settings tab and surface config tab hide or show the prefab-only parts when the setting is toggled
+- [x] Test: the settings tab and surface config tab hide or show the prefab-only parts when the setting is toggled (verified 2026-10-27)
 
 ### Phase 5: Planets, Fulgora, evolution
 - [x] Secondary spawns always on, and remove the `default_enable_secondary_spawns_on_other_surfaces` startup setting. Every planet except the default surface gets `secondary = true` in `SeparateSpawnsInitSurface`. Non-planet surfaces from other mods have no grid, so they get neither. Admins can still toggle each surface in the settings tab
@@ -341,7 +334,7 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 
 ### Phase 6: GUI and docs
 - [x] Simplify the spawn choice GUI (new spawn, join, cancel). The spawn settings and solo spawn frames are merged into one "Start a New Spawn" frame (`CreateNewSpawnFrame`), with the surface dropdown, style and moat checkboxes, and the button. The shared spawn frame and the cancel wait menu are unchanged. Removed the unused and outdated spawn menu locale keys from every language. Also fixed: picking Join with no host selected used to close the menu with nothing to replace it, the cancel path always logged an error, and the "Select Surface" label was hardcoded. Server test passed (2026-10-26)
-- [ ] Test by eye: the spawn menu layout with the Oarc style setting off and on
+- [x] Test by eye: the spawn menu layout with the Oarc style setting off and on (verified 2026-10-27)
 - [x] Show admins a claimed starting point count per surface in the server info tab
 - [x] Update the FAQ, locale and changelog. New FAQ entries for starting points, Oarc style spawns (only shown when allowed), rerolls and the evolution reset (only shown when on), and rewrote the outdated answers (teams, secondary spawns, cleanup). German, Russian and Chinese are translated in full, including the strings they were missing before, and the broken Russian setting keys are fixed. The 1.0.0 changelog lists everything
 - [x] Spawn reroll: kept, once per surface for players, no limit for admins, who can also name another player. Server test passed (2026-10-26): second reroll refused, admin unlimited, no free point keeps the reroll, a non-admin can't target someone else, and Vulcanus has its own reroll after Nauvis is used up

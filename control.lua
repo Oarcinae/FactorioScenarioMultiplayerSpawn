@@ -293,29 +293,6 @@ script.on_event(defines.events.on_chunk_generated, function(event)
     CreateHoldingPenChunks(event)
 
     SeparateSpawnsGenerateChunk(event)
-
-    -- TEMP DEBUG: log chunks generated inside the explored area of an unclaimed starting point.
-    local points = storage.starting_points[event.surface.name]
-    if points then
-        for index, point in ipairs(points) do
-            local center = GetChunkPosFromTilePos(point.position)
-            local half = STARTING_POINT_EXPLORED_AREA_CHUNKS / 2
-            if (point.host_name == nil) and
-                (event.position.x >= center.x - half) and (event.position.x < center.x + half) and
-                (event.position.y >= center.y - half) and (event.position.y < center.y + half) then
-                local charted = {}
-                for _, force in pairs(game.forces) do
-                    if force.is_chunk_charted(event.surface, event.position) then
-                        table.insert(charted, force.name .. "(" .. #force.connected_players .. " online)")
-                    end
-                end
-                log("DEBUG-CHUNKGEN tick " .. game.tick .. " " .. event.surface.name .. " point " .. index ..
-                    " chunk " .. event.position.x .. "," .. event.position.y .. " charted by: " ..
-                    (#charted > 0 and table.concat(charted, " ") or "nobody") ..
-                    " | player force online: " .. #game.forces.player.connected_players)
-            end
-        end
-    end
 end)
 
 ----------------------------------------
