@@ -135,7 +135,7 @@ function ApplyStartingPoints(surface, allow_clear)
 
     -- Writing the starting points moves every force's spawn position to the first point. Freeplay charts the area
     -- around the player force's spawn position when the first player joins, which would explore that point before
-    -- anyone claims it. Keep them at the origin.
+    -- anyone claims it. Keep them at the origin. Forces created later are handled in StartingPointsForceCreated.
     for _, force in pairs(game.forces) do
         force.set_spawn_position({ x = 0, y = 0 }, surface)
     end
@@ -222,6 +222,21 @@ function IsStartingPointExplored(surface, position)
         end
     end
     return false
+end
+
+---New forces start with their spawn position on the first starting point of every surface. A cargo pod dropping to a
+---planet where the force has no spawn yet lands at that position, and the game generates chunks around it, which
+---explores the point before anyone claims it. Move it to the origin, like ApplyStartingPoints does for older forces.
+---@param force LuaForce
+---@return nil
+function StartingPointsForceCreated(force)
+    if (storage.starting_points == nil) then return end -- Forces created in on_init before InitStartingPoints.
+    for surface_name, _ in pairs(storage.starting_points) do
+        local surface = game.surfaces[surface_name]
+        if (surface ~= nil) then
+            force.set_spawn_position({ x = 0, y = 0 }, surface)
+        end
+    end
 end
 
 ---Claims the next free starting point on a surface for a host. Points that were explored by someone else are

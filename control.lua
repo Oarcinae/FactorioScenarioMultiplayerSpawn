@@ -354,6 +354,13 @@ script.on_event(defines.events.on_pre_surface_deleted, function(event)
 end)
 
 ----------------------------------------
+-- Force Events
+----------------------------------------
+script.on_event(defines.events.on_force_created, function(event)
+    StartingPointsForceCreated(event.force)
+end)
+
+----------------------------------------
 -- Various on "built" events
 ----------------------------------------
 script.on_event(defines.events.on_built_entity, function(event)
