@@ -46,7 +46,7 @@ data:extend({
     {
         type = "int-setting",
         name = "oarc-classic-starting-points-count",
-        setting_type = "runtime-global",
+        setting_type = "startup",
         default_value = 16,
         minimum_value = 1,
         maximum_value = 128,
@@ -55,7 +55,7 @@ data:extend({
     {
         type = "int-setting",
         name = "oarc-classic-starting-points-spacing-chunks",
-        setting_type = "runtime-global",
+        setting_type = "startup",
         default_value = 100,
         minimum_value = 20,
         maximum_value = 1000,

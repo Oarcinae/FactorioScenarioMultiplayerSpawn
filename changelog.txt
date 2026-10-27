@@ -7,7 +7,7 @@ Date: ????
     - Every new spawn gets its own team. Players waiting to spawn are on the vanilla player force.
   Features:
     - Every planet gets a fixed grid of starting points when the game starts. Each new spawn takes the next free point, spiralling out from the center, and gets a vanilla starting area.
-    - New settings for the number of starting points per planet (default 16) and the spacing between them (default 100 chunks). They are only read when a new game starts, and the template scenario can set them per surface.
+    - New settings for the number of starting points per planet (default 16) and the spacing between them (default 100 chunks). They are startup settings, only read when a new game starts, and the template scenario can set them per surface.
     - A starting point is skipped if the area around it has already been explored. If no point is free, players are told to join an existing spawn instead.
     - Starting points set by the map-gen settings, a preset or another mod are replaced by the grid, with an error in the log and in chat for admins.
     - New "Allow Oarc Style Spawn Circle" setting (off by default). When on, players can tick "OG Oarc style spawn" in the spawn menu to get the classic spawn circle, tree ring, moat and scripted resources on their starting point.

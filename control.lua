@@ -83,6 +83,7 @@ end)
 -- On Configuration Changed - Only runs when the mod configuration changes
 --------------------------------------------------------------------------------
 script.on_configuration_changed(function(data)
+    WarnIfStartingPointSettingsChanged(data)
     for _,player in pairs(game.players) do
         RecreateOarcGui(player) -- Reset the players GUI
     end

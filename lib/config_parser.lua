@@ -226,9 +226,15 @@ function CacheModSettings()
         end
     end
 
-    -- Special case for settings only read when the game starts, so they are left out of OCFG_KEYS.
-    storage.ocfg.gameplay.starting_points_count = settings.global["oarc-classic-starting-points-count"].value --[[@as integer]]
-    storage.ocfg.gameplay.starting_points_spacing_chunks = settings.global["oarc-classic-starting-points-spacing-chunks"].value --[[@as integer]]
+    -- Startup settings only read when the game starts, so they are left out of OCFG_KEYS.
+    storage.ocfg.gameplay.starting_points_count = settings.startup["oarc-classic-starting-points-count"].value --[[@as integer]]
+    storage.ocfg.gameplay.starting_points_spacing_chunks = settings.startup["oarc-classic-starting-points-spacing-chunks"].value --[[@as integer]]
+
+    -- Remember the values the game started with, so a later change can be detected.
+    storage.starting_points_startup_settings = {
+        count = storage.ocfg.gameplay.starting_points_count,
+        spacing_chunks = storage.ocfg.gameplay.starting_points_spacing_chunks
+    }
 end
 
 ---Get the scenario settings from the scenario if it exists.
@@ -268,6 +274,22 @@ function SyncModSettingsToOCFG()
 
 end
 
+---The starting point grid is built when the game starts, so changing its startup settings on an existing save has
+---no effect. Called from on_configuration_changed to tell admins.
+---@param data ConfigurationChangedData
+---@return nil
+function WarnIfStartingPointSettingsChanged(data)
+    if (not data.mod_startup_settings_changed) then return end
+    local started_with = storage.starting_points_startup_settings
+    if (started_with == nil) then return end
+
+    if (settings.startup["oarc-classic-starting-points-count"].value ~= started_with.count) or
+            (settings.startup["oarc-classic-starting-points-spacing-chunks"].value ~= started_with.spacing_chunks) then
+        log("WARNING - Starting point startup settings changed on an existing save, they have no effect.")
+        SendBroadcastMsg({"oarc-starting-points-setting-game-start-only"}, { color = { r = 1, g = 0.2, b = 0.2 } })
+    end
+end
+
 ---Handles the event when a mod setting is changed in the mod settings menu.
 ---@param event EventData.on_runtime_mod_setting_changed
 ---@return nil
@@ -278,15 +300,6 @@ function RuntimeModSettingChanged(event)
     end
 
     log("on_runtime_mod_setting_changed: " .. event.setting .. " = " .. tostring(settings.global[event.setting].value))
-
-    -- The starting point grid is built when the game starts, changing these later has no effect.
-    if (event.setting == "oarc-classic-starting-points-count") or
-            (event.setting == "oarc-classic-starting-points-spacing-chunks") then
-        if (event.player_index ~= nil) then
-            SendErrorMsg(game.players[event.player_index], {"oarc-starting-points-setting-game-start-only"})
-        end
-        return
-    end
 
     -- Find the matching OARC setting and update it.
     local found_setting = false

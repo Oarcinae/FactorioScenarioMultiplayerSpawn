@@ -101,7 +101,7 @@ Exit criteria: the mod loads and the old spawn flow still works.
   - Cleanup deletes its chunks, so the explored check passes again.
   - The starting point is still in the map gen settings, so the area regenerates as a fresh starting area.
 
-**New settings** (runtime-global, read at `on_init`):
+**New settings** (startup, read at `on_init`):
 - Number of starting points per surface: default 16, minimum 1, maximum 128.
 - Spacing in chunks: default 100.
 
@@ -313,8 +313,8 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 ### Phase 2: Grid and assignment (complete, 2026-10-26)
 - [x] Create `lib/starting_points.lua`: `BuildStartingPointGrid`, `ApplyStartingPoints`, `ClaimNextStartingPoint`, `ReleaseStartingPoint`
 - [x] Add the explored check (10x10 chunks around the point) that marks a point `unusable`
-- [x] Add settings: starting point count (16, from 1 to 128) and spacing in chunks (100, from 20 to 1000), plus the per-surface config override. They are left out of the in-game settings tab, and changing them after game start only shows a message
-- [x] Apply grids at game start, using the route chosen in Phase 0
+- [x] Add settings: starting point count (16, from 1 to 128) and spacing in chunks (100, from 20 to 1000), plus the per-surface config override. They are startup settings (moved from runtime-global on 2026-10-27) and left out of the in-game settings tab. If they are changed on an existing save, `on_configuration_changed` logs it and tells everyone in chat that it has no effect (`WarnIfStartingPointSettingsChanged`)
+- [ ] Test: the two settings show in the startup tab, a new game uses them, and changing them then loading the save shows the "no effect" message (and no message when another mod's startup setting changes)- [x] Apply grids at game start, using the route chosen in Phase 0
 - [x] In `ApplyStartingPoints`, detect existing `starting_points` other than a single (0,0) point, log a clear error (and print it to admins), then overwrite anyway. Admins who join later see it once
 - [ ] Test (deferred): set custom starting points in the new-game map-gen settings, confirm the error appears and the grid still replaces them
 - [x] Replace the `FindUngeneratedCoordinates` calls with `ClaimNextStartingPoint` (spawn GUI, `SecondarySpawn`, `/oarc-reroll-spawn`), and remove the function and the near/far distance settings. `minimum_distance_to_existing_chunks` stays until Phase 3, because cleanup still uses it
