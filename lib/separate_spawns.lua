@@ -1912,7 +1912,7 @@ function OnCargoPodStartedAscending(event)
     -- Only one spawn is created, even if several pods are on their way.
     if (FindCargoPodSpawn(pod, player, surface) ~= nil) then return end
 
-    log("A cargo pod leaving for " .. surface.name .. " triggered a secondary spawn for: " .. spawn_player.name)
+    log("A cargo pod leaving for " .. surface.name .. " triggered a secondary spawn for force: " .. spawn_player.force.name)
     SecondarySpawn(spawn_player, surface.name, false)
 end
 

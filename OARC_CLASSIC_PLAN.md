@@ -250,17 +250,16 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 
 **Passed by eye (2026-10-27):** 2 (a cleaned up area comes back as a vanilla starting area), 3 (the next new player gets the freed point), 6 to 10 (Oarc style spawn option: menu checkboxes, vanilla and prefab spawns with and without a moat, the prefab-only settings shown and hidden, and a large prefab spawn fully cleaned up), and the spawn menu layout with the setting off and on.
 
-**Phase 5:**
-14. Fly to Vulcanus or Fulgora for real (without the test command). The player gets a secondary spawn on the planet's grid, and the cargo pod is redirected to it.
-17. With two players on Fulgora, attractors in newly generated chunks go to whichever spawn is closer.
-23. Evolution reset on: joining someone else's shared spawn does not reset evolution (multiplayer, can wait for the Phase 6 multiplayer test).
+**Passed in the multiplayer test (2026-10-27, dedicated server, three real clients):** 14 (real flights to Fulgora, Vulcanus, Gleba and Aquilo: secondary spawns on each planet's grid, cargo pods redirected, item-only pods sent to the force's spawn) and 17 (two spawns on Fulgora, attractors go to the closer spawn). Also the holding pen wait, shared spawn joins (secondary spawns copy the joiners and open access), an early leaver reset, and the admin reset from the server info tab, which released the point. The log had no errors.
+
+**Skipped:** 23 (joining a shared spawn does not reset evolution, low risk), offline protection (for now), and a prefab player's secondary spawn being a prefab (tested earlier by hand).
 
 **Phase 6, translations:**
 25. Switch the game language to German, Russian and Chinese and look over the spawn menu, the FAQ tab and the mod settings. The text was written without a native speaker, so it is worth a check by one if possible.
 
 **Every test:** `factorio-current.log` has no errors.
 
-**Deferred** (from earlier phases): custom map-gen starting points are replaced with an error message (Phase 2), and the multiplayer shared spawn join and remove player tests (Phase 1, folded into the Phase 6 multiplayer test).
+**Deferred** (from earlier phases): custom map-gen starting points are replaced with an error message (Phase 2).
 
 ### Phase 0: Starting points on every surface (in this repo)
 - [x] Extend the prototype so `on_init` loops over `game.planets` and creates any missing planet surfaces
@@ -286,7 +285,7 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] Remove the main team (`main_force_name`, "join main team" choice)
 - [x] Prune `settings.lua`, `lib/config.lua`, the `lib/config_parser.lua` table, the settings tab and locale for everything above
 - [x] Test (single player): the mod loads with and without Space Age, spawning works on a new own force, reset and respawn work, the GUI tabs and mod settings show no removed features, and the log is clean (verified 2026-10-26)
-- [ ] Test (multiplayer, deferred to the Phase 6 multiplayer test): shared spawn join, and remove player
+- [x] Test (multiplayer): shared spawn join, and remove player (verified 2026-10-27 in the Phase 6 multiplayer test)
 
 ### Phase 2: Grid and assignment (complete, 2026-10-26)
 - [x] Create `lib/starting_points.lua`: `BuildStartingPointGrid`, `ApplyStartingPoints`, `ClaimNextStartingPoint`, `ReleaseStartingPoint`
@@ -320,17 +319,17 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] Add an `allow_oarc_style_spawn = true` example to the template scenario
 - [x] Test: with the setting off, the spawn menu has no style or moat checkbox, and spawns are vanilla (verified 2026-10-27)
 - [x] Test: with it on, a ticked spawn gets the prefab centred on the claimed point (with and without moat), and an unticked spawn is vanilla (verified 2026-10-27)
-- [ ] Test: a prefab player's secondary spawn on another planet is also a prefab, and a vanilla player's is vanilla
+- [x] Test: a prefab player's secondary spawn on another planet is also a prefab, and a vanilla player's is vanilla (tested earlier by hand)
 - [x] Test: the settings tab and surface config tab hide or show the prefab-only parts when the setting is toggled (verified 2026-10-27)
 
 ### Phase 5: Planets, Fulgora, evolution
 - [x] Secondary spawns always on, and remove the `default_enable_secondary_spawns_on_other_surfaces` startup setting. Every planet except the default surface gets `secondary = true` in `SeparateSpawnsInitSurface`. Non-planet surfaces from other mods have no grid, so they get neither. Admins can still toggle each surface in the settings tab
 - [x] `SecondarySpawn` claims a point from the planet's grid (landed in Phase 2)
-- [ ] Test: in a new Space Age game, the settings tab shows Secondary ticked for Vulcanus, Fulgora, Gleba and Aquilo, and not for Nauvis. The "Enable secondary spawns by default" startup setting is gone
+- [x] Test: in a new Space Age game, the settings tab shows Secondary ticked for Vulcanus, Fulgora, Gleba and Aquilo, and not for Nauvis. The "Enable secondary spawns by default" startup setting is gone (verified 2026-10-26, tests 4, 11 and 12)
 - [x] Fulgora: in `on_chunk_generated`, give `player` force lightning attractors to the force of the closest spawn's host (left on `player` if no spawn exists on the surface). Oarc style spawns create their scripted attractors on the owner's force
-- [ ] Test: Fulgora attractors around a new spawn belong to the owner's force and can be deconstructed
+- [x] Test: Fulgora attractors around a new spawn belong to the owner's force and can be deconstructed (verified 2026-10-26 and 2026-10-27, tests 15 to 19)
 - [x] Add the evolution reset setting (default off), with the reset at the top of `QueueNewSpawnGeneration`
-- [ ] Test on Vulcanus and Fulgora: cargo pod redirect, attractors, and evolution reads 0 in the holding pen
+- [x] Test on Vulcanus and Fulgora: cargo pod redirect, attractors, and evolution reads 0 in the holding pen (verified 2026-10-27, tests 14, 17 and 20 to 24; 23 skipped)
 
 ### Phase 6: GUI and docs
 - [x] Simplify the spawn choice GUI (new spawn, join, cancel). The spawn settings and solo spawn frames are merged into one "Start a New Spawn" frame (`CreateNewSpawnFrame`), with the surface dropdown, style and moat checkboxes, and the button. The shared spawn frame and the cancel wait menu are unchanged. Removed the unused and outdated spawn menu locale keys from every language. Also fixed: picking Join with no host selected used to close the menu with nothing to replace it, the cancel path always logged an error, and the "Select Surface" label was hardcoded. Server test passed (2026-10-26)
@@ -338,7 +337,7 @@ Everything here is written but not yet confirmed in game. Remove items as they p
 - [x] Show admins a claimed starting point count per surface in the server info tab
 - [x] Update the FAQ, locale and changelog. New FAQ entries for starting points, Oarc style spawns (only shown when allowed), rerolls and the evolution reset (only shown when on), and rewrote the outdated answers (teams, secondary spawns, cleanup). German, Russian and Chinese are translated in full, including the strings they were missing before, and the broken Russian setting keys are fixed. The 1.0.0 changelog lists everything
 - [x] Spawn reroll: kept, once per surface for players, no limit for admins, who can also name another player. Server test passed (2026-10-26): second reroll refused, admin unlimited, no free point keeps the reroll, a non-admin can't target someone else, and Vulcanus has its own reroll after Nauvis is used up
-- [ ] Multiplayer test: holding pen, join queue, offline protection
+- [x] Multiplayer test: holding pen and join queue (verified 2026-10-27). Offline protection skipped for now
 
 ### Phase 7: Public publish and playtesting
 - [ ] Push the branch (only after Phases 1 to 6 are done and tested)
