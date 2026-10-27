@@ -397,6 +397,7 @@ function RerollSpawn(caller, player)
 
     -- Queue spawn generation and the player.
     local delayed_spawn = GenerateNewSpawn(player.name, surface_name, spawn_position, spawn_choices, old_spawn_point.primary)
+    delayed_spawn.first_spawn = false -- Everyone moved by a reroll already got their starter items.
     QueuePlayerForSpawn(player.name, delayed_spawn)
 
     -- Send them to the holding pen

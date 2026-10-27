@@ -1630,7 +1630,8 @@ function QueueNewSpawnGeneration(unique_spawn)
         -- This is the extra data I need for the delayed spawn
         delayed_tick = game.tick + delay_spawn_seconds * TICKS_PER_SECOND,
         final_chunk_generated = final_chunk,
-        waiting_players = {}
+        waiting_players = {},
+        first_spawn = unique_spawn.primary
     }
 
     table.insert(storage.delayed_spawns, delayed_spawn)
@@ -1729,7 +1730,7 @@ function DelayedSpawnOnTick()
                 for _,player_name in pairs(delayed_spawn.waiting_players) do
                     local player = game.players[player_name]
                     if (player ~= nil) then
-                        SendPlayerToNewSpawn(player_name, delayed_spawn.surface_name, delayed_spawn.primary, delayed_spawn.host_name == player_name)
+                        SendPlayerToNewSpawn(player_name, delayed_spawn.surface_name, delayed_spawn.first_spawn, delayed_spawn.host_name == player_name)
                     end
                 end
 
@@ -2020,6 +2021,7 @@ end
 ---@field delayed_tick number The game tick when the spawn will be ready.
 ---@field final_chunk_generated ChunkPosition The final chunk position that needs to be generated.
 ---@field waiting_players string[] List of players waiting to join this spawn once it is done generating.
+---@field first_spawn boolean Whether the waiting players are spawning for the first time (starter items, Default permission group). False for secondary spawns and rerolls.
 ---Array of [OarcDelayedSpawn](lua://OarcDelayedSpawn).
 ---@alias OarcDelayedSpawnsTable OarcDelayedSpawn[]
 
