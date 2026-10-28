@@ -1,12 +1,12 @@
 {
   "name": "oarc-classic",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "factorio_version": "2.1",
   "title": "Oarc Classic",
   "author": "Oarcinae",
   "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
   "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn/tree/oarc-classic",
-  "description": "[[Description is in locale file!]]",
+  "description": "A multiplayer spawn mod built on vanilla starting areas. Every planet gets a fixed grid of starting points when the game starts, and each new player takes the next free one. Players can also join someone else's spawn.",
   "dependencies": [
     "base >= 2.1.0",
     "? space-age",
@@ -19,7 +19,6 @@
     "(?) blueprint-sandboxes",
     "(?) factorissimo-2-notnotmelon",
     "(?) better-chat",
-    "! rso-mod",
     "! oarc-mod"
   ]
 }
