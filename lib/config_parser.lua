@@ -43,7 +43,7 @@ OCFG_KEYS =
     ["regrowth.enable_abandoned_base_cleanup"] = {mod_key = "oarc-classic-enable-abandoned-base-cleanup" , ocfg_keys = {"regrowth", "enable_abandoned_base_cleanup"}, type = "boolean"},
     ["regrowth.cleanup_interval"] = {mod_key = "oarc-classic-regrowth-cleanup-interval-min" , ocfg_keys = {"regrowth", "cleanup_interval"}, type = "integer"},
 
-    ["general_spawn_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-general-spawn"}},
+    ["general_spawn_HEADER"] = {mod_key = "" , ocfg_keys = {""}, type = "header", text = {"oarc-settings-section-header-general-spawn"}, prefab_only = true},
     ["spawn_general.spawn_radius_tiles"] = {mod_key = "oarc-classic-spawn-general-radius-tiles" , ocfg_keys = {"spawn_general", "spawn_radius_tiles"}, type = "integer", prefab_only = true},
     ["spawn_general.moat_width_tiles"] = {mod_key = "oarc-classic-spawn-general-moat-width-tiles" , ocfg_keys = {"spawn_general", "moat_width_tiles"}, type = "integer", prefab_only = true},
     ["spawn_general.tree_width_tiles"] = {mod_key = "oarc-classic-spawn-general-tree-width-tiles" , ocfg_keys = {"spawn_general", "tree_width_tiles"}, type = "integer", prefab_only = true},
