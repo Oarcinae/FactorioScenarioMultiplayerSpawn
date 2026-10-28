@@ -68,45 +68,46 @@ commands.add_command("oarc-cleanup-player", {"oarc-command-cleanup-player"}, fun
     RemoveOrResetPlayer(target_player, true)
 end)
 
--- Admin test helper to look at the starting points
-commands.add_command("oarc-tp-start", "Teleport to starting point <index> [surface], surface defaults to nauvis.", function(command)
-    if command.player_index == nil then return end
-    local player = game.players[command.player_index]
-    if not player.admin then
-        SendErrorMsg(player, {"oarc-command-not-admin-warning", command.name})
-        return
-    end
-
-    local index, surface_name = string.match(command.parameter or "", "^%s*(%d+)%s*(%S*)")
-    if (surface_name == nil) or (surface_name == "") then
-        surface_name = "nauvis"
-    end
-    TeleportToStartingPoint(player, tonumber(index) or 0, surface_name)
-end)
-
--- Admin test helper to send a player to another planet without flying there
-commands.add_command("oarc-test-planet", "Send a player to a planet, creating a secondary spawn on its next free starting point if needed. <planet> [player], player defaults to you.", function(command)
-    if command.player_index == nil then return end
-    local admin = game.players[command.player_index]
-    if not admin.admin then
-        SendErrorMsg(admin, {"oarc-command-not-admin-warning", command.name})
-        return
-    end
-
-    local planet_name, player_name = string.match(command.parameter or "", "^%s*(%S+)%s*(%S*)")
-    if (planet_name == nil) then
-        admin.print("Usage: /oarc-test-planet <planet> [player]")
-        return
-    end
-
-    local target = admin
-    if (player_name ~= "") then
-        target = game.get_player(player_name)
-        if (target == nil) then
-            admin.print("No player named " .. player_name)
-            return
-        end
-    end
-
-    TestSendPlayerToPlanet(admin, target, planet_name)
-end)
+-- Admin test helpers, only for development testing. Uncomment them to use them, don't ship them enabled.
+-- -- Admin test helper to look at the starting points
+-- commands.add_command("oarc-tp-start", "Teleport to starting point <index> [surface], surface defaults to nauvis.", function(command)
+--     if command.player_index == nil then return end
+--     local player = game.players[command.player_index]
+--     if not player.admin then
+--         SendErrorMsg(player, {"oarc-command-not-admin-warning", command.name})
+--         return
+--     end
+--
+--     local index, surface_name = string.match(command.parameter or "", "^%s*(%d+)%s*(%S*)")
+--     if (surface_name == nil) or (surface_name == "") then
+--         surface_name = "nauvis"
+--     end
+--     TeleportToStartingPoint(player, tonumber(index) or 0, surface_name)
+-- end)
+--
+-- -- Admin test helper to send a player to another planet without flying there
+-- commands.add_command("oarc-test-planet", "Send a player to a planet, creating a secondary spawn on its next free starting point if needed. <planet> [player], player defaults to you.", function(command)
+--     if command.player_index == nil then return end
+--     local admin = game.players[command.player_index]
+--     if not admin.admin then
+--         SendErrorMsg(admin, {"oarc-command-not-admin-warning", command.name})
+--         return
+--     end
+--
+--     local planet_name, player_name = string.match(command.parameter or "", "^%s*(%S+)%s*(%S*)")
+--     if (planet_name == nil) then
+--         admin.print("Usage: /oarc-test-planet <planet> [player]")
+--         return
+--     end
+--
+--     local target = admin
+--     if (player_name ~= "") then
+--         target = game.get_player(player_name)
+--         if (target == nil) then
+--             admin.print("No player named " .. player_name)
+--             return
+--         end
+--     end
+--
+--     TestSendPlayerToPlanet(admin, target, planet_name)
+-- end)

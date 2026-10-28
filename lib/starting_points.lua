@@ -206,6 +206,13 @@ end
 
 ---Checks if any chunk in the area around a starting point is already generated, meaning someone else has
 ---explored there.
+---This also rejects a point that someone only walked past. Checking for player entities instead would waste fewer
+---points, but was decided against because it needs too many exceptions:
+---  - Chunks queued for a forced cleanup would delete the new spawn.
+---  - Prefab spawns are only shaped in on_chunk_generated, so already generated chunks would miss the crop circle and moat.
+---  - The delayed spawn only waits for one corner chunk.
+---  - Enemies can expand into generated chunks.
+---  - Chunks generated before the grid was written have no starting area.
 ---@param surface LuaSurface
 ---@param position MapPosition
 ---@return boolean

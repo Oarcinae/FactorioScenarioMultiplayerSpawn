@@ -5,7 +5,7 @@
   "title": "Oarc Classic",
   "author": "Oarcinae",
   "contact": "Mod Discussion Page, oarcinae@gmail.com, Discord:oarc",
-  "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn",
+  "homepage": "https://github.com/Oarcinae/FactorioScenarioMultiplayerSpawn/tree/oarc-classic",
   "description": "[[Description is in locale file!]]",
   "dependencies": [
     "base >= 2.1.0",
