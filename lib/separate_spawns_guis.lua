@@ -201,7 +201,7 @@ function CreateNewSpawnFrame(parent_flow, gameplay)
         }
 
         -- Allow players to spawn with a moat around their area. Only Oarc style spawns have a moat, so this is only
-        -- enabled while the Oarc style spawn is picked.
+        -- shown while the Oarc style spawn is picked.
         if (gameplay.allow_moats_around_spawns) then
             new_spawn_frame.add {
                 name = "isolated_spawn_moat_option_checkbox",
@@ -209,7 +209,7 @@ function CreateNewSpawnFrame(parent_flow, gameplay)
                 type = "checkbox",
                 caption = { "oarc-moat-option" },
                 state = true, -- Default to true
-                enabled = false,
+                visible = false,
                 tooltip = { "oarc-moat-option-tooltip" }
             }
         end
@@ -409,7 +409,7 @@ function SpawnOptsRadioSelect(event)
 
         local moat_checkbox = event.element.parent["isolated_spawn_moat_option_checkbox"]
         if (moat_checkbox ~= nil) then
-            moat_checkbox.enabled = event.element.state
+            moat_checkbox.visible = event.element.state
         end
     elseif (tags.setting == "moat_option") then
         storage.spawn_choices[player.name].moat = event.element.state
