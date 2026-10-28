@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.0
-Date: ????
+Date: 2026-10-27
   Info:
     - First release of Oarc Classic, a stripped down version of Oarc Multiplayer Spawn (oarc-mod). It can't be enabled together with oarc-mod.
     - Removed buddy spawns, the main team, the item shop, energy and item sharing, and enemy scaling around spawns.
